@@ -1,0 +1,71 @@
+/* Gemeinsamer Zustand, Escape-Helfer und kleine Bausteine (Karten, Wappen, Fusszeile). */
+let updateState = null;
+let liveState = null,
+  liveTimer,
+  liveBusy = false;
+// Only plain web links may end up in href attributes (blocks javascript: and data: URLs from external data).
+function safeUrl(value) {
+  try {
+    const u = new URL(String(value), location.href);
+    return ['https:', 'http:'].includes(u.protocol) ? u.href : '#';
+  } catch {
+    return '#';
+  }
+}
+function liveEscape(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+const base = 'https://kadettensh.ch/',
+  report = base + 'perfekter-start-in-der-european-league/';
+let calendarYear = 2026;
+let competition = 'Alle',
+  mode = 'list',
+  month = 9,
+  tableLeague = 'QHL';
+const $ = s => document.querySelector(s),
+  ext = (u, t, c = 'button') =>
+    `<a class="${c}" href="${liveEscape(safeUrl(u))}" target="_blank" rel="noopener noreferrer">${t}</a>`,
+  date = g =>
+    new Date(g.date + 'T12:00:00').toLocaleDateString('de-CH', {day: '2-digit', month: '2-digit', year: 'numeric'}),
+  league = g =>
+    g.league === 'QHL' ? 'Quickline Handball League' : g.league === 'EHL' ? 'EHF European League' : g.league;
+function footer() {
+  const [page = 'home', id] = (location.hash.slice(1) || 'home').split('/');
+  const game = page === 'match' ? games.find(g => g.id === id) : null;
+  const key =
+    page === 'match' || (page === 'season' && id === 'games')
+      ? 'games'
+      : page === 'season' && id === 'table'
+        ? 'table'
+        : page === 'season' && id === 'squad'
+          ? 'players'
+          : 'news';
+  const url =
+    game?.url ||
+    (page === 'season' && id === 'games'
+      ? base + 'matchcenter/'
+      : page === 'season' && id === 'squad'
+        ? base + '1-mannschaft/'
+        : base);
+  return `<footer>Privater Designentwurf · kein offizieller Vereinsauftritt<br>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger<br>${ext(url, 'Quelle: Kadetten Schaffhausen', '')}<br><span class="footer-updated">${updateLabel(key)}</span></footer>`;
+}
+function badge(name) {
+  const logo = clubLogos[name];
+  return logo
+    ? `<img class="crest" src="${logo}" alt="${name}" loading="lazy">`
+    : `<span class="clubmark" aria-hidden="true">${name
+        .split(' ')
+        .map(w => w[0])
+        .slice(0, 3)
+        .join('')}</span>`;
+}
+function card(g, current = false) {
+  const result = g.score ? teamResult(g, 'Kadetten Schaffhausen') : null;
+  const derby = /Pfadi/.test(g.home.includes('Kadetten') ? g.away : g.home);
+  return `<article class="game-card ${g.score ? 'finished result-' + result.state : ''} ${current ? 'current-game' : ''}" ${current ? 'aria-label="Nächstes Spiel"' : ''}>${current ? '<p class="current-label">Nächstes Spiel</p>' : ''}<p class="meta">${g.score ? `<span class="game-result-label">${result.label}</span> · ` : ''}${league(g)} · ${date(g)}${g.time ? ' · ' + g.time : ''}${derby ? ' <span class="game-derby">Derby</span>' : ''}</p><div class="scoreline"><div>${badge(g.home)}<span>${g.home}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}<small>${g.half ? '(' + g.half.join(':') + ')' : g.score ? 'Endstand' : 'Vorschau'}</small></strong><div>${badge(g.away)}<span>${g.away}</span></div></div><p class="venue">${g.venue}</p><div class="actions"><a class="button ${g.score ? 'subtle' : ''}" href="#match/${liveEscape(g.id)}/overview">${g.score ? 'Rückblick' : 'Vorschau'}</a></div></article>`;
+}
