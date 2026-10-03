@@ -8,7 +8,7 @@ function gameControls() {
   return `<div class="controls"><label>Wettbewerb <select id="competition">${['Alle', 'QHL', 'EHL', 'Testspiel', 'Falkencup'].map(c => `<option ${c === competition ? 'selected' : ''}>${c}</option>`).join('')}</select></label><div class="toggle"><button data-mode="list" aria-pressed="${mode === 'list'}">Liste</button><button data-mode="calendar" aria-pressed="${mode === 'calendar'}">Kalender</button></div></div>`;
 }
 function gameList() {
-  if (mode === 'calendar') return `<div class="calendar-panel">${calendar()}</div>`;
+  if (mode === 'calendar') return `<section class="home-matchday games-matchday"><a id="live-match" class="live-match" data-live-only="true" aria-label="Laufendes Kadetten-Spiel" aria-live="polite" hidden></a></section><div class="calendar-panel">${calendar()}</div>`;
   const ordered = games
     .filter(g => competition === 'Alle' || g.league === competition)
     .slice()
