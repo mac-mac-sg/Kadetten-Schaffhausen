@@ -6,7 +6,7 @@ Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle
 
 ## API
 
-server/worker.mjs ist ein Worker mit fetch(request, env). server/update.mjs verarbeitet WordPress, Spielplan und Tabelle; server/shv.mjs validiert SHV-Spielerwerte; server/live.mjs liefert bestätigte Live-Werte, jüngste Ergebnisse und direkte Duelle. scripts/build.mjs bündelt Module und versioniert die App-Hülle deterministisch.
+server/worker.mjs ist ein Worker mit fetch(request, env). server/update.mjs verarbeitet WordPress, Spielplan und Tabelle; server/shv.mjs validiert SHV-Spielerwerte; server/live.mjs liefert bestätigte Live-Werte, jüngste Ergebnisse und direkte Duelle. scripts/build.mjs bündelt Module mit esbuild und versioniert die App-Hülle deterministisch.
 
 GET /api/data liefert den aktuellen Snapshot; GET /api/articles/:id?v=:sha liefert separat den Volltext. GET /api/access liefert die Update-Berechtigung. POST /api/refresh ist ausschliesslich für den Eigentümer und die autorisierte Automation.
 
@@ -14,7 +14,9 @@ GET /api/data liefert den aktuellen Snapshot; GET /api/articles/:id?v=:sha liefe
 
 env.BUCKET: R2-kompatibler Objektspeicher mit get(key).json() und put(key,value). Schlüssel: kadetten/current.json, kadetten/previous.json und kadetten/articles/:id/:sha.json. env.ASSETS bedient die statischen Dateien. server/seed.json ist nur der mitgelieferte Start-/Notfallstand.
 
-KADETTEN_OWNER_EMAIL identifiziert den Eigentümer hinter Sites. oai-authenticated-user-id/email werden dort vom Gateway verifiziert. Auf einem anderen Host wären diese Header vom Besucher fälschbar. Die Anwendung darf dort erst nach Ersatz dieser Prüfung produktiv betrieben werden. KADETTEN_UPDATE_KEY_SHA256 enthält nur den SHA-256-Digest des Automation-Schlüssels. Beide Werte werden als Laufzeitkonfiguration verwaltet.
+server/auth.mjs trennt Eigentümeridentität von der Daten-API. KADETTEN_AUTH_PROVIDER muss explizit konfiguriert sein; fehlende/ungültige Werte sperren Browser-Schreibzugriffe. Im Sites-Modus werden zusätzlich KADETTEN_SITES_ORIGIN und die Gateway-Identität geprüft. Im cloudflare-access-Modus verifiziert jose einen signierten Access-JWT aus Assertion-Header oder CF_Authorization-Cookie, anhand des konfigurierten Ausstellers, der App-Audience, Claims und der Eigentümer-E-Mail. Öffentliche E-Mailheader sind dort keine Identität. `/admin/login` ist der für Cloudflare Access vorbereitete Login-Einstieg. Details und offene Einrichtung: [Testhost](test-host.md).
+
+KADETTEN_UPDATE_KEY_SHA256 enthält den SHA-256-Digest eines separaten Automation-Schlüssels. Er authorisiert keine Browseridentität. Schlüssel werden bei einem Hostwechsel neu erstellt, niemals aus Sites übernommen. Alle persönlichen Laufzeitwerte und Secrets bleiben ausserhalb des Repositorys.
 
 ## Aktualisierung
 

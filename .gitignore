@@ -6,3 +6,7 @@ dist/
 !.env.example
 .sites-runtime/
 *.log
+.wrangler/
+.dev.vars
+.dev.vars.*
+wrangler.staging.json
