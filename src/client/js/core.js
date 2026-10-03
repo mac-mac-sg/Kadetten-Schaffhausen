@@ -78,3 +78,8 @@ function photoUrl(name) {
   if (/^https?:/.test(value)) return value;
   return (value.startsWith('assets/') ? value : 'assets/' + value).replace(/\.(png|jpe?g)$/i, '.webp');
 }
+
+/* Gemeinsame Navigation für Detailseiten. */
+function backLink(href, label, placement = '') {
+  return `<a href="${liveEscape(href)}" class="back-link ${placement}"><span aria-hidden="true">←</span>${liveEscape(label)}</a>`;
+}

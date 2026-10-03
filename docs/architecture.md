@@ -13,7 +13,7 @@ Die Dateien sind gewöhnliche Skripte ohne Bundler. Sie teilen sich den globalen
 | `data/` | Reine Daten ohne Logik: Kader und Profile (`squad.js`), Hallenfotos (`venues.js`), Start-/Notfallstand (`fallback.js`), Vereinsgeschichte und Titeljahre (`club.js`) |
 | `js/logic.js` | Spiel- und Spieltagslogik ohne Seitenzugriff (Zürcher Zeit, Anpfiff, Countdown, Ergebnis, relative Tage); getestet in `tests/logic.test.mjs` |
 | `enhancements.js` | Spieltagsdetails, Saisonverlauf, Offline-Hinweis, Spielberichte |
-| `js/core.js` | Zustand, Escape-Helfer, `photoUrl`, Karten, Wappen, Fusszeile |
+| `js/core.js` | Zustand, Escape-Helfer, `photoUrl`, Karten, Wappen, Fusszeile, einheitliche Zurück-Links (`backLink`) |
 | `js/views-*.js` | News, Saison (Spielplan, Kalender, Tabelle, Kader), Spielseite, Spielerprofil, Vereinsseite |
 | `js/router.js` | Hash-Routing und `render()` |
 | `js/data-sync.js` | Datenstand laden, zwischenspeichern, aktualisieren |
