@@ -1737,3 +1737,25 @@ html.snap-news {
   .home-matchday .is-matchday-intro::before,
   .home-matchday .is-matchday-intro .live-heading > span { animation: none; }
 }
+
+/* Quellen bleiben erreichbar, ohne jeden Inhaltsbereich zu wiederholen. */
+.source-details {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.source-details summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 0;
+  width: fit-content;
+}
+.source-details summary:hover { color: var(--cream); }
+.source-details summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.source-details p { margin: 6px 0 12px; }
+.source-details a { text-decoration: underline; text-underline-offset: 3px; }
+footer .source-details summary { margin-inline: auto; }

@@ -44,7 +44,7 @@ function calendar() {
     }
   ).join(
     ''
-  )}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">Gegnerlogo antippen für Spielinfos und Resultat. ${ext(base + 'matchcenter/', 'Offizieller Spielplan', '')}</p>`;
+  )}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">Gegnerlogo antippen für Spielinfos und Resultat.</p>`;
 }
 function recordBar(name, total) {
   const r =

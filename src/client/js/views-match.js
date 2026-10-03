@@ -22,7 +22,7 @@ function match(g, tab) {
   return `<section class="match"><div class="match-top"><a href="#season/games" class="back" aria-label="Zurück zu den Spielen">‹ Spiele</a><div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${[['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistik']].map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' ? matchOverview(g) : `<div class="content narrow">${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
 }
 function matchOverview(g) {
-  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft der Kadetten'}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : 'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}. Ergebnis gemäss offiziellem Vereins-Matchcenter.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p><div class="facts ${!g.score ? 'match-preview-facts' : ''}">${!g.score ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? 'Beendet' : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div><div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div></div>`;
+  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft der Kadetten'}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : 'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p><div class="facts ${!g.score ? 'match-preview-facts' : ''}">${!g.score ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? 'Beendet' : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div><div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div></div>`;
 }
 function matchSquad(g) {
   if (verifiedReport(g)) return reportRoster(g);
@@ -76,7 +76,7 @@ function recentGamesMarkup(g, team) {
     })
     .join(
       ''
-    )}</div>${!list.length ? '<p class="muted">Noch keine verifizierten Resultate erfasst.</p>' : ''}<p class="muted recent-note">${cached?.ok ? 'Die letzten fünf abgeschlossenen Saisonspiele · Quelle: handball.ch' : g.league === 'QHL' ? 'Offizielle Resultate werden geladen …' : 'Hier erfasste Saisonspiele. Eine vollständige Gegnerhistorie ist noch nicht verfügbar.'}</p>`;
+    )}</div>${!list.length ? '<p class="muted">Noch keine verifizierten Resultate erfasst.</p>' : ''}<p class="muted recent-note">${cached?.ok ? 'Die letzten fünf abgeschlossenen Saisonspiele' : g.league === 'QHL' ? 'Offizielle Resultate werden geladen …' : 'Hier erfasste Saisonspiele. Eine vollständige Gegnerhistorie ist noch nicht verfügbar.'}</p>`;
 }
 const recentPending = new Map(),
   duelCache = new Map(),
@@ -105,7 +105,7 @@ function formComparison(g) {
         })
         .join(
           ''
-        )}</div><small>${list.length ? list.length + ' erfasste Spiele' : 'Noch keine Resultate'}${cached?.ok ? ' · SHV' : ''}</small></div>`;
+        )}</div><small>${list.length ? list.length + ' erfasste Spiele' : 'Noch keine Resultate'}</small></div>`;
     })
     .join(
       ''
@@ -138,7 +138,7 @@ function headToHeadMarkup(g) {
           })
           .join('')}</div>`
       : '<p class="muted">Keine abgeschlossenen direkten Duelle im erfassten Zeitraum.</p>'
-  }<p class="muted duel-note">${cached?.ok ? 'Letzte bis zu fünf direkte Duelle · Saison 2024/25 bis 2026/27 · Quelle: handball.ch' : g.league === 'QHL' ? 'Frühere direkte Duelle werden geprüft …' : 'Erfasste Duelle dieser Saison. Frühere Europacup-Duelle sind noch nicht verfügbar.'}</p>`;
+  }<p class="muted duel-note">${cached?.ok ? 'Letzte bis zu fünf direkte Duelle · Saison 2024/25 bis 2026/27' : g.league === 'QHL' ? 'Frühere direkte Duelle werden geprüft …' : 'Erfasste Duelle dieser Saison. Frühere Europacup-Duelle sind noch nicht verfügbar.'}</p>`;
 }
 async function ensureRecent(g, team) {
   if (
