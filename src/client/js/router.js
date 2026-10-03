@@ -124,7 +124,7 @@ function render() {
         : page === 'season'
           ? season(['games', 'table', 'squad'].includes(id) ? id : 'games')
           : page === 'match'
-            ? games.find(g => g.id === id)
+            ? id === 'live' ? liveMatchPage({id:'live'},tab) : games.find(g => g.id === id)
               ? match(
                   games.find(g => g.id === id),
                   ['overview', 'squad', 'stats'].includes(tab) ? tab : 'overview'

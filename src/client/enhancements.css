@@ -1799,3 +1799,24 @@ html.snap-news {
 .source-details p { margin: 6px 0 12px; }
 .source-details a { text-decoration: underline; text-underline-offset: 3px; }
 footer .source-details summary { margin-inline: auto; }
+
+/* Live match: compact scoreboard, readable timeline and shared statistics tables. */
+.live-match-page > .back-link { margin: 20px max(20px, calc((100vw - 900px) / 2)); }
+.live-match-header { padding: 12px 20px 28px; text-align: center; background: radial-gradient(ellipse at top, #ff790e18, transparent 70%); }
+.live-status { color: var(--muted); font-size: .9rem; }
+.live-status.is-current { color: var(--accent-soft); }
+.live-match-header .matchup { max-width: 650px; margin: 24px auto 16px; }
+.live-match-header .matchup strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.live-checked { display: block; color: var(--muted); margin-top: 8px; }
+.live-match-body { padding-top: 28px; }
+.live-events { list-style: none; padding: 0; margin: 24px 0; }
+.live-event { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.live-event time { font-variant-numeric: tabular-nums; color: var(--accent-soft); }
+.live-event span { display: block; margin-top: 4px; }
+.live-event small { color: var(--muted); display: block; }
+.live-all-events summary { min-height: 48px; padding: 12px 0; cursor: pointer; }
+.live-team-stats + .live-team-stats { margin-top: 40px; }
+.live-team-stats .scorers > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.live-team-stats .scorers strong { white-space: nowrap; }
+.live-team-stats h3 { margin: 24px 0 12px; }
+@media (max-width: 400px) { .live-match-header .matchup strong { font-size: 2rem; } .live-match-header .matchup-team { font-size: .9rem; } }

@@ -127,3 +127,12 @@ test('Vereinsnavigation funktioniert nach Kategorie- und Jahreswechsel', () => {
     assert.ok(focused);
   } finally { context.document.querySelector=oldQuery; context.document.getElementById=oldId; }
 });
+
+test('Live game opens internal details with verified events and player statistics',()=>{
+ run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
+ const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);
+ const overview=run('liveMatchPage({id:"live"},"overview")');assert.match(overview,/19:36/);assert.match(overview,/LUTZ Milan/);assert.match(overview,/Spielverlauf/);
+ const stats=run('liveMatchPage({id:"live"},"stats")');assert.match(stats,/3\/–/);assert.match(stats,/Toptorschützen/);
+ run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"overview")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
+ run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
+});
