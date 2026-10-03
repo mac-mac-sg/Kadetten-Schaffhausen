@@ -42,8 +42,9 @@ function setupViews() {
     .forEach(
       b =>
         (b.onclick = () =>
-          document
-            .getElementById('story-' + b.dataset.story)
+          (b.dataset.story === '0'
+            ? document.querySelector('.home-front-page')
+            : document.getElementById('story-' + b.dataset.story))
             ?.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}))
     );
   document
@@ -76,11 +77,18 @@ function setupViews() {
   const newsDots = document.querySelector('.story-dots');
   if (newsFeed && newsDots) {
     if (typeof IntersectionObserver !== 'undefined') {
+      const visibleStories = new Set();
       newsRegionObserver = new IntersectionObserver(
-        entries => { newsDots.hidden = !entries[0].isIntersecting; },
+        entries => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) visibleStories.add(entry.target);
+            else visibleStories.delete(entry.target);
+          }
+          newsDots.hidden = visibleStories.size === 0;
+        },
         {rootMargin: '-35% 0px -45% 0px', threshold: 0}
       );
-      newsRegionObserver.observe(newsFeed);
+      newsFeed.querySelectorAll('.story-screen').forEach(story => newsRegionObserver.observe(story));
     } else newsDots.hidden = false;
   }
   $('.share')?.addEventListener('click', async e => {

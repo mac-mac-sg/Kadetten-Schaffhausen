@@ -1526,19 +1526,20 @@ body.calendar-mode {
 
 /* Spieltagskarte und News sind getrennte Bereiche im Seitenfluss. */
 html.snap-news {
-  scroll-snap-type: y proximity;
+  scroll-snap-type: y mandatory;
 }
 .home-matchday {
-  padding: 100px 24px 0;
+  padding: 84px 24px 0;
   background: radial-gradient(ellipse at 50% 0, #ff790e12, transparent 75%), var(--surface);
-  scroll-snap-align: start;
 }
 .home-matchday .live-match {
   position: relative;
   inset: auto;
   width: 100%;
-  max-width: 540px;
+  max-width: 480px;
   margin: 0 auto;
+  padding: 10px 16px;
+  border-radius: 20px;
   overflow: hidden;
 }
 .home-matchday:has(.live-match[hidden]) {
@@ -1548,7 +1549,7 @@ html.snap-news {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 28px 24px 20px;
+  padding: 16px 24px 14px;
   background: var(--surface);
 }
 .home-news-heading > span {
@@ -1571,4 +1572,43 @@ html.snap-news {
 @media (max-width: 380px) {
   .home-matchday { padding-inline: 14px; }
   .home-news-heading { padding-inline: 18px; }
+}
+
+/* Die Karte und erste News teilen sich den ersten Einrastpunkt. */
+.home-front-page {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.home-front-page .story-screen {
+  min-height: 280px;
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
+}
+.home-front-page .story-copy {
+  padding: 24px 6% calc(90px + env(safe-area-inset-bottom));
+}
+.home-front-page .story-copy h1 {
+  font-size: clamp(26px, 4vw, 44px);
+  margin-block: 8px 14px;
+}
+.home-matchday .live-score {
+  margin: 8px 0;
+  gap: 10px;
+}
+.home-matchday .live-score > span { gap: 4px; }
+.home-matchday .live-score b { font-size: 12px; }
+.home-matchday .live-score > strong { font-size: 28px; }
+.home-matchday .live-score .crest,
+.home-matchday .live-score .clubmark { width: 26px; height: 28px; }
+.home-matchday .live-heading { font-size: 11px; gap: 6px; }
+.home-matchday .live-heading small { font-size: 12px; }
+.home-matchday .match-preview-time { margin: 6px 0 0; font-size: 12px; }
+.home-matchday .home-countdown { margin: 6px 0 0; font-size: 16px; }
+.home-matchday .live-link { min-height: auto; padding: 6px; }
+.home-front-page:has(.live-match[hidden]) {
+  padding-top: 76px;
+  grid-template-rows: auto 1fr;
 }
