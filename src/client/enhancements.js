@@ -23,7 +23,7 @@ function matchdayDetail(g) {
     confirmed = sameFixture(g, live);
   const venue = g.venue || 'Spielort noch offen',
     maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(venue);
-  return `<aside class="matchday-panel ${g.score ? 'finished' : ''}"><p class="eyebrow">${g.score ? 'Heute gespielt' : 'Heute spielt Orange'}</p>${confirmed ? `<h2>Jetzt live · ${live.score ? live.score.join(' : ') : 'Resultat wird geladen'}</h2><a class="button" href="${liveEscape(live.url)}" target="_blank" rel="noopener noreferrer">Offizieller Liveticker</a>` : g.score ? `<h2>${g.score.join(' : ')} · Endresultat</h2><a class="text-link" href="#match/${liveEscape(g.id)}/stats">Zu den Statistiken</a>` : `<h2 data-countdown="${g.id}">${countdownText(g)}</h2>`}<p>${liveEscape(venue)}</p>${g.venue ? `<a class="text-link" href="${maps}" target="_blank" rel="noopener noreferrer">Anreise in Google Maps</a>` : ''}</aside>`;
+  return `<aside class="matchday-panel ${g.score ? 'finished' : ''}"><p class="eyebrow">${g.score ? 'Heute gespielt' : 'Matchday'}</p>${confirmed ? `<h2>Jetzt live · ${live.score ? live.score.join(' : ') : 'Resultat wird geladen'}</h2><a class="button" href="${liveEscape(live.url)}" target="_blank" rel="noopener noreferrer">Offizieller Liveticker</a>` : g.score ? `<h2>${g.score.join(' : ')} · Endresultat</h2><a class="text-link" href="#match/${liveEscape(g.id)}/stats">Zu den Statistiken</a>` : `<h2 data-countdown="${g.id}">${countdownText(g)}</h2>`}<p>${liveEscape(venue)}</p>${g.venue ? `<a class="text-link" href="${maps}" target="_blank" rel="noopener noreferrer">Anreise in Google Maps</a>` : ''}</aside>`;
 }
 function streakStats(list) {
   let run = 0,
@@ -97,7 +97,7 @@ function setupEnhancements() {
   document.documentElement.style.setProperty('--rival-color', rivalColors[teamName(opponent || '')] || '#94683f');
   const badgeTarget = document.querySelector('[data-nav="games"]');
   badgeTarget.classList.toggle('is-matchday', todayGames().length > 0);
-  badgeTarget.setAttribute('aria-label', todayGames().length ? 'Spiele · Heute spielt Orange' : 'Spiele');
+  badgeTarget.setAttribute('aria-label', todayGames().length ? 'Spiele · Matchday' : 'Spiele');
   syncOfflineNotice();
   document
     .querySelectorAll('.story-screen')
