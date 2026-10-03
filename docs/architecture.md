@@ -70,3 +70,5 @@ Die nationale Quelle liefert zusätzlich `gameLog` und `gamePlayerStats` mit `is
 
 
 Die Spielplan-Liste verwendet für die laufende Partie dieselbe Matchday-Karte wie die Startseite; im Kalender erscheint sie über dem Monatsraster. `/api/live` liefert zusätzlich `finished` für das letzte heute ausdrücklich als gespielt bestätigte nationale Spiel. Dessen Endresultat ergänzt den noch älteren Zweistunden-Snapshot im Browser. Die Detailansicht behält den Verlauf und kennzeichnet das Spiel als beendet. Ein Spielende wird anhand des offiziellen Abschlussstatus erkannt, niemals nur anhand von 60:00 oder einem Halbzeitpfiff.
+
+Die Startseitenkarte behält das letzte bestätigte Tagesresultat bis 24:00 Uhr in `Europe/Zurich`. Danach zeigt sie die nächste Vorschau. Der bestehende Sekunden-Timer prüft den Tageswechsel auch ohne Navigation; beim Zurückkehren in eine zuvor unsichtbare App wird die Karte sofort neu bestimmt. Ein Resultat aus `/api/live.finished` hat am Spieltag Vorrang vor einem älteren Snapshot.
