@@ -117,7 +117,9 @@ function render() {
   $('#app').innerHTML =
     page === 'home'
       ? home()
-      : page === 'news'
+      : page === 'club'
+        ? clubPage()
+        : page === 'news'
         ? article(id)
         : page === 'season'
           ? season(['games', 'table', 'squad'].includes(id) ? id : 'games')
@@ -134,7 +136,7 @@ function render() {
   document.querySelectorAll('[data-nav]').forEach(a => {
     const active =
       a.dataset.nav ===
-      (['home', 'news'].includes(page)
+      (['home', 'news', 'club'].includes(page)
         ? 'news'
         : page === 'player'
           ? 'squad'
@@ -194,10 +196,13 @@ function render() {
         ? 'Spielerprofil'
         : page === 'season'
           ? {games: 'Spiele', table: 'Tabelle', squad: 'Kader'}[id] || 'Spiele'
-          : page === 'news'
+          : page === 'club'
+            ? 'Unser Verein'
+            : page === 'news'
             ? 'Artikel'
             : 'News') + ' · Kadetten Schaffhausen';
   setupViews();
+  setupClubPage();
   setupRecentGames();
   showLiveMatch();
   if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
