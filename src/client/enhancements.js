@@ -200,7 +200,7 @@ function reportPlayer(p) {
   return {name: local?.[1] || p.name, number: local?.[0]};
 }
 function reportSource(r) {
-  return `<p class="source">${ext(r.source, 'Offizieller SHV-Spielbericht', '')} · geprüft ${new Date(gameReportsCheckedAt).toLocaleDateString('de-CH', {timeZone: 'Europe/Zurich'})}</p>`;
+  return `<details class="source-details"><summary>Quelle & Datenstand</summary><p>${ext(r.source, 'Offizieller SHV-Spielbericht', '')} · geprüft ${new Date(gameReportsCheckedAt).toLocaleDateString('de-CH', {timeZone: 'Europe/Zurich'})}</p></details>`;
 }
 function reportFacts(g) {
   const r = verifiedReport(g);

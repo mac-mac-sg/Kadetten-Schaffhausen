@@ -35,7 +35,7 @@ const $ = s => document.querySelector(s),
   league = g =>
     g.league === 'QHL' ? 'Quickline Handball League' : g.league === 'EHL' ? 'EHF European League' : g.league;
 function footer() {
-  const [page = 'home', id] = (location.hash.slice(1) || 'home').split('/');
+  const [page = 'home', id, tab = 'overview'] = (location.hash.slice(1) || 'home').split('/');
   const game = page === 'match' ? games.find(g => g.id === id) : null;
   const key =
     page === 'match' || (page === 'season' && id === 'games')
@@ -52,7 +52,9 @@ function footer() {
       : page === 'season' && id === 'squad'
         ? base + '1-mannschaft/'
         : base);
-  return `<footer>Privater Designentwurf · kein offizieller Vereinsauftritt<br>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger<br>${ext(url, 'Quelle: Kadetten Schaffhausen', '')}<br><span class="footer-updated">${updateLabel(key)}</span></footer>`;
+  const hasDirectSource = page === 'news' || (page === 'match' && (tab === 'overview' || verifiedReport(game)));
+  const historySource = page === 'match' && tab === 'stats' && game?.league === 'QHL' && !verifiedReport(game);
+  return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Unabhängige Fan-App · kein offizieller Vereinsauftritt.</p>${hasDirectSource ? '' : `<p>${ext(url, 'Kadetten Schaffhausen', '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger</p></details></footer>`;
 }
 function badge(name) {
   const logo = clubLogos[name];
