@@ -8,6 +8,7 @@ function validSnapshot(d) {
 }
 function setCurrentData(d) {
   games = d.games;
+  if (typeof applyFinishedMatch === 'function') applyFinishedMatch(liveState?.finished);
   tables = d.tables;
   teamRecords = d.teamRecords || {};
   stories = d.stories;

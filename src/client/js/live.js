@@ -16,7 +16,7 @@ function showLiveMatch() {
   const slot = document.getElementById('live-match');
   if (!slot) return;
   const {game: g, live} = homeFixture();
-  if (!g) {
+  if (!g || (slot.dataset.liveOnly === 'true' && !live)) {
     slot.hidden = true;
     slot.innerHTML = '';
     return;
@@ -70,9 +70,10 @@ async function checkLiveMatch() {
     const d = await r.json();
     if (!r.ok || !d.ok) throw Error('Live source unavailable');
     if (!d.match && lastLiveMatch && d.sources?.[lastLiveMatch.league === 'QHL' ? 'SHV' : 'EHF']?.ok === false) throw Error('Live source unavailable');
+    applyFinishedMatch(d.finished);
     liveState = d;
     liveRequestFailed = false;
-    if (d.match) { lastLiveMatch = d.match; lastLiveAt = d.checkedAt; lastLiveDate = swissToday(); }
+    if (d.match || d.finished) { lastLiveMatch = d.match || d.finished; lastLiveAt = d.checkedAt; lastLiveDate = swissToday(); }
   } catch {
     liveRequestFailed = true;
   } finally {
@@ -97,10 +98,10 @@ function liveMatchPage(g, tab='overview') {
 }
 function liveMatchContent(g, tab) {
  const live=liveForFixture(g), active=!!freshLive()&&sameFixture(live,freshLive()), details=live?.details;
- const status=liveRequestFailed||!navigator.onLine?'Verbindung unterbrochen · letzter bestätigter Stand':active?'Jetzt live':'Spiel wird derzeit nicht als live gemeldet';
+ const status=liveRequestFailed||!navigator.onLine?'Verbindung unterbrochen · letzter bestätigter Stand':live?.status==='finished'?'Beendet · Endresultat':active?'Jetzt live':'Spiel wird derzeit nicht als live gemeldet';
  if(!live)return `<div class="content narrow"><h1>Live-Spiel</h1><p role="status">${navigator.onLine?'Live-Daten werden geladen …':'Live-Daten sind offline nicht verfügbar.'}</p></div>`;
  const updated=lastLiveAt?new Date(lastLiveAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',second:'2-digit'}):null;
- return `<header class="live-match-header"><p class="eyebrow">${liveEscape(live.league)} · Live-Spiel</p><p class="live-status ${active?'is-current':''}" role="status" aria-atomic="true">${status}<span class="live-sr-context"> · ${liveEscape(live.home)} ${live.score?live.score.join(' : '):'– : –'}</span></p><div class="matchup"><div class="matchup-team">${badge(live.home)}<span>${liveEscape(live.home)}</span></div><strong>${live.score?live.score.join(' : '):'– : –'}</strong><div class="matchup-team">${badge(live.away)}<span>${liveEscape(live.away)}</span></div></div><p>${[live.phase,live.clock].filter(Boolean).map(liveEscape).join(' · ')}</p>${live.half&&/2\.|zweite|2nd/i.test(live.phase||'')?`<small>Halbzeit ${live.half.join(' : ')}</small>`:''}<small class="live-checked">${updated?'Stand '+updated+' Uhr · ':''}Aktualisierung alle 30 Sekunden</small></header><nav class="segments match-tabs" aria-label="Live-Spielbereich">${[['overview','Spielverlauf'],['stats','Statistiken']].map(([id,label])=>`<a href="#match/${encodeURIComponent(g.id)}/${id}" class="${tab===id?'selected':''}">${label}</a>`).join('')}</nav><div class="content narrow live-match-body">${details?.ok===false?`<p class="notice">${details.updatedAt?'Statistiken momentan nicht aktualisierbar · Stand '+new Date(details.updatedAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich'})+' Uhr.':'Weitere Live-Statistiken sind momentan nicht verfügbar.'}</p>`:''}${tab==='stats'?livePlayerStats(live):liveEventFeed(live)}<div class="actions">${ext(live.url,'Offiziellen Liveticker öffnen','text-link')}</div></div>`;
+ return `<header class="live-match-header"><p class="eyebrow">${liveEscape(live.league)} · ${live.status==='finished'?'Spiel beendet':'Live-Spiel'}</p><p class="live-status ${active?'is-current':''}" role="status" aria-atomic="true">${status}<span class="live-sr-context"> · ${liveEscape(live.home)} ${live.score?live.score.join(' : '):'– : –'}</span></p><div class="matchup"><div class="matchup-team">${badge(live.home)}<span>${liveEscape(live.home)}</span></div><strong>${live.score?live.score.join(' : '):'– : –'}</strong><div class="matchup-team">${badge(live.away)}<span>${liveEscape(live.away)}</span></div></div><p>${[live.phase,live.clock].filter(Boolean).map(liveEscape).join(' · ')}</p>${live.half&&(live.status==='finished'||/2\.|zweite|2nd/i.test(live.phase||''))?`<small>Halbzeit ${live.half.join(' : ')}</small>`:''}<small class="live-checked">${updated?'Stand '+updated+' Uhr · ':''}Aktualisierung alle 30 Sekunden</small></header><nav class="segments match-tabs" aria-label="Live-Spielbereich">${[['overview','Spielverlauf'],['stats','Statistiken']].map(([id,label])=>`<a href="#match/${encodeURIComponent(g.id)}/${id}" class="${tab===id?'selected':''}">${label}</a>`).join('')}</nav><div class="content narrow live-match-body">${details?.ok===false?`<p class="notice">${details.updatedAt?'Statistiken momentan nicht aktualisierbar · Stand '+new Date(details.updatedAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich'})+' Uhr.':'Weitere Live-Statistiken sind momentan nicht verfügbar.'}</p>`:''}${tab==='stats'?livePlayerStats(live):liveEventFeed(live)}<div class="actions">${ext(live.url,'Offiziellen Liveticker öffnen','text-link')}</div></div>`;
 }
 function liveEventFeed(live) {
  const events=live.details?.events;
@@ -139,4 +140,10 @@ function refreshLiveViews() {
   const wrapper=document.createElement('div');wrapper.innerHTML=card(g,el.classList.contains('current-game'));
   if(el.outerHTML!==wrapper.firstElementChild.outerHTML)el.replaceWith(wrapper.firstElementChild);
  });
+ if(page==='season'&&id==='games')showLiveMatch();
+}
+
+function applyFinishedMatch(finished) {
+ if(!finished || finished.status!=='finished' || finished.date!==swissToday() || !Array.isArray(finished.score) || finished.score.length!==2 || !finished.score.every(v=>Number.isInteger(v)&&v>=0))return;
+ games=games.map(g=>g.date===finished.date&&sameFixture(g,finished)?{...g,score:finished.score,half:finished.half||g.half}:g);
 }

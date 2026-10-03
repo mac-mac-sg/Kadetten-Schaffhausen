@@ -1823,3 +1823,9 @@ footer .source-details summary { margin-inline: auto; }
 
 .live-match-header .matchup-team > span { overflow-wrap: anywhere; line-height: 1.4; }
 .live-sr-context { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Shared matchday card within the fixture list and calendar. */
+.game-card.live-game-card { padding: 0; border: 0; background: transparent; }
+.games-matchday { margin: 12px 0 24px; padding: 0; background: transparent; }
+.games-matchday .live-match { position: relative; inset: auto; width: 100%; box-sizing: border-box; max-width: none; }
+.calendar-season:has(.games-matchday .live-match:not([hidden])) { grid-template-rows: auto auto minmax(0, 1fr); }
