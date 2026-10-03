@@ -1,6 +1,6 @@
 # Vereinsseite
 
-`#club` wird über «Unser Verein» neben «Neues aus dem Verein» geöffnet. Die Hauptnavigation bleibt bei vier Laschen. `data/club.js` enthält redaktionelle Stationen und Titeljahre; `views-club.js` rendert Einstieg, Trophäenschrank und Zeitreise, `club.css` gestaltet sie.
+`#club` wird über das kleine Wappen oben rechts geöffnet. Die Hauptnavigation bleibt bei vier Laschen. `data/club.js` enthält redaktionelle Stationen und Titeljahre; `views-club.js` rendert Einstieg, Trophäenschrank und Zeitreise, `club.css` gestaltet sie.
 
 ## Redaktion und Quellen
 
