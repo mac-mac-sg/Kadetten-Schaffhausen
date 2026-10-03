@@ -1329,56 +1329,96 @@ body.calendar-mode {
   font-variant-numeric: tabular-nums;
 }
 
+/* Redaktionelle Artikel: eine Schriftsetzung für alle Original-Layouts. */
 .article-fulltext {
+  font-family: var(--font-text);
   font-size: 18px;
-  line-height: 1.7;
+  line-height: 1.75;
+  color: var(--text);
   overflow-wrap: anywhere;
+  text-align: left;
 }
-.article-fulltext p {
-  margin: 0 0 1.25em;
+.article-fulltext p { margin: 0 0 1.25em; }
+.article-fulltext .article-byline { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.article-fulltext .article-lead { font-weight: 500; color: var(--cream); }
+.article-fulltext :is(h2,h3,h4,h5) {
+  font-family: var(--font-text);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+  margin: 1.6em 0 .65em;
+  text-wrap: balance;
 }
-.article-fulltext h2,
-.article-fulltext h3,
-.article-fulltext h4 {
-  margin: 1.4em 0 0.6em;
-}
+.article-fulltext h2 { font-size: clamp(23px,3vw,30px); }
+.article-fulltext h3 { font-size: clamp(21px,2.5vw,26px); }
+.article-fulltext :is(h4,h5) { font-size: 19px; }
+.article-fulltext :is(ul,ol) { padding-left: 1.4em; margin: 0 0 1.25em; }
+.article-fulltext li + li { margin-top: .4em; }
+.article-fulltext :is(strong,b) { font-weight: 700; }
 .article-fulltext a {
   text-decoration: underline;
   text-underline-offset: 3px;
   color: var(--accent-soft);
 }
 .article-fulltext img {
+  display: block;
   max-width: 100%;
+  width: auto;
   height: auto;
-  margin: 20px auto;
-  border-radius: 12px;
+  max-height: 75svh;
+  object-fit: contain;
+  margin: 28px auto;
+  border-radius: 8px;
 }
-.article-fulltext figure {
-  margin: 20px 0;
+.article-fulltext .article-image-logo {
+  width: 72px;
+  height: 80px;
+  object-fit: contain;
+  padding: 8px;
+  background: #f4f1e8;
+  border-radius: 8px;
+  margin: 12px auto;
 }
+.article-fulltext .article-image-banner { max-height: 96px; border-radius: 0; }
+.article-fulltext .article-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px,4vw,32px);
+  padding: 20px 12px;
+  margin: 28px 0;
+  border-block: 1px solid #ffffff20;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.article-logo-row > div { flex: 1; min-width: 0; }
+.article-logo-row p { margin-bottom: 0; }
+.article-fulltext figure { margin: 28px 0; }
+.article-fulltext figure img { margin-bottom: 0; }
 .article-fulltext figcaption {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--muted);
+  margin-top: 10px;
 }
 .article-fulltext blockquote {
-  margin: 24px 0;
-  padding: 0 0 0 20px;
+  margin: 28px 0;
+  padding-left: 20px;
   border-left: 3px solid var(--accent);
+  font-size: 1.05em;
+  line-height: 1.65;
 }
-.article-fulltext .article-loading {
-  font-size: 14px;
-  color: var(--muted);
-}
-.article-fulltext table {
-  display: block;
-  overflow-x: auto;
-  max-width: 100%;
-}
+.article-fulltext cite { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 24px; }
+.article-fulltext .article-loading { font-size: 14px; color: var(--muted); }
+.article-fulltext table { display: block; overflow-x: auto; max-width: 100%; font-size: 14px; }
+.article-fulltext :is(th,td) { padding: 10px 12px; border-bottom: 1px solid #ffffff20; }
+.article-fulltext hr { border: 0; border-top: 1px solid #ffffff20; margin: 32px 0; }
+.article-fulltext .article-gallery { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.article-gallery figure { margin: 0; }
 @media (max-width: 640px) {
-  .article-fulltext {
-    font-size: 16px;
-    line-height: 1.7;
-  }
+  .article-fulltext { font-size: 16px; }
+  .article-fulltext .article-gallery { grid-template-columns: 1fr; }
 }
 
 /* Spieltag: kräftiger Auftritt der Startseiten-Karte, nur am Spieltag */

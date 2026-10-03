@@ -18,6 +18,8 @@ function sanitiseArticle(html, source) {
     allowed = new Set([
       'P',
       'DIV',
+      'SPAN',
+      'H1',
       'H2',
       'H3',
       'H4',
@@ -43,7 +45,8 @@ function sanitiseArticle(html, source) {
       'TH',
       'TD',
       'SUP',
-      'SUB'
+      'SUB',
+      'CITE'
     ]),
     blocked = new Set([
       'SCRIPT',
@@ -64,15 +67,33 @@ function sanitiseArticle(html, source) {
       'VIDEO',
       'AUDIO'
     ]);
+  const imageInfo = node => {
+    const width = Number(node.getAttribute('width')), height = Number(node.getAttribute('height'));
+    const src = node.getAttribute('src') || node.getAttribute('data-src') || node.getAttribute('data-lazy-src') || '';
+    const logo = /(?:logo|wappen|crest|badge)/i.test(src + ' ' + (node.getAttribute('alt') || '')) ||
+      (/\.png(?:[?#]|$)/i.test(src) && width > 0 && height > 0 && Math.max(width, height) <= 1400 && width / height >= 0.5 && width / height <= 2);
+    return {src, width, height, kind: logo ? 'logo' : width > 0 && height > 0 && width / height > 3 ? 'banner' : 'photo'};
+  };
+  const firstText = doc.querySelector('.x-text');
   const copy = (node, parent) => {
     if (node.nodeType === 3) {
       parent.append(document.createTextNode(node.textContent));
       return;
     }
-    if (node.nodeType !== 1 || blocked.has(node.tagName)) return;
+    if (node.nodeType !== 1 || blocked.has(node.tagName) || node.getAttribute('aria-hidden') === 'true') return;
     let target = parent;
     if (allowed.has(node.tagName)) {
-      target = document.createElement(node.tagName.toLowerCase());
+      let tag = node.tagName === 'H1' ? 'h2' : node.tagName.toLowerCase();
+      if (node.classList.contains('x-quote-text')) tag = 'blockquote';
+      else if (node.classList.contains('x-quote-cite-text')) tag = 'cite';
+      else if (node.tagName === 'DIV' && node.classList.contains('x-text') && !node.querySelector('p,div,h1,h2,h3,h4,h5,ul,ol,figure,table,img')) tag = 'p';
+      target = document.createElement(tag);
+      if (node === firstText && tag === 'p' && node.textContent.trim().length < 80) target.className = 'article-byline';
+      if (node.classList.contains('x-row-inner')) {
+        const images = [...node.querySelectorAll('img')];
+        if (images.length > 1 && images.length <= 4 && images.every(img => imageInfo(img).kind === 'logo')) target.className = 'article-logo-row';
+      }
+      if (node.classList.contains('wp-block-gallery')) target.className = 'article-gallery';
       if (node.tagName === 'A') {
         try {
           const url = new URL(node.getAttribute('href') || '', source);
@@ -85,12 +106,20 @@ function sanitiseArticle(html, source) {
       }
       if (node.tagName === 'IMG') {
         try {
-          const url = new URL(node.getAttribute('src') || '', source);
+          const info = imageInfo(node);
+          if (!info.src.trim()) return;
+          const url = new URL(info.src, source);
           if (url.protocol !== 'https:') return;
+          target.className = 'article-image article-image-' + info.kind;
+          if (info.width > 0 && info.height > 0 && info.width <= 20000 && info.height <= 20000) {
+            target.setAttribute('width', String(info.width));
+            target.setAttribute('height', String(info.height));
+          }
           target.src = url.href;
-          target.alt = node.getAttribute('alt') || '';
-          target.loading = 'lazy';
-          target.decoding = 'async';
+          const alt = (node.getAttribute('alt') || '').trim();
+          target.alt = alt && !/^(image|img)$/i.test(alt) ? alt : info.kind === 'logo' ? 'Vereinslogo aus dem Originalartikel' : 'Bild aus dem Originalartikel';
+          target.setAttribute('loading', 'lazy');
+          target.setAttribute('decoding', 'async');
         } catch {
           return;
         }
@@ -100,6 +129,12 @@ function sanitiseArticle(html, source) {
     for (const child of node.childNodes) copy(child, target);
   };
   for (const node of doc.body.childNodes) copy(node, out);
+  // Leere Layout-Hüllen und reine Abstandshalter aus dem Seitenersteller entfernen.
+  for (const el of [...out.querySelectorAll('div,p')].reverse())
+    if (!el.textContent.trim() && !el.querySelector('img,hr,table')) el.remove();
+  const lead = [...out.querySelectorAll('p')].find(p =>
+    !p.classList.contains('article-byline') && !p.closest('figure,blockquote,.article-logo-row') && p.textContent.trim().length > 100);
+  lead?.classList.add('article-lead');
   return out.innerHTML;
 }
 async function loadFullArticle() {

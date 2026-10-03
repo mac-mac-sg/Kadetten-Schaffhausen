@@ -17,6 +17,7 @@
     "jose": "^6.2.12"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "linkedom": "^0.18.13"
   }
 }
