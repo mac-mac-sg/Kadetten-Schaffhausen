@@ -93,7 +93,7 @@ test('Vereinsseite: alle Stationen, nachvollziehbare Quellen und gültige Sprung
   assert.match(out, /Finalist/);
   assert.match(out, /noch nicht die des Handballteams/);
   assert.match(out, /Quellen & Bildnachweise/);
-  assert.match(view('home()'), /href="#club"/);
+  assert.match(html, /href="#club" class="club-entry" aria-label="Unser Verein: Geschichte und Erfolge"/);
 });
 
 test('Trophäenschrank: Kategorien, Jahresauswahl und historische Verknüpfungen', () => {

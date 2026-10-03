@@ -54,4 +54,4 @@ scripts/dev.mjs stellt einen lokalen, schreibgeschützten Adapter bereit. Identi
 
 ## Vereinsgeschichte
 
-Der Einstieg neben dem News-Titel führt zu `#club`. Redaktion, Archivbilder, Trophäenschrank und Zeitreise sind in [Vereinsseite](club-history.md) dokumentiert. Dieser historische Inhalt wird redaktionell gepflegt; Live- und News-Aktualisierung laufen unabhängig davon weiter.
+Das kleine Wappen oben rechts führt zu `#club`. Redaktion, Archivbilder, Trophäenschrank und Zeitreise sind in [Vereinsseite](club-history.md) dokumentiert. Dieser historische Inhalt wird redaktionell gepflegt; Live- und News-Aktualisierung laufen unabhängig davon weiter.
