@@ -179,25 +179,30 @@ function verifiedReport(g) {
   const r = gameReports[g.id] || Object.values(gameReports).find(r => String(r.gameId) === String(g.id));
   return r && g.score && r.score.every((v, i) => v === g.score[i]) ? r : null;
 }
+const reportAttempts = new Map();
 async function loadGameReports() {
-  const [page, id] = location.hash.slice(1).split('/'),
-    g = games.find(x => x.id === id);
-  if (page !== 'match' || !g?.score || g.league !== 'QHL' || gameReportsLoaded) return;
+  const [page, id] = location.hash.slice(1).split('/'), g = games.find(x => x.id === id);
+  if (page !== 'match' || !g?.score || g.league !== 'QHL') return;
+  // One request per fixture per session; failures may retry after one minute.
+  if (Date.now() - (reportAttempts.get(id) || 0) < 60000 || gameReports[id]?.events) return;
+  reportAttempts.set(id, Date.now());
+  if (!gameReportsRequest) gameReportsRequest = fetch('assets/game-reports.json').then(async r => {
+    if (!r.ok) throw Error();
+    const d = await r.json();
+    if (!d.reports) throw Error();
+    gameReports = {...d.reports, ...gameReports}; gameReportsCheckedAt = d.checkedAt; gameReportsLoaded = true;
+  }).catch(() => {gameReportsRequest = null;});
+  await gameReportsRequest;
   try {
-    if (!gameReportsRequest)
-      gameReportsRequest = fetch('assets/game-reports.json').then(async r => {
-        if (!r.ok) throw Error();
-        const d = await r.json();
-        if (!d.reports) throw Error();
-        gameReports = d.reports;
-        gameReportsCheckedAt = d.checkedAt;
-        gameReportsLoaded = true;
-      });
-    await gameReportsRequest;
-    if (location.hash.startsWith('#match/' + id + '/')) render();
-  } catch {
-    gameReportsRequest = null;
-  }
+    const response = await apiFetch('/api/reports/' + encodeURIComponent(id));
+    if (!response.ok) throw Error();
+    const {report:r} = await response.json();
+    const normalized=n=>String(n).replace(/^TSV /,'');
+    if (!r || !Array.isArray(r.score) || r.score.length!==2 || !r.score.every((v,i)=>Number.isInteger(v)&&v===g.score[i]) || r.teams?.length!==2 || normalized(r.teams[0].name)!==normalized(g.home) || normalized(r.teams[1].name)!==normalized(g.away)) throw Error();
+    const previous=verifiedReport(g);
+    gameReports[id] = {...previous, ...r, spectators:r.spectators??previous?.spectators??null, referees:r.referees?.length?r.referees:previous?.referees||[]};
+  } catch { /* Keep the verified report available if the source fails. */ }
+  if (location.hash.startsWith('#match/' + id + '/')) render();
 }
 function reportPlayer(p) {
   const nr = Object.keys(updateState?.playerSeason?.players || {}).find(
@@ -207,7 +212,7 @@ function reportPlayer(p) {
   return {name: local?.[1] || p.name, number: local?.[0]};
 }
 function reportSource(r) {
-  return `<details class="source-details"><summary>Quelle & Datenstand</summary><p>${ext(r.source, 'Offizieller SHV-Spielbericht', '')} · geprüft ${new Date(gameReportsCheckedAt).toLocaleDateString('de-CH', {timeZone: 'Europe/Zurich'})}</p></details>`;
+  return `<details class="source-details"><summary>Quelle & Datenstand</summary><p>${ext(r.source, 'Offizieller SHV-Spielbericht', '')} · geprüft ${new Date(r.checkedAt || gameReportsCheckedAt).toLocaleDateString('de-CH', {timeZone: 'Europe/Zurich'})}</p></details>`;
 }
 function reportFacts(g) {
   const r = verifiedReport(g);
@@ -223,18 +228,16 @@ function reportRoster(g) {
         `<section class="report-roster"><h3>${liveEscape(t.name)}</h3>${t.players
           .map(p => {
             const person = reportPlayer(p);
-            return `<div class="report-player"><span>${person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name)}<small>${p.keeper ? 'Torhüter' : 'Feldspieler'}${person.number ? ' · Nr. ' + person.number : ''}</small></span><strong>${p.goals}<small>Tore</small></strong></div>`;
+            return `<div class="report-player"><span>${person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name)}<small>${p.keeper ? 'Torhüter' : 'Feldspieler'}${person.number ? ' · Nr. ' + person.number : ''}</small></span><strong>${p.goals ?? '–'}<small>Tore</small></strong></div>`;
           })
           .join('')}</section>`
     )
     .join('')}${reportSource(r)}`;
 }
 function reportStats(g) {
-  const r = verifiedReport(g),
-    [h, a] = r.teams;
+  const r = verifiedReport(g);
   const percent = v => (Number.isFinite(v) ? v.toLocaleString('de-CH', {maximumFractionDigits: 1}) + ' %' : '–');
-  const pair = (label, key, format = v => v ?? '–') => metric(label, format(h[key]), format(a[key]));
-  return `<h2>Das Spiel in Zahlen</h2><div class="panel">${statTeams(g)}${metric('Tore', ...r.score)}${r.half.every(Number.isInteger) ? metric('1. Halbzeit', ...r.half) + metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1]) : ''}${pair('Würfe', 'shots')}${pair('Wurfquote', 'throwPercentage', percent)}${pair('Paraden', 'saves')}${pair('Paradenquote', 'savePercentage', percent)}${pair('Ballverluste', 'turnovers')}${pair('2-Minuten-Strafen', 'twoMinutes')}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet. Strafen umfassen auch Teamoffizielle.</p>${r.teams
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}${r.teams
     .map(
       t =>
         `<section class="report-roster"><h3>${liveEscape(t.name)}</h3><p class="muted">Tore/Würfe · Siebenmeter-Tore/Versuche · 2-Minuten-Strafen</p><div class="report-table-wrap" tabindex="0" role="region" aria-label="Einzelstatistiken ${liveEscape(t.name)}"><table class="report-table"><thead><tr><th scope="col">Spieler</th><th scope="col">Tore/Würfe</th><th scope="col">Quote</th><th scope="col">7 m</th><th scope="col">2 min</th><th scope="col">Gelb</th><th scope="col">Rot</th></tr></thead><tbody>${t.players
@@ -242,7 +245,7 @@ function reportStats(g) {
           .sort((a, b) => b.goals - a.goals)
           .map(p => {
             const person = reportPlayer(p);
-            return `<tr><th scope="row">${person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name)}</th><td>${p.goals}/${p.shots ?? '–'}</td><td>${p.shots > 0 ? percent((p.goals / p.shots) * 100) : '–'}</td><td>${p.seven ?? '–'}/${p.sevenShots ?? '–'}</td><td>${p.twoMinutes ?? '–'}</td><td>${p.warnings ?? '–'}</td><td>${p.redCards ?? '–'}</td></tr>`;
+            return `<tr><th scope="row">${person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name)}</th><td>${p.goals ?? '–'}/${p.shots ?? '–'}</td><td>${p.goals !== null && p.shots > 0 ? percent((p.goals / p.shots) * 100) : '–'}</td><td>${p.seven ?? '–'}/${p.sevenShots ?? '–'}</td><td>${p.twoMinutes ?? '–'}</td><td>${p.warnings ?? '–'}</td><td>${p.redCards ?? '–'}</td></tr>`;
           })
           .join('')}</tbody></table></div><h4>Zwischen den Pfosten</h4><div class="facts">${t.players
           .filter(p => p.keeper)
@@ -255,3 +258,34 @@ function reportStats(g) {
     .join('')}${reportSource(r)}`;
 }
 
+
+function reportComparison(g,r) {
+ const [h,a]=r.teams, value=v=>v??'–', percentage=v=>v===null||v===undefined?'–':v+' %';
+ const total=(t,key)=>t.players.length&&t.players.every(p=>Number.isInteger(p[key]))?t.players.reduce((n,p)=>n+p[key],0):null;
+ const seven=t=>t.seven??total(t,'seven'), sevenShots=t=>t.sevenShots??total(t,'sevenShots');
+ const rows=[
+  ['Tore',...r.score,...r.score],
+  ['Wurfeffektivität',h.throwPercentage,a.throwPercentage,`${value(r.score[0])}/${value(h.shots)} · ${percentage(h.throwPercentage)}`,`${value(r.score[1])}/${value(a.shots)} · ${percentage(a.throwPercentage)}`],
+  ['Siebenmeter',seven(h),seven(a),`${value(seven(h))}/${value(sevenShots(h))}`,`${value(seven(a))}/${value(sevenShots(a))}`],
+  ['Paraden',h.saves,a.saves,`${value(h.saves)} · ${percentage(h.savePercentage)}`,`${value(a.saves)} · ${percentage(a.savePercentage)}`],
+  ['2-Minuten-Strafen',h.twoMinutes,a.twoMinutes,value(h.twoMinutes),value(a.twoMinutes)],
+  ['Gelbe Karten',h.warnings??total(h,'warnings'),a.warnings??total(a,'warnings')],
+  ['Technische Fehler',h.turnovers,a.turnovers,value(h.turnovers),value(a.turnovers)],
+  ['Auszeiten',h.timeouts,a.timeouts,value(h.timeouts),value(a.timeouts)]
+ ];
+ const markup=rows.map(([label,x,y,l=value(x),rr=value(y)])=>{
+  if(x===undefined&&y===undefined)return '';
+  const valid=Number.isFinite(x)&&Number.isFinite(y), scale=valid?Math.max(x,y,1):1;
+  return `<div class="report-comparison-row"><div><strong>${liveEscape(l)}</strong><span>${label}</span><strong>${liveEscape(rr)}</strong></div><div class="report-bars" aria-hidden="true"><span class="${h.id===41473?'is-kadetten':''}"><i style="width:${valid?x/scale*100:0}%"></i></span><span class="${a.id===41473?'is-kadetten':''}"><i style="width:${valid?y/scale*100:0}%"></i></span></div></div>`;
+ }).join('');
+ return `<section class="report-comparison" aria-label="Teamvergleich">${statTeams(g)}${markup}</section><p class="muted">Paradenquote gemäss SHV: Anteil gehaltener Würfe aufs Tor. Strafen umfassen auch Teamoffizielle. –: Wert nicht verfügbar.</p>`;
+}
+function reportHistory(g) {
+ const r=verifiedReport(g);
+ if(!r?.events)return '';
+ // Use confirmed score changes only; no interpolated events or invented goals.
+ const scores=r.events.filter(e=>e.score).sort((a,b)=>a.seconds-b.seconds||a.id-b.id);
+ const maximum=Math.max(...r.score,1), end=Math.max(3600,...scores.map(e=>e.seconds));
+ const path=side=>scores.map((e,i)=>`${i?'H':'M'}${(e.seconds/end*300+25).toFixed(1)}${i?'V':' '+(125-e.score[side]/maximum*100).toFixed(1)}${i?(125-e.score[side]/maximum*100).toFixed(1):''}`).join(' ');
+ return `<section class="report-history"><h2>Torverlauf</h2>${scores.length?`<div class="report-score-legend"><span class="${r.teams[0].id===41473?'is-kadetten':''}">${liveEscape(g.home)}</span><span class="${r.teams[1].id===41473?'is-kadetten':''}">${liveEscape(g.away)}</span></div><svg class="report-score-chart" viewBox="0 0 350 155" role="img" aria-label="Torverlauf: ${liveEscape(g.home)} ${r.score[0]}, ${liveEscape(g.away)} ${r.score[1]}. Einzelereignisse folgen unter der Grafik."><path class="chart-grid" d="M25 25H325 M25 75H325 M25 125H325"/><text x="4" y="30">${maximum}</text><text x="12" y="129">0</text><path class="${r.teams[0].id===41473?'chart-kadetten':'chart-opponent'}" d="${path(0)}"/><path class="${r.teams[1].id===41473?'chart-kadetten':'chart-opponent'}" d="${path(1)}"/><text x="25" y="149">0′</text><text x="310" y="149">${Math.round(end/60)}′</text></svg>`:''}${liveEventFeed({home:g.home,away:g.away,details:{events:r.events}})}</section>`;
+}

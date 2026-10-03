@@ -111,3 +111,62 @@ async function getNationalLiveDetails(game) {
   return previous?{...previous,ok:false}:{ok:false,updatedAt:null,events:null,players:null};
  }
 }
+
+
+// Archived reports use the final SHV feed, independent of the matchday clock.
+const reportQuery = liveStatsQuery.replace('totalSuspension useReducedResultDisplay', 'totalSuspension totalSaves totalShotsGK useReducedResultDisplay');
+const reportTeamQuery = 'query($gameId:Int){gameTeamStats(gameId:$gameId){gameId teamId turnovers totalShots totalScore totalSaves throwPercentage savePercentage isHome}}';
+const reportId = id => ({staefa:508373,stgallen:508367})[id] || (/^[1-9][0-9]{0,8}$/.test(String(id)) ? Number(id) : null);
+const reportNumber = v => typeof v === 'string' && /^\d+$/.test(v) ? nonnegative(Number(v)) : nonnegative(v);
+export function parseArchivedReport(data, game) {
+ const match = parseFinishedMatch(game);
+ if (!match || game.leagueShortName !== 'QHL') throw Error('Not a completed Kadetten QHL game');
+ const details = parseLiveDetails(data, game);
+ if (!Array.isArray(data.gameTeamStats) || data.gameTeamStats.length !== 2) throw Error('Missing team statistics');
+ const total = (list,key) => list.length && list.every(p=>nonnegative(p[key])!==null) ? list.reduce((n,p)=>n+p[key],0) : null;
+ const teams = [game.homeTeamId,game.awayTeamId].map((id,i) => {
+  const t=data.gameTeamStats.find(t=>t.teamId===id);
+  if (!t || t.gameId!==game.gameId || t.isHome!==(i===0) || t.totalScore!==match.score[i]) throw Error('Team statistics mismatch');
+  const all=data.gamePlayerStats.filter(p=>p.teamId===id && p.useReducedResultDisplay!==true);
+  if (!all.length) throw Error('Missing team roster');
+  const players=details.players.filter(p=>p.home===(i===0)).map(p=>{
+   const raw=all.find(x=>x.playerId===p.id),saves=reportNumber(raw.totalSaves),keeperShots=reportNumber(raw.totalShotsGK);
+   return {id:p.id,name:p.name,keeper:saves!==null||keeperShots!==null,goals:p.goals,shots:p.shots,seven:p.seven,sevenShots:p.sevenShots,warnings:p.yellow,twoMinutes:p.twoMinutes,redCards:p.red,saves,keeperShots,sevenSaves:null};
+  });
+  if (!players.length) throw Error('Missing public player statistics');
+  return {id,name:i===0?match.home:match.away,players,shots:nonnegative(t.totalShots),saves:nonnegative(t.totalSaves),turnovers:nonnegative(t.turnovers),throwPercentage:nonnegative(t.throwPercentage),savePercentage:nonnegative(t.savePercentage),seven:total(all,'totalScore7m'),sevenShots:total(all,'totalShots7m'),twoMinutes:total(all,'total2Minutes'),warnings:total(all,'totalWarnings'),timeouts:details.events.length?details.events.filter(e=>(i===0?e.homeAction:e.awayAction)==='bTO').length:null};
+ });
+ return {gameId:game.gameId,score:match.score,half:match.half||[null,null],date:match.date,teams,events:details.events,spectators:null,referees:[],source:match.url,checkedAt:new Date().toISOString()};
+}
+async function fetchArchivedReport(id) {
+ const d=await liveQuery(liveDetailQuery,{gameId:id,isLive:false});
+ const game=Array.isArray(d.game)&&d.game.length===1&&d.game[0].gameId===id?d.game[0]:null;
+ if (!parseFinishedMatch(game) || game.leagueShortName!=='QHL') throw Error('Report outside completed Kadetten QHL schedule');
+ const [details,teams]=await Promise.all([liveQuery(reportQuery,{gameId:id,isLive:false}),liveQuery(reportTeamQuery,{gameId:id})]);
+ return parseArchivedReport({...details,...teams},game);
+}
+export async function getArchivedReport(id,bucket) {
+ const gameId=reportId(id);if (!gameId) throw Error('Invalid report ID');
+ const stored=await bucket.get('kadetten/reports/'+gameId+'.json');
+ if (stored) return {ok:true,stored:true,report:await stored.json()};
+ // Public reads are read-only. Only the authorized refresh stores reports.
+ return {ok:true,stored:false,report:await fetchArchivedReport(gameId)};
+}
+export async function archiveCompletedReports(bucket) {
+ try {
+  const data=await liveQuery(liveGamesQuery,{teamId:41473});
+  if (!Array.isArray(data.games)) throw Error('Missing report schedule');
+  const completed=data.games.filter(g=>g.leagueShortName==='QHL'&&parseFinishedMatch({...g,gameId:g.objectId})).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)));
+  const results=await Promise.all(completed.map(async(g,i)=>{
+   const key='kadetten/reports/'+g.objectId+'.json';
+   try {
+    const prior=await bucket.get(key);
+    // Refresh the latest final report for corrections; older archives remain durable.
+    if(prior&&i>0)return {id:g.objectId,ok:true,stored:true};
+    const report=await fetchArchivedReport(g.objectId);
+    await bucket.put(key,JSON.stringify(report));return {id:g.objectId,ok:true,stored:true};
+   } catch { return {id:g.objectId,ok:false}; }
+  }));
+  return {ok:results.every(r=>r.ok),reports:results};
+ } catch {return {ok:false,reports:[]};}
+}

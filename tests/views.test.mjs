@@ -151,3 +151,12 @@ test('Live fixture uses the shared matchday ticker and confirmed completion upda
  assert.match(run('card(games[0])'),/45 : 34/);assert.match(run('card(games[0])'),/Rückblick/);
  run('games=beforeGames;liveState=null;liveRequestFailed=false');
 });
+
+test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne fehlende Werte als Null zu deuten',()=>{
+ run(`globalThis.reportFixture=games.find(g=>g.id==='stgallen'); gameReports.stgallen={gameId:508367,score:reportFixture.score,half:[12,16],checkedAt:'2026-10-04T00:00:00Z',spectators:null,referees:[],source:'https://www.handball.ch/de/matchcenter/spiele/508367',teams:[{id:41571,name:reportFixture.home,shots:48,saves:6,turnovers:9,throwPercentage:52,savePercentage:17,twoMinutes:2,warnings:0,timeouts:3,players:[{id:1,name:'A & B',keeper:false,goals:null,shots:4,seven:0,sevenShots:0,twoMinutes:0,warnings:0,redCards:0}]},{id:41473,name:reportFixture.away,shots:40,saves:14,turnovers:13,throwPercentage:78,savePercentage:36,twoMinutes:3,warnings:0,timeouts:2,players:[{id:2,name:'C',keeper:false,goals:31,shots:40,seven:5,sevenShots:7,twoMinutes:3,warnings:0,redCards:0}]}],events:[{id:1,seconds:90,time:'01:30',score:[1,0],action:'Tor',homePlayer:'A & B'}]};`);
+ try{
+  const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/–\/4<\/td><td>–/);
+  const history=view('reportHistory(reportFixture)');assert.match(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
+  assert.match(view("matchOverview(reportFixture)"),/Torverlauf/);
+ }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
+});
