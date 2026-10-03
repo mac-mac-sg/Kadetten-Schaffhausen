@@ -1,5 +1,5 @@
 /* Hash-Routing, Seitenaufbau und Ansichten-Setup. */
-let viewObserver;
+let viewObserver, newsRegionObserver;
 function newsDotWindow(index, total) {
   const count = Math.min(5, total),
     start = Math.max(0, Math.min(index - (count - 2), total - count));
@@ -22,6 +22,7 @@ function updateNewsDots(index) {
 }
 function setupViews() {
   viewObserver?.disconnect();
+  newsRegionObserver?.disconnect();
   document.body.classList.toggle('player-mode', location.hash.startsWith('#player/'));
   document.querySelectorAll('[data-player-competition]').forEach(
     b =>
@@ -70,6 +71,17 @@ function setupViews() {
       {threshold: 0.45}
     );
     document.querySelectorAll('.story-screen,.profile-slide').forEach(e => viewObserver.observe(e));
+  }
+  const newsFeed = document.querySelector('.story-feed');
+  const newsDots = document.querySelector('.story-dots');
+  if (newsFeed && newsDots) {
+    if (typeof IntersectionObserver !== 'undefined') {
+      newsRegionObserver = new IntersectionObserver(
+        entries => { newsDots.hidden = !entries[0].isIntersecting; },
+        {rootMargin: '-35% 0px -45% 0px', threshold: 0}
+      );
+      newsRegionObserver.observe(newsFeed);
+    } else newsDots.hidden = false;
   }
   $('.share')?.addEventListener('click', async e => {
     try {
