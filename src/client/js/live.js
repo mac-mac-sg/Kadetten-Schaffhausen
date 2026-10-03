@@ -1,4 +1,16 @@
 /* Live-Karte auf der Startseite und Live-Abfrage. */
+let matchdayIntroDay = null;
+function playMatchdayIntro(slot, day) {
+  if (matchdayIntroDay === day) return;
+  matchdayIntroDay = day;
+  try {
+    if (localStorage.getItem('kadetten-matchday-intro') === day) return;
+    localStorage.setItem('kadetten-matchday-intro', day);
+  } catch { /* Ohne Speicher höchstens einmal pro geöffneter App. */ }
+  if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  slot.classList.add('is-matchday-intro');
+  setTimeout(() => slot.classList.remove('is-matchday-intro'), 1300);
+}
 function showLiveMatch() {
   const slot = document.getElementById('live-match');
   if (!slot) return;
@@ -43,6 +55,7 @@ function showLiveMatch() {
   slot.classList.toggle('matchday-over', ended && result?.state !== 'win');
   if (slot.innerHTML !== html) slot.innerHTML = html;
   slot.hidden = false;
+  if (today) playMatchdayIntro(slot, g.date);
 }
 
 async function checkLiveMatch() {

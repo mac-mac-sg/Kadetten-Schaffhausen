@@ -1696,3 +1696,44 @@ html.snap-news {
 @media (prefers-reduced-motion: reduce) {
   .home-matchday .live-match.is-matchday { animation: none; }
 }
+
+/* Einmal pro Spieltag: eine diagonale Fläche verwandelt Arena in Matchday. */
+.home-matchday .live-match.is-matchday-intro {
+  isolation: isolate;
+  background: #101310b8;
+  animation: arena-matchday-border 1.3s ease both;
+}
+.home-matchday .is-matchday-intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, #d85306 0 42%, #ee6a08 42% 74%, #b84205 74%);
+  animation: arena-matchday-sweep 1.3s cubic-bezier(.2,.7,.2,1) both;
+  pointer-events: none;
+}
+.home-matchday .is-matchday-intro::after { display: none; }
+.home-matchday .is-matchday-intro .live-heading > span {
+  animation: arena-matchday-label 1.3s ease both;
+}
+@keyframes arena-matchday-sweep {
+  0%, 12% { transform: translateX(-115%) skewX(-12deg); opacity: 0; }
+  25% { opacity: 1; }
+  85%, 100% { transform: translateX(0) skewX(0); opacity: 1; }
+}
+@keyframes arena-matchday-border {
+  0%, 12% { border-color: #fff1e54d; }
+  85%, 100% { border-color: #ffb471b3; }
+}
+@keyframes arena-matchday-label {
+  0%, 12% { background: #ff790e1a; color: var(--accent-soft); }
+  85%, 100% { background: var(--cream); color: #6b2a05; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-matchday .live-match.is-matchday-intro {
+    animation: none;
+    background: linear-gradient(115deg, #d85306 0 42%, #ee6a08 42% 74%, #b84205 74%);
+  }
+  .home-matchday .is-matchday-intro::before,
+  .home-matchday .is-matchday-intro .live-heading > span { animation: none; }
+}
