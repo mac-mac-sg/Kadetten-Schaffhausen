@@ -15,7 +15,7 @@ const env={
 // Local preview has no owner identity or update secret. Never trust browser-supplied identity headers.
 const server=createServer(async(req,res)=>{try{
   const url=new URL(req.url,'http://127.0.0.1:3000');
-  const headers=new Headers();for(const [key,value] of Object.entries(req.headers)){if(value&&!key.startsWith('oai-')&&!key.startsWith('x-kadetten-'))headers.set(key,Array.isArray(value)?value.join(','):value)}
+  const headers=new Headers();for(const [key,value] of Object.entries(req.headers)){if(value&&!key.startsWith('oai-')&&!key.startsWith('x-kadetten-')&&!key.startsWith('cf-access-')&&key!=='cookie')headers.set(key,Array.isArray(value)?value.join(','):value)}
   const parts=[];let bytes=0;for await(const part of req){bytes+=part.length;if(bytes>12000000){res.writeHead(413);res.end();return}parts.push(part)}
   const init={method:req.method,headers};if(!['GET','HEAD'].includes(req.method))init.body=Buffer.concat(parts);
   const response=await worker.fetch(new Request(url,init),env);

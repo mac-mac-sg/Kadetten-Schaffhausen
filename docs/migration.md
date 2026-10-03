@@ -6,6 +6,8 @@ Bestehenden Code übernehmen; Oberfläche nach src/client verschieben; portabler
 
 ## Etappe 2: Hosting und Zugang
 
+Implementierung im Migrationsbranch vorbereitet: explizite Authentifizierungsprovider, signaturgeprüfter Cloudflare-Access-Login, unabhängiger Automation-Key und separate Testkonfiguration. Reale Infrastruktur, Anmeldung und Datenimport stehen aus; [Einrichtung](test-host.md).
+
 Zielhost anhand von Worker-Unterstützung, Objektspeicher, Login, Domain, Kosten und Betrieb wählen. Bestehenden Code wiederverwenden. Eigentümer-Login unabhängig von Sites implementieren; öffentliche Lesezugriffe und geschützte Schreibzugriffe testen. Separaten Testhost und Speicher anlegen. Erst danach produktive Secrets hinterlegen. GitHub Pages allein stellt das Backend nicht bereit.
 
 ## Etappe 3: Veröffentlichungen

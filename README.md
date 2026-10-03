@@ -30,9 +30,9 @@ npm run build
 3. Pull Request nach `main` erstellen; GitHub Actions führt Syntaxprüfung, Tests und Build aus.
 4. Änderung überprüfen und übernehmen.
 
-**Aktueller Stand:** GitHub ist die Codebasis; der bisherige Sites-Host bleibt produktiv. CI erstellt einen herunterladbaren Build, veröffentlicht ihn aber noch nicht. Ein Push ändert die öffentliche App nicht. Die bisherige Datenautomation bleibt aktiv. Hosting, automatische Veröffentlichung und Ersatz des Sites-Adminlogins werden als eigene Etappe eingerichtet. Es ist noch kein Branchschutz konfiguriert; grüne CI ist bisher eine Arbeitsregel, keine technische Merge-Sperre.
+**Aktueller Stand:** GitHub ist die Codebasis; der bisherige Sites-Host bleibt produktiv. CI erstellt einen herunterladbaren Build, veröffentlicht ihn aber noch nicht. Ein Push ändert die öffentliche App nicht. Die bisherige Datenautomation bleibt aktiv. Der Ersatz des Sites-Adminlogins und eine separate Cloudflare-Testkonfiguration sind in einem Migrationsbranch vorbereitet; Einrichtung und echte Login-Prüfung auf dem Zielkonto stehen noch aus. Automatische Veröffentlichungen sind eine spätere Etappe. Es ist noch kein Branchschutz konfiguriert; grüne CI ist bisher eine Arbeitsregel, keine technische Merge-Sperre.
 
-Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
+Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [Testhost und Login](docs/test-host.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 
 ## Daten und Rechte
 

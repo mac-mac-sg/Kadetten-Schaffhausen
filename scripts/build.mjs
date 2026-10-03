@@ -1,7 +1,8 @@
 import {cpSync,rmSync} from 'node:fs';
 rmSync('dist',{recursive:true,force:true});cpSync('src/client','dist/client',{recursive:true});
 import fs from 'node:fs';
-fs.mkdirSync('dist/server',{recursive:true});let shv=fs.readFileSync('server/shv.mjs','utf8').replaceAll('export const','const').replaceAll('export function','function').replaceAll('export async function','async function');let update=fs.readFileSync('server/update.mjs','utf8').replace(/import \{parsePlayerSeason,fetchPlayerSeason\}[^\n]+\n/,'').replaceAll('export function','function').replaceAll('export async function','async function');let live=fs.readFileSync('server/live.mjs','utf8').replaceAll('export function','function').replaceAll('export async function','async function');let worker=fs.readFileSync('server/worker.mjs','utf8').replace(/import \{getLiveMatch,getRecentGames,getHeadToHead\}[^\n]+\n/,'').replace(/import seed[^\n]+\n/,'const seed='+fs.readFileSync('server/seed.json','utf8')+';\n').replace(/import \{refresh\}[^\n]+\n/,'');fs.writeFileSync('dist/server/index.js',shv+'\n'+update+'\n'+live+'\n'+worker);
+import {build} from 'esbuild';
+await build({entryPoints:['server/worker.mjs'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022'});
 
 // Content-version the complete shell on every build, including future UI edits.
 const {createHash}=await import('node:crypto');
