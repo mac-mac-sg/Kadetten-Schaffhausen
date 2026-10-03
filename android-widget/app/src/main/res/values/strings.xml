@@ -1,0 +1,11 @@
+<resources>
+    <string name="widget_description">Nächstes Kadetten-Spiel, Matchday und bestätigte Resultate.</string>
+    <string name="refresh">Widget aktualisieren</string>
+    <string name="open_match">Spielseite öffnen</string>
+    <string name="home">Kadetten Schaffhausen</string>
+    <string name="away">Gegner</string>
+    <string name="preview">NÄCHSTES SPIEL</string>
+    <string name="versus">VS</string>
+    <string name="loading">Spiel wird geladen …</string>
+    <string name="state">Antippen öffnet die App</string>
+</resources>
