@@ -55,3 +55,9 @@ scripts/dev.mjs stellt einen lokalen, schreibgeschützten Adapter bereit. Identi
 ## Vereinsgeschichte
 
 Das kleine Wappen oben rechts führt zu `#club`. Redaktion, Archivbilder, Trophäenschrank und Zeitreise sind in [Vereinsseite](club-history.md) dokumentiert. Dieser historische Inhalt wird redaktionell gepflegt; Live- und News-Aktualisierung laufen unabhängig davon weiter.
+
+### Darstellung vollständiger Newsartikel
+
+`sanitiseArticle` übernimmt ausschliesslich erlaubte Inhalte aus den gespeicherten Originalartikeln. Fremde Fonts, Farben, Skripte und Eventhandler werden entfernt; Überschriften, Autoren, Zitate, Bildnachweise und HTTPS-Bilder bleiben erhalten. Erkannte Logos werden kompakt auf heller Fläche dargestellt, Paarungen aus dem Original gruppiert. Die Logo-Erkennung nutzt Dateinamen/Alternativtext sowie Abmessungen kleiner PNGs; grosse Spielpläne bleiben reguläre Bilder. Fotos werden nicht beschnitten. Leere Layout-Hüllen entfallen. Alle Artikel folgen der gemeinsamen Typografie in `enhancements.css`.
+
+`tests/articles.test.mjs` prüft die DOM-Transformation mit Linkedom (nur Entwicklungsabhängigkeit), insbesondere Bildadressen, semantische Inhalte, Logos und das Entfernen aktiver Inhalte. Acht aktuelle Originalartikel wurden bei der Überarbeitung zusätzlich auf vollständigen Text und erhaltene Bildanzahl verglichen. Dies ersetzt keine vollständige visuelle Browserprüfung.
