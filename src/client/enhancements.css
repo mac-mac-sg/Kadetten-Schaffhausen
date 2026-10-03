@@ -1578,7 +1578,7 @@ html.snap-news {
 .home-front-page {
   min-height: 100svh;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -1608,7 +1608,91 @@ html.snap-news {
 .home-matchday .match-preview-time { margin: 6px 0 0; font-size: 12px; }
 .home-matchday .home-countdown { margin: 6px 0 0; font-size: 16px; }
 .home-matchday .live-link { min-height: auto; padding: 6px; }
-.home-front-page:has(.live-match[hidden]) {
-  padding-top: 76px;
-  grid-template-rows: auto 1fr;
+.home-front-page:has(.live-match[hidden]) .home-news-heading {
+  padding-top: 84px;
+}
+
+/* Arena-Kopf: echte BBC Arena, warmes Licht und dunkle Glasflächen. */
+.home-title-zone {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--surface);
+}
+.home-title-zone::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: -8px;
+  background: url('assets/bbc-arena-hall.webp') center 43% / cover no-repeat;
+  filter: blur(3px);
+  transform: scale(1.03);
+}
+.home-title-zone::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: radial-gradient(ellipse at 85% 5%, #ff790e33, transparent 65%),
+    linear-gradient(180deg, #080b09b8, #080b0999 60%, var(--surface));
+}
+.snap-news .top {
+  background: transparent;
+  border-bottom: none;
+}
+.home-title-zone .home-matchday,
+.home-title-zone .home-news-heading { background: transparent; }
+.home-title-zone .home-news-heading h2 { color: var(--cream); }
+.home-matchday .live-match,
+.home-matchday .live-match.match-preview {
+  background: #101310b8;
+  border: 1px solid #fff1e54d;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 #ffffff12, 0 8px 24px #0004;
+  color: var(--cream);
+}
+.home-matchday .live-match:not(.is-matchday)::after { display: none; }
+.home-matchday .live-heading > span {
+  color: var(--accent-soft);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ff790e1a;
+}
+/* Am Spieltag: kompakte Matchday-Fläche mit diagonalen Orange-Tönen. */
+.home-matchday .live-match.is-matchday {
+  background: linear-gradient(115deg, #d85306 0 42%, #ee6a08 42% 74%, #b84205 74%);
+  border: 1px solid #ffb471b3;
+  border-radius: 6px 20px 6px 20px;
+  box-shadow: inset 0 1px 0 #fff1e530, 0 8px 24px #0004;
+  animation: matchday-in .45s cubic-bezier(.2,.8,.2,1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.home-matchday .is-matchday .live-heading > span {
+  background: var(--cream);
+  color: #6b2a05;
+  border-radius: 3px;
+  font-weight: 800;
+}
+.home-matchday .is-matchday .live-heading i { background: #d9560a; }
+.home-matchday .is-matchday .live-score b,
+.home-matchday .is-matchday .live-score > strong,
+.home-matchday .is-matchday .live-heading small,
+.home-matchday .is-matchday .match-preview-time,
+.home-matchday .is-matchday .home-countdown { color: var(--cream); }
+.home-matchday .live-match.is-live { border-color: #ffcabf; }
+.home-matchday .is-live .live-heading > span { color: #a22b1a; }
+.home-matchday .live-match.matchday-win { border-color: var(--win); }
+.home-matchday .matchday-win .live-heading > span { color: #26501a; }
+.home-matchday .live-match:hover { border-color: var(--cream); }
+@media (prefers-reduced-transparency: reduce) {
+  .home-matchday .live-match:not(.is-matchday) {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-matchday .live-match.is-matchday { animation: none; }
 }

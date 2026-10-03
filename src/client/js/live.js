@@ -36,6 +36,7 @@ function showLiveMatch() {
       g.away
   );
   slot.classList.toggle('match-preview', !live);
+  slot.classList.toggle('is-matchday', today || !!live);
   slot.classList.toggle('matchday-win', result?.state === 'win');
   slot.classList.toggle('matchday-upcoming', today && !live && !ended);
   slot.classList.toggle('is-live', !!live);
