@@ -85,3 +85,45 @@ test('Wappen und Fotos laufen über photoUrl auf WebP', () => {
   assert.equal(run("photoUrl('https://example.test/a.jpg')"), 'https://example.test/a.jpg');
   assert.match(view("season('games')"), /assets\/club-\d+\.webp/);
 });
+
+test('Vereinsseite: alle Stationen, nachvollziehbare Quellen und gültige Sprungziele', () => {
+  const out = view('clubPage()');
+  for (const chapter of run('clubHistory')) assert.ok(out.includes(`id="club-history-${chapter.id}"`));
+  for (const [, target] of out.matchAll(/data-club-jump="([^"]+)"/g)) assert.ok(out.includes(`id="${target}"`), target);
+  assert.match(out, /Finalist/);
+  assert.match(out, /noch nicht die des Handballteams/);
+  assert.match(out, /Quellen & Bildnachweise/);
+  assert.match(view('home()'), /href="#club"/);
+});
+
+test('Trophäenschrank: Kategorien, Jahresauswahl und historische Verknüpfungen', () => {
+  assert.deepEqual(JSON.parse(run('JSON.stringify(clubTrophies.map(t => t.years.length))')), [15,11,16]);
+  for (const trophy of run('clubTrophies')) {
+    const out = view(`clubTrophyYears('${trophy.id}', ${trophy.years[0]})`);
+    assert.equal((out.match(/data-club-year=/g) || []).length, trophy.years.length);
+    assert.equal((out.match(/aria-pressed="true"/g) || []).length, 1);
+    assert.equal(new Set(trophy.years).size, trophy.years.length);
+  }
+  assert.match(view("clubTrophyYears('cup',1999)"), /data-club-jump="club-history-1999"/);
+  assert.match(view("clubTrophyYears('master',1900)"), /<strong>2025<\/strong>/);
+});
+
+test('Vereinsnavigation funktioniert nach Kategorie- und Jahreswechsel', () => {
+  let handler;
+  const panel = {innerHTML: ''};
+  let focused = false;
+  const categories = ['master','cup','super'].map(id => ({dataset:{clubTrophy:id},setAttribute:(key,value)=>{ if(key==='aria-pressed') categories.find(b=>b.dataset.clubTrophy===id).pressed=value; }}));
+  const root = {addEventListener: (name,fn)=>{handler=fn;}, contains:()=>true, querySelectorAll: selector => selector === '.club-trophy' ? categories : []};
+  const oldQuery = context.document.querySelector, oldId = context.document.getElementById;
+  context.document.querySelector = selector => selector === '.club-page' ? root : {focus:()=>{focused=true;}};
+  context.document.getElementById = () => panel;
+  try {
+    run('setupClubPage()');
+    handler({target:{closest:()=>({dataset:{clubTrophy:'cup'}})}});
+    assert.match(panel.innerHTML, /Schweizer Cupsieger/);
+    assert.equal(categories[1].pressed, 'true');
+    handler({target:{closest:()=>({dataset:{clubCategory:'cup',clubYear:'1999'}})}});
+    assert.match(panel.innerHTML, /<strong>1999<\/strong>/);
+    assert.ok(focused);
+  } finally { context.document.querySelector=oldQuery; context.document.getElementById=oldId; }
+});

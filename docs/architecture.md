@@ -2,7 +2,7 @@
 
 ## Oberfläche
 
-Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle und Kader. Keine Framework-Migration in dieser Etappe.
+Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle, Kader und die Vereinsseite (`#club`). Keine Framework-Migration in dieser Etappe.
 
 ### Aufbau von src/client
 
@@ -10,11 +10,11 @@ Die Dateien sind gewöhnliche Skripte ohne Bundler. Sie teilen sich den globalen
 
 | Ordner/Datei | Inhalt |
 | --- | --- |
-| `data/` | Reine Daten ohne Logik: Kader und Profile (`squad.js`), Hallenfotos (`venues.js`), Start-/Notfallstand (`fallback.js`) |
+| `data/` | Reine Daten ohne Logik: Kader und Profile (`squad.js`), Hallenfotos (`venues.js`), Start-/Notfallstand (`fallback.js`), Vereinsgeschichte und Titeljahre (`club.js`) |
 | `js/logic.js` | Spiel- und Spieltagslogik ohne Seitenzugriff (Zürcher Zeit, Anpfiff, Countdown, Ergebnis, relative Tage); getestet in `tests/logic.test.mjs` |
 | `enhancements.js` | Spieltagsdetails, Saisonverlauf, Offline-Hinweis, Spielberichte |
 | `js/core.js` | Zustand, Escape-Helfer, `photoUrl`, Karten, Wappen, Fusszeile |
-| `js/views-*.js` | News, Saison (Spielplan, Kalender, Tabelle, Kader), Spielseite, Spielerprofil |
+| `js/views-*.js` | News, Saison (Spielplan, Kalender, Tabelle, Kader), Spielseite, Spielerprofil, Vereinsseite |
 | `js/router.js` | Hash-Routing und `render()` |
 | `js/data-sync.js` | Datenstand laden, zwischenspeichern, aktualisieren |
 | `js/live.js` | Live-Karte auf der Startseite |
@@ -51,3 +51,7 @@ Die bestehende externe Automation aktualisiert alle zwei Stunden. Zusätzliche M
 ## Lokal und GitHub
 
 scripts/dev.mjs stellt einen lokalen, schreibgeschützten Adapter bereit. Identitäts- und Update-Header aus Browserrequests werden entfernt. .local-data ist ignorierter lokaler Speicher. GitHub Actions prüft und baut; der Pages-Workflow veröffentlicht nach erfolgreichen Prüfungen auf main ausschliesslich dist/client. Er enthält keine produktiven Zugangsschlüssel. Die Pages-Oberfläche nutzt platform.js als schreibgeschützten, credential-freien API-Adapter. Der bestehende Dienst erlaubt öffentliche GET-Reads per CORS über server/cors.mjs. .openai/hosting.json dokumentiert den bisherigen Sites-Projektbezug; es ist keine portable Cloud-Konfiguration.
+
+## Vereinsgeschichte
+
+Der Einstieg neben dem News-Titel führt zu `#club`. Redaktion, Archivbilder, Trophäenschrank und Zeitreise sind in [Vereinsseite](club-history.md) dokumentiert. Dieser historische Inhalt wird redaktionell gepflegt; Live- und News-Aktualisierung laufen unabhängig davon weiter.
