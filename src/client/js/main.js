@@ -23,6 +23,7 @@ window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {
+    setupEnhancements();
     showLiveMatch();
     checkLiveMatch();
   }

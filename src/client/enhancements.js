@@ -120,9 +120,15 @@ function setupEnhancements() {
   if (game?.score && teamResult(game, 'Kadetten Schaffhausen').state === 'win' && heading) {
     heading.classList.add('winning-headline');
   }
+  const displayedDay = swissToday();
   clearInterval(dayTimer);
   dayTimer = setInterval(() => {
     if (document.hidden) return;
+    if (displayedDay !== swissToday()) {
+      showLiveMatch();
+      setupEnhancements();
+      return;
+    }
     document.querySelectorAll('[data-countdown]').forEach(el => {
       const g = games.find(x => x.id === el.dataset.countdown);
       if (g) {

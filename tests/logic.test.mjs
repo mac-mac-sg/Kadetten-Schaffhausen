@@ -76,11 +76,11 @@ test('Heutige Spiele: nur QHL und EHL, nach Anspielzeit sortiert', () => {
   );
 });
 
-test('Startseiten-Spiel: erst ein offenes heutiges Spiel, sonst das nächste', () => {
+test('Startseiten-Spiel: heutiges Endresultat behalten, sonst das nächste', () => {
   const played = game('2026-10-03', '14:00', {score: [30, 20]});
   const open = game('2026-10-03', '18:00');
   const next = game('2026-10-17', '18:00');
-  assert.equal(logic('2026-10-03T08:00:00Z', [played, open, next]).homeFixture().game, open);
+  assert.equal(logic('2026-10-03T08:00:00Z', [played, open, next]).homeFixture().game, played);
   assert.equal(logic('2026-10-03T18:00:00Z', [played, next]).homeFixture().game, played);
   assert.equal(logic('2026-10-10T08:00:00Z', [played, next]).homeFixture().game, next);
   assert.equal(logic('2026-12-01T08:00:00Z', [played, next]).nextPreviewGame(), null);
@@ -107,4 +107,21 @@ test('Relative Tagesangabe: Morgen, Übermorgen, in N Tagen', () => {
   assert.equal(l.relativeDay('2027-01-01'), '');
   // kurz nach Mitternacht in Zürich zählt schon der neue Tag
   assert.equal(l.relativeDay('2026-10-05', new Date('2026-10-03T22:30:00Z')), 'Morgen');
+});
+
+test('Result remains at 23:59:59 in Switzerland and becomes next preview at 00:00',()=>{
+ const played=game('2026-10-03','18:00',{score:[45,34]}),next=game('2026-10-06','18:45');
+ assert.equal(logic('2026-10-03T21:59:59Z',[played,next]).homeFixture().game,played);
+ assert.equal(logic('2026-10-03T22:00:00Z',[played,next]).homeFixture().game,next);
+ const winter=game('2026-12-05','18:00',{score:[30,25]}),winterNext=game('2026-12-12','18:00');
+ assert.equal(logic('2026-12-05T22:59:59Z',[winter,winterNext]).homeFixture().game,winter);
+ assert.equal(logic('2026-12-05T23:00:00Z',[winter,winterNext]).homeFixture().game,winterNext);
+});
+test('Confirmed API result takes precedence over an older snapshot only on its matchday',()=>{
+ const old=game('2026-10-03','18:00'),next=game('2026-10-06','18:45');
+ const finished={status:'finished',date:'2026-10-03',home:old.home,away:old.away,score:[45,34]};
+ const before=logic('2026-10-03T21:59:59Z',[old,next]);before.liveState={finished};
+ assert.deepEqual([...before.homeFixture().game.score],[45,34]);assert.equal(before.homeFixture().game.id,old.id);
+ const after=logic('2026-10-03T22:00:00Z',[old,next]);after.liveState={finished};
+ assert.equal(after.homeFixture().game,next);
 });

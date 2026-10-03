@@ -59,8 +59,16 @@ function homeFixture() {
   if (live) return {game: live, live};
   const today = todayGames(),
     pending = today.find(g => !g.score),
-    finished = today.filter(g => g.score).at(-1);
-  return {game: pending || finished || nextPreviewGame(), live: null};
+    finished = today.filter(g => g.score).at(-1),
+    confirmed = liveState?.finished;
+  if (confirmed?.status === 'finished' && confirmed.date === swissToday() &&
+      Array.isArray(confirmed.score) && confirmed.score.length === 2 &&
+      confirmed.score.every(v => Number.isInteger(v) && v >= 0)) {
+    const local = today.find(g => sameFixture(g, confirmed));
+    return {game: {...local, ...confirmed, id: local?.id || 'live'}, live: null};
+  }
+  // Keep today's last result until Swiss midnight, then select the next preview.
+  return {game: finished || pending || nextPreviewGame(), live: null};
 }
 function countdownSoon(g, now = new Date()) {
   const at = kickoffAt(g);
