@@ -1523,3 +1523,52 @@ body.calendar-mode {
 .article-fulltext p {
   text-wrap: pretty;
 }
+
+/* Spieltagskarte und News sind getrennte Bereiche im Seitenfluss. */
+html.snap-news {
+  scroll-snap-type: y proximity;
+}
+.home-matchday {
+  padding: 100px 24px 0;
+  background: radial-gradient(ellipse at 50% 0, #ff790e12, transparent 75%), var(--surface);
+  scroll-snap-align: start;
+}
+.home-matchday .live-match {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.home-matchday:has(.live-match[hidden]) {
+  display: none;
+}
+.home-news-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 24px 20px;
+  background: var(--surface);
+}
+.home-news-heading > span {
+  width: 28px;
+  height: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.home-news-heading h2 {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: .015em;
+  color: var(--muted);
+}
+.home-news .story-dots[hidden] {
+  display: none;
+}
+@media (max-width: 380px) {
+  .home-matchday { padding-inline: 14px; }
+  .home-news-heading { padding-inline: 18px; }
+}
