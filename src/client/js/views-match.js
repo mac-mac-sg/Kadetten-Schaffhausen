@@ -16,6 +16,7 @@ function venueFact(g) {
   return `<div class="venue-fact ${!g.score ? 'venue-preview' : ''}"><span>Spielort</span>${g.venue ? `<a class="venue-map" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${liveEscape(venue)} in Google Maps öffnen"><strong>${liveEscape(venue)}</strong><span>In Google Maps öffnen</span></a>` : `<strong>${venue}</strong>`}${photo ? `<figure class="venue-thumb"><a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${liveEscape(venue)} in Google Maps öffnen"><img src="${photoUrl(photo.image)}" alt="${liveEscape(photo.alt)}" width="${photo.width}" height="${photo.height}" loading="lazy" decoding="async"></a>${photo.license ? `<figcaption class="venue-attribution"><a href="${photo.source}" target="_blank" rel="noopener noreferrer">Foto: ${liveEscape(photo.credit)}</a> · <a href="${photo.license}" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0, verkleinert</a></figcaption>` : ''}</figure>` : ''}</div>`;
 }
 function match(g, tab) {
+  if (liveForFixture(g)) return liveMatchPage(g, tab);
   const detail = verifiedReport(g);
   if (detail) g = {...g, half: detail.half};
   if (!g.score && tab === 'squad') tab = 'overview';

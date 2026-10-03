@@ -42,7 +42,7 @@ function kickoffAt(g) {
   return new Date(date + (match ? match[1] + match[2].padStart(2, '0') + ':' + (match[3] || '00') : 'Z'));
 }
 function freshLive() {
-  return !offlineData && navigator.onLine && liveState?.match && Date.now() - Date.parse(liveState.checkedAt) < 90000
+  return !offlineData && navigator.onLine && (typeof liveRequestFailed === 'undefined' || !liveRequestFailed) && liveState?.match && Date.now() - Date.parse(liveState.checkedAt) < 90000
     ? liveState.match
     : null;
 }
