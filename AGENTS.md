@@ -7,6 +7,6 @@
 - Fehlende Werte nicht erfinden und nicht als null Tore interpretieren. Fehlgeschlagene Datenquellen müssen ihren letzten gültigen Stand behalten.
 - Öffentliche Leser dürfen niemals schreiben. Plattform-Identitätsheader sind nur hinter dem Sites-Gateway vertrauenswürdig. Bei einem Hosting-Wechsel zuerst Authentifizierung ersetzen; Header allein sind dort kein Login.
 - Keine Tokens, persönlichen Servicezugänge oder .env-Dateien committen. Laufende Daten und Artikel bleiben im Objektspeicher.
-- GitHub-CI veröffentlicht derzeit nicht. Keine Veröffentlichung, Domainänderung oder Umstellung der Datenautomation ohne entsprechenden Auftrag.
+- Der Pages-Workflow veröffentlicht nach erfolgreichen Prüfungen auf main, wie vom Eigentümer beauftragt. Keine zusätzliche Testumgebung einrichten. Bestehende Datenautomation und Backend-Speicher bleiben auf Sites; keine Umstellung dieser Dienste ohne entsprechenden Auftrag.
 - Änderungen in eigenem Branch und Pull Request mit Problem, Verhalten und Prüfungen beschreiben.
 - docs/legacy-notes.md enthält historische Aussagen; README.md und die aktuelle Implementierung haben Vorrang.

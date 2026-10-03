@@ -19,6 +19,7 @@ Danach http://127.0.0.1:3000 öffnen. Die lokale Vorschau nutzt die mitgeliefert
 npm run check
 npm test
 npm run build
+npm run build:pages
 ```
 
 `src/client/` ist die editierbare Oberfläche. `server/` enthält die API und Quellenparser. `dist/` ist ausschliesslich erzeugtes Build-Ergebnis. Nicht direkt in `dist/` entwickeln.
@@ -30,9 +31,9 @@ npm run build
 3. Pull Request nach `main` erstellen; GitHub Actions führt Syntaxprüfung, Tests und Build aus.
 4. Änderung überprüfen und übernehmen.
 
-**Aktueller Stand:** GitHub ist die Codebasis; der bisherige Sites-Host bleibt produktiv. CI erstellt einen herunterladbaren Build, veröffentlicht ihn aber noch nicht. Ein Push ändert die öffentliche App nicht. Die bisherige Datenautomation bleibt aktiv. Der Ersatz des Sites-Adminlogins und eine separate Cloudflare-Testkonfiguration sind in einem Migrationsbranch vorbereitet; Einrichtung und echte Login-Prüfung auf dem Zielkonto stehen noch aus. Automatische Veröffentlichungen sind eine spätere Etappe. Es ist noch kein Branchschutz konfiguriert; grüne CI ist bisher eine Arbeitsregel, keine technische Merge-Sperre.
+**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Zweistunden-Automation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; manuelle Datenaktualisierung bleibt im bisherigen Eigentümerzugang. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
 
-Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [Testhost und Login](docs/test-host.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
+Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 
 ## Daten und Rechte
 
