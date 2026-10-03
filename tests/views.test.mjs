@@ -136,3 +136,10 @@ test('Live game opens internal details with verified events and player statistic
  run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"overview")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
+
+test('Direct live statistics route works before a local fixture exists',()=>{
+ location.hash='#match/live/stats';
+ assert.equal(run('verifiedReport(undefined)'),null);
+ assert.doesNotThrow(()=>run('liveMatchPage({id:"live"},"stats")'));
+ location.hash='';
+});

@@ -169,6 +169,7 @@ let gameReports = {},
   gameReportsLoaded = false,
   gameReportsCheckedAt;
 function verifiedReport(g) {
+  if (!g) return null;
   const r = gameReports[g.id] || Object.values(gameReports).find(r => String(r.gameId) === String(g.id));
   return r && g.score && r.score.every((v, i) => v === g.score[i]) ? r : null;
 }
