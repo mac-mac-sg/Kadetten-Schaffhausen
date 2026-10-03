@@ -1,6 +1,6 @@
 /* Startseite und News-Artikel. */
 function home() {
-  return `<div class="story-feed">${stories.map((n, i) => `<section class="story-screen" id="story-${i}">${i === 0 ? '<a id="live-match" class="live-match" aria-label="Kadetten-Spiel" aria-live="polite" hidden></a>' : ''}<img src="${liveEscape(n.image.startsWith('https://') ? n.image : 'assets/' + n.image)}" alt="${n.title}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}><div class="story-copy"><p>${n.date} · News</p><h1>${n.title}</h1><a class="button subtle" href="#news/${liveEscape(n.id)}">Zum Artikel</a></div></section>`).join('')}</div><nav class="story-dots" aria-label="News auswählen">${stories.map((n, i) => `<button data-story="${i}" ${i > 4 ? 'hidden' : ''} aria-label="${n.title}" aria-pressed="${i === 0}"><span></span></button>`).join('')}</nav>${footer()}`;
+  return `<div class="story-feed">${stories.map((n, i) => `<section class="story-screen" id="story-${i}">${i === 0 ? '<a id="live-match" class="live-match" aria-label="Kadetten-Spiel" aria-live="polite" hidden></a>' : ''}<img src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" decoding="async" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}><div class="story-copy"><p>${n.date} · News</p><h1>${n.title}</h1><a class="button subtle" href="#news/${liveEscape(n.id)}">Zum Artikel</a></div></section>`).join('')}</div><nav class="story-dots" aria-label="News auswählen">${stories.map((n, i) => `<button data-story="${i}" ${i > 4 ? 'hidden' : ''} aria-label="${n.title}" aria-pressed="${i === 0}"><span></span></button>`).join('')}</nav>${footer()}`;
 }
 function articleKey(n) {
   return String(n.id) + ':' + (n.articleVersion || 'pending');
@@ -146,12 +146,12 @@ async function loadFullArticle() {
 function article(id) {
   const n = stories.find(n => n.id === id);
   if (!n) return notFound();
-  return `<article class="news-article"><div class="article-bar"><a class="back" href="#home" aria-label="Zurück zu den News">‹ News</a><button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(n.image.startsWith('https://') ? n.image : 'assets/' + n.image)}" alt="${n.title}"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1><div id="article-body" class="article-fulltext">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, 'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
+  return `<article class="news-article"><div class="article-bar"><a class="back" href="#home" aria-label="Zurück zu den News">‹ News</a><button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1><div id="article-body" class="article-fulltext">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, 'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
     .filter(x => x.id !== id)
     .slice(0, 4)
     .map(
       x =>
-        `<a class="related-story" href="#news/${liveEscape(x.id)}"><img src="${liveEscape(x.image.startsWith('https://') ? x.image : 'assets/' + x.image)}" alt=""><span>${x.title}<small>${x.date}</small></span></a>`
+        `<a class="related-story" href="#news/${liveEscape(x.id)}"><img src="${liveEscape(photoUrl(x.image))}" alt="" loading="lazy" decoding="async"><span>${x.title}<small>${x.date}</small></span></a>`
     )
     .join('')}</div></article>${footer()}`;
 }

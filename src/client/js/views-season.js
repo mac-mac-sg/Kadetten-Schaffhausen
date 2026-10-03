@@ -62,7 +62,7 @@ function standing() {
 }
 
 function playerCard(p) {
-  return `<a class="player-card" href="#player/${p[0]}"><img src="assets/player-${p[0]}.jpg" alt="${p[1]}" loading="lazy"><div><span>${p[1].split(' ').slice(0, -1).join(' ')}</span><strong>${p[1].split(' ').at(-1)}</strong><b>${p[0]}</b></div></a>`;
+  return `<a class="player-card" href="#player/${p[0]}"><img src="assets/player-${p[0]}.webp" alt="${p[1]}" width="600" height="400" loading="lazy" decoding="async"><div><span>${p[1].split(' ').slice(0, -1).join(' ')}</span><strong>${p[1].split(' ').at(-1)}</strong><b>${p[0]}</b></div></a>`;
 }
 function squad() {
   return ['Tor', 'Flügel', 'Rückraum', 'Kreis']
