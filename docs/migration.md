@@ -1,23 +1,17 @@
-# Schrittweise Professionalisierung
+# Migrationsstand
 
-## Etappe 1: Code und Zusammenarbeit
+## 1. GitHub-Codebasis — abgeschlossen
 
-Bestehenden Code übernehmen; Oberfläche nach src/client verschieben; portabler lokaler Start; README und AGENTS; unabhängige Tests und CI-Build. Öffentliche App und Datenautomation bleiben auf Sites. Baseline: Sites-Quellcommit 4d2eb5e2b580a11b65f8d742969bd4b3af9605b4, veröffentlichte Version 56 vom 03.10.2026. Die bisherige Git-Historie bleibt im Sites-Repository; GitHub startet mit einem dokumentierten Importstand.
+Import von Sites Version 56, editierbare Oberfläche in src/client, lokaler Start, Dokumentation für Entwickler/KI und automatisierte Prüfungen.
 
-## Etappe 2: Hosting und Zugang
+## 2. Veröffentlichung wie Essens-Check
 
-Implementierung im Migrationsbranch vorbereitet: explizite Authentifizierungsprovider, signaturgeprüfter Cloudflare-Access-Login, unabhängiger Automation-Key und separate Testkonfiguration. Reale Infrastruktur, Anmeldung und Datenimport stehen aus; [Einrichtung](test-host.md).
+Auf Wunsch des Eigentümers keine separate Testumgebung und kein neues Cloudflare-Setup. GitHub Actions prüft Änderungen und veröffentlicht die Oberfläche von main auf GitHub Pages. Projektpfade, PWA und Offline-Cache sind dafür angepasst. Einmalige Pages-Einstellung siehe [Betrieb](pages.md).
 
-Zielhost anhand von Worker-Unterstützung, Objektspeicher, Login, Domain, Kosten und Betrieb wählen. Bestehenden Code wiederverwenden. Eigentümer-Login unabhängig von Sites implementieren; öffentliche Lesezugriffe und geschützte Schreibzugriffe testen. Separaten Testhost und Speicher anlegen. Erst danach produktive Secrets hinterlegen. GitHub Pages allein stellt das Backend nicht bereit.
+## 3. Datenbetrieb — vorhandenen Dienst weiterverwenden
 
-## Etappe 3: Veröffentlichungen
+Volltexte, aktuelle Daten und bestätigte Live-Werte bleiben im bestehenden Sites-Datendienst. Die GitHub-Pages-Oberfläche liest ausschliesslich öffentliche Endpunkte ohne Zugangsschlüssel. Geschützte Aktualisierungen und der Zweistundentask bleiben beim vorhandenen Dienst. Ein späterer vollständiger Backendwechsel ist eine eigene Entscheidung; er ist für das gewählte Pages-Setup nicht notwendig.
 
-Testversion je Pull Request, produktive Veröffentlichung nach Merge, versionierte Builds und dokumentierter Rollback. Branchschutz und passende GitHub-Berechtigungen konfigurieren. Verfügbarkeit der Schutzfunktionen im gewählten GitHub-Tarif prüfen. Neue Pipeline zuerst auf Testumgebung prüfen.
+## 4. Weiterentwicklung
 
-## Etappe 4: Daten und Umstellung
-
-Snapshots und alle Artikel aus dem bisherigen Speicher exportieren/importieren. Alle zwei Stunden und Matchday-/Live-Abläufe auf dem Ziel prüfen; Rotation der Update-Zugänge. Erst nach Vergleich der Daten und Schreibrechte den öffentlichen Link umstellen und den alten Zeitplan deaktivieren. Alten Host während der Übergangsphase für Rollback erhalten.
-
-## Etappe 5: Betrieb
-
-Fehlerüberwachung, Alarm bei veralteten Daten, regelmässige Speicher-Backups mit Wiederherstellungstest sowie dokumentierte Wartung. UI-Smoke-Tests für Newsstart, Kalender ohne Scrollen, Tabellenbreite und mobile Navigation ergänzen.
+Änderungen über Branch und Pull Request; erfolgreiche Prüfungen vor Merge. Änderungen auf main werden anschliessend automatisch veröffentlicht. Bisheriger Sites-Link bleibt während dieser Migration erreichbar. Branchschutz ist noch nicht eingerichtet.
