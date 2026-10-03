@@ -2314,73 +2314,42 @@ html.snap-profile {
   }
 }
 
-/* Comfortable back navigation on touch screens */
-.back,
-.profile-back {
-  min-height: 44px;
-  min-width: 96px;
-  padding: 8px 14px;
+/* Einheitliche, dezente Zurück-Links auf Detailseiten. */
+.back-link {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  border: 1px solid #ffffff26;
-  border-radius: 28px;
-  background: #263026e6;
+  min-height: 44px;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--text);
-  font-weight: 600;
-  line-height: 1.25;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
   touch-action: manipulation;
-  transition: background 0.15s ease;
+  backdrop-filter: none;
 }
-.back {
-  font-size: 16px;
+.back-link span { font-size: inherit; }
+.back-link:hover,
+.back-link:active { color: var(--accent-soft); }
+.back-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
-.profile-back {
-  font-size: 28px;
-  backdrop-filter: blur(16px);
+.match-top .back-link {
+  position: static;
+  display: flex;
+  width: fit-content;
+  padding: 8px 0;
+  margin: 0 0 8px;
 }
-.profile-back span {
-  font-size: 16px;
-}
-.back:hover,
-.profile-back:hover {
-  background: #3a4835;
-}
-.back:active,
-.profile-back:active {
-  background: #4a593f;
-}
-.match-top .back {
-  top: 16px;
-}
-.article-bar .back {
-  margin: 0;
-}
-@media (max-width: 900px) {
-  .match-top .back {
-    position: static;
-    display: inline-flex;
-    padding: 8px 14px;
-    margin-bottom: 10px;
-  }
-  .match-top {
-    text-align: left;
-  }
-  .match-top > div,
-  .match-top > small {
-    text-align: center;
-  }
-  .match-top > small {
-    display: block;
-  }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .back,
-  .profile-back {
-    background: #263026;
-    backdrop-filter: none;
-  }
+.article-bar .back-link { margin: 0; }
+.profile-back.back-link {
+  text-shadow: 0 1px 4px #000, 0 0 12px #000;
 }
 
 /* Home preview echoes the highlighted next fixture */

@@ -147,7 +147,7 @@ async function loadFullArticle() {
 function article(id) {
   const n = stories.find(n => n.id === id);
   if (!n) return notFound();
-  return `<article class="news-article"><div class="article-bar"><a class="back" href="#home" aria-label="Zurück zu den News">‹ News</a><button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1><div id="article-body" class="article-fulltext">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, 'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
+  return `<article class="news-article"><div class="article-bar">${backLink('#home', 'Zurück zu den News', 'back')}<button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1><div id="article-body" class="article-fulltext">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, 'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
     .filter(x => x.id !== id)
     .slice(0, 4)
     .map(
