@@ -2,7 +2,33 @@
 
 ## Oberfläche
 
-Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle und Kader. Keine Framework-Migration in dieser Etappe. Service Worker für App-Hülle, Bilder und versionierte Artikel; lokaler Snapshot beschleunigt den ersten Render. Live- und Berechtigungsantworten dürfen nicht aus dem Cache kommen.
+Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle und Kader. Keine Framework-Migration in dieser Etappe.
+
+### Aufbau von src/client
+
+Die Dateien sind gewöhnliche Skripte ohne Bundler. Sie teilen sich den globalen Zustand und werden in der Reihenfolge von `index.html` geladen. Neue Dateien müssen in `index.html`, `sw.js` (SHELL) und `scripts/build.mjs` (shellFiles) eingetragen werden; `tests/shell.test.mjs` prüft das.
+
+| Ordner/Datei | Inhalt |
+| --- | --- |
+| `data/` | Reine Daten ohne Logik: Kader und Profile (`squad.js`), Hallenfotos (`venues.js`), Start-/Notfallstand (`fallback.js`) |
+| `js/logic.js` | Spiel- und Spieltagslogik ohne Seitenzugriff (Zürcher Zeit, Anpfiff, Countdown, Ergebnis, relative Tage); getestet in `tests/logic.test.mjs` |
+| `enhancements.js` | Spieltagsdetails, Saisonverlauf, Offline-Hinweis, Spielberichte |
+| `js/core.js` | Zustand, Escape-Helfer, `photoUrl`, Karten, Wappen, Fusszeile |
+| `js/views-*.js` | News, Saison (Spielplan, Kalender, Tabelle, Kader), Spielseite, Spielerprofil |
+| `js/router.js` | Hash-Routing und `render()` |
+| `js/data-sync.js` | Datenstand laden, zwischenspeichern, aktualisieren |
+| `js/live.js` | Live-Karte auf der Startseite |
+| `js/main.js` | Startcode; wird zuletzt geladen |
+
+Skripte rufen beim Laden keine Funktionen aus später geladenen Dateien auf. Alles, was beim Laden ausgeführt wird, steht in `js/main.js`.
+
+### Bilder und Gestaltung
+
+Fotos, Spielerbilder und Wappen liegen als WebP vor. Namen aus den Daten (`.jpg`, `.png`) werden in `photoUrl()` auf `.webp` umgestellt; neue Bilder deshalb als WebP ablegen (`convert bild.jpg -resize '1600x1600>' -quality 80 bild.webp`). Farben und Schriften stehen als CSS-Variablen am Anfang von `style.css`. Ergebnisfarben (`--win`, `--draw`, `--loss`) gelten überall gleich.
+
+### Tests der Oberfläche
+
+`tests/views.test.mjs` baut alle Ansichten mit dem mitgelieferten Datenstand in einer einfachen Browser-Attrappe und prüft auf Platzhalter-Fehler. Das ersetzt keinen Blick im Browser, fängt aber Tippfehler und kaputte Vorlagen ab. Service Worker für App-Hülle, Bilder und versionierte Artikel; lokaler Snapshot beschleunigt den ersten Render. Live- und Berechtigungsantworten dürfen nicht aus dem Cache kommen.
 
 ## API
 
