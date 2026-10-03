@@ -1829,3 +1829,24 @@ footer .source-details summary { margin-inline: auto; }
 .games-matchday { margin: 12px 0 24px; padding: 0; background: transparent; }
 .games-matchday .live-match { position: relative; inset: auto; width: 100%; box-sizing: border-box; max-width: none; }
 .calendar-season:has(.games-matchday .live-match:not([hidden])) { grid-template-rows: auto auto minmax(0, 1fr); }
+
+/* Confirmed result colours, shared with the fixture list. */
+.home-matchday .live-match.matchday-win, .live-match-header.result-win { --match-result: var(--win); }
+.home-matchday .live-match.matchday-loss, .live-match-header.result-loss { --match-result: var(--loss); }
+.home-matchday .live-match.matchday-draw, .live-match-header.result-draw { --match-result: var(--draw); }
+.home-matchday .live-match:is(.matchday-win, .matchday-loss, .matchday-draw) {
+  background: linear-gradient(115deg, color-mix(in srgb, var(--match-result) 28%, var(--surface)), color-mix(in srgb, var(--match-result) 16%, var(--surface)));
+  border-color: var(--match-result);
+}
+.home-matchday :is(.matchday-win, .matchday-loss, .matchday-draw) .live-heading > span {
+  background: var(--match-result);
+  color: var(--surface);
+}
+.home-matchday :is(.matchday-win, .matchday-loss, .matchday-draw) .live-score > strong,
+.home-matchday :is(.matchday-win, .matchday-loss, .matchday-draw) .match-preview-time { color: var(--match-result); }
+.live-match-header:is(.result-win, .result-loss, .result-draw) {
+  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--match-result) 24%, transparent), transparent 75%);
+  border-bottom: 1px solid var(--match-result);
+}
+.live-match-header:is(.result-win, .result-loss, .result-draw) .matchup > strong,
+.live-match-header:is(.result-win, .result-loss, .result-draw) .live-status { color: var(--match-result); }
