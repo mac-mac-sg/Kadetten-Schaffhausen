@@ -1835,7 +1835,7 @@ footer .source-details summary { margin-inline: auto; }
 .home-matchday .live-match.matchday-loss, .live-match-header.result-loss { --match-result: var(--loss); }
 .home-matchday .live-match.matchday-draw, .live-match-header.result-draw { --match-result: var(--draw); }
 .home-matchday .live-match:is(.matchday-win, .matchday-loss, .matchday-draw) {
-  background: linear-gradient(115deg, color-mix(in srgb, var(--match-result) 36%, var(--surface)), color-mix(in srgb, var(--match-result) 20%, var(--surface)));
+  background: linear-gradient(115deg, color-mix(in srgb, var(--match-result) 28%, var(--surface)), color-mix(in srgb, var(--match-result) 16%, var(--surface)));
   border-color: var(--match-result);
 }
 .home-matchday :is(.matchday-win, .matchday-loss, .matchday-draw) .live-heading > span {
