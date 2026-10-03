@@ -48,7 +48,7 @@ function syncUpdateLabels() {
   if (badge) {
     const matchday = todayGames().length > 0;
     badge.classList.toggle('is-matchday', matchday);
-    badge.setAttribute('aria-label', matchday ? 'Spiele · Heute spielt Orange' : 'Spiele');
+    badge.setAttribute('aria-label', matchday ? 'Spiele · Matchday' : 'Spiele');
   }
   showLiveMatch();
 }
