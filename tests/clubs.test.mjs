@@ -68,3 +68,7 @@ test('Header, Titel und FCSG-Seiten enthalten keine fremden Vereinsdaten', () =>
   assert.equal(a.document.documentElement.dataset.club, 'kadetten');
   assert.match(a.document.querySelector('.brand').textContent, /KADETTEN/);
 });
+test('FCSG player profile displays source facts and separates seasons without inventing missing values',()=>{
+ const a=app('https://example.test/?club=fcsg#player/7470');a.run(`fcsgData.players=[{id:'7470',name:'Lukas Daschner',position:'Mittelfeld',height:185,nationality:'Deutschland',debutDate:'2025-02-05',debutOpponent:'FC Lugano',seasons:[{season:'2026/2027',competition:'Super League',appearances:9,goals:0,assists:null,minutes:708,yellow:2,red:0,secondYellow:null},{season:'2025/2026',competition:'Schweizer Pokal',appearances:4,goals:1}],url:'https://www.fcsg.ch/pages/kader/daschner-lukas'}]`);
+ const html=a.run("fcsgPlayer('7470')");assert.match(html,/185 cm/);assert.match(html,/Deutschland/);assert.match(html,/05\.02\.2025/);assert.match(html,/FC Lugano/);assert.match(html,/Saison 2026\/2027/);assert.match(html,/Saison 2025\/2026/);assert.match(html,/Schweizer Cup/);assert.match(html,/<dt>Tore<\/dt><dd>0<\/dd>/);assert.match(html,/<dt>Vorlagen<\/dt><dd>–<\/dd>/);assert.doesNotMatch(html,/undefined|NaN/);
+});

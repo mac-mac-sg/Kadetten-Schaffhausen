@@ -54,10 +54,19 @@ export function parseFcsgTable(d){
   return {rank:r.rank,name:r.contestantClubName||r.contestantName,played,w,d,l,gf,ga,points,logo:https(r.logo)};
  }).sort((a,b)=>a.rank-b.rank);
 }
+const FCSG_PLAYERS_PATH='b2cs?filter[isActive]=1&filter[crmSort][]=7,64&page[number]=0&page[size]=100';
+export function parseFcsgPlayerSeasons(a){
+ const rows=Array.isArray(a.playerCareer?.stat)?a.playerCareer.stat.flatMap(group=>Object.values(group).filter(Array.isArray).flat()):[];
+ return rows.filter(r=>r&&/^\d{4}\/(?:\d{2}|\d{4})$/.test(r.tournamentCalendarName||'')&&r.competitionName&&r.isFriendly!=='yes').map(r=>({
+  season:r.tournamentCalendarName,competition:r.competitionName,format:r.competitionFormat||null,
+  appearances:integer(r.appearances),goals:integer(r.goals),assists:integer(r.assists),minutes:integer(r.minutesPlayed),yellow:integer(r.yellowCards),red:integer(r.redCards),secondYellow:integer(r.secondYellowCards)
+ })).sort((a,b)=>Number(b.season.slice(0,4))-Number(a.season.slice(0,4))||a.competition.localeCompare(b.competition));
+}
+export async function getFcsgPlayers(){return {ok:true,updatedAt:new Date().toISOString(),players:parseFcsgPlayers(await getFcsg(FCSG_PLAYERS_PATH))}}
 export function parseFcsgPlayers(d){
  const players=array(d).filter(p=>p.attributes?.shouldDisplayOnWebsite&&p.attributes.crmTags?.some(t=>t.id===64)&&p.attributes.crmTags?.some(t=>[1,2,3,4].includes(t.id))).map(p=>{
   const a=p.attributes, field=name=>a.customFields?.find(f=>f.name===name&&f.locale==='de_CH')?.value;
-  return {id:String(p.id),name:[a.firstName,a.lastName].filter(Boolean).join(' '),firstName:a.firstName,lastName:a.lastName,position:a.position,number:integer(field('Trikotnummer')),birthDate:a.birthDate,image:https(a.gif||a.image),cover:https(a.coverPhoto),since:field('Beim FCSG seit')||null,contract:field('Vertrag bis')||null,url:a.profileUrl?'https://www.fcsg.ch/pages/kader/'+encodeURIComponent(a.profileUrl):'https://www.fcsg.ch/pages/1-mannschaft'};
+  return {id:String(p.id),name:[a.firstName,a.lastName].filter(Boolean).join(' '),firstName:a.firstName,lastName:a.lastName,position:a.position,number:integer(field('Trikotnummer')),birthDate:a.birthDate,image:https(a.gif||a.image),cover:https(a.coverPhoto),since:field('Beim FCSG seit')||null,contract:field('Vertrag bis')||null,height:integer(a.height)>0?integer(a.height):null,nationality:a.nationality||null,debutDate:field('ESPEN debut date')||null,debutOpponent:field('ESPEN debut team')||null,seasons:parseFcsgPlayerSeasons(a),url:a.profileUrl?'https://www.fcsg.ch/pages/kader/'+encodeURIComponent(a.profileUrl):'https://www.fcsg.ch/pages/1-mannschaft'};
  });
  if(players.length<20||players.some(p=>!p.name||!p.position))throw Error('Incomplete FCSG roster');return players;
 }
@@ -82,7 +91,7 @@ export function parseFcsgNews(d){
 async function getFcsg(path){const r=await fetch(FCSG_SOURCE+path,{headers:{Accept:'application/vnd.api+json'},signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('FCSG source HTTP '+r.status);return r.json()}
 export async function refreshFcsg(previous){
  const next=structuredClone(previous);next.checkedAt=new Date().toISOString();next.status={...previous.status};
- const jobs=[['news','news?page[number]=0&page[size]=30&sort=-publishDate&filter[isActive]=1&filter[excludeTag][]=FCO',parseFcsgNews,'stories'],['games','match-center/soccer-matches?filter[season.name][]=2026/2027&filter[soccerClubId]=12&page[size]=100&page[number]=0&isDetailed=1',parseFcsgGames,'games'],['table','match-center/soccer-matches/live-table/24?followCurrentSeason=1',parseFcsgTable,'table'],['players','b2cs?filter[isActive]=1&filter[crmSort][]=7,64&page[number]=0&filter[isLightVersion]=true&page[size]=100',parseFcsgPlayers,'players']];
+ const jobs=[['news','news?page[number]=0&page[size]=30&sort=-publishDate&filter[isActive]=1&filter[excludeTag][]=FCO',parseFcsgNews,'stories'],['games','match-center/soccer-matches?filter[season.name][]=2026/2027&filter[soccerClubId]=12&page[size]=100&page[number]=0&isDetailed=1',parseFcsgGames,'games'],['table','match-center/soccer-matches/live-table/24?followCurrentSeason=1',parseFcsgTable,'table'],['players',FCSG_PLAYERS_PATH,parseFcsgPlayers,'players']];
  await Promise.all(jobs.map(async([key,path,parse,field])=>{try{next[field]=parse(await getFcsg(path));next.status[key]={ok:true,updatedAt:next.checkedAt}}catch(e){next.status[key]={...previous.status?.[key],ok:false,error:e.message}}}));
  return next;
 }

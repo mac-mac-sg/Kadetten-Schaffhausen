@@ -50,3 +50,14 @@ test('FCSG live and detail APIs reject writes, wrong IDs and upstream errors wit
   globalThis.fetch=async()=>{throw Error('offline')};assert.equal((await worker.fetch(new Request('https://app.test/api/fcsg/live'),env)).status,503);
  }finally{globalThis.fetch=original}
 });
+
+function playerSource(){return {data:Array.from({length:20},(_,i)=>({id:String(100+i),attributes:{firstName:'Test',lastName:'Spieler '+i,position:'Mittelfeld',shouldDisplayOnWebsite:true,crmTags:[{id:64},{id:3}],height:i===0?185:null,nationality:'Deutschland',customFields:[{locale:'de_CH',name:'ESPEN debut date',value:'2025-02-05'},{locale:'de_CH',name:'ESPEN debut team',value:'FC Lugano'}],playerCareer:{stat:[{'Super League':[{tournamentCalendarName:'2026/2027',competitionName:'Super League',isFriendly:'no',appearances:9,goals:0,assists:null,minutesPlayed:708,yellowCards:2,redCards:0},{tournamentCalendarName:'2025/2026',competitionName:'Super League',goals:1},{tournamentCalendarName:'2026/2027',competitionName:'Friendly',isFriendly:'yes',goals:99}]}]}}}))}}
+test('FCSG player facts preserve confirmed zero, missing stats, season and competition scope',()=>{
+ const players=parseFcsgPlayers(playerSource()),p=players[0];assert.equal(p.height,185);assert.equal(players[1].height,null);assert.equal(p.nationality,'Deutschland');assert.equal(p.debutDate,'2025-02-05');assert.equal(p.debutOpponent,'FC Lugano');assert.equal(p.seasons.length,2);assert.equal(p.seasons[0].season,'2026/2027');assert.equal(p.seasons[0].goals,0);assert.equal(p.seasons[0].assists,null);assert.equal(p.seasons[0].secondYellow,null);assert.equal(p.seasons[1].appearances,null);assert.equal(p.seasons[1].goals,1);
+});
+test('FCSG player facts endpoint is read-only, strips source metadata and rejects failures',async()=>{
+ const original=globalThis.fetch;let calls=0;
+ const env={BUCKET:{get:()=>{throw Error('Unexpected storage read')},put:()=>{throw Error('Unexpected storage write')}}};
+ globalThis.fetch=async url=>{calls++;assert.ok(!url.includes('isLightVersion'));return new Response(JSON.stringify(playerSource()))};
+ try{const response=await worker.fetch(new Request('https://app.test/api/fcsg/players'),env);assert.equal(response.status,200);const d=await response.json();assert.equal(d.players.length,20);assert.equal(d.players[0].crmTags,undefined);assert.equal(d.players[0].playerCareer,undefined);assert.equal((await worker.fetch(new Request('https://app.test/api/fcsg/players',{method:'POST'}),env)).status,405);assert.equal(calls,1);globalThis.fetch=async()=>{throw Error('offline')};assert.equal((await worker.fetch(new Request('https://app.test/api/fcsg/players'),env)).status,503)}finally{globalThis.fetch=original}
+});

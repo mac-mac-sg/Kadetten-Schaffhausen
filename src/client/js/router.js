@@ -215,6 +215,7 @@ function render() {
     loadFcsgArticle();
     setupClubPage();
     loadFcsgLive();
+    loadFcsgPlayerDetails();
     window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
     requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
     return;
