@@ -87,8 +87,6 @@ function syncOfflineNotice() {
           : 'letzter verfügbarer Stand')
       : '';
   document.body.classList.toggle('is-offline', !el.hidden);
-  const refresh = document.getElementById('refresh-data');
-  if (refresh && !refresh.hasAttribute('aria-busy')) refresh.disabled = !navigator.onLine;
 }
 function setupEnhancements() {
   const [page, id] = location.hash.slice(1).split('/'),

@@ -18,11 +18,7 @@ GitHub Pages führt kein Worker-Backend aus. Für die bestehenden Funktionen ble
 - Spielplan, Tabellen und Spielerwerte mit bestehenden Zweistunden-Updates
 - bestätigte Live-Werte, Formkurven und Direktvergleiche
 
-Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Die Pages-App erhält für `/api/access` und `/api/refresh` eine CORS-Freigabe ausschliesslich für ihren Ursprung. Schreibzugriffe benötigen zusätzlich eine vom angemeldeten Eigentümer ausgestellte Browser-Freigabe; Cookies werden niemals hostübergreifend übertragen. Der Button startet nach der Freigabe direkt aus der Pages-App die bestehende Datenaktualisierung.
-
-Beim ersten Klick führt eine normale Browsernavigation zur geschützten Freigabeseite `/admin/connect?state=...`. Falls erforderlich startet der Dienst dort die plattformeigene ChatGPT-Anmeldung. Nach expliziter Bestätigung kehrt er zur Pages-App zurück. Ein zufälliger, zehn Minuten gültiger Sitzungszustand bindet die Rückkehr an denselben Browser. Die Freigabe wird nur im URL-Fragment übergeben, unmittelbar aus der Adresse entfernt und lokal gespeichert. Sie gilt 30 Tage und erlaubt ausschliesslich Datenaktualisierung. Der Objektspeicher enthält nur ihren SHA-256-Digest mit Ursprung, Eigentümer und Ablaufzeit; der Automation-Schlüssel bleibt unabhängig. Der Server prüft alle Werte und begrenzt Aktualisierungen pro Freigabe auf frühestens alle zwei Minuten. Ein ungültiger Zugang kann beim nächsten Klick neu freigegeben werden.
-
-Automatische Aktualisierung und Live-Abfragen bleiben unverändert.
+Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Das Aktualisieren des Datenbestands erfolgt weiter automatisch oder über den Eigentümerzugang auf der bisherigen Sites-App. Die GitHub-App besitzt keinen manuellen Aktualisieren-Button und keinen Freigabeablauf. Sie liest den zuletzt automatisch aktualisierten Datenstand; Live-Abfragen bleiben unabhängig davon erhalten.
 
 Das ist eine Migration von Codebasis, Oberfläche und Veröffentlichung nach GitHub. Der Datendienst bleibt eine ausdrücklich dokumentierte Abhängigkeit. Vollständige Artikel und laufende Statistiken werden nicht in Git-Commits kopiert. Es gibt keine separate Testumgebung.
 

@@ -50,7 +50,7 @@ Die bestehende externe Automation aktualisiert alle zwei Stunden. Zusätzliche M
 
 ## Lokal und GitHub
 
-scripts/dev.mjs stellt einen lokalen, schreibgeschützten Adapter bereit. Identitäts- und Update-Header aus Browserrequests werden entfernt. .local-data ist ignorierter lokaler Speicher. GitHub Actions prüft und baut; der Pages-Workflow veröffentlicht nach erfolgreichen Prüfungen auf main ausschliesslich dist/client. Er enthält keine produktiven Zugangsschlüssel. Die Pages-Oberfläche nutzt platform.js als API-Adapter mit cookie-freien öffentlichen Reads und separater Eigentümer-Freigabe für Updates. Der bestehende Dienst erlaubt öffentliche GET-Reads per CORS über server/cors.mjs. .openai/hosting.json dokumentiert den bisherigen Sites-Projektbezug; es ist keine portable Cloud-Konfiguration.
+scripts/dev.mjs stellt einen lokalen, schreibgeschützten Adapter bereit. Identitäts- und Update-Header aus Browserrequests werden entfernt. .local-data ist ignorierter lokaler Speicher. GitHub Actions prüft und baut; der Pages-Workflow veröffentlicht nach erfolgreichen Prüfungen auf main ausschliesslich dist/client. Er enthält keine produktiven Zugangsschlüssel. Die Pages-Oberfläche nutzt platform.js als schreibgeschützten, credential-freien API-Adapter. Der bestehende Dienst erlaubt öffentliche GET-Reads per CORS über server/cors.mjs. .openai/hosting.json dokumentiert den bisherigen Sites-Projektbezug; es ist keine portable Cloud-Konfiguration.
 
 ## Vereinsgeschichte
 
@@ -74,7 +74,3 @@ Die Spielplan-Liste verwendet für die laufende Partie dieselbe Matchday-Karte w
 Die Startseitenkarte behält das letzte bestätigte Tagesresultat bis 24:00 Uhr in `Europe/Zurich`. Danach zeigt sie die nächste Vorschau. Der bestehende Sekunden-Timer prüft den Tageswechsel auch ohne Navigation; beim Zurückkehren in eine zuvor unsichtbare App wird die Karte sofort neu bestimmt. Ein Resultat aus `/api/live.finished` hat am Spieltag Vorrang vor einem älteren Snapshot.
 
 Abgeschlossene QHL-Spiele: `/api/reports/:id` liest den bestätigten SHV-Bericht unabhängig vom Tageswechsel. Die autorisierte Zweistunden-Aktualisierung speichert Teamwerte, Spielerwerte und Ereignisse dauerhaft unter `kadetten/reports/<SHV-ID>.json`. Öffentliche GET-Aufrufe schreiben nicht. Fehlgeschlagene Importe erhalten vorhandene Berichte; der neueste Abschluss wird für nachträgliche Korrekturen erneut geprüft. Statische geprüfte Berichte dienen als Rückfall. Die Oberfläche zeigt den Teamvergleich, Torverlauf und Einzelwerte; fehlende Werte bleiben als Strich sichtbar. EHF-Berichte verwenden weiterhin die vorhandenen verifizierten Vereinsangaben.
-
-## Direkte Eigentümer-Aktualisierung
-
-`server/pages-auth.mjs` stellt nach Plattform-Anmeldung und expliziter Bestätigung eine auf 30 Tage begrenzte Browser-Freigabe aus. `platform.js` überträgt sie ausschliesslich für `/api/access` und `/api/refresh`. CORS ersetzt keine Autorisierung. Details und Rückkehrprüfung: [Pages-Betrieb](pages.md).
