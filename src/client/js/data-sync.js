@@ -113,9 +113,8 @@ async function checkUpdateAccess() {
   const button = document.getElementById('refresh-data');
   if (kadettenApiOrigin) {
     button.hidden = false;
-    button.setAttribute('aria-label', 'Eigentümerzugang zum Aktualisieren öffnen');
-    button.title = 'Daten aktualisieren · Eigentümerzugang';
-    return;
+    button.setAttribute('aria-label', 'Daten jetzt aktualisieren');
+    button.title = 'Daten jetzt aktualisieren';
   }
   try {
     const r = await apiFetch('/api/access', {cache: 'no-store'});
@@ -124,7 +123,7 @@ async function checkUpdateAccess() {
   } catch {
     canUpdateData = false;
   }
-  button.hidden = !canUpdateData;
+  button.hidden = !kadettenApiOrigin && !canUpdateData;
 }
 function refreshFeedback(message) {
   const el = document.getElementById('refresh-feedback');
@@ -150,17 +149,21 @@ async function publicJson(url) {
   }
 }
 async function manualRefresh() {
-  if (kadettenApiOrigin) {
-    window.open(kadettenApiOrigin + '/#home', '_blank', 'noopener,noreferrer');
-    return;
-  }
-  if (!canUpdateData || manualRefreshing) return;
+  if (manualRefreshing || (!kadettenApiOrigin && !canUpdateData)) return;
   manualRefreshing = true;
   const button = document.getElementById('refresh-data');
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   refreshFeedback('Aktualisierung läuft …');
   try {
+    if (kadettenApiOrigin) {
+      if (!canUpdateData || !ownerGrant()) {
+        refreshFeedback('Bitte die Aktualisierung einmal freigeben.');
+        await connectOwnerRefresh();
+        canUpdateData = true;
+      }
+      refreshFeedback('Aktualisierung läuft …');
+    }
     const supplied = {},
       failures = [];
     await Promise.all([
@@ -214,9 +217,11 @@ async function manualRefresh() {
     await loadCurrentData();
     if (r.status === 403) {
       canUpdateData = false;
-      button.hidden = true;
+      forgetOwnerGrant();
+      button.hidden = !kadettenApiOrigin;
       throw Error('Bitte mit deinem Eigentümer-Zugang anmelden.');
     }
+    if (r.status === 429) throw Error(d.error || 'Bitte warte kurz bis zur nächsten Aktualisierung.');
     if (!r.ok) throw Error('Die Quellen sind momentan nicht erreichbar. Der letzte gültige Stand bleibt erhalten.');
     const labels = {games: 'Spiele', table: 'Tabelle', news: 'News', players: 'Spielerwerte'},
       failed = Object.entries(d.status || {})

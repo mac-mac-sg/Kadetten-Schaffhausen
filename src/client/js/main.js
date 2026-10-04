@@ -17,7 +17,7 @@ window.addEventListener('hashchange', () => {
 render();
 if (!location.hash || location.hash === '#home') window.scrollTo({top: 0, behavior: 'instant'});
 loadCurrentData();
-checkUpdateAccess();
+checkUpdateAccess().then(() => { if (resumeOwnerRefresh) manualRefresh(); });
 document.getElementById('refresh-data').addEventListener('click', manualRefresh);
 window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
