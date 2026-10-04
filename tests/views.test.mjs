@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {parseHTML} from 'linkedom';
+const testDocument=parseHTML('<html><body></body></html>').document;
+class DOMParser {parseFromString(html){return parseHTML('<html><body>'+html+'</body></html>').document;}}
 
 // Lädt alle Oberflächen-Skripte (ausser dem Startcode) in eine einfache Browser-Attrappe
 // und baut die Ansichten mit dem mitgelieferten Datenstand. Fängt Tippfehler und
@@ -14,10 +17,13 @@ const noop = () => {};
 const fakeElement = () => ({classList: {toggle: noop, add: noop, remove: noop}, style: {}, dataset: {}, setAttribute: noop});
 const location = {hash: '', href: 'https://example.test/Kadetten/'};
 const context = {
+  DOMParser,
   location,
   navigator: {onLine: true},
   document: {
     hidden: false,
+    createElement: tag=>testDocument.createElement(tag),
+    createTextNode: text=>testDocument.createTextNode(text),
     body: fakeElement(),
     documentElement: fakeElement(),
     querySelector: () => null,
@@ -173,4 +179,19 @@ test('FCSG: alle News-, Saison-, Spiel- und Spieleransichten ohne Kadetten-Werte
   for(const g of run('fcsgData.games'))for(const tab of ['overview','squad','stats'])view(`fcsgView('match','${g.id}','${tab}')`);
   run("mode='calendar'");assert.match(view("fcsgView('season','games')"),/calendar-fixture/);
  }finally{run("activeClub='kadetten';mode='list'")}
+});
+
+test('FCSG club history reuses the trophy controls with its own years and chapter anchors',()=>{
+ run("activeClub='fcsg'");const out=run('fcsgClubPage()');assert.ok(out.includes('Grün-Weisse'));assert.ok(out.includes('Cupsieg 2026'));assert.ok(!out.includes('Kadetten'));
+ for(const c of run('fcsgHistory'))assert.ok(out.includes(`id="club-history-${c.id}"`));
+ for(const t of run('fcsgTrophies'))for(const year of t.years){const panel=run(`fcsgTrophyYears('${t.id}',${year})`);assert.ok(panel.includes(`aria-pressed="true">${year}</button>`));assert.ok(panel.includes('Diesen Moment entdecken'));}
+ run("activeClub='kadetten'");
+});
+test('FCSG live view shows a provisional score and ticker, separate from completed season results',()=>{
+ run("activeClub='fcsg'; fcsgLiveGames.set('458',{...fcsgData.games.find(g=>g.id==='458'),live:true,liveScore:[2,1],phase:'2. Halbzeit',clock:'70′',ticker:[{id:'1',minute:'69',title:'Tor!',html:'<p>Grün-Weiss trifft.</p>'}]})");
+ assert.ok(run("fcsgMatch('458','ticker')").includes('Grün-Weiss trifft.'));
+ assert.ok(run("fcsgCard(fcsgGame('458'))").includes('2 : 1'));
+ assert.equal(run("fcsgData.games.find(g=>g.id==='458').score"),null);
+ assert.ok(run("fcsgLiveState(fcsgGame('458'))").includes('JETZT LIVE'));
+ run("fcsgLiveGames.clear();activeClub='kadetten'");
 });

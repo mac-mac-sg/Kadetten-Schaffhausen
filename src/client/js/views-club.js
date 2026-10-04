@@ -8,10 +8,10 @@ function clubTrophyIcon(id) {
       : '<path d="m50 12 29 12-5 31-24 16-24-16-5-31Z"/><path d="m50 25 4 10 11 1-8 7 3 11-10-6-10 6 3-11-8-7 11-1Z" fill="#151914"/>';
   return `<svg viewBox="0 0 100 100" class="club-trophy-icon" aria-hidden="true">${form}<path d="M46 64h8v15h16v9H30v-9h16Z"/></svg>`;
 }
-function clubTrophyYears(id, selectedYear) {
-  const trophy = clubTrophies.find(t => t.id === id) || clubTrophies[0];
+function clubTrophyYears(id, selectedYear, trophies=clubTrophies, chapters=clubHistory) {
+  const trophy = trophies.find(t => t.id === id) || trophies[0];
   const year = trophy.years.includes(Number(selectedYear)) ? Number(selectedYear) : trophy.years.at(-1);
-  const chapter = clubHistory.find(c => c.trophy === trophy.id && c.trophyYear === year);
+  const chapter = chapters.find(c => c.trophy === trophy.id && c.trophyYear === year);
   return `<h3>${trophy.title}</h3><p class="club-year-hint">Wähle ein Titeljahr.</p><div class="club-title-years">${trophy.years.map(y => `<button data-club-year="${y}" data-club-category="${trophy.id}" aria-pressed="${y === year}">${y}</button>`).join('')}</div><p class="club-selected-title" role="status">${trophy.title} · <strong>${year}</strong></p>${chapter ? `<button class="club-text-button" data-club-jump="club-history-${chapter.id}">Diesen Moment entdecken <span aria-hidden="true">↗</span></button>` : ''}`;
 }
 function clubPage() {
@@ -21,6 +21,8 @@ function clubPage() {
 function setupClubPage() {
   clubObserver?.disconnect();
   const root = document.querySelector('.club-page');
+  const trophies = activeClub === 'fcsg' ? fcsgTrophies : clubTrophies;
+  const chapters = activeClub === 'fcsg' ? fcsgHistory : clubHistory;
   if (!root) return;
   const jump = id => {
     const target = document.getElementById(id);
@@ -34,8 +36,8 @@ function setupClubPage() {
     if (!button || !root.contains(button)) return;
     if (button.dataset.clubJump) jump(button.dataset.clubJump);
     const category = button.dataset.clubTrophy || button.dataset.clubCategory;
-    if (category && clubTrophies.some(t => t.id === category)) {
-      document.getElementById('club-title-panel').innerHTML = clubTrophyYears(category, button.dataset.clubTitleYear || button.dataset.clubYear);
+    if (category && trophies.some(t => t.id === category)) {
+      document.getElementById('club-title-panel').innerHTML = clubTrophyYears(category, button.dataset.clubTitleYear || button.dataset.clubYear,trophies,chapters);
       root.querySelectorAll('.club-trophy').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clubTrophy === category)));
       if (button.dataset.clubTitleYear) jump('club-cabinet');
       else if (button.dataset.clubYear) document.querySelector(`#club-title-panel [data-club-year="${button.dataset.clubYear}"]`)?.focus({preventScroll: true});

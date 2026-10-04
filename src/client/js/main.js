@@ -26,7 +26,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {
     if (activeClub === 'kadetten') setupEnhancements();
-    else loadFcsgData();
+    else {loadFcsgData();loadFcsgLive(true);}
     showLiveMatch();
     checkLiveMatch();
   }
