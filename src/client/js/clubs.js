@@ -37,7 +37,60 @@ function updateClubHeader() {
     button.title = 'Zu ' + fanClubs[other].name + ' wechseln';
   }
 }
+let clubTransitionBusy = false;
 function switchClub(id) {
+  if (clubTransitionBusy || !Object.hasOwn(fanClubs, id) || id === activeClub) return;
+  const root = document.documentElement, button = document.getElementById('club-switch');
+  const bounds = button?.getBoundingClientRect?.();
+  const x = bounds ? bounds.left + bounds.width / 2 : window.innerWidth / 2;
+  const y = bounds ? bounds.top + bounds.height / 2 : 0;
+  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let changed = false;
+  const change = () => { if (!changed) { changed = true; applyClubChange(id); } };
+  const finish = () => {
+    clubTransitionBusy = false;
+    if (button) button.disabled = false;
+    root.classList.remove('club-transition', 'club-transition-reduced');
+    for (const key of ['--club-wave-x', '--club-wave-y', '--club-wave-radius']) root.style.removeProperty(key);
+  };
+  const fallback = () => {
+    change();
+    if (typeof document.getElementById('app')?.animate !== 'function') { finish(); return; }
+    const target = reduced ? document.getElementById('app') : document.createElement('div');
+    if (!reduced) {
+      target.className = 'club-color-wave';
+      target.setAttribute('aria-hidden', 'true');
+      target.style.setProperty('--club-wave-x', x + 'px');
+      target.style.setProperty('--club-wave-y', y + 'px');
+      target.style.setProperty('--club-wave-radius', radius + 'px');
+      document.body.append(target);
+    }
+    try {
+      const frames = reduced ? [{opacity: 0.7}, {opacity: 1}] : [
+        {clipPath: `circle(0px at ${x}px ${y}px)`, opacity: 0.65},
+        {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0.3, offset: 0.7},
+        {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0}
+      ];
+      target.animate(frames, {duration: reduced ? 120 : 400, easing: 'cubic-bezier(.22,1,.36,1)'})
+        .finished.catch(() => {}).finally(() => { if (!reduced) target.remove(); finish(); });
+    } catch { if (!reduced) target.remove(); finish(); }
+  };
+  clubTransitionBusy = true;
+  if (button) button.disabled = true;
+  if (typeof document.startViewTransition !== 'function') { fallback(); return; }
+  root.style.setProperty('--club-wave-x', x + 'px');
+  root.style.setProperty('--club-wave-y', y + 'px');
+  root.style.setProperty('--club-wave-radius', radius + 'px');
+  root.classList.add('club-transition');
+  if (reduced) root.classList.add('club-transition-reduced');
+  try {
+    const transition = document.startViewTransition(change);
+    transition.ready.catch(() => {});
+    transition.finished.catch(() => {}).finally(() => { change(); finish(); });
+  } catch { fallback(); }
+}
+function applyClubChange(id) {
   if (!Object.hasOwn(fanClubs, id) || id === activeClub) return;
   activeClub = id;
   try { localStorage.setItem(CLUB_CHOICE_KEY, id); } catch {}
