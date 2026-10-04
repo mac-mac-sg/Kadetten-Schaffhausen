@@ -21,7 +21,6 @@ function clubPage() {
 function setupClubPage() {
   clubObserver?.disconnect();
   const root = document.querySelector('.club-page');
-  document.documentElement.classList.remove('snap-club');
   if (!root) return;
   const jump = id => {
     const target = document.getElementById(id);
@@ -55,7 +54,6 @@ function setupClubPage() {
         else visible.delete(e.target);
       }
       const current = [...visible].sort((a,b) => b[1]-a[1])[0]?.[0];
-      document.documentElement.classList.toggle('snap-club', !!current);
       if (!current) return;
       root.querySelectorAll('.club-chapter').forEach(c => c.classList.toggle('history-active', c === current));
       root.querySelectorAll('.club-years button').forEach(b => {
