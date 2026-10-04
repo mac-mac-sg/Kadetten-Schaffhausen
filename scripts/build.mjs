@@ -9,7 +9,7 @@ fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JS
 
 // Content-version the complete shell on every build, including future UI edits.
 const {createHash}=await import('node:crypto');
-const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/router.js','js/data-sync.js','js/live.js','js/main.js','style.css','enhancements.css','club.css','pwa.js','manifest.webmanifest','assets/anton.ttf'];
+const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/fcsg-live.js','js/fcsg-history.js','js/router.js','js/data-sync.js','js/live.js','js/main.js','style.css','enhancements.css','club.css','pwa.js','manifest.webmanifest','assets/anton.ttf'];
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
 let sw=fs.readFileSync('dist/client/sw.js','utf8').replace("const API_ORIGIN='';",'const API_ORIGIN='+JSON.stringify(apiOrigin)+';').replace(/const CACHE='[^']+';/,"const CACHE='kadetten-offline-build';").replace(/\?v=[a-f0-9]+/g,'');
 const hash=createHash('sha256').update(html).update(sw);

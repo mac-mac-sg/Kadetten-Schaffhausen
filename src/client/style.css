@@ -2867,3 +2867,16 @@ html.snap-profile {
 [data-club='fcsg'] .current-game { background: linear-gradient(115deg,#124a30,#1b633e); border-color: var(--accent); }
 [data-club='fcsg'] .current-label { background: var(--accent-soft); color: #0c1812; }
 [data-club='fcsg'] .season-form a { min-width: 44px; min-height: 44px; }
+.fcsg-ticker{padding:0;list-style:none;border-top:1px solid var(--line)}
+.fcsg-ticker li{display:grid;grid-template-columns:55px minmax(0,1fr);gap:16px;padding:24px 0;border-bottom:1px solid var(--line)}
+.fcsg-ticker h3{font-size:20px;margin:0 0 8px;line-height:1.4}
+.fcsg-ticker p{line-height:1.7;margin:8px 0}
+.fcsg-ticker-minute{font-weight:800;color:var(--accent-soft);font-size:19px}
+.fcsg-live-summary{color:var(--accent-soft);font-weight:700}
+.fcsg-live-notice{font-size:13px;color:var(--muted);line-height:1.6}
+.fcsg-live-notice.is-stale{color:#f1cc83}
+[data-club='fcsg'] .match-tabs{flex-wrap:wrap}
+[data-club='fcsg'] .match-tabs a{min-height:44px}
+[data-club='fcsg'] .fcsg-game-live{border-color:var(--accent)}
+[data-club='fcsg'] .home-matchday .live-match.is-live{background:linear-gradient(115deg,#125735,#0e3726);border-color:var(--accent)}
+@media(max-width:380px){.fcsg-ticker li{grid-template-columns:42px minmax(0,1fr);gap:10px}}

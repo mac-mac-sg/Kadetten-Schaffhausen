@@ -29,3 +29,19 @@
 @media(max-width:650px){.club-intro-copy{padding:100px 24px 60px}.club-intro{min-height:610px;min-height:78svh}.club-intro-copy>p:not(.club-eyebrow){font-size:15px}.club-intro-caption{left:24px}.club-cabinet{padding:46px 20px}.club-trophies{gap:8px}.club-trophy{padding:16px 5px}.club-trophy span{font-size:11px}.club-title-panel{padding:20px 16px}.club-history-heading{padding-inline:24px}.club-chapter{grid-template-columns:1fr;gap:20px;padding:30px 24px 100px;min-height:calc(100svh - 88px)}.club-chapter figure img{height:clamp(160px,30svh,300px)}.club-roots figure img{height:200px;padding:36px}.club-chapter-year{font-size:52px}.club-topline{padding-inline:20px}.club-topline span{font-size:10px}.club-history{grid-template-columns:62px minmax(0,1fr);column-gap:0}.club-years{margin-left:6px;padding-left:2px;background-position:8px 0}.club-years button{width:54px;padding-left:16px;font-size:10px}.club-chapter{padding-left:10px;padding-right:18px}.club-chapter h3{font-size:25px}.club-trophy strong{font-size:36px}}
 @media(max-width:380px){.club-intro h1{font-size:60px}.club-trophy span{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.club-page *{transition:none!important;animation:none!important}.club-chapter-copy,.club-chapter figure img,.club-trophy[aria-pressed=true]{transform:none}}
+/* Die Vereinsseiten teilen ihren Aufbau; Grün-Weiss erhält eigene Akzente. */
+[data-club='fcsg'] :is(.club-eyebrow,.club-topline span,.club-chapter-year,.club-years button[aria-pressed=true]){color:var(--accent-soft)}
+[data-club='fcsg'] .club-intro-actions button:first-child{background:var(--accent)}
+[data-club='fcsg'] .club-trophy[aria-pressed=true]{border-color:var(--accent);background:#66d99b18;color:var(--accent-soft)}
+[data-club='fcsg'] .club-title-years button[aria-pressed=true]{background:var(--accent);color:var(--surface)}
+[data-club='fcsg'] .club-years{background-image:linear-gradient(#66d99b40,#66d99b40)}
+[data-club='fcsg'] .club-years button::before{border-color:var(--accent)}
+[data-club='fcsg'] .club-years button[aria-pressed=true]::before{background:var(--accent);box-shadow:0 0 0 3px #66d99b21}
+[data-club='fcsg'] .club-chapter{background:radial-gradient(ellipse at 0 30%,#66d99b0a,transparent 65%)}
+[data-club='fcsg'] .club-page :is(button,a,summary):focus-visible{outline-color:var(--accent-soft)}
+[data-club='fcsg'] .club-trophies{grid-template-columns:repeat(4,minmax(0,1fr))}
+.fcsg-history-mark{display:grid;place-items:center;gap:28px;padding:48px 20px;background:radial-gradient(ellipse at center,#20654044,transparent 75%);min-height:300px}
+.fcsg-history-mark img{width:110px;height:110px;object-fit:contain}
+.fcsg-history-mark span{font-family:Anton,sans-serif;font-size:clamp(44px,7vw,80px);color:var(--accent-soft)}
+.fcsg-history-source{font-size:12px!important}
+@media(max-width:650px){[data-club='fcsg'] .club-trophies{grid-template-columns:repeat(2,minmax(0,1fr))}.fcsg-history-mark{min-height:220px;padding:24px 12px}.fcsg-history-mark img{width:80px;height:80px}}

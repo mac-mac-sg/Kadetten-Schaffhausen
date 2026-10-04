@@ -213,6 +213,8 @@ function render() {
     if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
     syncOfflineNotice();
     loadFcsgArticle();
+    setupClubPage();
+    loadFcsgLive();
     window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
     requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
     return;

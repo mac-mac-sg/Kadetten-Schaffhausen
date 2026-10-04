@@ -9,7 +9,7 @@ function app(url, saved, storageFails = false) {
   const location = {href: url, hash: new URL(url).hash};
   const store = new Map([['fan-app-active-club-v1', saved]]);
   let renders = 0, polls = 0;
-  const context = vm.createContext({document, location, URL, setInterval() {}, navigator:{onLine:true}, apiFetch:()=>Promise.reject(Error("offline")), AbortSignal, liveEscape:s=>String(s), safeUrl:s=>s, swissToday:()=>"2026-10-04", date:g=>g.date, mode:"list", calendarYear:2026, month:9, localStorage: {
+  const context = vm.createContext({document, location, URL, setInterval() {}, navigator:{onLine:true}, apiFetch:()=>Promise.reject(Error("offline")), AbortSignal, liveEscape:s=>String(s), safeUrl:s=>s, backLink:(url,label)=>`<a href="${url}">${label}</a>`, Date, swissToday:()=>"2026-10-04", date:g=>g.date, mode:"list", calendarYear:2026, month:9, localStorage: {
     getItem: key => { if (storageFails) throw Error('unavailable'); return store.get(key); },
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
@@ -18,7 +18,11 @@ function app(url, saved, storageFails = false) {
   });
   document.getElementById('app').focus = () => {};
   vm.runInContext(fs.readFileSync("src/client/data/fcsg-fallback.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/data/club.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/js/views-club.js", "utf8"), context);
   vm.runInContext(source, context);
+  vm.runInContext(fs.readFileSync("src/client/js/fcsg-live.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/js/fcsg-history.js", "utf8"), context);
   const run = code => vm.runInContext(code, context);
   return {run, document, store, location, counts: () => [renders, polls]};
 }
