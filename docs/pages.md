@@ -18,7 +18,7 @@ GitHub Pages führt kein Worker-Backend aus. Für die bestehenden Funktionen ble
 - Spielplan, Tabellen und Spielerwerte mit bestehenden Zweistunden-Updates
 - bestätigte Live-Werte, Formkurven und Direktvergleiche
 
-Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Das Aktualisieren des Datenbestands erfolgt weiter automatisch oder über den Eigentümerzugang auf der bisherigen Sites-App. In der Pages-App ist der Eigentümer-Aktualisieren-Button ausgeblendet; das Neuladen fragt den aktuellen Datenstand ab.
+Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Das Aktualisieren des Datenbestands erfolgt weiter automatisch oder über den Eigentümerzugang auf der bisherigen Sites-App. Das kleine Aktualisieren-Icon oben rechts in der Pages-App öffnet den bisherigen Eigentümerzugang in einem neuen Fenster. Dort startet der angemeldete Eigentümer die Datenaktualisierung. Das Icon selbst führt keinen öffentlichen Schreibzugriff aus; das Neuladen der Pages-App fragt den aktuellen Datenstand ab.
 
 Das ist eine Migration von Codebasis, Oberfläche und Veröffentlichung nach GitHub. Der Datendienst bleibt eine ausdrücklich dokumentierte Abhängigkeit. Vollständige Artikel und laufende Statistiken werden nicht in Git-Commits kopiert. Es gibt keine separate Testumgebung.
 

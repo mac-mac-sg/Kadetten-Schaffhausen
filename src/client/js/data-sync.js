@@ -111,6 +111,12 @@ let manualRefreshing = false,
   canUpdateData = false;
 async function checkUpdateAccess() {
   const button = document.getElementById('refresh-data');
+  if (kadettenApiOrigin) {
+    button.hidden = false;
+    button.setAttribute('aria-label', 'Eigentümerzugang zum Aktualisieren öffnen');
+    button.title = 'Daten aktualisieren · Eigentümerzugang';
+    return;
+  }
   try {
     const r = await apiFetch('/api/access', {cache: 'no-store'});
     const d = await r.json();
@@ -144,6 +150,10 @@ async function publicJson(url) {
   }
 }
 async function manualRefresh() {
+  if (kadettenApiOrigin) {
+    window.open(kadettenApiOrigin + '/#home', '_blank', 'noopener,noreferrer');
+    return;
+  }
   if (!canUpdateData || manualRefreshing) return;
   manualRefreshing = true;
   const button = document.getElementById('refresh-data');
