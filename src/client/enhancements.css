@@ -651,6 +651,25 @@
   }
 }
 
+/* Keep the club switch above the sticky filters after centering the next game. */
+body.games-mode { --games-header-height: 82px; }
+.games-mode > .top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--surface);
+}
+.games-mode .season-header { top: var(--games-header-height); }
+@media (max-width: 640px) {
+  body.games-mode { --games-header-height: 72px; }
+}
+@media (display-mode: standalone) {
+  body.games-mode { --games-header-height: calc(82px + env(safe-area-inset-top)); }
+}
+@media (max-height: 700px) {
+  body.games-mode.calendar-mode { --games-header-height: calc(60px + env(safe-area-inset-top)); }
+}
+
 /* The month fills the available viewport, including months with six weeks. */
 html.calendar-mode {
   overflow: hidden;
