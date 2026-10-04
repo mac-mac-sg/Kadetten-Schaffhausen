@@ -224,6 +224,13 @@
 .story-screen.story-current > img {
   transform: scale(1);
 }
+.story-screen > img.club-news-reveal {
+  animation: club-news-reveal 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+@keyframes club-news-reveal {
+  from { transform: scale(1.035); }
+  to { transform: scale(1); }
+}
 .winning-headline {
   animation: winning-light 0.9s ease-out both;
 }
@@ -295,6 +302,7 @@
   .story-screen > img {
     transform: none;
   }
+  .story-screen > img.club-news-reveal { animation: none; }
   .winning-headline {
     animation: none;
   }
@@ -1509,7 +1517,7 @@ body.calendar-mode {
   animation: matchday-dot 1.6s ease-out infinite;
 }
 .live-match.match-preview.matchday-upcoming::after {
-  animation-duration: 2.2s;
+  animation-duration: 4.2s;
   animation-delay: 0.8s;
 }
 .matchday-upcoming .home-countdown {
@@ -1778,7 +1786,7 @@ html.snap-news {
 .home-matchday .live-match.is-matchday-intro {
   isolation: isolate;
   background: #101310b8;
-  animation: arena-matchday-border 1.3s ease both;
+  animation: arena-matchday-border 2.2s ease both;
 }
 .home-matchday .is-matchday-intro::before {
   content: '';
@@ -1786,12 +1794,12 @@ html.snap-news {
   inset: 0;
   z-index: -1;
   background: linear-gradient(115deg, #d85306 0 42%, #ee6a08 42% 74%, #b84205 74%);
-  animation: arena-matchday-sweep 1.3s cubic-bezier(.2,.7,.2,1) both;
+  animation: arena-matchday-sweep 2.2s cubic-bezier(.2,.7,.2,1) both;
   pointer-events: none;
 }
 .home-matchday .is-matchday-intro::after { display: none; }
 .home-matchday .is-matchday-intro .live-heading > span {
-  animation: arena-matchday-label 1.3s ease both;
+  animation: arena-matchday-label 2.2s ease both;
 }
 @keyframes arena-matchday-sweep {
   0%, 12% { transform: translateX(-115%) skewX(-12deg); opacity: 0; }
