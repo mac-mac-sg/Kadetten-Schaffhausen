@@ -2353,7 +2353,8 @@ html.snap-profile {
 }
 
 /* Home preview echoes the highlighted next fixture */
-.live-match.match-preview {
+.live-match.match-preview,
+.home-matchday .live-match {
   background: linear-gradient(115deg, #8c3d09d9 0 48%, #a94c0dc4 48%);
   border: 2px solid #ff9b4acc;
   color: var(--cream);
@@ -2730,7 +2731,8 @@ html.snap-profile {
   overflow: hidden;
   isolation: isolate;
 }
-.live-match.match-preview::after {
+.live-match.match-preview::after,
+.home-matchday .live-match::after {
   content: '';
   position: absolute;
   inset: -35% auto -35% -60%;
@@ -2739,30 +2741,30 @@ html.snap-profile {
   transform: translateX(-20%) skewX(-15deg);
   opacity: 0;
   pointer-events: none;
-  animation: preview-reflection 4.2s ease-in-out infinite;
+  animation: preview-reflection 3s ease-in-out infinite;
   animation-delay: 1.5s;
 }
 @keyframes preview-reflection {
-  0%,
-  34% {
+  0% {
     transform: translateX(-20%) skewX(-15deg);
     opacity: 0;
   }
-  40% {
+  8% {
     opacity: 1;
   }
-  94% {
+  84% {
     transform: translateX(340%) skewX(-15deg);
     opacity: 1;
   }
-  98%,
+  92%,
   100% {
     transform: translateX(340%) skewX(-15deg);
     opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .live-match.match-preview::after {
+  .live-match.match-preview::after,
+  .home-matchday .live-match::after {
     animation: none;
     display: none;
   }

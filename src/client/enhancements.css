@@ -219,15 +219,12 @@
 }
 .story-screen > img {
   transform: scale(1.035);
-  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .story-screen.story-current > img {
   transform: scale(1);
+  animation: news-photo-settle 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-.story-screen > img.club-news-reveal {
-  animation: club-news-reveal 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
-}
-@keyframes club-news-reveal {
+@keyframes news-photo-settle {
   from { transform: scale(1.035); }
   to { transform: scale(1); }
 }
@@ -302,7 +299,7 @@
   .story-screen > img {
     transform: none;
   }
-  .story-screen > img.club-news-reveal { animation: none; }
+  .story-screen.story-current > img { animation: none; transform: none; }
   .winning-headline {
     animation: none;
   }
@@ -1462,7 +1459,7 @@ body.calendar-mode {
   }
 }
 .live-match:not([hidden]) {
-  animation: matchday-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: matchday-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 @keyframes matchday-glow {
   0%,
@@ -1501,8 +1498,8 @@ body.calendar-mode {
   background: linear-gradient(115deg, #8c3d09 0 48%, #b34908 48%);
   border-color: #ffc58a;
   animation:
-    matchday-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
-    matchday-glow 2.4s ease-in-out 0.45s infinite;
+    matchday-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+    matchday-glow 2.4s ease-in-out 0.9s infinite;
 }
 .matchday-upcoming .live-heading > span {
   display: inline-flex;
@@ -1517,7 +1514,7 @@ body.calendar-mode {
   animation: matchday-dot 1.6s ease-out infinite;
 }
 .live-match.match-preview.matchday-upcoming::after {
-  animation-duration: 4.2s;
+  animation-duration: 3s;
   animation-delay: 0.8s;
 }
 .matchday-upcoming .home-countdown {
@@ -1547,9 +1544,6 @@ body.calendar-mode {
 .live-match.match-preview.matchday-over {
   border-color: #ff9b4a66;
   box-shadow: 0 12px 40px #0005;
-}
-.live-match.matchday-over::after {
-  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .live-match:not([hidden]),
@@ -1737,7 +1731,6 @@ html.snap-news {
   box-shadow: inset 0 1px 0 #ffffff12, 0 8px 24px #0004;
   color: var(--cream);
 }
-.home-matchday .live-match:not(.is-matchday)::after { display: none; }
 .home-matchday .live-heading > span {
   color: var(--accent-soft);
   padding: 3px 8px;
@@ -1750,7 +1743,7 @@ html.snap-news {
   border: 1px solid #ffb471b3;
   border-radius: 6px 20px 6px 20px;
   box-shadow: inset 0 1px 0 #fff1e530, 0 8px 24px #0004;
-  animation: matchday-in .45s cubic-bezier(.2,.8,.2,1);
+  animation: matchday-in .9s cubic-bezier(.2,.8,.2,1);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
