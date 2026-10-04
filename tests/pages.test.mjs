@@ -30,9 +30,9 @@ test('CORS permits protected Pages requests and preflights without granting cook
 test('Owner return consumes its pending nonce once and removes the credential fragment immediately',()=>{
  const code=fs.readFileSync('src/client/platform.js','utf8'),token='b'.repeat(64),state='a'.repeat(32),expiry=Date.now()+60000;
  for(const valid of [true,false]){
-  const values=new Map(),session=new Map([['kadetten-connect-state',JSON.stringify({state:valid?state:'wrong',at:Date.now()})]]),historyCalls=[];
-  const context={window:{KADETTEN_PLATFORM:{apiOrigin:'https://kadetten.ma-ra10.chatgpt.site'}},Response,Headers,location:{hash:'#owner-connect/'+state+'/'+token+'/'+expiry,pathname:'/Kadetten-Schaffhausen/',search:''},history:{replaceState:(...args)=>historyCalls.push(args)},localStorage:{getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)},sessionStorage:{getItem:k=>session.get(k),removeItem:k=>session.delete(k)}};
+  const values=new Map([['kadetten-connect-state',JSON.stringify({state:valid?state:'wrong',at:Date.now()})]]),historyCalls=[];
+  const context={window:{KADETTEN_PLATFORM:{apiOrigin:'https://kadetten.ma-ra10.chatgpt.site'}},Response,Headers,location:{hash:'#owner-connect/'+state+'/'+token+'/'+expiry,pathname:'/Kadetten-Schaffhausen/',search:''},history:{replaceState:(...args)=>historyCalls.push(args)},localStorage:{getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)}};
   vm.createContext(context);vm.runInContext(code,context);
-  assert.equal(values.has('kadetten-owner-refresh-v1'),valid);assert.equal(session.size,0);assert.equal(historyCalls[0][2],'/Kadetten-Schaffhausen/#home');
+  assert.equal(values.has('kadetten-owner-refresh-v1'),valid);assert.equal(values.has('kadetten-connect-state'),false);assert.equal(historyCalls[0][2],'/Kadetten-Schaffhausen/#home');
  }
 });

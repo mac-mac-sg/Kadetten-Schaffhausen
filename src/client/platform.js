@@ -20,15 +20,15 @@ function apiFetch(path,options={}){
 let resumeOwnerRefresh=false;
 if(kadettenApiOrigin&&typeof location!=='undefined'&&location.hash.startsWith('#owner-connect/')){
  try{
-  const [,state,token,expiry]=location.hash.split('/'),pending=JSON.parse(sessionStorage.getItem('kadetten-connect-state')||'null'),expiresAt=Number(expiry);
+  const [,state,token,expiry]=location.hash.split('/'),pending=JSON.parse(localStorage.getItem('kadetten-connect-state')||'null'),expiresAt=Number(expiry);
   if(pending?.state===state&&pending.at>Date.now()-600000&&/^[a-f0-9]{64}$/.test(token||'')&&Number.isFinite(expiresAt)&&expiresAt>Date.now()&&expiresAt<=Date.now()+30*86400000){localStorage.setItem(ownerGrantKey,JSON.stringify({token,expiresAt}));resumeOwnerRefresh=true}
  }catch{}
- try{sessionStorage.removeItem('kadetten-connect-state')}catch{}
+ try{localStorage.removeItem('kadetten-connect-state')}catch{}
  history.replaceState(null,'',location.pathname+location.search+'#home');
 }
 function connectOwnerRefresh(){
  const state=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
- sessionStorage.setItem('kadetten-connect-state',JSON.stringify({state,at:Date.now()}));
+ localStorage.setItem('kadetten-connect-state',JSON.stringify({state,at:Date.now()}));
  location.assign(kadettenApiOrigin+'/admin/connect?state='+state);
  return new Promise(()=>{}); // The one-time sign-in returns to this app and resumes refresh.
 }
