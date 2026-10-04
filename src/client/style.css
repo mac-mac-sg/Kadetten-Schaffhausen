@@ -2786,3 +2786,60 @@ html.snap-profile {
     animation: none;
   }
 }
+
+/* Gemeinsamer Vereinswechsel: eine Touch-Fläche, immer im Titelbereich. */
+.club-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff0c;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.club-switch svg { width: 20px; height: 20px; color: var(--accent); }
+.club-switch:hover { background: #ffffff20; }
+.club-switch:active { background: #ffffff30; }
+.club-switch:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }
+.top .brand { min-width: 0; flex-shrink: 1; }
+.top .brand img { flex-shrink: 0; }
+@media (max-width: 600px) {
+  .top { gap: 8px; }
+  .club-switch { margin-left: auto; }
+  .top .club-entry { margin-left: 0; }
+}
+@media (max-width: 380px) {
+  .club-switch span { display: none; }
+  .club-switch { min-width: 44px; padding: 8px; }
+  .top .brand { font-size: 15px; gap: 8px; }
+}
+:root[data-club='fcsg'] {
+  --accent: #66d99b;
+  --accent-soft: #a3edc2;
+  --cream: #f1fff6;
+  --surface: #0c1812;
+  --surface-2: #182b21;
+  --muted: #b8ccbf;
+}
+[data-club='fcsg'] .button:hover { background: var(--accent-soft); }
+[data-club='fcsg'] .button.subtle { color: var(--text); }
+.fcsg-home, .fcsg-season { max-width: 1120px; margin: auto; }
+.fcsg-welcome {
+  padding: 48px 24px;
+  background: radial-gradient(ellipse at 50% 10%, #227b4938, transparent 70%);
+  border-bottom: 1px solid var(--line);
+}
+.fcsg-welcome > img { object-fit: contain; margin-bottom: 24px; }
+.fcsg-welcome h1 { font-family: Anton, var(--font-text); font-weight: 400; font-size: clamp(44px, 8vw, 90px); }
+.fcsg-welcome p:last-child { color: var(--muted); max-width: 500px; margin-bottom: 0; }
+.fcsg-pending { padding: 28px; margin: 24px 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface-2); }
+.fcsg-pending p { color: var(--muted); max-width: 620px; }
+.fcsg-status { display: inline-block; color: var(--accent-soft); font-size: 12px; font-weight: 700; margin-bottom: 16px; }
+[data-club='fcsg'] .home-news-heading { margin-top: 32px; }
+@media (prefers-reduced-motion: reduce) { .club-switch { transition: none; } }

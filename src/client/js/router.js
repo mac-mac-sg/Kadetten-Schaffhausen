@@ -115,7 +115,9 @@ function render() {
   scrollRoot.classList.toggle('calendar-mode', fixedCalendar);
   document.body.classList.toggle('calendar-mode', fixedCalendar);
   $('#app').innerHTML =
-    page === 'home'
+    activeClub === 'fcsg'
+      ? fcsgView(page, id)
+      : page === 'home'
       ? home()
       : page === 'club'
         ? clubPage()
@@ -200,8 +202,18 @@ function render() {
             ? 'Unser Verein'
             : page === 'news'
             ? 'Artikel'
-            : 'News') + ' · Kadetten Schaffhausen';
+            : 'News') + ' · ' + fanClubs[activeClub].name;
   setupViews();
+  updateClubHeader();
+  if (activeClub === 'fcsg') {
+    document.body.classList.remove('immersive', 'player-mode', 'calendar-mode');
+    scrollRoot.classList.remove('snap-news', 'snap-profile', 'calendar-mode');
+    document.querySelector('[data-nav="games"]')?.classList.remove('is-matchday');
+    document.querySelector('[data-nav="games"]')?.setAttribute('aria-label', 'Spiele');
+    window.scrollTo({top: scrollTop, behavior: 'instant'});
+    requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
+    return;
+  }
   setupClubPage();
   setupRecentGames();
   showLiveMatch();

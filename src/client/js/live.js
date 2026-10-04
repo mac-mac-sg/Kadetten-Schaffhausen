@@ -58,7 +58,7 @@ function showLiveMatch() {
 
 async function checkLiveMatch() {
   clearTimeout(liveTimer);
-  if (document.hidden || !(['', '#home'].includes(location.hash) || location.hash.startsWith('#match/') || location.hash === '#season/games')) return;
+  if ((typeof activeClub !== 'undefined' && activeClub !== 'kadetten') || document.hidden || !(['', '#home'].includes(location.hash) || location.hash.startsWith('#match/') || location.hash === '#season/games')) return;
   if (!navigator.onLine) {
     liveRequestFailed = true;
     showLiveMatch();
@@ -83,7 +83,7 @@ async function checkLiveMatch() {
     showLiveMatch();
     refreshMatchdayDetail();
     refreshLiveViews();
-    liveTimer = setTimeout(checkLiveMatch, (liveState?.match || lastLiveMatch) ? 30000 : 60000);
+    if (typeof activeClub === 'undefined' || activeClub === 'kadetten') liveTimer = setTimeout(checkLiveMatch, (liveState?.match || lastLiveMatch) ? 30000 : 60000);
   }
 }
 

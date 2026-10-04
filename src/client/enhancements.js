@@ -89,6 +89,7 @@ function syncOfflineNotice() {
   document.body.classList.toggle('is-offline', !el.hidden);
 }
 function setupEnhancements() {
+  if (typeof activeClub !== 'undefined' && activeClub !== 'kadetten') return;
   const [page, id] = location.hash.slice(1).split('/'),
     game = page === 'match' ? games.find(g => g.id === id) : null;
   const opponent = game ? (game.home.includes('Kadetten') ? game.away : game.home) : null;
