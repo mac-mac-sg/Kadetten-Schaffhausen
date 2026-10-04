@@ -116,7 +116,7 @@ function render() {
   document.body.classList.toggle('calendar-mode', fixedCalendar);
   $('#app').innerHTML =
     activeClub === 'fcsg'
-      ? fcsgView(page, id)
+      ? fcsgView(page, id, tab)
       : page === 'home'
       ? home()
       : page === 'club'
@@ -206,11 +206,14 @@ function render() {
   setupViews();
   updateClubHeader();
   if (activeClub === 'fcsg') {
-    document.body.classList.remove('immersive', 'player-mode', 'calendar-mode');
-    scrollRoot.classList.remove('snap-news', 'snap-profile', 'calendar-mode');
+    document.body.classList.toggle('player-mode', false);
+    scrollRoot.classList.toggle('snap-profile', false);
     document.querySelector('[data-nav="games"]')?.classList.remove('is-matchday');
     document.querySelector('[data-nav="games"]')?.setAttribute('aria-label', 'Spiele');
-    window.scrollTo({top: scrollTop, behavior: 'instant'});
+    if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
+    syncOfflineNotice();
+    loadFcsgArticle();
+    window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
     requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
     return;
   }
