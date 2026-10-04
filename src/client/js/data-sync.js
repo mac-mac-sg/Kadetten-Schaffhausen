@@ -32,6 +32,7 @@ function saveCurrentData(d) {
   } catch {}
 }
 function viewDataSignature() {
+  if (activeClub === 'fcsg') return 'fcsg';
   const [page = 'home', id] = (location.hash.slice(1) || 'home').split('/');
   return JSON.stringify(
     page === 'home'

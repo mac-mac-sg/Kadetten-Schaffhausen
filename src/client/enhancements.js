@@ -72,6 +72,12 @@ function syncOfflineNotice() {
     el.setAttribute('role', 'status');
     document.querySelector('.top').after(el);
   }
+  if (typeof activeClub !== 'undefined' && activeClub === 'fcsg') {
+    el.hidden = navigator.onLine;
+    el.textContent = navigator.onLine ? '' : 'Offline · ' + fcsgStamp();
+    document.body.classList.toggle('is-offline', !el.hidden);
+    return;
+  }
   el.hidden = navigator.onLine && !offlineData;
   el.textContent =
     offlineData || !navigator.onLine

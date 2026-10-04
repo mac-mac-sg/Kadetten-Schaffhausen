@@ -9,6 +9,7 @@ document.querySelector('.dock [data-nav="games"]').addEventListener('click', eve
   }
 });
 restoreActiveClub();
+restoreFcsgData();
 document.getElementById('club-switch').addEventListener('click', () => switchClub(activeClub === 'kadetten' ? 'fcsg' : 'kadetten'));
 restoreCurrentData();
 window.addEventListener('hashchange', () => {
@@ -19,11 +20,13 @@ window.addEventListener('hashchange', () => {
 render();
 if (!location.hash || location.hash === '#home') window.scrollTo({top: 0, behavior: 'instant'});
 loadCurrentData();
+loadFcsgData();
 window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {
     if (activeClub === 'kadetten') setupEnhancements();
+    else loadFcsgData();
     showLiveMatch();
     checkLiveMatch();
   }

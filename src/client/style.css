@@ -2843,3 +2843,27 @@ html.snap-profile {
 .fcsg-status { display: inline-block; color: var(--accent-soft); font-size: 12px; font-weight: 700; margin-bottom: 16px; }
 [data-club='fcsg'] .home-news-heading { margin-top: 32px; }
 @media (prefers-reduced-motion: reduce) { .club-switch { transition: none; } }
+/* FCSG-Inhalte verwenden dieselben Karten, News-Screens und Tabellen. */
+.fcsg-matchday { position: relative; inset: auto; display: block; width: 100%; }
+[data-club='fcsg'] .home-news-heading { margin-top: 0; }
+.fcsg-stat-grid { display: grid; gap: 20px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.fcsg-stat-panel { padding: 24px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 20px; min-width: 0; }
+.fcsg-stat-panel h4 { margin: 24px 0 10px; }
+.fcsg-number-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
+.fcsg-number-pair p { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.fcsg-number-pair strong { font-size: clamp(20px,3vw,32px); color: var(--text); overflow-wrap: anywhere; }
+.fcsg-ranking,.fcsg-events,.fcsg-lineup { padding: 0; list-style: none; }
+.fcsg-ranking li,.fcsg-events li,.fcsg-lineup li,.fcsg-goal-diffs a { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fcsg-ranking strong,.fcsg-events strong,.fcsg-goal-diffs strong { margin-left: auto; flex-shrink: 0; }
+.fcsg-ranking strong { font-size: 13px; }
+.fcsg-events small { display: block; color: var(--muted); }
+.fcsg-goal-diffs { max-height: 360px; overflow: auto; }
+.fcsg-goal-diffs strong.win { color: var(--win); }
+.fcsg-goal-diffs strong.loss { color: var(--loss); }
+.fcsg-player-photo { width: 100%; max-height: 480px; object-fit: cover; margin: 24px 0; border-radius: 16px; }
+.fcsg-club-logo { width: 140px; height: 140px; object-fit: contain; margin-bottom: 24px; }
+@media(max-width:900px) { .fcsg-stat-grid { grid-template-columns: 1fr; } }
+[data-club='fcsg'] .our-team td,[data-club='fcsg'] .our-team th { background: #185c3a; }
+[data-club='fcsg'] .current-game { background: linear-gradient(115deg,#124a30,#1b633e); border-color: var(--accent); }
+[data-club='fcsg'] .current-label { background: var(--accent-soft); color: #0c1812; }
+[data-club='fcsg'] .season-form a { min-width: 44px; min-height: 44px; }

@@ -160,3 +160,17 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
   assert.match(view("matchOverview(reportFixture)"),/Torverlauf/);
  }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
 });
+
+test('FCSG: alle News-, Saison-, Spiel- und Spieleransichten ohne Kadetten-Werte',()=>{
+ run("activeClub='fcsg'");
+ try {
+  assert.match(view("fcsgView('home')"),/story-feed/);
+  assert.match(view("fcsgView('season','table')"),/Brack Super League/);
+  assert.match(view("fcsgView('season','games')"),/game-timeline/);
+  const roster=view("fcsgView('season','squad')");assert.equal((roster.match(/class="player-card"/g)||[]).length,run('fcsgData.players.length'));
+  for(const p of run('fcsgData.players'))view(`fcsgView('player','${p.id}')`);
+  for(const n of run('fcsgData.stories'))view(`fcsgView('news','${n.id}')`);
+  for(const g of run('fcsgData.games'))for(const tab of ['overview','squad','stats'])view(`fcsgView('match','${g.id}','${tab}')`);
+  run("mode='calendar'");assert.match(view("fcsgView('season','games')"),/calendar-fixture/);
+ }finally{run("activeClub='kadetten';mode='list'")}
+});
