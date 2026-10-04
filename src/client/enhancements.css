@@ -1687,6 +1687,7 @@ html.snap-news {
 [data-club='fcsg'] .home-matchday .live-heading > span {
   background: #66d99b1a;
 }
+[data-club='fcsg'] .dock a.active:hover { background: var(--accent-soft); }
 .snap-news .top {
   background: transparent;
   border-bottom: none;
