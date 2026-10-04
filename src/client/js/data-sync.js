@@ -47,7 +47,7 @@ function syncUpdateLabels() {
     .forEach(el => (el.textContent = updateLabelText(el.dataset.updateKey)));
   const badge = document.querySelector('[data-nav="games"]');
   if (badge) {
-    const matchday = todayGames().length > 0;
+    const matchday = (typeof activeClub === 'undefined' || activeClub === 'kadetten') && todayGames().length > 0;
     badge.classList.toggle('is-matchday', matchday);
     badge.setAttribute('aria-label', matchday ? 'Spiele · Matchday' : 'Spiele');
   }

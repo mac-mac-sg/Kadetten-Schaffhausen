@@ -8,6 +8,8 @@ document.querySelector('.dock [data-nav="games"]').addEventListener('click', eve
     $('#app').focus({preventScroll: true});
   }
 });
+restoreActiveClub();
+document.getElementById('club-switch').addEventListener('click', () => switchClub(activeClub === 'kadetten' ? 'fcsg' : 'kadetten'));
 restoreCurrentData();
 window.addEventListener('hashchange', () => {
   render();
@@ -21,7 +23,7 @@ window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {
-    setupEnhancements();
+    if (activeClub === 'kadetten') setupEnhancements();
     showLiveMatch();
     checkLiveMatch();
   }

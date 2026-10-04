@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Kadetten Schaffhausen",
-  "short_name": "Kadetten",
-  "description": "News, Spiele, Tabelle und Kader der Kadetten Schaffhausen.",
+  "name": "Kadetten & FCSG",
+  "short_name": "Meine Vereine",
+  "description": "News, Spiele, Tabelle und Kader von Kadetten Schaffhausen und FC St. Gallen.",
   "lang": "de-CH",
   "start_url": "./",
   "scope": "./",
