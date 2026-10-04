@@ -112,6 +112,7 @@ function render() {
   scrollRoot.style.scrollSnapType = 'none';
   const [page = 'home', id, tab = 'overview'] = (location.hash.slice(1) || 'home').split('/');
   const fixedCalendar = page === 'season' && id === 'games' && mode === 'calendar';
+  document.body.classList.toggle('games-mode', page === 'season' && id === 'games');
   scrollRoot.classList.toggle('calendar-mode', fixedCalendar);
   document.body.classList.toggle('calendar-mode', fixedCalendar);
   $('#app').innerHTML =
