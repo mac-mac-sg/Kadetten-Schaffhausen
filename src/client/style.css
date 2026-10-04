@@ -2880,3 +2880,14 @@ html.snap-profile {
 [data-club='fcsg'] .fcsg-game-live{border-color:var(--accent)}
 [data-club='fcsg'] .home-matchday .live-match.is-live{background:linear-gradient(115deg,#125735,#0e3726);border-color:var(--accent)}
 @media(max-width:380px){.fcsg-ticker li{grid-template-columns:42px minmax(0,1fr);gap:10px}}
+
+/* FCSG profile facts and official season values. */
+.fcsg-player .facts dt { color: var(--muted); font-size: 14px; }
+.fcsg-player .facts dd { margin: 6px 0 0; font-weight: 600; }
+.fcsg-player-stat-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-bottom: 32px; }
+.fcsg-player-stat-grid h4 { margin: 0 0 20px; font-size: 18px; }
+.fcsg-player-stat-list { margin: 0; }
+.fcsg-player-stat-list > div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.fcsg-player-stat-list dt { color: var(--muted); }
+.fcsg-player-stat-list dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+@media(max-width:600px) { .fcsg-player-stat-grid { grid-template-columns: 1fr; } }
