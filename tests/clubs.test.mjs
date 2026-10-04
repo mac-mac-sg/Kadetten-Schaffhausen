@@ -13,7 +13,7 @@ function app(url, saved, storageFails = false) {
     getItem: key => { if (storageFails) throw Error('unavailable'); return store.get(key); },
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
-    liveTimer: 0, dayTimer: 0, highlightObserver: null, clearTimeout() {}, clearInterval() {}, competition: 'QHL', render() {renders++;}, window: {scrollTo() {}},
+    liveTimer: 0, dayTimer: 0, highlightObserver: null, clearTimeout() {}, clearInterval() {}, competition: 'QHL', render() {renders++;}, window: {innerWidth: 375, innerHeight: 812, scrollTo() {}},
     appFeedback() {}, checkLiveMatch() {polls++;}, ext: (url, label) => `<a href="${url}">${label}</a>`
   });
   document.getElementById('app').focus = () => {};
@@ -67,6 +67,43 @@ test('Header, Titel und FCSG-Seiten enthalten keine fremden Vereinsdaten', () =>
   a.run("activeClub='kadetten'; updateClubHeader()");
   assert.equal(a.document.documentElement.dataset.club, 'kadetten');
   assert.match(a.document.querySelector('.brand').textContent, /KADETTEN/);
+});
+test('Farbwelle wechselt genau einmal und gibt den Schalter nach abgebrochenem Übergang frei', async () => {
+  const a = app('https://example.test/#season/table');
+  let update, reject;
+  a.document.getElementById('club-switch').getBoundingClientRect = () => ({left: 200, top: 20, width: 44, height: 44});
+  a.document.startViewTransition = callback => {
+    update = callback;
+    return {ready: Promise.resolve(), finished: new Promise((_, fail) => {reject = fail;})};
+  };
+  a.run("switchClub('fcsg'); switchClub('fcsg')");
+  assert.equal(a.document.getElementById('club-switch').disabled, true);
+  assert.equal(a.run('activeClub'), 'kadetten');
+  assert.equal(a.document.documentElement.style.getPropertyValue('--club-wave-x'), '222px');
+  update(); update();
+  assert.deepEqual(a.counts(), [1, 0]);
+  assert.equal(a.location.hash, '#season/table');
+  reject(Error('transition interrupted'));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(a.document.getElementById('club-switch').disabled, false);
+  assert.equal(a.document.documentElement.classList.contains('club-transition'), false);
+  assert.equal(a.document.documentElement.style.getPropertyValue('--club-wave-x'), '');
+});
+test('Reduzierte Bewegung nutzt eine kurze Überblendung, ohne unterstützte Animation bleibt der Wechsel nutzbar', async () => {
+  const a = app('https://example.test/');
+  a.run("window.matchMedia = () => ({matches:true})");
+  let frames, options;
+  a.document.getElementById('app').animate = (f, o) => {frames = f; options = o; return {finished: Promise.resolve()};};
+  a.run("switchClub('fcsg')");
+  assert.equal(options.duration, 120);
+  assert.equal(frames.some(f => 'clipPath' in f), false);
+  assert.equal(a.document.querySelector('.club-color-wave'), null);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(a.document.getElementById('club-switch').disabled, false);
+  delete a.document.getElementById('app').animate;
+  a.run("switchClub('kadetten')");
+  assert.equal(a.run('activeClub'), 'kadetten');
+  assert.equal(a.document.getElementById('club-switch').disabled, false);
 });
 test('FCSG player profile displays source facts and separates seasons without inventing missing values',()=>{
  const a=app('https://example.test/?club=fcsg#player/7470');a.run(`fcsgData.players=[{id:'7470',name:'Lukas Daschner',position:'Mittelfeld',height:185,nationality:'Deutschland',debutDate:'2025-02-05',debutOpponent:'FC Lugano',seasons:[{season:'2026/2027',competition:'Super League',appearances:9,goals:0,assists:null,minutes:708,yellow:2,red:0,secondYellow:null},{season:'2025/2026',competition:'Schweizer Pokal',appearances:4,goals:1}],url:'https://www.fcsg.ch/pages/kader/daschner-lukas'}]`);

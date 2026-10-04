@@ -2807,6 +2807,32 @@ html.snap-profile {
 .club-switch:hover { background: #ffffff20; }
 .club-switch:active { background: #ffffff30; }
 .club-switch:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }
+/* Der neue Verein wird vom Umschaltknopf aus sichtbar. */
+:root.club-transition::view-transition-group(root) { animation: none; }
+:root.club-transition::view-transition-old(root) { animation: none; }
+:root.club-transition::view-transition-new(root) {
+  animation: club-wave-reveal 400ms cubic-bezier(.22,1,.36,1) both;
+  mix-blend-mode: normal;
+}
+:root.club-transition::view-transition-old(root),
+:root.club-transition::view-transition-new(root) { pointer-events: none; }
+@keyframes club-wave-reveal {
+  from { clip-path: circle(0 at var(--club-wave-x) var(--club-wave-y)); }
+  to { clip-path: circle(var(--club-wave-radius) at var(--club-wave-x) var(--club-wave-y)); }
+}
+:root.club-transition-reduced::view-transition-new(root) { animation: club-soft-fade 120ms ease-out both; }
+@keyframes club-soft-fade { from { opacity: 0; } to { opacity: 1; } }
+.club-color-wave {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root.club-transition::view-transition-new(root) { animation: club-soft-fade 120ms ease-out both; }
+  .club-color-wave { display: none; }
+}
 .top .brand { min-width: 0; flex-shrink: 1; }
 .top .brand img { flex-shrink: 0; }
 @media (max-width: 600px) {
