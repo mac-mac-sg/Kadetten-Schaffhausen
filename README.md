@@ -31,7 +31,7 @@ npm run build:pages
 3. Pull Request nach `main` erstellen; GitHub Actions führt Syntaxprüfung, Tests und Build aus.
 4. Änderung überprüfen und übernehmen.
 
-**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Zweistunden-Automation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; manuelle Datenaktualisierung bleibt im bisherigen Eigentümerzugang. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
+**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Zweistunden-Automation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; manuelle Datenaktualisierung läuft nach einmaliger Eigentümer-Freigabe direkt über das Icon in der Pages-App. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
 
 Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Claude und direkter GitHub-Push](CLAUDE.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 
