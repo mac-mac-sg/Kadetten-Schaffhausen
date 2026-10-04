@@ -1965,7 +1965,7 @@ html.snap-profile {
   }
 }
 
-.refresh-button {
+.header-button {
   flex-shrink: 0;
   margin-left: auto;
   display: grid;
@@ -1977,26 +1977,26 @@ html.snap-profile {
   background: #101310a6;
   color: var(--text);
 }
-.refresh-button svg {
+.header-button svg {
   width: 20px;
   height: 20px;
 }
-.refresh-button:hover {
+.header-button:hover {
   background: var(--accent);
   color: var(--surface);
 }
-.refresh-button:focus-visible {
+.header-button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-.refresh-button:disabled {
+.header-button:disabled {
   cursor: wait;
   opacity: 0.65;
 }
-.refresh-button[aria-busy='true'] svg {
+.header-button[aria-busy='true'] svg {
   animation: refresh-spin 1.3s linear infinite;
 }
-.refresh-feedback {
+.app-feedback {
   position: fixed;
   z-index: 100;
   top: max(88px, env(safe-area-inset-top));
@@ -2012,7 +2012,7 @@ html.snap-profile {
 .top {
   gap: 16px;
 }
-.immersive .refresh-button {
+.immersive .header-button {
   position: relative;
   z-index: 30;
 }
@@ -2022,7 +2022,7 @@ html.snap-profile {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .refresh-button[aria-busy='true'] svg {
+  .header-button[aria-busy='true'] svg {
     animation: none;
   }
 }
@@ -2032,7 +2032,7 @@ html.snap-profile {
   }
 }
 
-.refresh-button[hidden] {
+.header-button[hidden] {
   display: none;
 }
 .install-button {

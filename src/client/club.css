@@ -9,7 +9,6 @@
   margin-left: auto;
   border-radius: 50%;
 }
-.top:has(#refresh-data:not([hidden])) .club-entry { margin-left: 0; }
 .club-entry svg {
   width: 24px;
   height: 24px;
