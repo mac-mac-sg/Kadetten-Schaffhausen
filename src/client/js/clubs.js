@@ -53,6 +53,9 @@ function switchClub(id) {
     if (button) button.disabled = false;
     root.classList.remove('club-transition', 'club-transition-reduced');
     for (const key of ['--club-wave-x', '--club-wave-y', '--club-wave-radius']) root.style.removeProperty(key);
+    if (changed && (!location.hash || location.hash === '#home')) {
+      document.querySelector('.home-front-page .story-screen > img')?.classList.add('club-news-reveal');
+    }
   };
   const fallback = () => {
     change();

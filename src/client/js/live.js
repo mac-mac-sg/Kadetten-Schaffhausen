@@ -10,7 +10,7 @@ function playMatchdayIntro(slot, day) {
   } catch { /* Ohne Speicher höchstens einmal pro geöffneter App. */ }
   if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   slot.classList.add('is-matchday-intro');
-  setTimeout(() => slot.classList.remove('is-matchday-intro'), 1300);
+  setTimeout(() => slot.classList.remove('is-matchday-intro'), 2200);
 }
 function showLiveMatch() {
   const slot = document.getElementById('live-match');

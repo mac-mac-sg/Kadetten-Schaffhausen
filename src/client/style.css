@@ -2739,7 +2739,7 @@ html.snap-profile {
   transform: translateX(-20%) skewX(-15deg);
   opacity: 0;
   pointer-events: none;
-  animation: preview-reflection 3s ease-in-out infinite;
+  animation: preview-reflection 4.2s ease-in-out infinite;
   animation-delay: 1.5s;
 }
 @keyframes preview-reflection {
