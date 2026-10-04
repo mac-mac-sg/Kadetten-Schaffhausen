@@ -1676,6 +1676,18 @@ html.snap-news {
   background: radial-gradient(ellipse at 85% 5%, #ff790e33, transparent 65%),
     linear-gradient(180deg, #080b09b8, #080b0999 60%, var(--surface));
 }
+[data-club='fcsg'] .home-title-zone::before {
+  background: radial-gradient(ellipse at 50% 0, #23774b, #102b1d 65%, var(--surface));
+  filter: none;
+  transform: none;
+}
+[data-club='fcsg'] .home-title-zone::after {
+  background: linear-gradient(180deg, #07150e33, var(--surface));
+}
+[data-club='fcsg'] .home-matchday .live-heading > span {
+  background: #66d99b1a;
+}
+[data-club='fcsg'] .dock a.active:hover { background: var(--accent-soft); }
 .snap-news .top {
   background: transparent;
   border-bottom: none;
