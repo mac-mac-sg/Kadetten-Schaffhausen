@@ -52,7 +52,6 @@ function switchClub(id) {
   render();
   window.scrollTo({top: 0, behavior: 'instant'});
   document.getElementById('app')?.focus({preventScroll: true});
-  appFeedback(fanClubs[id].name + ' ausgewählt');
   if (id === 'kadetten') checkLiveMatch();
   else {loadFcsgData();loadFcsgLive(true);}
 }
