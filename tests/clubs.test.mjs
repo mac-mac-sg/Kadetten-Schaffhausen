@@ -4,6 +4,23 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
 const source = fs.readFileSync('src/client/js/clubs.js', 'utf8');
+test('FCSG-Tordifferenz skaliert nach Fussballresultaten und berücksichtigt Auswärtsspiele', () => {
+  const a = app('https://example.test/?club=fcsg');
+  const html = a.run(`fcsgGoalDifferenceChart([
+    {id:'home',date:'2026-10-01',home:'FC St.Gallen 1879',away:'FC Sion',score:[2,1]},
+    {id:'away',date:'2026-10-02',home:'FC Lugano',away:'FC St.Gallen 1879',score:[4,1]},
+    {id:'draw',date:'2026-10-03',home:'FC St.Gallen 1879',away:'FC Luzern',score:[0,0]}
+  ])`);
+  const {document} = parseHTML(html), rows = [...document.querySelectorAll('.difference-game')];
+  assert.match(document.querySelector('.difference-axis').textContent, /−30\+3/);
+  assert.equal(rows[0].querySelector('.difference-value').textContent, '+1');
+  assert.match(rows[0].querySelector('.difference-bar').getAttribute('style'), /16\.666/);
+  assert.equal(rows[1].querySelector('.difference-value').textContent, '−3');
+  assert.equal(rows[1].classList.contains('loss'), true);
+  assert.match(rows[1].querySelector('.difference-bar').getAttribute('style'), /50%/);
+  assert.equal(rows[2].classList.contains('draw'), true);
+  assert.equal(rows[2].querySelector('.difference-value').textContent, '0');
+});
 function app(url, saved, storageFails = false) {
   const {document} = parseHTML(fs.readFileSync('src/client/index.html', 'utf8'));
   const location = {href: url, hash: new URL(url).hash};

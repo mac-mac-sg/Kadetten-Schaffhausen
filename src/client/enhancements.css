@@ -1084,6 +1084,19 @@ body.calendar-mode {
   }
 }
 
+/* Football: give the signed bars a full row and a scale based on football results. */
+.football-differences .difference-heading,
+.football-differences .difference-game {
+  grid-template-columns: minmax(0, 1fr) 38px;
+}
+.football-differences .difference-heading > span:first-child { display: none; }
+.football-differences .difference-fixture { grid-column: 1; grid-row: 1; }
+.football-differences .difference-track { grid-column: 1; grid-row: 2; height: 30px; }
+.football-differences .difference-bar { top: 4px; }
+.football-differences .difference-value { grid-column: 2; grid-row: 1 / 3; }
+.football-differences .difference-game { row-gap: 4px; }
+.football-differences.goal-difference-chart { padding: 0; }
+
 /* One coherent season summary with three sections and optional details. */
 .season-numbers > h2 {
   margin: 0 0 24px;
