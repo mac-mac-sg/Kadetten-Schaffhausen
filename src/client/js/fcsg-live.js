@@ -3,6 +3,12 @@ const fcsgLiveGames = new Map();
 const fcsgLiveChecks = new Map();
 const fcsgLiveErrors = new Set();
 let fcsgLiveBusy = false;
+const fcsgLiveAttempts = new Map();
+const fcsgPanelSignatures = new WeakMap();
+function updateFcsgPanel(panel, signature, html) {
+ if (!panel || panel.contains(document.activeElement) || fcsgPanelSignatures.get(panel) === signature) return false;
+ panel.innerHTML=html();fcsgPanelSignatures.set(panel,signature);return true;
+}
 function fcsgGame(id) { return fcsgLiveGames.get(String(id)) || fcsgData.games.find(g=>g.id===String(id)); }
 function fcsgDisplayScore(g) { return g.live ? (g.liveScore?.join(' : ') || '– : –') : g.score?.join(' : ') || 'VS'; }
 function fcsgLiveState(g) { return `${g.live?'JETZT LIVE · ':''}${g.phase || (g.score?'Beendet':'Vorschau')}${g.clock?' · '+g.clock:''}`; }
@@ -25,9 +31,12 @@ function updateFcsgLiveView() {
   document.querySelectorAll('[data-fcsg-score]').forEach(e=>{if(e.dataset.fcsgScore===id)e.textContent=fcsgDisplayScore(g)});
   document.querySelectorAll('[data-fcsg-phase]').forEach(e=>{if(e.dataset.fcsgPhase===id)e.textContent=fcsgLiveState(g)});
   const panel=document.getElementById('fcsg-live-panel');if(panel&&!panel.contains(document.activeElement))panel.innerHTML=fcsgTicker(g);
-  const overview=document.getElementById('fcsg-overview');if(overview&&!overview.contains(document.activeElement)){overview.innerHTML=fcsgOverview(g);loadMatchPreview();}
-  const stats=document.getElementById('fcsg-team-stats');if(stats)stats.innerHTML=fcsgTeamStats(g);
-  const lineup=document.getElementById('fcsg-lineups');if(lineup)lineup.innerHTML=fcsgLineups(g);
+  const overview=document.getElementById('fcsg-overview');
+  if(overview){const signature=JSON.stringify(g.score||g.live?['events',g.events]:['preview',g.home,g.away,g.date,g.time,g.confirmed,g.venue,g.tickets]);
+   if(!fcsgPanelSignatures.has(overview))fcsgPanelSignatures.set(overview,overview.dataset.signature);
+   if(updateFcsgPanel(overview,signature,()=>fcsgOverview(g)))loadMatchPreview();}
+  const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([g.homeStats,g.awayStats]),()=>fcsgTeamStats(g));
+  const lineup=document.getElementById('fcsg-lineups');updateFcsgPanel(lineup,JSON.stringify([g.homeLineup,g.awayLineup]),()=>fcsgLineups(g));
  }
  document.querySelectorAll('.games [data-fcsg-game]').forEach(card=>{const g=fcsgGame(card.dataset.fcsgGame);if(!g)return;const score=card.querySelector('[data-fcsg-score]');if(score)score.textContent=fcsgDisplayScore(g);const phase=card.querySelector('[data-fcsg-phase]');if(phase)phase.textContent=fcsgLiveState(g);const link=card.querySelector('.actions a');if(link)link.textContent=g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau';card.classList.toggle('fcsg-game-live',!!g.live);});
 }
@@ -37,7 +46,10 @@ async function loadFcsgLive(force=false) {
  if(!detail&&!['home','season',''].includes(page))return;
  if(page==='season'&&id!=='games')return;
  if(detail&&!/^[1-9][0-9]{0,8}$/.test(id))return;
- const key=detail?id:'latest';if(!force&&Date.now()-Date.parse(fcsgLiveChecks.get(key)||0)<20000)return;
+ const key=detail?id:'latest',game=detail?fcsgGame(id):fcsgFixture();
+ const interval=game?.live?45000:game?.score?1800000:300000;
+ const last=fcsgLiveAttempts.get(key);if(last&&Date.now()-last<(force?interval:20000))return;
+ fcsgLiveAttempts.set(key,Date.now());
  fcsgLiveBusy=true;
  try{
   const r=await apiFetch(detail?'/api/fcsg/matches/'+id:'/api/fcsg/live',{cache:'no-store',signal:AbortSignal.timeout(20000)});

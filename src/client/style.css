@@ -2874,7 +2874,7 @@ html.snap-profile {
 /* FCSG-Inhalte verwenden dieselben Karten, News-Screens und Tabellen. */
 .fcsg-matchday { position: relative; inset: auto; display: block; width: 100%; }
 [data-club='fcsg'] .home-news-heading { margin-top: 0; }
-.fcsg-stat-grid { display: grid; gap: 20px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.fcsg-stat-grid { display: block; }
 .fcsg-stat-panel { padding: 24px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 20px; min-width: 0; }
 .fcsg-stat-panel h4 { margin: 24px 0 10px; }
 .fcsg-number-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0; }

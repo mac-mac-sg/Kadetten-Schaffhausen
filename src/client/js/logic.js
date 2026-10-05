@@ -102,3 +102,22 @@ function relativeDay(dateStr, now = new Date()) {
   if (n === 2) return 'Übermorgen';
   return n >= 3 && n <= 30 ? `in ${n} Tagen` : '';
 }
+
+// Planmässige Snapshot-Läufe in Zürich, mit 45 Minuten Spielraum für den Import.
+function snapshotDelayed(stamp, now = new Date()) {
+  const updated = Date.parse(stamp);
+  if (!Number.isFinite(updated)) return true;
+  const day = swissToday(new Date(updated));
+  for (let offset = 0; offset < 2; offset++) {
+    const date = new Date(Date.parse(day + 'T12:00:00Z') + offset * 86400000).toISOString().slice(0, 10);
+    for (const hour of [6, 9, 12, 15, 18, 21, 22]) {
+      const next = kickoffAt({date, time: String(hour).padStart(2, '0') + ':20'}).getTime();
+      if (next > updated) return now.getTime() > next + 45 * 60000;
+    }
+  }
+  return true;
+}
+function goalAverage(total, played) {
+  return Number.isFinite(total) && played > 0
+    ? (total / played).toLocaleString('de-CH', {minimumFractionDigits: 1, maximumFractionDigits: 1}) : '–';
+}
