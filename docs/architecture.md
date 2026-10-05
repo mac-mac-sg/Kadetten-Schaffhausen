@@ -77,7 +77,7 @@ Abgeschlossene QHL-Spiele: `/api/reports/:id` liest den bestätigten SHV-Bericht
 
 ## Zwei Vereine
 
-`js/clubs.js` verwaltet die Vereinswahl und die FCSG-Ansichten unabhängig von Kadetten-Snapshots. Der Umschalt-Button im Titelbereich wechselt zwischen den Vereinen. `localStorage` merkt sich die Auswahl; `?club=fcsg` bzw. `?club=kadetten` hat Vorrang und macht Links teilbar. Bereichsrouten bleiben erhalten; Artikel-, Spiel- und Spieler-Details gehen beim Wechsel zur zugehörigen Übersicht.
+`js/clubs.js` verwaltet die Vereinswahl und die FCSG-Ansichten unabhängig von Kadetten-Snapshots. Der Umschalt-Button im Titelbereich wechselt zwischen den Vereinen. Beim normalen Start öffnet die App immer Kadetten, unabhängig von der letzten Auswahl; `?club=fcsg` bzw. `?club=kadetten` hat Vorrang und macht Links teilbar. Bereichsrouten bleiben erhalten; Artikel-, Spiel- und Spieler-Details gehen beim Wechsel zur zugehörigen Übersicht.
 
 FCSG verwendet dieselbe Navigation, News-Screens, Spielkarten, Tabellenstruktur und Kalendergestaltung. Der Kader enthält 30 öffentlich sichtbare Spieler der Saison 2026/27; Staff wird ausgeschlossen. Die Vereinsgeschichte bietet eine eigene Zeitleiste und den gemeinsamen Trophäenschrank mit FCSG-Daten. Das offizielle Wappen stammt von https://www.fcsg.ch/cdn/shop/files/logo.svg?v=1711098308&width=600 .
 
@@ -115,3 +115,5 @@ Ein PDF-Dialog bleibt bei Datenaktualisierungen derselben Vereinsroute geöffnet
 Die Verspätungswarnung berücksichtigt den nächsten geplanten Zürcher Import plus 45 Minuten Bearbeitungszeit, inklusive Nachtpause und Zeitumstellung. Internetunterbruch und fehlgeschlagene Serverantworten haben getrennte Meldungen. Beide Vereine verwenden gemeinsame Bilanz-/Heim-/Auswärtsbausteine und Tordurchschnitte mit einer Nachkommastelle.
 
 Der Service Worker meldet seine Build-Version an die geöffnete App. Bei abweichender Version erscheint ein Hinweis mit «Jetzt aktualisieren» und «Später»; ein Neuladen erfolgt ausschliesslich nach Betätigung. Bei Rückkehr zur App wird die Version erneut geprüft; Update-Abfragen sind auf einmal pro 15 Minuten begrenzt.
+
+Beim ersten Browserbesuch erscheint ein einmaliger Installationshinweis. In der installierten App wird er unterdrückt. Eine native Installationsabfrage wird erst durch Tippen ausgelöst; Safari und nicht installierfähige Browser erhalten eine Anleitung.

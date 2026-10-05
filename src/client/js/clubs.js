@@ -9,7 +9,7 @@ let activeClub = 'kadetten';
 function restoreActiveClub() {
   let choice;
   try {
-    choice = new URL(location.href).searchParams.get('club') || localStorage.getItem(CLUB_CHOICE_KEY);
+    choice = new URL(location.href).searchParams.get('club');
   } catch {}
   activeClub = Object.hasOwn(fanClubs, choice) ? choice : 'kadetten';
 }

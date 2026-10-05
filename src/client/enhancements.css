@@ -1993,3 +1993,13 @@ footer .source-details summary { margin-inline: auto; }
   :is(.button,.club-switch,.header-button,.share,.toggle button,.dock a,.match-tabs a,.programme-dialog button):active:not(:disabled) { transform: none; }
   .home-matchday .live-match:not([hidden]),.home-matchday .live-match::after { animation: none; }
 }
+
+/* Einmaliger Installationshinweis; native Installation erst nach bewusstem Tippen. */
+.install-intro { box-sizing:border-box; width:calc(100% - 32px); max-width:420px; max-height:calc(100dvh - 48px); overflow:auto; padding:28px; border:1px solid var(--line); border-radius:24px; background:var(--surface-2); color:var(--text); box-shadow:0 24px 80px #0008; }
+.install-intro::backdrop { background:#080b09b8; }
+.install-intro>img { display:block; border-radius:16px; margin-bottom:20px; }
+.install-intro h2 { font-size:24px; line-height:1.2; margin:0 0 12px; }
+.install-intro p { font-size:15px; line-height:1.6; color:var(--muted); }
+.install-intro-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.install-intro .button { min-height:48px; cursor:pointer; }
+.install-intro :focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
