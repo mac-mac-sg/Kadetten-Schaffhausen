@@ -62,7 +62,7 @@ function updateLabelText(key) {
   const state = key ? updateState?.status?.[key] : null;
   const stamp = state?.updatedAt || updateState?.checkedAt;
   if (!stamp) return 'Aktualisierungszeit noch nicht verfügbar';
-  const stale = Date.now() - Date.parse(stamp) > 6 * 3600000;
+  const stale = snapshotDelayed(stamp);
   return `${state?.ok === false || stale ? 'Letzter gültiger Stand' : 'Aktualisiert'}: ${new Date(stamp).toLocaleString('de-CH', {timeZone: 'Europe/Zurich', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'})} Uhr${stale ? ' · Aktualisierung verzögert' : ''}`;
 }
 async function loadCurrentData() {
@@ -74,11 +74,12 @@ async function loadCurrentData() {
           localStorage.removeItem(SNAPSHOT_KEY);
         } catch {}
       }
-      return;
+      throw Error("Data unavailable");
     }
     const d = await r.json();
-    if (!validSnapshot(d)) return;
-    offlineData = r.headers.get('X-Kadetten-Offline') === '1';
+    if (!validSnapshot(d)) throw Error("Invalid data");
+    dataLoadFailed = r.headers.get('X-Kadetten-Offline') === '1';
+    offlineData = !navigator.onLine;
     const previous = viewDataSignature(),
       anchor = window.scrollY > 8 ? document.querySelector('.story-current') : null,
       storyId = anchor ? stories[Number(anchor.id.replace('story-', ''))]?.id : null,
@@ -101,7 +102,8 @@ async function loadCurrentData() {
     } else syncUpdateLabels();
     syncOfflineNotice();
   } catch {
-    if (updateState) offlineData = true;
+    offlineData = !navigator.onLine;
+    dataLoadFailed = true;
     syncOfflineNotice();
   }
 }

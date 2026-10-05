@@ -31,12 +31,14 @@ function app(url, saved, storageFails = false) {
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
     liveTimer: 0, dayTimer: 0, highlightObserver: null, clearTimeout() {}, clearInterval() {}, competition: 'QHL', render() {renders++;}, window: {innerWidth: 375, innerHeight: 812, scrollTo() {}},
-    appFeedback() {}, checkLiveMatch() {polls++;}, ext: (url, label) => `<a href="${url}">${label}</a>`
+    syncOfflineNotice() {}, appFeedback() {}, checkLiveMatch() {polls++;}, ext: (url, label) => `<a href="${url}">${label}</a>`
   });
   document.getElementById('app').focus = () => {};
   vm.runInContext(fs.readFileSync("src/client/data/fcsg-fallback.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/data/club.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/views-club.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/js/logic.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/js/views-match.js", "utf8"), context);
   vm.runInContext(source, context);
   vm.runInContext(fs.readFileSync("src/client/js/fcsg-live.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/fcsg-history.js", "utf8"), context);

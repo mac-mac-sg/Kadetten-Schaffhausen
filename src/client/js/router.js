@@ -107,7 +107,7 @@ function notFound() {
   return '<section class="content"><h1>Hier geht’s zurück aufs Feld.</h1><a class="button" href="#home">Zur Startseite</a></section>';
 }
 function render() {
-  closeMatchProgramme();
+  if (programmeDialog && programmeDialog.dataset.route !== activeClub + location.hash) closeMatchProgramme();
   const scrollRoot = document.documentElement,
     scrollTop = window.scrollY;
   scrollRoot.style.scrollSnapType = 'none';

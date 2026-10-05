@@ -276,6 +276,13 @@ function seasonPlayerLeaders() {
     penalties = ranking('twoMinutes', 2);
   return `<section class="season-player-stats stats-block" aria-labelledby="season-players-title"><h3 id="season-players-title">Spielerstatistiken</h3><div class="player-leader-group"><h4>Top 5 Torschützen</h4>${scorers.length ? leaders(scorers, 'Tore') : '<p class="muted">Noch keine Tore erfasst.</p>'}</div><div class="player-leader-group"><h4>Meiste Strafminuten</h4>${penalties.length ? leaders(penalties, 'Min.') : '<p class="muted">Noch keine 2-Minuten-Strafen erfasst.</p>'}</div><p class="player-leader-note">QHL · Saison 2026/27 · ${season.teamGames} Spiele<br>Strafminuten aus 2-Minuten-Strafen; Disqualifikationen werden nicht zusätzlich als Minuten gezählt.<br>${ext(source, 'Quelle: SHV', '')} · ${updateLabel('players')}</p></section>`;
 }
+function seasonBalance(wins, draws, losses) {
+ const total=wins+draws+losses, values=[[wins,'Siege','win'],[draws,'Unentschieden','draw'],[losses,'Niederlagen','loss']];
+ return `<div class="season-balance"><div class="record-bar season-balance-bar" role="img" aria-label="${wins} Siege, ${draws} Unentschieden, ${losses} Niederlagen">${values.map(([n],i)=>`<span class="record-${i}" style="width:${total?n/total*100:0}%"></span>`).join('')}</div><div class="season-balance-values">${values.map(([n,label,state])=>`<div class="${state}"><strong>${n}</strong><span>${label}</span></div>`).join('')}</div></div>`;
+}
+function seasonSplit(label, played, wins, draws, losses) {
+ return `<div class="season-split"><h4>${label}</h4><strong>${played}</strong><small>${played===1?'Spiel':'Spiele'}</small><p class="split-record" aria-label="${wins} Siege, ${draws} Unentschieden, ${losses} Niederlagen"><span class="win">${wins} S</span> · <span class="draw">${draws} U</span> · <span class="loss">${losses} N</span></p></div>`;
+}
 function seasonNumbers() {
   const list = games
     .filter(g => g.score && g.league === tableLeague && (g.home.includes('Kadetten') || g.away.includes('Kadetten')))
@@ -284,24 +291,8 @@ function seasonNumbers() {
   const stats = seasonSummary(list),
     home = seasonSummary(list.filter(g => g.home.includes('Kadetten'))),
     away = seasonSummary(list.filter(g => g.away.includes('Kadetten'))),
-    avg = v => (v / stats.games).toLocaleString('de-CH', {minimumFractionDigits: 1, maximumFractionDigits: 1}),
-    balance = [
-      [stats.wins, 'Siege', 'win'],
-      [stats.draws, 'Unentschieden', 'draw'],
-      [stats.losses, 'Niederlagen', 'loss']
-    ],
-    balanceLabel = `${stats.wins} Siege, ${stats.draws} Unentschieden, ${stats.losses} Niederlagen`;
-  return `<section class="season-numbers"><h2>Kadetten – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3><div class="season-balance"><div class="record-bar season-balance-bar" role="img" aria-label="${balanceLabel}">${balance.map(([n], i) => `<span class="record-${i}" style="width:${(n / stats.games) * 100}%"></span>`).join('')}</div><div class="season-balance-values">${balance.map(([n, label, state]) => `<div class="${state}"><strong>${n}</strong><span>${label}</span></div>`).join('')}</div></div><div class="season-splits">${[
-    [home, 'Zu Hause'],
-    [away, 'Auswärts']
-  ]
-    .map(
-      ([r, label]) =>
-        `<div class="season-split"><h4>${label}</h4><strong>${r.games}</strong><small>${r.games === 1 ? 'Spiel' : 'Spiele'}</small><p class="split-record" aria-label="${r.wins} Siege, ${r.draws} Unentschieden, ${r.losses} Niederlagen"><span class="win">${r.wins} S</span> · <span class="draw">${r.draws} U</span> · <span class="loss">${r.losses} N</span></p></div>`
-    )
-    .join(
-      ''
-    )}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
+    avg = v => goalAverage(v, stats.games);
+  return `<section class="season-numbers"><h2>Kadetten – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3>${seasonBalance(stats.wins,stats.draws,stats.losses)}<div class="season-splits">${seasonSplit('Zu Hause',home.games,home.wins,home.draws,home.losses)}${seasonSplit('Auswärts',away.games,away.wins,away.draws,away.losses)}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
 }
 
 function metric(label, a, b) {
@@ -359,11 +350,11 @@ async function loadMatchProgramme(){
 }
 async function openMatchProgramme(p,trigger){
  closeMatchProgramme();
- const dialog=document.createElement('dialog');programmeDialog=dialog;dialog.className='programme-dialog';
+ const dialog=document.createElement('dialog');programmeDialog=dialog;dialog.className='programme-dialog';dialog.dataset.route=activeClub+location.hash;
  const url=kadettenApiOrigin+p.pdfPath;
  dialog.innerHTML=`<header class="programme-toolbar"><div><h2 id="programme-title">Matchprogramm</h2><p>${liveEscape(p.away)} · ${liveEscape(p.date.split('-').reverse().join('.'))}</p></div><button type="button" class="programme-close" aria-label="Matchprogramm schliessen" autofocus>×</button></header><div class="programme-tools"><div><button type="button" data-pdf-zoom="-1" aria-label="PDF verkleinern">−</button><output aria-label="Zoomstufe">100 %</output><button type="button" data-pdf-zoom="1" aria-label="PDF vergrössern">+</button></div><a href="${liveEscape(url)}" target="_blank" rel="noopener noreferrer">PDF extern öffnen ↗</a></div><div class="programme-pages" tabindex="0" aria-label="Seiten des Matchprogramms"><p class="programme-status" role="status">Matchprogramm wird geladen …</p></div>`;
  dialog.setAttribute('aria-labelledby','programme-title');document.body.append(dialog);document.body.classList.add('programme-open');dialog.showModal();
- const close=()=>{closeMatchProgramme();if(trigger.isConnected)trigger.focus()};
+ const close=()=>{closeMatchProgramme();const button=trigger.isConnected?trigger:document.querySelector(`[data-match-programme="${p.id}"] button`);(button||document.getElementById("app"))?.focus({preventScroll:true})};
  dialog.querySelector('.programme-close').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
  const root=dialog.querySelector('.programme-pages'),status=root.querySelector('.programme-status');
  let task,doc,observer,zoom=1,disposed=false,resizeTimer;const states=[];const controller=new AbortController();

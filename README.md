@@ -2,7 +2,7 @@
 
 Mobile Web-App (PWA) mit News, Spielplan, Kalender, Tabelle, Saisonstatistiken und Kader.
 
-Öffentliche App: https://kadetten.ma-ra10.chatgpt.site
+Öffentliche App: https://mac-mac-sg.github.io/Kadetten-Schaffhausen/
 
 ## Lokal starten
 
@@ -31,7 +31,7 @@ npm run build:pages
 3. Pull Request nach `main` erstellen; GitHub Actions führt Syntaxprüfung, Tests und Build aus.
 4. Änderung überprüfen und übernehmen.
 
-**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Zweistunden-Automation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; die GitHub-App liest automatisch aktualisierte Daten ohne manuellen Aktualisieren-Button. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
+**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Datenautomation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; die GitHub-App liest automatisch aktualisierte Daten ohne manuellen Aktualisieren-Button. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
 
 Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Hinweise für KI-Werkzeuge](AGENTS.md), [Claude und direkter GitHub-Push](CLAUDE.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 

@@ -1,5 +1,5 @@
 /* Matchday, season journey and device-local offline feedback. */
-let offlineData = false,
+let offlineData = false, dataLoadFailed = false,
   dayTimer,
   dataSyncTimer,
   highlightObserver;
@@ -72,26 +72,14 @@ function syncOfflineNotice() {
     el.setAttribute('role', 'status');
     document.querySelector('.top').after(el);
   }
-  if (typeof activeClub !== 'undefined' && activeClub === 'fcsg') {
-    el.hidden = navigator.onLine;
-    el.textContent = navigator.onLine ? '' : 'Offline · ' + fcsgStamp();
-    document.body.classList.toggle('is-offline', !el.hidden);
-    return;
-  }
-  el.hidden = navigator.onLine && !offlineData;
-  el.textContent =
-    offlineData || !navigator.onLine
-      ? 'Offline · ' +
-        (updateState?.checkedAt
-          ? 'gespeicherter Stand ' +
-            new Date(updateState.checkedAt).toLocaleString('de-CH', {
-              timeZone: 'Europe/Zurich',
-              dateStyle: 'short',
-              timeStyle: 'short'
-            }) +
-            ' Uhr'
-          : 'letzter verfügbarer Stand')
-      : '';
+  const fcsg = typeof activeClub !== 'undefined' && activeClub === 'fcsg';
+  const failed = fcsg ? fcsgDataLoadFailed : dataLoadFailed;
+  const stamp = fcsg ? fcsgData.checkedAt : updateState?.checkedAt;
+  el.hidden = navigator.onLine && !failed;
+  const saved = stamp ? 'Gespeicherter Stand: ' + new Date(stamp).toLocaleString('de-CH', {
+    timeZone: 'Europe/Zurich', dateStyle: 'short', timeStyle: 'short'
+  }) + ' Uhr.' : 'Der letzte verfügbare Stand bleibt sichtbar.';
+  el.textContent = el.hidden ? '' : (!navigator.onLine ? 'Offline · ' : 'Daten konnten gerade nicht aktualisiert werden. ') + saved;
   document.body.classList.toggle('is-offline', !el.hidden);
 }
 function setupEnhancements() {
@@ -152,7 +140,7 @@ window.addEventListener('offline', () => {
   syncOfflineNotice();
 });
 window.addEventListener('online', async () => {
-  await loadCurrentData();
+  await (activeClub === "fcsg" ? loadFcsgData() : loadCurrentData());
   checkLiveMatch();
   syncOfflineNotice();
 });
