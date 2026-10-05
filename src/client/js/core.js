@@ -54,7 +54,7 @@ function footer() {
         : base);
   const hasDirectSource = page === 'news' || (page === 'match' && (tab === 'overview' || verifiedReport(game)));
   const historySource = page === 'match' && tab === 'stats' && game?.league === 'QHL' && !verifiedReport(game);
-  return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Unabhängige Fan-App · kein offizieller Vereinsauftritt.</p>${hasDirectSource ? '' : `<p>${ext(url, 'Kadetten Schaffhausen', '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger</p></details></footer>`;
+  return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p>${hasDirectSource ? '' : `<p>${ext(url, 'Kadetten Schaffhausen', '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger</p></details></footer>`;
 }
 function badge(name) {
   const logo = clubLogos[name];
