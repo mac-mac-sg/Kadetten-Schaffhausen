@@ -73,6 +73,8 @@ function setupViews() {
     );
     document.querySelectorAll('.story-screen,.profile-slide').forEach(e => viewObserver.observe(e));
   }
+  // Initialise both clubs identically before observers begin reporting visibility.
+  if (document.querySelector('.story-screen')) updateNewsDots(0);
   const newsFeed = document.querySelector('.story-feed');
   const newsDots = document.querySelector('.story-dots');
   if (newsFeed && newsDots) {

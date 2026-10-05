@@ -46,6 +46,7 @@ function switchClub(id) {
   const y = bounds ? bounds.top + bounds.height / 2 : 0;
   const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (root.classList.contains('keyboard-input')) { applyClubChange(id); return; }
   let changed = false;
   const change = () => { if (!changed) { changed = true; applyClubChange(id); } };
   const finish = () => {
@@ -72,7 +73,7 @@ function switchClub(id) {
         {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0.3, offset: 0.7},
         {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0}
       ];
-      target.animate(frames, {duration: reduced ? 120 : 400, easing: 'cubic-bezier(.22,1,.36,1)'})
+      target.animate(frames, {duration: reduced ? 120 : 280, easing: 'cubic-bezier(.22,1,.36,1)'})
         .finished.catch(() => {}).finally(() => { if (!reduced) target.remove(); finish(); });
     } catch { if (!reduced) target.remove(); finish(); }
   };

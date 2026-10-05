@@ -354,7 +354,17 @@ async function openMatchProgramme(p,trigger){
  const url=kadettenApiOrigin+p.pdfPath;
  dialog.innerHTML=`<header class="programme-toolbar"><div><h2 id="programme-title">Matchprogramm</h2><p>${liveEscape(p.away)} · ${liveEscape(p.date.split('-').reverse().join('.'))}</p></div><button type="button" class="programme-close" aria-label="Matchprogramm schliessen" autofocus>×</button></header><div class="programme-tools"><div><button type="button" data-pdf-zoom="-1" aria-label="PDF verkleinern">−</button><output aria-label="Zoomstufe">100 %</output><button type="button" data-pdf-zoom="1" aria-label="PDF vergrössern">+</button></div><a href="${liveEscape(url)}" target="_blank" rel="noopener noreferrer">PDF extern öffnen ↗</a></div><div class="programme-pages" tabindex="0" aria-label="Seiten des Matchprogramms"><p class="programme-status" role="status">Matchprogramm wird geladen …</p></div>`;
  dialog.setAttribute('aria-labelledby','programme-title');document.body.append(dialog);document.body.classList.add('programme-open');dialog.showModal();
- const close=()=>{closeMatchProgramme();const button=trigger.isConnected?trigger:document.querySelector(`[data-match-programme="${p.id}"] button`);(button||document.getElementById("app"))?.focus({preventScroll:true})};
+ let closing=false;
+ const close=async()=>{
+  if(closing)return;closing=true;
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if(typeof dialog.animate==='function'&&!document.documentElement.classList.contains('keyboard-input')){
+   try{await dialog.animate([{opacity:1,transform:'none'},{opacity:0,transform:reduced?'none':'translateY(8px) scale(.99)'}],{duration:reduced?100:160,easing:'cubic-bezier(.23,1,.32,1)',fill:'forwards'}).finished}catch{}
+  }
+  // Navigation may have replaced this dialog while its exit was running.
+  if(programmeDialog!==dialog)return;
+  closeMatchProgramme();const button=trigger.isConnected?trigger:document.querySelector(`[data-match-programme="${p.id}"] button`);(button||document.getElementById("app"))?.focus({preventScroll:true});
+ };
  dialog.querySelector('.programme-close').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
  const root=dialog.querySelector('.programme-pages'),status=root.querySelector('.programme-status');
  let task,doc,observer,zoom=1,disposed=false,resizeTimer;const states=[];const controller=new AbortController();

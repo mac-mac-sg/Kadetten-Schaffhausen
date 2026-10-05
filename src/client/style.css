@@ -2813,7 +2813,7 @@ html.snap-profile {
 :root.club-transition::view-transition-group(root) { animation: none; }
 :root.club-transition::view-transition-old(root) { animation: none; }
 :root.club-transition::view-transition-new(root) {
-  animation: club-wave-reveal 400ms cubic-bezier(.22,1,.36,1) both;
+  animation: club-wave-reveal 280ms cubic-bezier(.22,1,.36,1) both;
   mix-blend-mode: normal;
 }
 :root.club-transition::view-transition-old(root),
