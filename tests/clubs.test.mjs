@@ -45,10 +45,10 @@ function app(url, saved, storageFails = false) {
   const run = code => vm.runInContext(code, context);
   return {run, document, store, location, counts: () => [renders, polls]};
 }
-test('Vereinswahl: Kadetten als Standard, gespeichert und per teilbarem Link', () => {
+test('Vereinswahl: Kadetten als Start trotz letzter Vereinswahl; direkte Vereinslinks bleiben gültig', () => {
   for (const [url, saved, expected] of [
     ['https://example.test/', null, 'kadetten'],
-    ['https://example.test/', 'fcsg', 'fcsg'],
+    ['https://example.test/', 'fcsg', 'kadetten'],
     ['https://example.test/?club=kadetten', 'fcsg', 'kadetten'],
     ['https://example.test/?club=fcsg', null, 'fcsg'],
     ['https://example.test/?club=other', null, 'kadetten'],

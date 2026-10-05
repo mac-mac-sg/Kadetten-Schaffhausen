@@ -68,3 +68,18 @@ test('PWA prompts only for different versions and reloads only on user action',(
  document.querySelector('#app-update .subtle').onclick();assert.equal(document.getElementById('app-update').hidden,true);assert.equal(reloads,0);
  document.querySelector('#app-update button').onclick();assert.equal(reloads,1);
 });
+
+test('Install intro appears once, skips standalone and installs only on a deliberate click',async()=>{
+ for(const standalone of [false,true]){
+  const {document}=parseHTML('<html><body><header class="top"></header><button id="install-app"></button></body></html>');
+  const events={},store=new Map();let prompts=0;
+  document.createElement=(original=>function(tag){const el=original.call(this,tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;})(document.createElement);
+  const c=vm.createContext({document,URL,Date,setInterval(){},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},navigator:{userAgent:'Chrome',platform:'Linux'},window:{matchMedia:()=>({matches:standalone,addEventListener(){}}),addEventListener:(k,f)=>events[k]=f}});
+  load(c,'pwa.js');events.load();
+  if(standalone){assert.equal(document.querySelector('dialog'),null);continue;}
+  assert.ok(document.querySelector('dialog[open]'));assert.equal(prompts,0);
+  events.beforeinstallprompt({preventDefault(){},prompt:async()=>{prompts++;},userChoice:Promise.resolve({outcome:'dismissed'})});
+  await document.querySelector('[data-install]').onclick();assert.equal(prompts,1);assert.equal(document.querySelector('dialog'),null);
+  events.load();assert.equal(document.querySelector('dialog'),null);
+ }
+});
