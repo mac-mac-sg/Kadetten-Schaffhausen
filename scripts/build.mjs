@@ -1,6 +1,9 @@
 import {cpSync,rmSync} from 'node:fs';
 rmSync('dist',{recursive:true,force:true});cpSync('src/client','dist/client',{recursive:true});
 import fs from 'node:fs';
+fs.mkdirSync('dist/client/vendor',{recursive:true});
+for(const name of ['pdf.mjs','pdf.worker.mjs'])cpSync('node_modules/pdfjs-dist/build/'+name,'dist/client/vendor/'+name);
+cpSync('node_modules/pdfjs-dist/LICENSE','dist/client/vendor/PDFJS-LICENSE');
 import {build} from 'esbuild';
 await build({entryPoints:['server/worker.mjs'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022'});
 

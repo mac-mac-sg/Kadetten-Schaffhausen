@@ -23,7 +23,7 @@ function match(g, tab) {
   return `<section class="match"><div class="match-top">${backLink('#season/games', 'Zurück zu den Spielen', 'back')}<div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${[['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistik']].map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' ? matchOverview(g) : `<div class="content narrow">${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
 }
 function matchOverview(g) {
-  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft der Kadetten'}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : 'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' && !g.score ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p>${!g.score?matchPreviewSlot(g,'kadetten'):''}<div class="facts ${!g.score ? 'match-preview-facts' : ''}">${!g.score ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? 'Beendet' : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div><div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div>${g.score?reportHistory(g):''}</div>`;
+  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft der Kadetten'}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : 'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' && !g.score ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p>${!g.score?matchPreviewSlot(g,'kadetten'):''}${g.home==='Kadetten Schaffhausen'?`<div data-match-programme="${liveEscape(g.id)}"></div>`:''}<div class="facts ${!g.score ? 'match-preview-facts' : ''}">${!g.score ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? 'Beendet' : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div><div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div>${g.score?reportHistory(g):''}</div>`;
 }
 function matchSquad(g) {
   if (verifiedReport(g)) return reportRoster(g);
@@ -339,4 +339,62 @@ async function loadMatchPreview(){
   const stamp=new Date(p.generatedAt).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   target.innerHTML=`<p class="eyebrow">KI-Match-Vorschau</p><h3>${liveEscape(p.headline)}</h3>${p.paragraphs.map(text=>`<p>${liveEscape(text)}</p>`).join('')}<details><summary>Quellen & Datenstand</summary><p class="muted">Mit KI aus den verlinkten Quellen erstellt · ${liveEscape(stamp)} Uhr. Einschätzungen sind keine Ergebnisprognose.</p><ul>${p.sources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<li><a href="${liveEscape(s.url)}" target="_blank" rel="noopener noreferrer">${liveEscape(s.label)}</a></li>`).join('')}</ul></details>`;
  }catch{if(target.isConnected)target.innerHTML='<p class="muted">Die ausführliche Match-Vorschau ist noch nicht verfügbar. Die bestätigten Spielinformationen findest du hier.</p>'}
+}
+
+let programmeDialog, programmeCleanup;
+function closeMatchProgramme(){
+ if(!programmeDialog)return;
+ const dialog=programmeDialog;programmeDialog=null;
+ programmeCleanup?.();programmeCleanup=null;
+ if(dialog.open)dialog.close();dialog.remove();document.body.classList.remove('programme-open');
+}
+async function loadMatchProgramme(){
+ const slot=document.querySelector('[data-match-programme]');if(!slot)return;
+ try{
+  const response=await apiFetch('/api/programmes/'+slot.dataset.matchProgramme);if(!response.ok)return;
+  const p=await response.json();if(!slot.isConnected||!/^\/api\/programmes\/[a-zA-Z0-9_-]+\/pdf\?v=[a-f0-9]{64}$/.test(p.pdfPath))return;
+  slot.innerHTML='<button class="button programme-button" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3h9l4 4v14H6Z M15 3v5h4 M9 12h7 M9 16h7"/></svg>Matchprogramm lesen</button>';
+  slot.querySelector('button').onclick=e=>openMatchProgramme(p,e.currentTarget);
+ }catch{/* An unavailable optional programme never replaces the fixture. */}
+}
+async function openMatchProgramme(p,trigger){
+ closeMatchProgramme();
+ const dialog=document.createElement('dialog');programmeDialog=dialog;dialog.className='programme-dialog';
+ const url=kadettenApiOrigin+p.pdfPath;
+ dialog.innerHTML=`<header class="programme-toolbar"><div><h2 id="programme-title">Matchprogramm</h2><p>${liveEscape(p.away)} · ${liveEscape(p.date.split('-').reverse().join('.'))}</p></div><button type="button" class="programme-close" aria-label="Matchprogramm schliessen" autofocus>×</button></header><div class="programme-tools"><div><button type="button" data-pdf-zoom="-1" aria-label="PDF verkleinern">−</button><output aria-label="Zoomstufe">100 %</output><button type="button" data-pdf-zoom="1" aria-label="PDF vergrössern">+</button></div><a href="${liveEscape(url)}" target="_blank" rel="noopener noreferrer">PDF extern öffnen ↗</a></div><div class="programme-pages" tabindex="0" aria-label="Seiten des Matchprogramms"><p class="programme-status" role="status">Matchprogramm wird geladen …</p></div>`;
+ dialog.setAttribute('aria-labelledby','programme-title');document.body.append(dialog);document.body.classList.add('programme-open');dialog.showModal();
+ const close=()=>{closeMatchProgramme();if(trigger.isConnected)trigger.focus()};
+ dialog.querySelector('.programme-close').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
+ const root=dialog.querySelector('.programme-pages'),status=root.querySelector('.programme-status');
+ let task,doc,observer,zoom=1,disposed=false,resizeTimer;const states=[];const controller=new AbortController();
+ programmeCleanup=()=>{disposed=true;controller.abort();observer?.disconnect();clearTimeout(resizeTimer);window.removeEventListener('resize',resize);for(const s of states)s.render?.cancel();task?.destroy().catch(()=>{});};
+ const updateZoom=()=>{dialog.querySelector('output').textContent=Math.round(zoom*100)+' %';dialog.querySelector('[data-pdf-zoom="-1"]').disabled=zoom<=1;dialog.querySelector('[data-pdf-zoom="1"]').disabled=zoom>=2;};
+ async function draw(s){
+  if(disposed||!s.visible)return;const generation=++s.generation;s.render?.cancel();
+  try{
+   if(s.render)await s.render.promise.catch(()=>{});
+   const page=await doc.getPage(s.number);if(disposed||generation!==s.generation||!s.visible)return;
+   const width=Math.min(1000,root.clientWidth-32)*zoom,viewport=page.getViewport({scale:width/page.getViewport({scale:1}).width}),ratio=Math.min(window.devicePixelRatio||1,1.5);
+   s.el.style.width=width+'px';s.el.style.minHeight=viewport.height+'px';
+   s.canvas.width=Math.round(viewport.width*ratio);s.canvas.height=Math.round(viewport.height*ratio);s.canvas.style.width=viewport.width+'px';s.canvas.style.height=viewport.height+'px';
+   s.render=page.render({canvasContext:s.canvas.getContext('2d'),viewport,transform:ratio===1?null:[ratio,0,0,ratio,0,0],annotationMode:0});await s.render.promise;
+   if(!s.text.textContent){const content=await page.getTextContent();s.text.textContent=content.items.map(x=>x.str).join(' ');}
+   if(!disposed&&generation===s.generation){s.el.classList.add('is-loaded');status.textContent='';}
+  }catch(e){if(!disposed&&e.name!=='RenderingCancelledException'){status.textContent='Eine Seite konnte nicht angezeigt werden. Du kannst das PDF extern öffnen.';}}
+ }
+ const resize=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{for(const s of states)if(s.visible)draw(s)},180)};
+ dialog.querySelectorAll('[data-pdf-zoom]').forEach(button=>button.onclick=()=>{zoom=Math.max(1,Math.min(2,zoom+Number(button.dataset.pdfZoom)*.25));updateZoom();for(const s of states)if(s.visible)draw(s)});updateZoom();
+ try{
+  const pdfjs=await import('../vendor/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=new URL('../vendor/pdf.worker.mjs',document.querySelector('script[src^="js/views-match.js"]').src).href;
+  const response=await apiFetch(p.pdfPath,{signal:controller.signal});if(!response.ok)throw Error('PDF unavailable');
+  const data=new Uint8Array(await response.arrayBuffer());if(disposed)return;
+  task=pdfjs.getDocument({data,isEvalSupported:false,enableXfa:false,useWasm:false});doc=await task.promise;if(disposed)return;
+  if(doc.numPages>100)throw Error('Too many pages');status.textContent=doc.numPages+' Seiten · Erste Seite wird geladen …';
+  for(let number=1;number<=doc.numPages;number++){
+   const el=document.createElement('section');el.className='programme-page';el.setAttribute('aria-label','Seite '+number);el.innerHTML=`<span class="programme-page-number">Seite ${number}</span><canvas aria-hidden="true"></canvas><p class="programme-page-text"></p>`;root.append(el);
+   const s={el,number,canvas:el.querySelector('canvas'),text:el.querySelector('p'),visible:false,generation:0,render:null};states.push(s);
+  }
+  observer=new IntersectionObserver(entries=>{for(const e of entries){const s=states.find(s=>s.el===e.target);s.visible=e.isIntersecting;if(s.visible)draw(s);else{++s.generation;s.render?.cancel();s.canvas.width=0;s.canvas.height=0;s.el.classList.remove('is-loaded');}}},{root,rootMargin:'300px 0px'});
+  states.forEach(s=>observer.observe(s.el));window.addEventListener('resize',resize);
+ }catch(e){if(!disposed){status.textContent='Das Matchprogramm kann gerade nicht in der App angezeigt werden. Bitte nutze «PDF extern öffnen».';dialog.querySelectorAll('[data-pdf-zoom]').forEach(b=>b.disabled=true);}}
 }
