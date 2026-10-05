@@ -1,3 +1,6 @@
+// Keyboard navigation stays immediate; pointer feedback never sticks after a tap.
+document.addEventListener('keydown', () => document.documentElement.classList.add('keyboard-input'), true);
+document.addEventListener('pointerdown', () => document.documentElement.classList.remove('keyboard-input'), true);
 /* Start: registriert Ereignisse und baut die erste Ansicht. Muss als letzte App-Datei geladen werden. */
 document.querySelector('.dock [data-nav="games"]').addEventListener('click', event => {
   mode = 'list';
