@@ -25,7 +25,7 @@ function updateFcsgLiveView() {
   document.querySelectorAll('[data-fcsg-score]').forEach(e=>{if(e.dataset.fcsgScore===id)e.textContent=fcsgDisplayScore(g)});
   document.querySelectorAll('[data-fcsg-phase]').forEach(e=>{if(e.dataset.fcsgPhase===id)e.textContent=fcsgLiveState(g)});
   const panel=document.getElementById('fcsg-live-panel');if(panel&&!panel.contains(document.activeElement))panel.innerHTML=fcsgTicker(g);
-  const overview=document.getElementById('fcsg-overview');if(overview&&!overview.contains(document.activeElement))overview.innerHTML=fcsgOverview(g);
+  const overview=document.getElementById('fcsg-overview');if(overview&&!overview.contains(document.activeElement)){overview.innerHTML=fcsgOverview(g);loadMatchPreview();}
   const stats=document.getElementById('fcsg-team-stats');if(stats)stats.innerHTML=fcsgTeamStats(g);
   const lineup=document.getElementById('fcsg-lineups');if(lineup)lineup.innerHTML=fcsgLineups(g);
  }

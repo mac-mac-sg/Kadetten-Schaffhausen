@@ -206,6 +206,7 @@ function render() {
             : 'News') + ' · ' + fanClubs[activeClub].name;
   setupViews();
   updateClubHeader();
+  loadMatchPreview();
   if (activeClub === 'fcsg') {
     document.body.classList.toggle('player-mode', false);
     scrollRoot.classList.toggle('snap-profile', false);

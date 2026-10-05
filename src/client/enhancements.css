@@ -1938,3 +1938,5 @@ footer .source-details summary { margin-inline: auto; }
 .report-score-legend span:before{content:'';display:inline-block;width:9px;height:9px;background:#a09bea;border-radius:50%;margin-right:6px}
 .report-score-legend .is-kadetten:before{background:#ff7900}
 @media(min-width:600px){.report-comparison-row strong{font-size:18px}.report-comparison-row>div:first-child{font-size:15px}}
+
+.ai-match-preview{margin:1.5rem 0 2rem;padding:1.4rem;border-left:3px solid var(--accent);background:rgba(255,255,255,.035);border-radius:0 18px 18px 0}.ai-match-preview h3{font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.2;margin:.5rem 0 1rem}.ai-match-preview p{line-height:1.65}.ai-match-preview .eyebrow{color:var(--accent)}.ai-match-preview details{font-size:.85rem;margin-top:1.25rem}.ai-match-preview summary{cursor:pointer;color:var(--accent)}.ai-match-preview ul{padding-left:1.2rem}.ai-match-preview a{overflow-wrap:anywhere}
