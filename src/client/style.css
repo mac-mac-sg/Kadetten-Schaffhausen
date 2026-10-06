@@ -2931,5 +2931,16 @@ html.snap-profile {
 /* Spielerstatistik: passt auf Handybreite ohne Scrollen; Namen dürfen umbrechen. */
 .report-table.stats-table{min-width:0;width:100%;font-size:13px}
 .report-table.stats-table th,.report-table.stats-table td{padding:9px 4px}
-.report-table.stats-table tbody th{white-space:normal;overflow-wrap:anywhere;padding-left:8px}
+.report-table.stats-table tbody th{white-space:normal;overflow-wrap:break-word;padding-left:8px}
 .report-table.stats-table thead th{padding:9px 3px}
+.stats-table thead th.name{text-align:left;padding-left:8px}
+.report-comparison + .panel{margin-top:28px}
+.report-feed{margin:2rem 0 1rem;border-top:1px solid #ffffff1a;padding-top:1rem}
+.report-feed > summary{cursor:pointer;font-size:24px;font-weight:700;list-style-position:inside;padding:6px 0}
+.report-feed > .muted{margin:.5rem 0 1rem}
+/* Die Handy-Regeln für Tabellen blenden die 5. Spalte aus (Rangliste); in den Spielerstatistiken sind alle Spalten gewollt. */
+.report-table.stats-table td:nth-child(5),.report-table.stats-table th:nth-child(5){display:table-cell}
+.report-table.stats-table thead th{font-size:12px}
+.report-table.stats-table tbody td:last-child{font-size:inherit}
+.report-table.stats-table thead th{white-space:normal;vertical-align:bottom;line-height:1.2}
+.report-table.stats-table td{text-align:center}

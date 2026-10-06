@@ -233,6 +233,11 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
   const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/data-stats-team="home"/);assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);assert.doesNotMatch(stats,/Zwischen den Pfosten/);
   const history=view('reportHistory(reportFixture)');assert.match(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
   assert.match(view("matchOverview(reportFixture)"),/Torverlauf/);
+  assert.match(history,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);assert.doesNotMatch(history,/Alle Spielereignisse/);assert.doesNotMatch(history,/<details class="report-feed" open/);
+  const overview=view("matchOverview(reportFixture)");
+  assert.match(overview,/match-preview-facts/);assert.match(overview,/<span>Spieldatum<\/span>/);assert.match(overview,/<span>Anspielzeit<\/span><strong>[^<]*Beendet<\/strong>/);assert.match(overview,/venue-preview/);
+  assert.doesNotMatch(overview,/Offizieller Spielplan|Originalbericht lesen/);
+  assert.doesNotMatch(stats,/Paradenquote gemäss SHV/);assert.match(stats,/<th scope="col" class="name">Spieler<\/th>/);
  }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
 });
 
