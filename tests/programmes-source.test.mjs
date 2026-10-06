@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {findPdfLinks, firstPageText, nextHomeGame, inspectProgrammes} from '../scripts/lib/programmes-source.mjs';
+import {findPdfLinks, firstPageText, nextHomeGame, inspectProgrammes, storeProgramme, syncProgrammes, validPdf} from '../scripts/lib/programmes-source.mjs';
 import {main} from '../scripts/cloudflare-programmes.mjs';
+import {programmes} from '../server/programmes.mjs';
 
 // Kleines gültiges PDF mit einer Seite Text (Titelseite eines Matchprogramms).
-function pdf(text) {
+function pdf(text, pad = 1200) {
   const stream = `BT /F1 10 Tf 40 700 Td (${text.replace(/[()\\]/g, '\\$&')}) Tj ET`;
   const objs = [
     '<< /Type /Catalog /Pages 2 0 R >>',
@@ -13,7 +14,7 @@ function pdf(text) {
     `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
   ];
-  let out = '%PDF-1.4\n';
+  let out = '%PDF-1.4\n%' + 'x'.repeat(pad) + '\n';
   const offsets = [];
   objs.forEach((o, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
   const xref = out.length;
@@ -80,4 +81,61 @@ test('main meldet den Befund und ohne Treffer, dass nichts geschrieben wurde', a
   const text = lines.join('\n');
   assert.match(text, /Nächstes Heimspiel/);
   assert.match(text, /Kein PDF passt/);
+});
+
+function memBucket(initial = {}, failOn = null) {
+  const map = new Map(Object.entries(initial));
+  const order = [];
+  return {
+    map, order,
+    async get(k) { return map.has(k) ? {json: async () => JSON.parse(map.get(k)), arrayBuffer: async () => map.get(k)} : null; },
+    async put(k, v) { if (failOn && k.endsWith(failOn)) throw Error('KV-Schreiben fehlgeschlagen'); order.push(k); map.set(k, v); }
+  };
+}
+const GOOD = 'https://kadettensh.ch/wp-content/downloads/Matchprogramm_Kadetten_EHL.pdf';
+const goodPdf = () => pdf('Official Programme KADETTEN SCHAFFHAUSEN HC KRIENS-LUZERN 14.02.2099');
+const programmeHttp = (bytes = goodPdf()) => fakeHttp({pages: {'https://kadettensh.ch/': `<a href="${GOOD}">Matchvorschau</a>`}, files: {[GOOD]: bytes}});
+const NOW = new Date('2099-01-01T10:00:00Z');
+
+test('Programm speichern: PDF zuerst, dann Metadaten; der Datendienst liefert es danach aus; unverändert wird nicht neu geschrieben', async () => {
+  const bucket = memBucket({'kadetten/current.json': JSON.stringify({games})});
+  const first = await syncProgrammes(programmeHttp(), bucket, games, NOW);
+  assert.equal(first.result, 'gespeichert');
+  assert.equal(bucket.order.length, 2);
+  assert.match(bucket.order[0], /^kadetten\/programmes\/508400\/[a-f0-9]{64}\.pdf$/, 'PDF vor den Metadaten');
+  assert.equal(bucket.order[1], 'kadetten/programmes/508400.json');
+  const meta = JSON.parse(bucket.map.get('kadetten/programmes/508400.json'));
+  assert.equal(meta.sourceUrl, GOOD);
+  assert.equal(meta.version, bucket.order[0].match(/([a-f0-9]{64})\.pdf$/)[1]);
+
+  // Der Datendienst liest genau dieses Format.
+  const env = {BUCKET: {get: async k => (bucket.map.has(k) ? {json: async () => JSON.parse(bucket.map.get(k)), body: bucket.map.get(k)} : null)}};
+  const info = await programmes(new Request('https://x.test/api/programmes/508400'), env);
+  assert.equal(info.status, 200);
+  assert.match((await info.json()).pdfPath, /^\/api\/programmes\/508400\/pdf\?v=[a-f0-9]{64}$/);
+  const file = await programmes(new Request('https://x.test' + `/api/programmes/508400/pdf?v=${meta.version}`), env);
+  assert.equal(file.status, 200);
+  assert.equal(file.headers.get('Content-Type'), 'application/pdf');
+
+  const again = await syncProgrammes(programmeHttp(), bucket, games, NOW);
+  assert.equal(again.result, 'unveraendert');
+  assert.equal(bucket.order.length, 2, 'keine weiteren Schreibzugriffe');
+});
+
+test('Programm speichern: ungültiges oder nicht passendes PDF und Schreibfehler lassen das bisherige Programm stehen', async () => {
+  const bucket = memBucket();
+  const tiny = pdf('Kadetten Schaffhausen HC Kriens-Luzern 14.02.2099', 0);
+  assert.equal(validPdf(tiny), false, 'zu klein');
+  assert.equal(validPdf(new TextEncoder().encode('%PDF-' + 'a'.repeat(2000))), false, 'ohne Dateiende');
+  assert.equal((await syncProgrammes(programmeHttp(tiny), bucket, games, NOW)).result, 'ungueltig');
+  const wrong = pdf('Official Programme KADETTEN SCHAFFHAUSEN HC KRIENS-LUZERN 20.02.2099');
+  assert.equal((await syncProgrammes(programmeHttp(wrong), bucket, games, NOW)).result, 'kein passendes PDF');
+  assert.equal((await syncProgrammes(fakeHttp({pages: {}, files: {}}), bucket, games, NOW)).result, 'kein passendes PDF');
+  assert.equal((await syncProgrammes(programmeHttp(), bucket, [other], NOW)).result, 'kein Heimspiel');
+  assert.equal(bucket.order.length, 0, 'nichts geschrieben');
+
+  const broken = memBucket({'kadetten/programmes/508400.json': '{"alt":true}'}, '508400.json');
+  await assert.rejects(syncProgrammes(programmeHttp(), broken, games, NOW), /KV-Schreiben/);
+  assert.equal(broken.map.get('kadetten/programmes/508400.json'), '{"alt":true}', 'bisherige Metadaten bleiben');
+  assert.equal(await storeProgramme(bucket, game, {matches: false}), 'ungueltig');
 });
