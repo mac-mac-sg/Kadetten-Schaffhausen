@@ -209,3 +209,28 @@ export function summarizeTicker(data, {first = 10, perType = 1} = {}) {
   }
   return {top, eventKeys: eventsObject ? Object.keys(eventsObject) : [], total: actions.length, counts, firstActions: actions.slice(0, first), samples};
 }
+
+// Welche Werte kommen vor? Zählungen von `result` und `loc` bei Würfen, `actionAdd` bei allen Ereignissen, `role` der Beteiligten,
+// dazu die Phasenstände (`phaseScores`). Damit lassen sich die Ereigniscodes sicher deuten.
+export function tickerValueCounts(data) {
+  const eventsObject = tickerEventsObject(data);
+  const raw = eventsObject?.actions?.action;
+  const actions = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  const bump = (map, key) => { const k = String(key ?? '–'); map[k] = (map[k] || 0) + 1; };
+  const out = {shotResult: {}, shotLoc: {}, actionAdd: {}, roleByAction: {}, periodByAction: {}};
+  for (const a of actions) {
+    if (a.action === 'SHOT') { bump(out.shotResult, a.result); bump(out.shotLoc, a.loc); }
+    if (a.actionAdd !== undefined) bump(out.actionAdd, a.action + ':' + a.actionAdd);
+    bump(out.periodByAction, a.action + ':' + a.period);
+    for (const c of a.competitor || []) for (const p of c.composition?.athlete || []) bump(out.roleByAction, a.action + ':' + (p.role ?? 'ohne'));
+  }
+  out.phaseScores = eventsObject?.phaseScores ?? null;
+  return out;
+}
+
+// Reiner Text einer HTML-Seite (ohne Skripte und Formatvorlagen), für Disclaimer und Nutzungsbedingungen.
+export const htmlText = html => String(html).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+export function excerptFrom(text, needle, length = 1800) {
+  const i = String(text).indexOf(needle);
+  return i === -1 ? '' : String(text).slice(i, i + length);
+}

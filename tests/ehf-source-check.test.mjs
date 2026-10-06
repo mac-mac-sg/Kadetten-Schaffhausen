@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, tickerEventsObject} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, tickerEventsObject, tickerValueCounts, htmlText, excerptFrom} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -181,4 +181,23 @@ test('Ticker-Antwort: Ereignisse aus events (Liste oder Objekt), Anzahl und Beis
   assert.equal(summarizeTicker(asObject).total, 1);
   assert.equal(tickerEventsObject({}), undefined);
   assert.deepEqual(summarizeTicker(null), {top: [], eventKeys: [], total: 0, counts: {}, firstActions: [], samples: {}});
+});
+
+test('Ticker: Wertezählungen (result, loc, actionAdd, Rollen) und Disclaimer-Text aus HTML', () => {
+  const athlete = role => ({composition: {athlete: [{role}]}});
+  const data = {events: [{phaseScores: [{period: 'H1', scoreH: 23}], actions: {action: [
+    {action: 'SHOT', period: 'H1', result: 'GOAL', loc: 'CSD', competitor: [athlete('SCR'), athlete('GK')]},
+    {action: 'SHOT', period: 'H1', result: 'POST', loc: 'CLD', competitor: [athlete('SCR')]},
+    {action: 'TOUT', period: 'H2', actionAdd: 'START'},
+    {action: 'TOUT', period: 'H2', actionAdd: 'END'}]}}]};
+  const c = tickerValueCounts(data);
+  assert.deepEqual(c.shotResult, {GOAL: 1, POST: 1});assert.deepEqual(c.shotLoc, {CSD: 1, CLD: 1});
+  assert.deepEqual(c.actionAdd, {'TOUT:START': 1, 'TOUT:END': 1});
+  assert.equal(c.roleByAction['SHOT:SCR'], 2);assert.equal(c.roleByAction['SHOT:GK'], 1);
+  assert.deepEqual(c.phaseScores, [{period: 'H1', scoreH: 23}]);
+  assert.deepEqual(tickerValueCounts(null).shotResult, {});
+  const html = '<style>p{}</style><script>var x=1</script><div>Footer Disclaimer x Disclaimer The EHF does not guarantee &amp; accepts no liability.</div>';
+  assert.equal(htmlText(html), 'Footer Disclaimer x Disclaimer The EHF does not guarantee & accepts no liability.');
+  assert.match(excerptFrom(htmlText(html), 'Disclaimer x', 40), /^Disclaimer x Disclaimer The EHF does not/);
+  assert.equal(excerptFrom('abc', 'x'), '');
 });
