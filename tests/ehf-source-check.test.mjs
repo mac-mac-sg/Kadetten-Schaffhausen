@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -91,4 +91,18 @@ test('valueAt liest Pfade mit Listenindex und liefert undefined, wenn etwas fehl
   assert.equal(valueAt(json, 'matchDetails.details.guestTeam.players[0]'), undefined);
   assert.equal(valueAt(json, 'matchDetails.details.homeTeam.players[5]'), undefined);
   assert.equal(valueAt(null, 'a'), undefined);
+});
+
+test('Feed-Eintrag eines Spiels: ohne Bild-Adressen, Tagesübersicht mit Statusfeldern', () => {
+  const feed = {days: [
+    {dayDatumFormatted: '2026-10-06', liveScoreMatches: [{match: {matchID: '1', homeTeam: {fullName: 'A', logoBig: 'https://x/img', photos: {big: 'https://x/p'}}}, matchStats: {isLive: false, time: '60:00', phase: 'Finished'}, homeStats: {totalGoals: 30}}]},
+    {dayDatumFormatted: '2026-10-05', liveScoreMatches: []}
+  ]};
+  const item = findFeedItem(feed, '1');
+  assert.equal(item.homeStats.totalGoals, 30);
+  assert.equal(findFeedItem(feed, '2'), null);
+  const text = withoutImages(item);
+  assert.match(text, /"fullName":"A"/);assert.match(text, /"phase":"Finished"/);assert.doesNotMatch(text, /logoBig|photos|https:\/\/x/);
+  assert.deepEqual(feedOverview(feed), [{date: '2026-10-06', matches: 1, firstStats: {isLive: false, time: '60:00', phase: 'Finished'}}, {date: '2026-10-05', matches: 0, firstStats: null}]);
+  assert.deepEqual(feedOverview(null), []);
 });
