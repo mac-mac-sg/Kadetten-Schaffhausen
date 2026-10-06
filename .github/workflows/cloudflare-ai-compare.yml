@@ -1,0 +1,35 @@
+name: Cloudflare-KI-Stilvergleich
+# Nur lesend (Weg B plus KI, docs/vorschauen.md): lässt Modelle von Cloudflare Workers AI den nüchternen Vorschau-Text für je einen
+# künftigen Kadetten- und FCSG-Termin umformulieren und zeigt die Texte mit Prüfergebnis. Schreibt nichts in den KV-Speicher.
+# Braucht die Secrets CLOUDFLARE_API_TOKEN (mit «Workers AI: Edit») und CLOUDFLARE_ACCOUNT_ID.
+on:
+  workflow_dispatch:
+    inputs:
+      modelle:
+        description: Modelle, kommagetrennt (leer = Apertus, Mistral Small 3.1, GLM 4.7 Flash)
+        type: string
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-ai-compare
+  cancel-in-progress: false
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODELLE: ${{ inputs.modelle }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Texte vergleichen
+        run: node scripts/cloudflare-ai-compare.mjs
