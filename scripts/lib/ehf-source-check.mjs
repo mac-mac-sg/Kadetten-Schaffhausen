@@ -31,3 +31,37 @@ export function scriptSources(html, base) {
 export function preview(text, length = 1200) {
   return String(text).replace(/\s+/g, ' ').trim().slice(0, length);
 }
+
+// Ausschnitte um eine Fundstelle (zeigt, mit welchen Parametern eine Schnittstelle in den Skripten der Seite aufgerufen wird).
+export function contextAround(text, needle, width = 220, max = 3) {
+  const out = [];
+  const source = String(text);
+  for (let i = source.indexOf(needle); i !== -1 && out.length < max; i = source.indexOf(needle, i + needle.length)) {
+    out.push(preview(source.slice(Math.max(0, i - width), i + needle.length + width), 2 * width + needle.length));
+  }
+  return out;
+}
+
+// Die internen Kennungen eines Spiels aus dem Livescore-Feed (days[].liveScoreMatches[].match).
+export function findFeedMatch(feed, matchId) {
+  for (const day of feed?.days || []) {
+    for (const item of day.liveScoreMatches || []) {
+      if (item?.match?.matchID === matchId) return {id: item.match.id, matchID: item.match.matchID, home: item.match.homeTeam?.id, guest: item.match.guestTeam?.id};
+    }
+  }
+  return null;
+}
+
+export const API = 'https://ehfel.eurohandball.com/umbraco/api/';
+export const DATA_ENDPOINTS = ['matchdetailsinfoapi/GetMatchLiveFeed', 'matchdetailapi/GetMatchDetails', 'matchdetailapi/GetMatchDetailStatistic'];
+export const PARAM_NAMES = ['matchId', 'matchID', 'id'];
+
+// Versuchsaufrufe: jede Schnittstelle mit den bekannten Kennungen unter den üblichen Parameternamen (nur GET).
+export function candidateCalls(match, matchId) {
+  const values = [...new Set([match?.id, matchId].filter(Boolean))];
+  const calls = [];
+  for (const endpoint of DATA_ENDPOINTS) {
+    for (const name of PARAM_NAMES) for (const value of values) calls.push(`${API}${endpoint}?${name}=${encodeURIComponent(value)}`);
+  }
+  return calls;
+}

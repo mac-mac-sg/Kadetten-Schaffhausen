@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, API} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -49,7 +49,41 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
       if (found.length) write(`\nSchnittstellen in ${s} (${found.length}):\n\n${found.map(u => '- ' + u).join('\n')}`);
     }
   }
+  await probeApis({id, pages, fetchFn});
   return pages.every(p => p.status === 0) ? 1 : 0;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) process.exitCode = await main();
+
+const NAMES = ['GetMatchLiveFeed', 'GetMatchDetails', 'GetMatchDetailStatistic', 'GetTeams'];
+
+// Zweiter Teil: Aufrufe der Seitenskripte lesen und die Daten-Schnittstellen der EHF-Seite versuchsweise abrufen.
+async function probeApis({id, pages, fetchFn}) {
+  write('\n### Schnittstellen der EHF-Spielseite\n');
+  const page = pages.find(p => p.url.includes('/matches/details/'));
+  const scripts = page?.text ? scriptSources(page.text, page.url).concat(findEndpoints(page.text, page.url).filter(u => /\/assets\/js\/.*_vue\.js/.test(u))) : [];
+  for (const src of [...new Set(scripts)].filter(s => /_vue\.js/.test(s)).slice(0, 6)) {
+    const js = await get(fetchFn, src);
+    for (const name of NAMES) {
+      const snippets = contextAround(js.text, name);
+      if (snippets.length) write(`\nAufruf von ${name} in ${src.split('?')[0]}:\n\n${snippets.map(x => code(x)).join('\n')}`);
+    }
+  }
+  const feed = pages.find(p => p.url.includes('GetLiveScoreMatches'));
+  let match = null;
+  try { match = findFeedMatch(JSON.parse(feed?.text || '{}'), id); } catch { /* kein JSON */ }
+  write(`\nKennungen des Spiels im Livescore-Feed: ${match ? JSON.stringify(match) : 'Spiel dort nicht gelistet'}`);
+  const calls = [...candidateCalls(match, id), `${API}homeofhandballapi/GetTeams/1171`, `${API}homeofhandballapi/GetTeams`];
+  const worked = new Set();
+  for (const url of calls) {
+    const endpoint = url.split('?')[0];
+    if (worked.has(endpoint)) continue;
+    const r = await get(fetchFn, url);
+    const usable = r.status === 200 && r.text.length > 20 && !/^\s*(\[\]|\{\})\s*$/.test(r.text);
+    write(`\n- ${url.replace(API, '')}: Status ${r.status || 'Fehler'}, ${r.type || 'kein Inhaltstyp'}, ${r.text.length} Zeichen${usable ? ' (brauchbar)' : ''}`);
+    if (usable) {
+      worked.add(endpoint);
+      write('\n' + code(preview(r.text, 1500)));
+    }
+  }
+}
