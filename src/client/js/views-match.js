@@ -17,8 +17,8 @@ function venueFact(g) {
 }
 function match(g, tab) {
   if (liveForFixture(g)) return liveMatchPage(g, tab);
-  const ehfDone = g.league === 'EHL' && !!g.score;
-  if (ehfDone && tab === 'overview') tab = 'stats'; // European League: zuerst die Statistiken, der Bericht liegt im Tab «report»
+  const ehfDone = ['QHL', 'EHL'].includes(g.league) && !!g.score;
+  if (ehfDone && tab === 'overview') tab = 'stats'; // QHL und European League: zuerst die Statistiken, der Bericht liegt im Tab «report»
   const detail = verifiedReport(g);
   if (detail) g = {...g, half: detail.half};
   if (!g.score && tab === 'squad') tab = 'overview';

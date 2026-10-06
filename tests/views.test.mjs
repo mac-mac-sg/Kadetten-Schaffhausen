@@ -206,9 +206,9 @@ test('European League: bestätigtes Endresultat setzt die Karte auf beendet und 
 test('Live game opens internal details with verified events and player statistics',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);
- const overview=run('liveMatchPage({id:"live"},"overview")');assert.match(overview,/19:36/);assert.match(overview,/LUTZ Milan/);assert.match(overview,/Spielverlauf/);
+ const overview=run('liveMatchPage({id:"live"},"report")');assert.match(overview,/19:36/);assert.match(overview,/LUTZ Milan/);assert.match(overview,/Spielverlauf/);
  const stats=run('liveMatchPage({id:"live"},"stats")');assert.match(stats,/<td>–<\/td><td>3<\/td>/);assert.match(stats,/Toptorschützen/);
- run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"overview")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
+ run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"report")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
 
@@ -288,4 +288,14 @@ test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und 
  run('liveStatsTeam=null;__g.score=[41,30]');
  assert.doesNotMatch(run('match(__g,"report")'),/KI-Matchbericht/);
  run('ehfArchive={}');
+});
+
+test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
+ run(`globalThis.__q={id:'qhl-test',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa',date:'2026-10-03',time:'18:00',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[45,34],half:[21,14]}`);
+ const open=run('match(__q,"overview")');
+ assert.match(open,/Endresultat/);assert.ok(open.indexOf('>Statistik<')<open.indexOf('>Rückblick<'));
+ assert.match(open,/#match\/qhl-test\/report/);
+ assert.match(run('match(__q,"report")'),/Der Rückblick/);
+ run('globalThis.__q.score=null');
+ assert.match(run('match(__q,"overview")'),/>Vorschau</);
 });
