@@ -34,11 +34,20 @@ async function fetchTicker(matchId, fetchFn, {retries = 3, pause = 3000} = {}) {
   throw last;
 }
 
-// games: Spiele des Datenstands; write(model) -> {ok, text} | {ok: false, error} oder null (ohne KI).
+// Spiele, die der Livescore-Feed der EHF nicht mehr führt (er zeigt nur den Spieltag): Spiel-ID der EHF-Spielseite.
+export const KNOWN_MATCHES = {
+  bukarest: {matchId: '202711020901026', url: 'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901026/KadettenSchaffhausen-CSMBucuresti/'}
+};
+export const RECORD_VERSION = 2;
+
+// games: Spiele des Datenstands; write(messages) -> {ok, text} | {ok: false, error} oder null (ohne KI).
+// Betrachtet werden die Kadetten-Spiele der European League, die am Spieltag oder Folgetag laufen (Feed) oder schon ein Resultat haben
+// (gesicherte Einträge ergänzen, bekannte ältere Spiele nachladen). Vorhandene Berichte bleiben unverändert.
 export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = null, now = new Date()}) {
   const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
   const today = swissDate(now), yesterday = swissDate(new Date(now.getTime() - 86400000));
-  const candidates = (games || []).filter(g => g.league === 'EHL' && [today, yesterday].includes(g.date) && /Kadetten/.test(g.home + ' ' + g.away));
+  const inWindow = g => [today, yesterday].includes(g.date);
+  const candidates = (games || []).filter(g => g.league === 'EHL' && /Kadetten/.test(g.home + ' ' + g.away) && (inWindow(g) || Array.isArray(g.score)));
   if (!candidates.length) return out;
   let feed = null;
   for (const g of candidates) {
@@ -47,20 +56,29 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
       const saved = await bucket.get(archiveKey(g.id));
       const old = saved ? await saved.json() : null;
       // Ein sachlicher Rückfall wird bei laufender KI bis zu dreimal durch einen KI-Text ersetzt; sonst gilt der Eintrag als fertig.
-      if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) { out.kept++; continue; }
-      if (!feed) {
-        const r = await fetchFn(ehfLiveEndpoint, {headers: {Accept: 'application/json'}, signal: AbortSignal.timeout(20000)});
-        if (!r.ok) throw Error('Feed HTTP ' + r.status);
-        feed = await r.json();
-      }
-      const match = parseEhfFinishedMatch(feed, g.date);
-      if (!match) { out.notes.push(`${g.id}: im Feed nicht als beendet gemeldet`); continue; }
-      const record = old?.ticker ? old : await buildRecord(g, match, fetchFn);
-      const result = await addReport(record, write);
+      const final = old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
+      if (old && old.v >= RECORD_VERSION && final) { out.kept++; continue; }
+      // Woher kommt die Spiel-ID? Aus dem gesicherten Eintrag, aus der Liste bekannter Spiele oder (Spieltag) aus dem Feed.
+      let match = null;
+      if (old?.matchId) match = {id: old.matchId, home: old.home, away: old.away, score: old.score, url: old.source?.url || null};
+      else if (KNOWN_MATCHES[g.id] && Array.isArray(g.score)) match = {id: KNOWN_MATCHES[g.id].matchId, home: g.home, away: g.away, score: g.score, url: KNOWN_MATCHES[g.id].url};
+      else if (inWindow(g)) {
+        if (!feed) {
+          const r = await fetchFn(ehfLiveEndpoint, {headers: {Accept: 'application/json'}, signal: AbortSignal.timeout(20000)});
+          if (!r.ok) throw Error('Feed HTTP ' + r.status);
+          feed = await r.json();
+        }
+        match = parseEhfFinishedMatch(feed, g.date);
+        if (!match) { out.notes.push(`${g.id}: im Feed nicht als beendet gemeldet`); continue; }
+      } else { out.notes.push(`${g.id}: kein Eintrag, nicht mehr im Feed und nicht in der Liste bekannter Spiele`); continue; }
+      const record = old?.v >= RECORD_VERSION && old?.ticker ? old : await buildRecord(g, match, fetchFn, old);
+      let result = {};
+      if (!record.report || (record.report.generator !== 'ki' && write && record.ticker && (record.report.attempts || 1) < 3)) result = await addReport(record, write);
+      if (record.report?.generator === 'ki') delete record.ticker;
       if (result.report) { out.reports++; if (result.report.generator === 'ki') out.ki++; }
       await bucket.put(archiveKey(g.id), JSON.stringify(record));
       out.written++;
-      out.notes.push(`${g.id}: ${record.report ? 'Bericht (' + record.report.generator + ')' : 'ohne Bericht: ' + (result.reason || '')}`);
+      out.notes.push(`${g.id}: ${record.report ? 'Bericht (' + record.report.generator + ')' + (old && old.v < RECORD_VERSION ? ', Eintrag ergänzt' : '') : 'ohne Bericht: ' + (result.reason || '')}`);
     } catch (e) {
       out.notes.push(`${g.id}: Fehler (${String(e?.message || e).slice(0, 100)})`);
     }
@@ -68,17 +86,19 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
   return out;
 }
 
-async function buildRecord(g, match, fetchFn) {
+// match: {id, home, away, score, url}. old: früherer Eintrag (Bericht und Fakten bleiben erhalten, der Rest wird neu geholt).
+async function buildRecord(g, match, fetchFn, old = null) {
   const details = await getEhfDetails(match.id, fetchFn);
-  if (!details.ok) throw Error('Spielerwerte und Teamwerte nicht verfügbar');
+  if (!details.ok || !details.players || !details.teamStats) throw Error('Spielerwerte und Teamwerte nicht verfügbar');
+  if (details.teamStats.home.goals !== match.score[0] || details.teamStats.guest.goals !== match.score[1]) throw Error('Teamwerte passen nicht zum Endstand');
   let ticker = null, tickerError = null;
   try { ticker = await fetchTicker(match.id, fetchFn, {pause: fetchFn === fetch ? 3000 : 0}); } catch (e) { tickerError = String(e?.message || e).slice(0, 160); }
-  // Die Ereignisse gelten nur, wenn sie zum Endstand des Feeds passen (sonst ist die Torfolge unvollständig).
+  // Die Ereignisse gelten nur, wenn sie zum Endstand passen (sonst ist die Torfolge unvollständig).
   if (ticker && (!ticker.final || ticker.final[0] !== match.score[0] || ticker.final[1] !== match.score[1] || ticker.goals.length !== match.score[0] + match.score[1])) {
     tickerError = 'Ereignisse passen nicht zum Endstand'; ticker = null;
   }
-  return {
-    v: 1,
+  const record = {
+    v: RECORD_VERSION,
     fixtureId: g.id,
     matchId: match.id,
     home: match.home,
@@ -87,13 +107,18 @@ async function buildRecord(g, match, fetchFn) {
     score: match.score,
     half: ticker?.halftime ?? null,
     checkedAt: new Date().toISOString(),
+    spectators: details.spectators ?? null,
     teamStats: details.teamStats,
     players: ticker ? withSevenMeters(details.players, ticker) : details.players,
     goals: ticker ? goalFeed(ticker) : null,
+    timeouts: ticker ? ticker.timeouts.filter(t => t.side).map(t => ({side: t.side, sec: t.sec})) : null,
+    suspensions: ticker ? ticker.suspensions.filter(s => s.side).map(s => ({side: s.side, sec: s.sec, name: s.name})) : null,
     tickerError,
     ticker: ticker && {timeouts: ticker.timeouts, suspensions: ticker.suspensions, goals: ticker.goals, final: ticker.final, halftime: ticker.halftime, sevenMeters: ticker.sevenMeters},
     source: {label: 'EHF Live-Ticker und Spielstatistik', url: match.url}
   };
+  if (old?.report) { record.report = old.report; if (old.facts) record.facts = old.facts; }
+  return record;
 }
 
 // Ergänzt `record.report` (KI oder sachlicher Rückfall) aus den Ereignissen; ohne Ereignisse gibt es keinen Bericht.

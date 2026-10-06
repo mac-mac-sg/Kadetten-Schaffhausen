@@ -137,17 +137,40 @@ async function loadEhfArchive() {
   const {report}=await response.json();
   if(!report||!Array.isArray(report.score)||report.score.length!==2||!Array.isArray(report.players||[]))return;
   ehfArchive[id]=report;
+  // European League: Die gesicherten Werte laufen durch dieselben Ansichten wie ein abgeschlossenes QHL-Spiel.
+  if(g.league==='EHL'&&Array.isArray(report.players)&&report.players.length&&report.teamStats&&Array.isArray(report.score))gameReports[id]=ehfAsReport(report);
   if(!location.hash.startsWith('#match/'+id+'/'))return;
-  if(document.getElementById('live-detail-content'))refreshLiveViews();else render();
+  if(g.league!=='EHL'&&document.getElementById('live-detail-content'))refreshLiveViews();else render();
  }catch{/* Ohne gesicherten Stand bleibt die Seite wie bisher. */}
 }
 // Platz für den KI-Matchbericht im Rückblick eines abgeschlossenen QHL- oder EHL-Spiels (Bericht und Torfolge, sonst ein Hinweis in den ersten Tagen).
 function ehfReportSlot(g) {
  if(!g.score||!['QHL','EHL'].includes(g.league))return '';
  const a=ehfArchiveFor(g);
- if(a?.report)return ehfReportBlock(a)+(g.league==='EHL'?ehfGoalFeed(a,g):'');
+ if(a?.report)return ehfReportBlock(a);
  const days=(Date.parse(swissToday())-Date.parse(g.date))/86400000;
  return days<=3?'<p class="notice" role="status">Der KI-Matchbericht erscheint kurz nach dem Spielende an dieser Stelle.</p>':'';
+}
+// Gesicherter EHF-Eintrag -> Spielbericht in der Form des SHV-Berichts, damit die Ansichten der abgeschlossenen QHL-Spiele ihn unverändert zeigen.
+function ehfAsReport(a) {
+ const seconds=t=>{const m=/^(\d+):(\d{2})$/.exec(String(t));return m?Number(m[1])*60+Number(m[2]):0};
+ const clock=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+ const team=home=>{
+  const name=home?a.home:a.away, ts=a.teamStats[home?'home':'guest'];
+  const own=a.players.filter(p=>p.home===home&&!(p.goalkeeper&&p.savesFaced===0));
+  const keepers=own.filter(p=>p.goalkeeper), faced=keepers.reduce((n,p)=>n+(p.savesFaced||0),0), saves=keepers.length?keepers.reduce((n,p)=>n+(p.saves||0),0):null;
+  return {id:/Kadetten/.test(name)?41473:(home?-1:-2),name,
+   players:own.map(p=>({id:p.id,name:p.name,keeper:!!p.goalkeeper,goals:p.goals,shots:p.shots,seven:p.seven,sevenShots:p.sevenShots,warnings:p.yellow,twoMinutes:p.twoMinutes,redCards:p.red,saves:p.goalkeeper?p.saves:null,keeperShots:p.goalkeeper?p.savesFaced:null,ehf:true})),
+   shots:ts.shots,saves,turnovers:ts.technicalFaults,throwPercentage:ts.efficiency,savePercentage:faced>0&&saves!==null?Math.round(saves/faced*1000)/10:null,
+   seven:ts.sevenGoals,sevenShots:ts.sevenShots,twoMinutes:ts.twoMinutes,warnings:ts.warnings,
+   timeouts:Array.isArray(a.timeouts)?a.timeouts.filter(t=>t.side===(home?'home':'away')).length:undefined};
+ };
+ let id=0;const events=[];
+ for(const g of a.goals||[])events.push({id:++id,seconds:seconds(g.t),time:clock(seconds(g.t)),score:g.s,action:g.p?'Tor (Siebenmeter)':'Tor',homePlayer:g.h?g.n:null,awayPlayer:g.h?null:g.n});
+ for(const s of a.suspensions||[])events.push({id:++id,seconds:s.sec,time:clock(s.sec),score:null,action:'Zeitstrafe',homePlayer:s.side==='home'?s.name:null,awayPlayer:s.side==='away'?s.name:null});
+ for(const t of a.timeouts||[])events.push({id:++id,seconds:t.sec,time:clock(t.sec),score:null,action:'Time-out',homePlayer:null,awayPlayer:null});
+ events.sort((x,y)=>y.seconds-x.seconds||y.id-x.id);
+ return {gameId:a.matchId,score:a.score,half:Array.isArray(a.half)?a.half:[null,null],spectators:a.spectators??null,referees:[],teams:[team(true),team(false)],events:events.length?events:undefined,source:a.source?.url||null,checkedAt:a.checkedAt,ehf:true};
 }
 function ehfReportBlock(a) {
  const r=a?.report;if(!r||!Array.isArray(r.paragraphs))return '';
@@ -218,7 +241,7 @@ function refreshLiveViews() {
    const html=liveMatchContent(g,tab);
    if(container.innerHTML!==html){container.innerHTML=html;if(focused)container.querySelector('[data-stats-team="'+focused+'"]')?.focus();}
    if(open&&container.querySelector('.live-all-events'))container.querySelector('.live-all-events').open=true;
-  } else if(liveForFixture(g))render();
+  } else if(liveForFixture(g)&&!(g.league==='EHL'&&verifiedReport(g)))render();
  }
  if(page==='season'&&id==='games')document.querySelectorAll('[data-game-card]').forEach(el=>{
   if(el.contains(document.activeElement))return;

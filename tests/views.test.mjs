@@ -271,29 +271,39 @@ test('FCSG live view shows a provisional score and ticker, separate from complet
  run("fcsgLiveGames.clear();activeClub='kadetten'");
 });
 
-test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und Statistik mit Mannschaftswahl',()=>{
- run(`ehfArchive={izvidac:{fixtureId:'izvidac',matchId:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',score:[42,30],half:[23,11],
+test('European League: gesicherter Endstand erscheint wie ein abgeschlossenes QHL-Spiel (Blueprint)',()=>{
+ run(`ehfArchive={izvidac:{fixtureId:'izvidac',matchId:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',score:[42,30],half:[23,11],spectators:1145,checkedAt:'2026-10-06T20:06:00Z',source:{url:'https://ehfel.eurohandball.com/x'},
   report:{headline:'Kadetten ziehen früh davon',paragraphs:['Unsere Kadetten gewinnen 42:30 und führen zur Pause 23:11.','Nach dem Rückstand zu Beginn folgten viele Tore in Folge.'],generator:'ki',generatedAt:new Date().toISOString()},
-  goals:[{t:'1:00',s:[0,1],h:false,n:'Mile Lasic',p:false},{t:'1:37',s:[1,1],h:true,n:'Luka Maros',p:true}],
-  teamStats:{home:{goals:42,shots:54,misses:12,efficiency:78,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:9},guest:{goals:30,shots:49,misses:19,efficiency:61,sevenGoals:4,sevenShots:4,twoMinutes:4,warnings:0,disqualifications:0,technicalFaults:14}},
-  players:[{id:'a',number:'20',name:'Luka Maros',home:true,goalkeeper:false,goals:7,shots:8,seven:1,sevenShots:1,twoMinutes:0,yellow:0,red:0,saves:null,savesFaced:null},{id:'g',number:'1',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:12,savesFaced:27},{id:'b',number:'24',name:'Mile Lasic',home:false,goalkeeper:false,goals:6,shots:9,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:null,savesFaced:null}]}};
-  globalThis.__g={id:'izvidac',league:'EHL',home:'Kadetten Schaffhausen',away:'HC Izvidac',date:'2026-10-06',time:'18:45',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[42,30],half:[23,11]}`);
- const overview=run('match(__g,"report")');
- assert.match(run('match(__g,"overview")'),/<h3>Feldspieler<\/h3>/);
- assert.match(overview,/KI-Matchbericht/);assert.match(overview,/Kadetten ziehen früh davon/);assert.match(overview,/Torfolge \(2 Tore\)/);assert.match(overview,/Mile Lasic/);assert.match(overview,/ohne Gewähr/);
- const stats=run('match(__g,"stats")');
- assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.match(stats,/<h3>Torhüter<\/h3>/);
- assert.match(stats,/<th scope="col" title="Siebenmeter-Tore\/Würfe">7 m<\/th>/);assert.match(stats,/<td>1\/1<\/td>/);
- assert.match(stats,/<td>12<\/td><td>27<\/td><td>44 %<\/td>/);
- assert.match(stats,/data-stats-panel="away" hidden/);
- // Gewählte Mannschaft bleibt bei der nächsten Darstellung erhalten.
- run(`liveStatsTeam={id:'izvidac',side:'away'}`);
- const away=run('match(__g,"stats")');
- assert.match(away,/data-stats-team="away" aria-pressed="true"/);assert.match(away,/data-stats-panel="home" hidden/);
- // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
- run('liveStatsTeam=null;__g.score=[41,30]');
- assert.doesNotMatch(run('match(__g,"report")'),/Kadetten ziehen früh davon/);
- run('ehfArchive={}');
+  goals:[{t:'1:00',s:[0,1],h:false,n:'Mile Lasic',p:false},{t:'1:37',s:[1,1],h:true,n:'Luka Maros',p:true},{t:'2:20',s:[2,1],h:true,n:'Luka Maros',p:false}],
+  timeouts:[{side:'away',sec:210}],suspensions:[{side:'away',sec:330,name:'Mihael Bebek'}],
+  teamStats:{home:{goals:42,shots:54,misses:12,efficiency:78,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:9},guest:{goals:30,shots:49,misses:19,efficiency:61,sevenGoals:4,sevenShots:4,twoMinutes:4,warnings:1,disqualifications:0,technicalFaults:14}},
+  players:[{id:'a',number:'20',name:'Luka Maros',home:true,goalkeeper:false,goals:7,shots:8,seven:1,sevenShots:1,twoMinutes:0,yellow:0,red:0,saves:null,savesFaced:null},{id:'g',number:'1',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:12,savesFaced:27},{id:'g2',number:'30',name:'Reservetorhüter',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:0,savesFaced:0},{id:'b',number:'24',name:'Mile Lasic',home:false,goalkeeper:false,goals:6,shots:9,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:null,savesFaced:null}]}};
+  globalThis.__g={id:'izvidac',league:'EHL',home:'Kadetten Schaffhausen',away:'HC Izvidac',date:'2026-10-06',time:'18:45',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[42,30],half:[23,11]};gameReports.izvidac=ehfAsReport(ehfArchive.izvidac)`);
+ try{
+  const stats=run('match(__g,"stats")');
+  assert.match(stats,/Das Spiel in Zahlen/);assert.match(stats,/Auszeiten/);assert.match(stats,/1\. Halbzeit/);
+  assert.match(stats,/<th scope="col" class="name">Spieler<\/th><th scope="col">Tore\/ Würfe<\/th><th scope="col">Quote<\/th><th scope="col">7 m<\/th><th scope="col">2 min<\/th><th scope="col">Gelb<\/th><th scope="col">Rot<\/th>/);
+  assert.doesNotMatch(stats,/<th scope="col" class="num">#/);
+  assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.match(stats,/<h3>Zwischen den Pfosten<\/h3>/);
+  assert.match(stats,/Leon Bergmann(<\/a>)?<\/span><strong>12 Paraden<\/strong><p class="muted nowrap">44[.,]4 % Fangquote/);
+  assert.doesNotMatch(stats,/Reservetorhüter/);
+  assert.match(stats,/data-stats-team="home" aria-pressed="true"/);assert.match(stats,/data-stats-panel="away" hidden/);
+  assert.doesNotMatch(stats,/Quelle & Datenstand|Zweite Halbzeit aus/);
+  const report=run('match(__g,"report")');
+  assert.match(report,/KI-Matchbericht/);assert.match(report,/Kadetten ziehen früh davon/);
+  assert.match(report,/match-preview-facts/);assert.match(report,/<span>Zuschauer<\/span><strong>1[’'.,]?145<\/strong>/);assert.doesNotMatch(report,/Offizieller Spielplan|Schiedsrichter/);
+  assert.match(report,/Torverlauf/);assert.match(report,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);
+  assert.match(report,/Zeitstrafe/);assert.match(report,/Mihael Bebek/);assert.match(report,/Time-out/);assert.match(report,/Tor \(Siebenmeter\)/);
+  assert.doesNotMatch(report,/Torfolge \(/);
+  // Auch am Spieltag ersetzt die Blueprint-Ansicht die Live-Seite, sobald der Eintrag da ist.
+  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:null,finished:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[42,30],status:'finished',date:swissToday(),url:'https://x',details:{ok:true,teamStats:null,players:null}}};lastLiveMatch=liveState.finished;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday();__g.date=swissToday()`);
+  assert.doesNotMatch(run('match(__g,"stats")'),/live-match-page/);
+  run('delete gameReports.izvidac');
+  assert.match(run('match(__g,"stats")'),/live-match-page/);
+  // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
+  run('gameReports.izvidac=ehfAsReport(ehfArchive.izvidac);__g.score=[41,30]');
+  assert.doesNotMatch(run('match(__g,"report")'),/Kadetten ziehen früh davon/);
+ }finally{run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;delete gameReports.izvidac;ehfArchive={};liveStatsTeam=null');}
 });
 
 test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
