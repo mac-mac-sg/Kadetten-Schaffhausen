@@ -2945,3 +2945,4 @@ html.snap-profile {
 .report-table.stats-table thead th{white-space:normal;vertical-align:bottom;line-height:1.2}
 .report-table.stats-table td{text-align:center}
 .nowrap{white-space:nowrap}
+.report-comparison ~ .panel + h2{margin-top:36px}
