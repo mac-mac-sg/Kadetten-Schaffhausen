@@ -35,7 +35,7 @@ Limits von Cloudflare Workers Free laut offizieller Dokumentation (abgerufen am 
 | Thema | Vorschlag | Begründung |
 | --- | --- | --- |
 | Hosting | Cloudflare Workers Free | Code ist bereits `fetch(request, env)`; grösstes Gratis-Kontingent |
-| Speicher | **Workers KV** (Free: 100'000 Lesezugriffe, 1'000 Schreibzugriffe, 1 GB pro Tag/Konto), alternativ R2 (Free: 10 GB, 1 Mio. Schreib-, 10 Mio. Leseoperationen pro Monat) | R2 ist im Konto **noch nicht aktiviert** (API-Fehler 10042 «Please enable R2 through the Cloudflare Dashboard»); ob dafür eine Zahlungsmethode nötig ist, sagt die Dokumentation nicht. KV funktioniert im Konto bereits. Der Code nutzt R2-Aufrufe (`get(key).json()`, `put`); für KV genügt eine kleine Zwischenschicht (`server/`-Adapter mit derselben Schnittstelle). **Entscheid offen** |
+| Speicher | **Workers KV** (entschieden am 06.10.2026), Namespace `kadetten-data`, Bindung `DATA` | Funktioniert im Konto sofort; R2 ist dort nicht aktiviert. Der Code bleibt unverändert: `server/kv-store.mjs` bildet die genutzte R2-Schnittstelle (`get`, `put`) auf KV ab. Auf Sites (`BUCKET` vorhanden) wird KV nie verwendet. Free-Grenzen: 100'000 Lesezugriffe, 1'000 Schreibzugriffe und 1 GB pro Tag/Konto; Werte bis 25 MiB |
 | Schreibwege | GitHub Actions rechnet, der Worker speichert nur | Umgeht die 10-ms-Grenze; Actions hat keine CPU-Grenze |
 | Anmeldung für Schreibwege | Automationsschlüssel (`KADETTEN_UPDATE_KEY_SHA256`), kein Cloudflare Access | Der Browser schreibt in der Pages-Version nie |
 | Bereitstellung | GitHub Actions mit festgelegter wrangler-Version | Reproduzierbar, ohne lokalen Rechner |
@@ -56,6 +56,11 @@ Jede Phase endet an einem Prüfpunkt. Erst danach beginnt die nächste.
 
 **Phase 4 – Abschalten des alten Dienstes (nur auf ausdrücklichen Auftrag).** Erst nach einer Beobachtungszeit.
 
+## Stand Phase 1 (06.10.2026)
+- Erledigt: KV-Namespace `kadetten-data` im Konto angelegt (ID in `cloudflare/api/wrangler.toml`, eine Kennung, kein Geheimnis); KV-Zwischenschicht und Rückfall ohne `ASSETS` im Worker; Worker-Konfiguration `cloudflare/api/wrangler.toml`; Workflow «Cloudflare-Datendienst bereitstellen» (manuell).
+- Offen: Der Dienst ist noch **nicht** bereitgestellt (Secrets fehlen). Danach: Speicher einmalig aus den öffentlichen Lese-Routen des alten Dienstes befüllen und vergleichen (Prüfpunkt Phase 1).
+- Zusätzliches Secret für Schreibwege (Phase 2): `KADETTEN_UPDATE_KEY`, ein frei gewählter, langer Zufallswert (zum Beispiel aus einem Passwortmanager). Der Workflow setzt daraus nur den Digest beim Dienst; der Wert selbst bleibt in GitHub.
+
 ## Stand der Verbindungen (06.10.2026)
 - Der Konnektor «Cloudflare Developer Platform» ist verbunden. Er kann lesen und Ressourcen anlegen (Workers lesen, KV, R2, D1), aber **keine Workers bereitstellen**. Das Konto ist leer (0 Workers, 0 KV-Namespaces).
 - Der zweite Konnektor (`plugin:cloudflare:cloudflare`, Adresse laut Cloudflare-Anleitung `https://mcp.cloudflare.com/mcp`) scheiterte in der Cloud-Umgebung am Proxy (403). Vermutlich muss der Host `mcp.cloudflare.com` unter *Network access → Allowed domains* der Umgebung freigegeben werden (Annahme, nicht geprüft).
@@ -65,7 +70,7 @@ Jede Phase endet an einem Prüfpunkt. Erst danach beginnt die nächste.
 Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie in den Chat schreiben.
 1. Kostenloses Cloudflare-Konto anlegen (https://dash.cloudflare.com/sign-up).
 2. Im Dashboard unter *Workers & Pages* einmal die `workers.dev`-Subdomain festlegen, falls Cloudflare danach fragt (aus Erinnerung; bei Fehlern in der Workflow-Ausgabe nachsehen).
-3. API-Token erstellen (*My Profile → API Tokens → Create Token*), nur mit der Berechtigung **Account → Workers Scripts → Edit**, beschränkt auf dein Konto. Für Phase 1 kommt später **Workers R2 Storage → Edit** dazu.
+3. API-Token erstellen (*My Profile → API Tokens → Create Token*), nur mit **Account → Workers Scripts → Edit**, beschränkt auf dein Konto. Für den Datenimport in Phase 1 kommt **Workers KV Storage → Edit** dazu.
 4. Die *Account ID* aus dem Dashboard kopieren.
 5. Im GitHub-Repository unter *Settings → Secrets and variables → Actions* zwei Secrets anlegen: `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID`.
 6. Unter *Actions → Cloudflare-Machbarkeitstest → Run workflow* starten. Das Ergebnis steht in der Zusammenfassung des Laufs.
