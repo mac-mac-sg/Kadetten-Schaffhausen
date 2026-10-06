@@ -181,6 +181,18 @@ test('Prompt: Format wird betont, allgemeine Wertungen sind erlaubt, Prognose un
   assert.doesNotMatch(system.content, /Stimmung, Erwartungen oder Spannung/);
 });
 
+test('Prompt: Wärme erlaubt, Serien- und Formurteile und Umlaut-Umschreibungen verboten; Standardmodell GPT-OSS mit grossem Token-Budget', async () => {
+  const [system] = aiMessages(KADETTEN_BASE);
+  for (const phrase of [/warm/, /einlädt/, /hintereinander/, /Aufschwung/, /nie «ae»/, /Artikel stimmt/]) assert.match(system.content, phrase);
+  const {makeRewriter, DEFAULT_MODEL} = await import('../scripts/lib/preview-rewrite.mjs');
+  assert.equal(DEFAULT_MODEL, '@cf/openai/gpt-oss-120b');
+  let sent;
+  const rewrite = makeRewriter({CLOUDFLARE_API_TOKEN: 't', CLOUDFLARE_ACCOUNT_ID: 'a'}, async (url, init) => { sent = {url, body: JSON.parse(init.body)}; return new Response(JSON.stringify({success: true, result: {response: 'x'}})); });
+  await rewrite(KADETTEN_BASE);
+  assert.match(sent.url, /gpt-oss-120b/);
+  assert.equal(sent.body.max_tokens, 3000);
+});
+
 test('Faktenliste für die KI: eindeutige Richtung der Tore, Resultate aus Sicht des Teams mit Ausgang, Direktduelle mit Sieger; nicht Teil der gespeicherten Vorschau', () => {
   const recent = [{team: 'FC St.Gallen 1879', games: [
     {date: '2026-10-03', home: 'SC Brühl', away: 'FC St.Gallen 1879', score: [3, 3]},

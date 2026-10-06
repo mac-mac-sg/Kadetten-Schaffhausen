@@ -9,6 +9,10 @@ on:
         description: Modelle, kommagetrennt (leer = Mistral Small 3.1, Llama 3.3 70B, GPT-OSS 120B)
         type: string
         default: ''
+      spiele:
+        description: Partien je Verein (1 bis 3)
+        type: string
+        default: '1'
 permissions:
   contents: read
 concurrency:
@@ -20,6 +24,7 @@ jobs:
     timeout-minutes: 15
     env:
       MODELLE: ${{ inputs.modelle }}
+      SPIELE: ${{ inputs.spiele }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
