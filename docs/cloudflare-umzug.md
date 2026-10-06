@@ -17,13 +17,25 @@ Gemessene CPU-Zeit pro Anfrage (Node lokal, Testdaten; nur Grössenordnung):
 | `/api/fcsg/data` (488 KB Datenstand) | ca. 3 ms |
 | `POST /api/refresh` (62 Artikel) | ca. 11 ms (Spitze 15 ms) |
 
-Cloudflare Workers Free erlaubt laut Websuche (nicht auf der offiziellen Seite verifiziert) 10 ms CPU pro Anfrage, 100'000 Anfragen pro Tag und 5 Cron-Trigger. **Lesen und Live passen, jeder schreibende Weg nicht**: `/api/refresh`, `/api/programmes` (PDF bis 11 MB, Base64 und SHA-256) und `/api/previews`.
+Limits von Cloudflare Workers Free laut offizieller Dokumentation (abgerufen am 06.10.2026 über die Cloudflare-Dokumentationssuche; `workers/platform/limits`, `workers/platform/pricing`):
+
+| Limit | Workers Free |
+| --- | --- |
+| CPU-Zeit pro HTTP-Anfrage **und** pro Cron-Trigger | 10 ms (Warten auf Netzwerk, KV oder R2 zählt nicht) |
+| Anfragen | 100'000 pro Tag (Fehler 1027 danach) |
+| Unterabfragen (`fetch`) pro Anfrage | 50 externe, 1000 an Cloudflare-Dienste |
+| Cron-Trigger pro Konto | 5 |
+| Grösse der Anfrage (Body) | 100 MB |
+| Statische Dateien | unbegrenzte Anfragen |
+| Workers Logs | 200'000 Ereignisse pro Tag, 3 Tage Aufbewahrung |
+
+**Lesen und Live passen, jeder schreibende Weg nicht**: `/api/refresh` (CPU und die Grenze von 50 externen Abrufen: allein die News-Seiten sind bis zu 20 Abrufe), `/api/programmes` (PDF bis 11 MB, Base64 und SHA-256) und `/api/previews`.
 
 ## Entscheide (Vorschlag, bei Bedarf zu ändern)
 | Thema | Vorschlag | Begründung |
 | --- | --- | --- |
 | Hosting | Cloudflare Workers Free | Code ist bereits `fetch(request, env)`; grösstes Gratis-Kontingent |
-| Speicher | R2 (Bindung `BUCKET`, wie bisher) | Code muss nicht umgebaut werden. Offen: ob R2 ohne hinterlegte Zahlungsmethode nutzbar ist. Rückfall: Workers KV mit kleiner Zwischenschicht |
+| Speicher | **Workers KV** (Free: 100'000 Lesezugriffe, 1'000 Schreibzugriffe, 1 GB pro Tag/Konto), alternativ R2 (Free: 10 GB, 1 Mio. Schreib-, 10 Mio. Leseoperationen pro Monat) | R2 ist im Konto **noch nicht aktiviert** (API-Fehler 10042 «Please enable R2 through the Cloudflare Dashboard»); ob dafür eine Zahlungsmethode nötig ist, sagt die Dokumentation nicht. KV funktioniert im Konto bereits. Der Code nutzt R2-Aufrufe (`get(key).json()`, `put`); für KV genügt eine kleine Zwischenschicht (`server/`-Adapter mit derselben Schnittstelle). **Entscheid offen** |
 | Schreibwege | GitHub Actions rechnet, der Worker speichert nur | Umgeht die 10-ms-Grenze; Actions hat keine CPU-Grenze |
 | Anmeldung für Schreibwege | Automationsschlüssel (`KADETTEN_UPDATE_KEY_SHA256`), kein Cloudflare Access | Der Browser schreibt in der Pages-Version nie |
 | Bereitstellung | GitHub Actions mit festgelegter wrangler-Version | Reproduzierbar, ohne lokalen Rechner |
@@ -44,6 +56,11 @@ Jede Phase endet an einem Prüfpunkt. Erst danach beginnt die nächste.
 
 **Phase 4 – Abschalten des alten Dienstes (nur auf ausdrücklichen Auftrag).** Erst nach einer Beobachtungszeit.
 
+## Stand der Verbindungen (06.10.2026)
+- Der Konnektor «Cloudflare Developer Platform» ist verbunden. Er kann lesen und Ressourcen anlegen (Workers lesen, KV, R2, D1), aber **keine Workers bereitstellen**. Das Konto ist leer (0 Workers, 0 KV-Namespaces).
+- Der zweite Konnektor (`plugin:cloudflare:cloudflare`, Adresse laut Cloudflare-Anleitung `https://mcp.cloudflare.com/mcp`) scheiterte in der Cloud-Umgebung am Proxy (403). Vermutlich muss der Host `mcp.cloudflare.com` unter *Network access → Allowed domains* der Umgebung freigegeben werden (Annahme, nicht geprüft).
+- Die Bereitstellung bleibt deshalb bei GitHub Actions mit dem API-Token (siehe unten). Das hält den Ablauf unabhängig vom Konnektor und von jedem einzelnen Agenten.
+
 ## Einrichtung durch den Eigentümer (für Phase 0)
 Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie in den Chat schreiben.
 1. Kostenloses Cloudflare-Konto anlegen (https://dash.cloudflare.com/sign-up).
@@ -55,8 +72,9 @@ Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie
 
 ## Risiken und offene Punkte
 - Quellen können Cloudflare-Adressen sperren (Phase 0 klärt das).
-- R2 ohne Zahlungsmethode: offen.
-- Die Free-Limits stammen aus Zusammenfassungen im Web; vor Phase 1 auf den offiziellen Cloudflare-Seiten prüfen.
+- R2 aktivieren: im Dashboard durch den Eigentümer; ob eine Zahlungsmethode verlangt wird, ist nicht geklärt. Mit KV vermeidbar.
+- KV ist eventuell konsistent (Änderungen können nicht sofort überall sichtbar sein); für den 2-Stunden-Takt der Daten unkritisch, aber vor Phase 1 zu bestätigen.
+- Die Schreibgrenze von KV (1'000 pro Tag) ist für den ersten Datenimport (ca. 60 Artikel plus Berichte) und danach für etwa 12 Läufe pro Tag ausreichend, muss aber beim Import beachtet werden.
 - Der Actions-Zeitplan (`cron`) ist nicht sekundengenau und kann sich verzögern.
 - Der Test-Worker ist öffentlich erreichbar, solange er läuft (nur Erfolg, Dauer und gekürzte Fehlermeldung, keine Inhalte). Das Ergebnis in der Zusammenfassung ist in einem öffentlichen Repository öffentlich.
 
