@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
   const urls = matchUrls('202711020901029');
-  assert.equal(urls.length, 3);
+  assert.equal(urls.length, 4);
+  assert.equal(urls[3], 'https://ticker.ehf.eu/v3/202711020901029');
   assert.ok(urls.every(u => u.includes('202711020901029')) || urls[1] === 'https://ticker.ehf.eu/');
   assert.match(urls[2], /^https:\/\/ticker\.ehf\.eu\/match\/\?202711020901029$/);
 });
@@ -105,4 +106,14 @@ test('Feed-Eintrag eines Spiels: ohne Bild-Adressen, Tagesübersicht mit Statusf
   assert.match(text, /"fullName":"A"/);assert.match(text, /"phase":"Finished"/);assert.doesNotMatch(text, /logoBig|photos|https:\/\/x/);
   assert.deepEqual(feedOverview(feed), [{date: '2026-10-06', matches: 1, firstStats: {isLive: false, time: '60:00', phase: 'Finished'}}, {date: '2026-10-05', matches: 0, firstStats: null}]);
   assert.deepEqual(feedOverview(null), []);
+});
+
+test('loadSnippets findet Stellen, an denen eine Seite Daten nachlädt, und begrenzt die Anzahl', () => {
+  const js = 'var a=1;$.getJSON("/v3/data/match.json?id="+id);new WebSocket("wss://ticker.ehf.eu/hub");fetch("/api/events")';
+  const found = loadSnippets(js);
+  assert.ok(found.some(x => x.startsWith('.json:') && x.includes('/v3/data/match.json')));
+  assert.ok(found.some(x => x.startsWith('WebSocket:')));
+  assert.ok(found.some(x => x.startsWith('fetch(:')));
+  assert.equal(loadSnippets(js, ['a'], 5, 3, 2).length, 2);
+  assert.deepEqual(loadSnippets('nichts'), []);
 });
