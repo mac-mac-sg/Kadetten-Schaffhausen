@@ -201,7 +201,9 @@ function reportPlayer(p) {
   const nr = Object.keys(updateState?.playerSeason?.players || {}).find(
     n => updateState.playerSeason.players[n].shvPlayerId === p.id
   );
-  const local = players.find(x => String(x[0]) === nr);
+  // Spielerwerte der EHF tragen keine SHV-Kennung: Zuordnung zum Kader über den Namen.
+  const key = n => String(n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  const local = players.find(x => String(x[0]) === nr) || (p.ehf ? players.find(x => key(x[1]) === key(p.name)) : null);
   return {name: local?.[1] || p.name, number: local?.[0]};
 }
 function reportSource(r) {

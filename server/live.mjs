@@ -41,6 +41,11 @@ export function parseEhfPlayers(data){
  });
  return [...side(details.homeTeam.players,true),...side(details.guestTeam.players,false)];
 }
+// Zuschauerzahl aus GetMatchDetails (matchDetails.details.venue.place.spectatorsCount); fehlt oder 0 gilt als unbekannt.
+export function parseEhfSpectators(data){
+ const n=data?.matchDetails?.details?.venue?.place?.spectatorsCount;
+ return Number.isInteger(n)&&n>0?n:null;
+}
 // Gemeinsame Prüfung eines Feed-Eintrags der Kadetten (European League); liefert die Felder, die für Live und Ende gleich sind.
 function ehfMatchBase(item){
  const m=item.match,stats=item.matchStats;
@@ -92,10 +97,10 @@ async function ehfJson(name,id,fetchFn=fetch){
 }
 // Teamwerte und Spielerwerte werden unabhängig geholt; fällt eines aus, bleibt das andere erhalten.
 export async function getEhfDetails(id,fetchFn=fetch){
- const [stats,players]=await Promise.allSettled([ehfJson('GetMatchDetailStatistic',id,fetchFn).then(parseEhfTeamStats),ehfJson('GetMatchDetails',id,fetchFn).then(parseEhfPlayers)]);
+ const [stats,players]=await Promise.allSettled([ehfJson('GetMatchDetailStatistic',id,fetchFn).then(parseEhfTeamStats),ehfJson('GetMatchDetails',id,fetchFn).then(d=>({players:parseEhfPlayers(d),spectators:parseEhfSpectators(d)}))]);
  const teamStats=stats.status==='fulfilled'?stats.value:null,roster=players.status==='fulfilled'?players.value:null;
  if(!teamStats&&!roster)return {ok:false,updatedAt:null,events:null,players:null,teamStats:null};
- return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster,teamStats};
+ return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster?roster.players:null,teamStats,spectators:roster?roster.spectators:null};
 }
 async function getEhfLiveMatch(){
  const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});

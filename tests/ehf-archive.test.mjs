@@ -12,27 +12,29 @@ const feed = (ended = true, goals = [5, 2]) => ({days: [{dayDatumFormatted: toda
 ]}]});
 const statistic = {id: '202711020901029', isLive: false, homeStatistics: {totalGoals: 5, totalShots: 6, shotEfficiency: 83, goals7meters: 1, shots7meters: 2, suspensions2minutes: 0}, guestStatistics: {totalGoals: 2, totalShots: 5, shotEfficiency: 40, suspensions2minutes: 1}};
 const player = (id, bib, first, last, score, extra = {}) => ({id, shirtNumber: String(bib), playingPosition: extra.gk ? 'Goalkeeper' : 'Left Wing', isPlayer: true, isGoalkeeper: !!extra.gk, person: {firstName: first, lastName: last}, score});
-const details = {matchDetails: {details: {homeTeam: {players: [player('a', 7, 'Max', 'Muster', {goals: 4, shots: 5}), player('c', 1, 'Leon', 'Bergmann', {goalkeeperSaves: 3, goalkeeperRecievedShots: 5}, {gk: true})]}, guestTeam: {players: [player('b', 24, 'Mile', 'Lasic', {goals: 2, shots: 3})]}}}};
+const details = {matchDetails: {details: {venue: {place: {spectatorsCount: 1145}}, homeTeam: {players: [player('a', 7, 'Max', 'Muster', {goals: 4, shots: 5}), player('c', 1, 'Leon', 'Bergmann', {goalkeeperSaves: 3, goalkeeperRecievedShots: 5}, {gk: true})]}, guestTeam: {players: [player('b', 24, 'Mile', 'Lasic', {goals: 2, shots: 3})]}}}};
 let n = 0;
 const comp = (code, bib, given, family) => [{code, composition: {athlete: [{bib, role: 'SCR', description: {givenName: given, familyName: family}}]}}];
 const goal = (when, code, bib, given, family, h, a, loc = 'CSD') => ({order: ++n, period: 'H1', action: 'SHOT', when, loc, result: 'GOAL', scoreH: h, scoreA: a, competitor: comp(code, bib, given, family)});
 const ticker = {playerstats: {homeTeam: {team: {id: KAD}}, guestTeam: {team: {id: IZV}}}, events: [{phaseScores: [{name: 'Match ended', scoreA: 5, scoreB: 2}], actions: {action: [
   goal('1:00', IZV, 24, 'Mile', 'Lasic', 0, 1), goal('2:00', KAD, 7, 'Max', 'Muster', 1, 1, 'PTY'), goal('3:00', KAD, 7, 'Max', 'Muster', 2, 1), goal('4:00', KAD, 7, 'Max', 'Muster', 3, 1), goal('5:00', KAD, 7, 'Max', 'Muster', 4, 1),
   goal('6:00', KAD, 7, 'Max', 'Muster', 5, 1), goal('35:00', IZV, 24, 'Mile', 'Lasic', 5, 2),
+  {order: 70, period: 'H1', action: 'TOUT', actionAdd: 'START', when: '3:30', scoreH: 2, scoreA: 1, competitor: [{code: IZV}]},
+  {order: 71, period: 'H1', action: 'TMS', when: '5:30', scoreH: 3, scoreA: 1, competitor: [{code: IZV, composition: {athlete: [{bib: 22, description: {givenName: 'Mihael', familyName: 'Bebek'}}]}}]},
   {order: 80, period: 'H1', action: 'ENDP', when: '30:0', scoreH: 5, scoreA: 1}]}}]};
 const memory = () => {
   const m = new Map();
   return {m, get: async k => (m.has(k) ? {json: async () => JSON.parse(m.get(k))} : null), put: async (k, v) => { m.set(k, v); }};
 };
-const mockFetch = (calls, {feedBody = feed(), tickerBody = ticker, tickerStatus = 200} = {}) => async (url, init) => {
+const mockFetch = (calls, {feedBody = feed(), tickerBody = ticker, tickerStatus = 200, statisticBody = statistic} = {}) => async (url, init) => {
   const u = String(url);
   calls.push(u);
   if (u.includes('GetLiveScoreMatches')) return Response.json(feedBody);
-  if (u.includes('GetMatchDetailStatistic')) return Response.json(statistic);
+  if (u.includes('GetMatchDetailStatistic')) return Response.json(statisticBody);
   if (u.includes('GetMatchDetails')) return Response.json(details);
   if (u.includes('ticker.ehf.eu/v3/TickerData')) {
     assert.equal(init.method, 'POST');
-    assert.equal(init.body.get('MatchID'), '202711020901029');
+    assert.match(init.body.get('MatchID'), /^202711020901\d{3}$/);
     return tickerStatus === 200 ? Response.json(tickerBody) : new Response('x', {status: tickerStatus});
   }
   return new Response('{}', {status: 404});
@@ -86,7 +88,7 @@ test('Ohne KI-Zugang entsteht der sachliche Bericht und gilt als fertig', async 
 
 test('Ereignisse, die nicht zum Endstand passen, ergeben keinen Bericht, aber Statistik und Torfolge-Verzicht', async () => {
   const bucket = memory();
-  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([], {feedBody: feed(true, [6, 2])}), write: kiWriter});
+  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([], {feedBody: feed(true, [6, 2]), statisticBody: {...statistic, homeStatistics: {...statistic.homeStatistics, totalGoals: 6}}}), write: kiWriter});
   const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
   assert.equal(rec.report, undefined);assert.equal(rec.goals, null);assert.match(rec.tickerError, /nicht zum Endstand/);
   assert.equal(rec.players.length, 3);
@@ -141,4 +143,40 @@ test('Berichte sind für die Pages-Oberfläche lesbar freigegeben (CORS), nur le
   }
   const unknown = await worker.fetch(new Request('https://app.test/api/match-reports/nicht-da'), {BUCKET: bucket});
   assert.equal(unknown.status, 404);
+});
+
+test('Neuer Eintrag enthält Zuschauer, Auszeiten und Zeitstrafen (Version 2)', async () => {
+  const bucket = memory();
+  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: kiWriter});
+  const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
+  assert.equal(rec.v, 2);assert.equal(rec.spectators, 1145);
+  assert.deepEqual(rec.timeouts, [{side: 'away', sec: 210}]);
+  assert.deepEqual(rec.suspensions, [{side: 'away', sec: 330, name: 'Mihael Bebek'}]);
+});
+
+test('Alter Eintrag (Version 1) wird ergänzt: Bericht bleibt, Spiel-ID aus dem Eintrag, kein Feed nötig', async () => {
+  const bucket = memory();
+  const oldReport = {headline: 'Alter Titel', paragraphs: ['Absatz eins mit genug Text für den Bericht.', 'Absatz zwei mit genug Text für den Bericht.'], generator: 'ki', generatedAt: '2026-10-06T20:06:00Z', attempts: 1};
+  bucket.m.set(archiveKey('izvidac'), JSON.stringify({v: 1, fixtureId: 'izvidac', matchId: '202711020901029', home: 'Kadetten Schaffhausen', away: 'HC Izvidac', date: today, score: [5, 2], report: oldReport, facts: ['Fakt'], source: {url: 'https://ehfel.eurohandball.com/x'}}));
+  const calls = [];
+  const out = await syncEhfArchive(bucket, {games: [{...game, score: [5, 2], date: '2020-01-01'}], fetchFn: mockFetch(calls), write: async () => { throw Error('KI darf nicht aufgerufen werden'); }});
+  assert.equal(out.written, 1);assert.equal(out.reports, 0);
+  assert.ok(!calls.some(u => u.includes('GetLiveScoreMatches')));
+  const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
+  assert.equal(rec.v, 2);assert.deepEqual(rec.report, oldReport);assert.equal(rec.spectators, 1145);assert.equal(rec.goals.length, 7);assert.equal(rec.ticker, undefined);
+  const again = await syncEhfArchive(bucket, {games: [{...game, score: [5, 2]}], fetchFn: mockFetch([]), write: kiWriter});
+  assert.equal(again.kept, 1);
+});
+
+test('Bekanntes älteres Spiel (Bukarest) wird ohne Feed nachgeladen, mit Bericht', async () => {
+  const bucket = memory(), calls = [];
+  const bukarest = {id: 'bukarest', league: 'EHL', home: 'Kadetten Schaffhausen', away: 'CSM Bucuresti', date: '2026-09-30', score: [5, 2]};
+  const out = await syncEhfArchive(bucket, {games: [bukarest], fetchFn: mockFetch(calls), write: kiWriter});
+  assert.equal(out.written, 1);
+  assert.ok(calls.some(u => u.includes('matchId=202711020901026')));assert.ok(!calls.some(u => u.includes('GetLiveScoreMatches')));
+  const rec = JSON.parse(bucket.m.get(archiveKey('bukarest')));
+  assert.equal(rec.matchId, '202711020901026');assert.equal(rec.away, 'CSM Bucuresti');assert.equal(rec.report.generator, 'ki');
+  // Unbekanntes älteres Spiel ohne Eintrag: Hinweis, kein Abruf
+  const other = await syncEhfArchive(memory(), {games: [{...bukarest, id: 'sonstiges'}], fetchFn: mockFetch([]), write: kiWriter});
+  assert.equal(other.written, 0);assert.match(other.notes[0], /nicht mehr im Feed/);
 });
