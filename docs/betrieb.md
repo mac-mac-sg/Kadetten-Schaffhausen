@@ -14,6 +14,8 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 
 Geplant: Umzug des Datendienstes auf Cloudflare, Phasen und Prüfpunkte in [cloudflare-umzug.md](cloudflare-umzug.md). Bis zum Umschalten bleibt alles wie oben.
 
+Cloudflare (im Aufbau): Worker `kadetten-api` (`cloudflare/api/wrangler.toml`), Speicher Workers KV `kadetten-data` (Bindung `DATA`), Bereitstellung per Workflow «Cloudflare-Datendienst bereitstellen». Noch nicht in Betrieb, die App liest weiterhin vom Sites-Dienst.
+
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - Datendienst: `KADETTEN_OWNER_EMAIL`, `KADETTEN_AUTH_PROVIDER`, `KADETTEN_SITES_ORIGIN`, `KADETTEN_UPDATE_KEY_SHA256` (nur der SHA-256-Digest des Automationsschlüssels), bei `cloudflare-access` zusätzlich `KADETTEN_ACCESS_ISSUER` und `KADETTEN_ACCESS_AUD`.
 - GitHub: keine eigenen Secrets nötig; die Workflows laufen ohne Zugangsschlüssel. Pages-Quelle: Settings → Pages → Source → GitHub Actions.

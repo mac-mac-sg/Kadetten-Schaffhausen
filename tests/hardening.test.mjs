@@ -52,3 +52,15 @@ test('Alle GitHub Actions sind auf einen Commit fixiert und laufen mit Timeout',
     assert.equal((text.match(/^\s{4}runs-on:/gm) || []).length, (text.match(/^\s{4}timeout-minutes:/gm) || []).length, name + ': Timeout je Job');
   }
 });
+
+test('Jede GitHub Action wird in allen Workflows mit derselben Commit-SHA verwendet', () => {
+  const versions = new Map();
+  for (const name of fs.readdirSync('.github/workflows').filter(f => /\.ya?ml$/.test(f))) {
+    const text = fs.readFileSync('.github/workflows/' + name, 'utf8');
+    for (const [, action, sha] of text.matchAll(/^\s*(?:-\s+)?uses:\s*([\w./-]+)@([0-9a-f]{40})/gm)) {
+      if (!versions.has(action)) versions.set(action, new Set());
+      versions.get(action).add(sha);
+    }
+  }
+  for (const [action, shas] of versions) assert.equal(shas.size, 1, action + ' kommt mit mehreren SHAs vor: ' + [...shas].join(', '));
+});

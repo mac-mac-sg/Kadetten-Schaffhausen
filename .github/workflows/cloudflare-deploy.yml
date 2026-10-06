@@ -1,0 +1,87 @@
+name: Cloudflare-Datendienst bereitstellen
+# Manuell auszulösen. Prüft den Code, stellt den Datendienst (cloudflare/api, Worker «kadetten-api», Speicher Workers KV)
+# bei Cloudflare bereit, setzt den Automationsschlüssel und prüft die Antwort.
+# Der Pages-Workflow veröffentlicht nur die Oberfläche; die App liest weiterhin vom bisherigen Dienst, bis das Umschalten
+# ausdrücklich beauftragt ist (docs/cloudflare-umzug.md, Phase 3).
+# Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID; optional KADETTEN_UPDATE_KEY (freier, langer Zufallswert).
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      KADETTEN_UPDATE_KEY: ${{ secrets.KADETTEN_UPDATE_KEY }}
+      WRANGLER_VERSION: 4.147.0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Zugangsdaten vorhanden?
+        shell: bash
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen (Settings → Secrets and variables → Actions)."; exit 1; }
+      - run: npm ci
+      - name: Prüfen
+        run: npm run verify
+      - name: workers.dev-Subdomain vorhanden?
+        shell: bash
+        run: |
+          response=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" || true)
+          if [ "$(echo "$response" | jq -r '.success' 2>/dev/null)" != "true" ]; then
+            echo "::notice::Die Subdomain konnte nicht abgefragt werden; die Bereitstellung wird trotzdem versucht."
+          elif [ -z "$(echo "$response" | jq -r '.result.subdomain // empty')" ]; then
+            echo "::error::In deinem Cloudflare-Konto ist noch keine workers.dev-Subdomain festgelegt. Lege sie einmal im Dashboard fest (Workers & Pages, Onboarding bzw. «Your subdomain») und starte den Workflow erneut."
+            exit 1
+          else
+            echo "workers.dev-Subdomain ist festgelegt."
+          fi
+      - name: Datendienst bereitstellen
+        id: deploy
+        shell: bash
+        run: |
+          npx --yes "wrangler@${WRANGLER_VERSION}" deploy -c cloudflare/api/wrangler.toml | tee deploy.log
+          url=$(grep -Eo 'https://kadetten-api\.[a-z0-9-]+\.workers\.dev' deploy.log | head -1)
+          [ -n "$url" ] || { echo "::error::Die workers.dev-Adresse wurde in der Ausgabe nicht gefunden."; exit 1; }
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Automationsschlüssel setzen (nur der Digest verlässt GitHub)
+        shell: bash
+        run: |
+          if [ -z "$KADETTEN_UPDATE_KEY" ]; then
+            echo "::notice::KADETTEN_UPDATE_KEY ist nicht gesetzt. Der Dienst ist bereit, nimmt aber keine Schreibzugriffe an."
+            exit 0
+          fi
+          printf '%s' "$KADETTEN_UPDATE_KEY" | sha256sum | cut -d' ' -f1 | npx --yes "wrangler@${WRANGLER_VERSION}" secret put KADETTEN_UPDATE_KEY_SHA256 -c cloudflare/api/wrangler.toml
+      - name: Antwort prüfen
+        shell: bash
+        env:
+          API_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          code=000
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o data.json -w '%{http_code}' "$API_URL/api/data" || true)
+            [ "$code" = 200 ] && break
+            sleep 10
+          done
+          [ "$code" = 200 ] || { echo "::error::/api/data antwortet nicht (HTTP $code)."; exit 1; }
+          jq -e '(.games | type == "array") and (.stories | type == "array")' data.json > /dev/null
+          post=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API_URL/api/data" || true)
+          {
+            echo '### Datendienst auf Cloudflare'
+            echo
+            echo "Adresse: $API_URL"
+            echo "- GET /api/data: HTTP $code, $(jq '.games | length' data.json) Spiele, $(jq '.stories | length' data.json) Meldungen (Speicher noch leer: mitgelieferter Startstand)"
+            echo "- POST /api/data: HTTP $post (erwartet 405)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ "$post" = 405 ]

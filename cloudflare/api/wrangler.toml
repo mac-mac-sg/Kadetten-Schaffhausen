@@ -1,0 +1,11 @@
+# Datendienst auf Cloudflare Workers (Free). Bereitstellung: .github/workflows/cloudflare-deploy.yml.
+# Enthält keine Geheimnisse. Die Namespace-ID ist eine Kennung. Der Automationsschlüssel (Digest) wird vom Workflow als
+# Secret `KADETTEN_UPDATE_KEY_SHA256` gesetzt. Plan und Phasen: docs/cloudflare-umzug.md.
+name = "kadetten-api"
+main = "../../server/worker.mjs"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "DATA"
+id = "7f675583f88f4ebb8cd74ce0efab9006"

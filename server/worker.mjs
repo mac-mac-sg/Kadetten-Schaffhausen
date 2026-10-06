@@ -7,11 +7,18 @@ import {isOwner, mayUpdate} from './auth.mjs';
 import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport, archiveCompletedReports} from './live.mjs';
 import seed from './seed.json' with {type: 'json'};
 import {refresh} from './update.mjs';
+import {kvStore} from './kv-store.mjs';
 
 const json = (x, status = 200) =>
   new Response(JSON.stringify(x), {status, headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}});
 const getRequired = () => json({error: 'GET required'}, 405);
 const MAX_BODY = 12000000;
+
+// Speicher: Auf Sites stellt die Plattform R2 als `BUCKET` bereit, auf Cloudflare Workers KV als `DATA`.
+const withStore = env => (env.BUCKET || !env.DATA ? env : {...env, BUCKET: kvStore(env.DATA)});
+// Statische Dateien liefert auf Sites die Plattform (`ASSETS`), auf Cloudflare GitHub Pages; dort gibt es sie hier nicht.
+const staticAsset = (request, env) =>
+  env.ASSETS ? env.ASSETS.fetch(request) : json({error: 'Not found'}, 404);
 
 // Jede Route ist eine Funktion (request, env, url) -> Response. Die Reihenfolge in `routes` entspricht der
 // Auswertungsreihenfolge; die erste passende Route gewinnt. Alles andere liefert die statische Oberfläche.
@@ -163,6 +170,7 @@ async function refreshData(request, env, u) {
 
 // Service Worker und Manifest müssen immer frisch geprüft werden.
 async function freshAsset(request, env, u) {
+  if (!env.ASSETS) return json({error: 'Not found'}, 404);
   const asset = await env.ASSETS.fetch(request);
   const response = new Response(asset.body, asset);
   response.headers.set('Cache-Control', 'no-cache');
@@ -197,7 +205,7 @@ async function route(request, env) {
   const u = new URL(request.url);
   try {
     for (const [matches, handler] of routes) if (matches(u)) return await handler(request, env, u);
-    return env.ASSETS.fetch(request);
+    return staticAsset(request, env);
   } catch (e) {
     console.error('Worker error', request.method, u.pathname, e?.message || e);
     return json({error: 'Update or storage unavailable'}, 503);
@@ -206,6 +214,6 @@ async function route(request, env) {
 
 export default {
   async fetch(request, env) {
-    return publicReadCors(await route(request, env), request);
+    return publicReadCors(await route(request, withStore(env)), request);
   }
 };
