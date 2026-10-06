@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -126,4 +126,30 @@ test('Ticker-Erkundung: Stichwörter und Probe-Adressen mit der Spiel-ID, nur ti
   const found = loadSnippets(js, TICKER_NEEDLES, 4, 80, 40);
   assert.ok(found.some(x => x.startsWith('$.post(:') && x.includes('/v3/Ticker/Events')));
   assert.ok(found.some(x => x.startsWith('iBall:')));
+});
+
+test('appContext der Ticker-Seite: Basisadresse und Datenpfade, nur Adressen auf ticker.ehf.eu', () => {
+  const html = "<script>window.appContext = { baseUrl: '/v3/', url: 'Ticker/Data', turl: \"Ticker/Team\", nurl: 'Ticker/News', matchID: '1' };</script>";
+  const ctx = parseAppContext(html);
+  assert.equal(ctx.base, '/v3/');
+  assert.deepEqual(ctx.paths, {url: 'Ticker/Data', turl: 'Ticker/Team', nurl: 'Ticker/News'});
+  const urls = appContextUrls(ctx, 'https://ticker.ehf.eu/v3/202711020901029');
+  assert.deepEqual(urls.map(u => u.url), ['https://ticker.ehf.eu/v3/Ticker/Data', 'https://ticker.ehf.eu/v3/Ticker/Team', 'https://ticker.ehf.eu/v3/Ticker/News']);
+  const foreign = appContextUrls({base: '/v3/', paths: {url: 'https://fremd.example/x', turl: 'Ticker/Team'}}, 'https://ticker.ehf.eu/v3/');
+  assert.deepEqual(foreign.map(u => u.key), ['turl'], 'fremde Hosts werden verworfen');
+  assert.deepEqual(parseAppContext('nichts'), {base: null, paths: {}});
+});
+
+test('POST nur mit POST_PROBE=1, dann je Datenpfad ein POST mit der Spiel-ID', async () => {
+  const html = "<script>window.appContext={baseUrl:'/v3/',url:'Ticker/Data'};</script>";
+  const make = () => { const calls = []; return {calls, fetchFn: async (url, init) => { calls.push({url: String(url), method: init?.method || 'GET', body: String(init?.body || '')}); return String(url).includes('/v3/202711020901029') ? new Response(html, {headers: {'content-type': 'text/html'}}) : new Response('{"events":[]}', {headers: {'content-type': 'application/json'}}); }}; };
+  const off = make();
+  await main({env: {}, fetchFn: off.fetchFn});
+  assert.ok(off.calls.every(c => c.method === 'GET'));
+  const on = make();
+  await main({env: {POST_PROBE: '1'}, fetchFn: on.fetchFn});
+  const posts = on.calls.filter(c => c.method === 'POST');
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].url, 'https://ticker.ehf.eu/v3/Ticker/Data');
+  assert.match(posts[0].body, /MatchID=202711020901029/);
 });

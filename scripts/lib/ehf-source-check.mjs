@@ -160,3 +160,26 @@ export function loadSnippets(text, needles = LOAD_NEEDLES, perNeedle = 2, width 
 export const TICKER_NEEDLES = ['$.post(', '$.ajax(', '.post(', 'url:', 'iBall', 'appcontext.', 'GetEvents', 'getEvents', 'Static', 'JSON.parse', 'events'];
 // Direkt abrufbare Adressen, die die Seite als Basispfade nennt (iBall/Static, iBall/StaticGoal); Versuch nur mit GET.
 export const tickerProbeUrls = id => [`https://ticker.ehf.eu/iBall/Static/${id}`, `https://ticker.ehf.eu/iBall/StaticGoal/${id}`];
+
+// Einstellungen der Ticker-Seite (window.appContext): Basisadresse und die Pfade der Datenaufrufe (url, turl, nurl, ...).
+export function parseAppContext(html) {
+  const text = String(html);
+  const base = text.match(/baseUrl\s*[:=]\s*["']([^"']+)["']/)?.[1] ?? null;
+  const paths = {};
+  for (const m of text.matchAll(/\b([a-z]?url)\s*[:=]\s*["']([^"']+)["']/gi)) {
+    if (!/^baseUrl$/i.test(m[1])) paths[m[1]] = m[2];
+  }
+  return {base, paths};
+}
+
+// Vollständige Adressen der Datenaufrufe; nur auf dem Ticker-Host (ticker.ehf.eu), alles andere wird verworfen.
+export function appContextUrls(context, pageUrl = 'https://ticker.ehf.eu/v3/') {
+  const base = new URL(context.base || '', pageUrl);
+  const out = [];
+  for (const [key, value] of Object.entries(context.paths || {})) {
+    let url;
+    try { url = new URL(value, base); } catch { continue; }
+    if (url.origin === 'https://ticker.ehf.eu') out.push({key, url: url.href});
+  }
+  return out;
+}
