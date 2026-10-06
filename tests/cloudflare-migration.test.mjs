@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../server/worker.mjs';
 import {fixtureKey} from '../server/previews.mjs';
-import {collect, chunk, bulkWrite, compareServices, canonical} from '../scripts/lib/cloudflare-migration.mjs';
+import {collect, chunk, bulkWrite, compareServices, canonical, firstDifference} from '../scripts/lib/cloudflare-migration.mjs';
 
 const OLD = 'https://old.example.test', NEW = 'https://new.example.test';
 const sha = 'b'.repeat(64);
@@ -119,7 +119,9 @@ test('Vergleich erkennt eine abweichende Antwort und eine abweichende PDF-Datei'
     assert.equal(row.different, 1);
     assert.match(row.first, /999001/);
     newSvc.map.set('kadetten/current.json', JSON.stringify({...snapshot, stories: []}));
-    assert.ok((await compareServices(http, OLD, NEW)).rows.find(x => x.group === 'Datenstand').different > 0);
+    const stateRow = (await compareServices(http, OLD, NEW)).rows.find(x => x.group === 'Datenstand');
+    assert.ok(stateRow.different > 0);
+    assert.match(stateRow.first, /\/api\/data .* – stories/, 'Bericht nennt das abweichende Feld');
   } finally {
     globalThis.fetch = original;
   }
@@ -139,4 +141,12 @@ test('Pakete: höchstens die erlaubte Menge und Grösse je Anfrage, keine Eintr�
   assert.equal(parts.flat().length, 25);
   assert.equal(chunk([{key: 'a', value: 'x'.repeat(50)}, {key: 'b', value: 'y'.repeat(50)}], 60, 10).length, 2);
   assert.equal(canonical({b: 1, a: [{d: 1, c: 2}]}), canonical({a: [{c: 2, d: 1}], b: 1}));
+});
+
+test('firstDifference nennt Pfad und gekürzte Werte des ersten Unterschieds', () => {
+  assert.equal(firstDifference({a: 1, b: [1, 2]}, {b: [1, 2], a: 1}), '');
+  assert.equal(firstDifference({games: [{id: 1, score: '2:1'}]}, {games: [{id: 1, score: null}]}), 'games[0].score: "2:1" gegen null');
+  assert.equal(firstDifference({x: 1}, {}), 'x: 1 gegen fehlt');
+  assert.equal(firstDifference([1, 2], [1]), '[1]: 2 gegen fehlt');
+  assert.match(firstDifference({t: 'x'.repeat(200)}, {t: 'y'}), /^t: "x{56}\.\.\. gegen "y"$/);
 });

@@ -10,6 +10,20 @@ const sorted = v =>
   Array.isArray(v) ? v.map(sorted) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, sorted(v[k])])) : v;
 export const canonical = v => JSON.stringify(sorted(v));
 
+// Erstes abweichendes Feld zweier JSON-Werte als Pfad mit gekürzten Werten, z. B. `games[3].score: "2:1" gegen null`.
+const short = v => { const t = JSON.stringify(v); return t === undefined ? 'fehlt' : t.length > 60 ? t.slice(0, 57) + '...' : t; };
+export function firstDifference(a, b, path = '') {
+  if (canonical(a) === canonical(b)) return '';
+  const isObj = v => v && typeof v === 'object';
+  if (!isObj(a) || !isObj(b) || Array.isArray(a) !== Array.isArray(b)) return `${path || 'Wurzel'}: ${short(a)} gegen ${short(b)}`;
+  const keys = Array.isArray(a) ? [...Array(Math.max(a.length, b.length)).keys()] : [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
+  for (const k of keys) {
+    const sub = firstDifference(a[k], b[k], Array.isArray(a) ? `${path}[${k}]` : path ? `${path}.${k}` : k);
+    if (sub) return sub;
+  }
+  return '';
+}
+
 // http.json(url) -> {status, data}; http.bytes(url) -> {status, bytes: Uint8Array}
 async function getJson(http, base, path) {
   const r = await http.json(base + path);
@@ -128,7 +142,11 @@ export async function compareServices(http, source, target) {
       same = pa.status === pb.status && b64(pa.bytes) === b64(pb.bytes);
     }
     if (same) row.equal++;
-    else { row.different++; row.first ||= `${route.path} (Quelle HTTP ${a.status}, Ziel HTTP ${b.status})`; }
+    else {
+      row.different++;
+      const field = a.status === b.status ? firstDifference(a.data, b.data) : '';
+      row.first ||= `${route.path} (Quelle HTTP ${a.status}, Ziel HTTP ${b.status})` + (field ? ' – ' + field : '');
+    }
   }
   return {rows: [...rows.values()]};
 }
