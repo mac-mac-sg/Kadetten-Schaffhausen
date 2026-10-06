@@ -210,7 +210,7 @@ function reportSource(r) {
 function reportFacts(g) {
   const r = verifiedReport(g);
   return r
-    ? `${r.spectators !== null ? `<div><span>Zuschauer</span><strong>${r.spectators.toLocaleString('de-CH')}</strong></div>` : ''}<div><span>Schiedsrichter</span><strong>${r.referees.filter(Boolean).map(liveEscape).join(' · ') || '–'}</strong></div>`
+    ? `${r.spectators !== null ? `<div><span>Zuschauer</span><strong>${r.spectators.toLocaleString('de-CH')}</strong></div>` : ''}`
     : '';
 }
 function reportRoster(g) {
@@ -238,10 +238,10 @@ function reportStats(g) {
     return `<h3>Feldspieler</h3><p class="muted">Tore/Würfe · Quote · Siebenmeter-Tore/Versuche · 2-Minuten-Strafen · Gelbe und Rote Karten</p><div class="report-table-wrap" tabindex="0" role="region" aria-label="Einzelstatistiken ${liveEscape(t.name)}"><table class="report-table stats-table"><thead><tr><th scope="col" class="name">Spieler</th><th scope="col">Tore/ Würfe</th><th scope="col">Quote</th><th scope="col">7 m</th><th scope="col">2 min</th><th scope="col">Gelb</th><th scope="col">Rot</th></tr></thead><tbody>${field
       .map(p => `<tr><th scope="row">${link(p, reportPlayer(p))}</th><td>${p.goals ?? '–'}/${p.shots ?? '–'}</td><td>${p.goals !== null && p.shots > 0 ? percent((p.goals / p.shots) * 100) : '–'}</td><td>${p.seven ?? '–'}/${p.sevenShots ?? '–'}</td><td>${p.twoMinutes ?? '–'}</td><td>${p.warnings ?? '–'}</td><td>${p.redCards ?? '–'}</td></tr>`)
       .join('')}</tbody></table></div>${keepers.length ? `<h4>Zwischen den Pfosten</h4><div class="facts">${keepers
-      .map(p => `<div><span>${link(p, reportPlayer(p))}</span><strong>${p.saves ?? '–'} Paraden · ${p.saves !== null && p.keeperShots > 0 ? percent((p.saves / p.keeperShots) * 100) : '–'}</strong></div>`)
+      .map(p => `<div><span>${link(p, reportPlayer(p))}</span><strong>${p.saves ?? '–'} Paraden</strong><p class="muted nowrap">${p.saves !== null && p.keeperShots > 0 ? percent((p.saves / p.keeperShots) * 100) : '–'} Fangquote</p></div>`)
       .join('')}</div>` : ''}`;
   };
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => team(r.teams[k === 'home' ? 0 : 1]))}${reportSource(r)}`;
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => team(r.teams[k === 'home' ? 0 : 1]))}`;
 }
 
 function reportComparison(g,r) {

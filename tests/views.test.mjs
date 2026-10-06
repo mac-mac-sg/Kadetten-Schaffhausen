@@ -237,6 +237,7 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
   const overview=view("matchOverview(reportFixture)");
   assert.match(overview,/match-preview-facts/);assert.match(overview,/<span>Spieldatum<\/span>/);assert.match(overview,/<span>Anspielzeit<\/span><strong>[^<]*Beendet<\/strong>/);assert.match(overview,/venue-preview/);
   assert.doesNotMatch(overview,/Offizieller Spielplan|Originalbericht lesen/);
+  assert.doesNotMatch(overview,/Schiedsrichter/);
   assert.doesNotMatch(stats,/Paradenquote gemäss SHV/);assert.match(stats,/<th scope="col" class="name">Spieler<\/th>/);
  }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
 });
@@ -314,7 +315,8 @@ test('Statistik abgeschlossener QHL-Spiele: Mannschaftswahl, Feldspieler mit Tor
   assert.match(field,/<th scope="col">Tore\/ Würfe<\/th><th scope="col">Quote<\/th><th scope="col">7 m<\/th><th scope="col">2 min<\/th><th scope="col">Gelb<\/th><th scope="col">Rot<\/th>/);
   assert.match(field,/<td>5\/8<\/td><td>62[.,]5 %<\/td><td>1\/2<\/td><td>1<\/td><td>1<\/td><td>0<\/td>/);
   assert.doesNotMatch(stats,/gehaltene Siebenmeter/);
-  assert.match(stats,/<h4>Zwischen den Pfosten<\/h4><div class="facts"><div><span>KEEPER Karl<\/span><strong>6 Paraden · 30 %<\/strong>/);
+  assert.match(stats,/<h4>Zwischen den Pfosten<\/h4><div class="facts"><div><span>KEEPER Karl<\/span><strong>6 Paraden<\/strong><p class="muted nowrap">30 % Fangquote<\/p>/);
+  assert.doesNotMatch(stats,/Quelle &amp; Datenstand|Quelle & Datenstand/);
   assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);
   assert.match(stats,/data-stats-team="away"/);assert.match(stats,/data-stats-panel="(home|away)" hidden/);
   assert.match(stats,/Das Spiel in Zahlen/);assert.match(stats,/1\. Halbzeit/);

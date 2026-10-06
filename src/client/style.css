@@ -2944,3 +2944,4 @@ html.snap-profile {
 .report-table.stats-table tbody td:last-child{font-size:inherit}
 .report-table.stats-table thead th{white-space:normal;vertical-align:bottom;line-height:1.2}
 .report-table.stats-table td{text-align:center}
+.nowrap{white-space:nowrap}
