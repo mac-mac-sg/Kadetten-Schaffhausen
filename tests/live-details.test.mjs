@@ -46,3 +46,18 @@ test('EHF-Teamwerte: Zahlen, fehlende Werte bleiben leer, ohne Teamblöcke wird 
  assert.equal(t.home.goals,16);assert.equal(t.home.efficiency,84);assert.equal(t.guest.sevenGoals,2);assert.equal(t.guest.twoMinutes,null);assert.equal(t.isLive,true);
  assert.throws(()=>parseEhfTeamStats({}));assert.throws(()=>parseEhfTeamStats(null));
 });
+
+import {parseEhfPlayers} from '../server/live.mjs';
+test('EHF-Spielerwerte: Namen, Tore, Würfe, Strafen, Paraden; Staff-Einträge und fehlende Werte',()=>{
+ const player=(id,first,last,score,extra={})=>({id,shirtNumber:'7',playingPosition:'Left Wing',isPlayer:true,isGoalkeeper:false,person:{firstName:first,lastName:last},score,...extra});
+ const data={matchDetails:{details:{
+  homeTeam:{players:[player('a','Leon','Bergmann',{goals:0,shots:0,goalkeeperSaves:8,goalkeeperRecievedShots:17,twoMinPenaltiesCount:0,warningsCount:0,redCardsCount:0},{isGoalkeeper:true,playingPosition:'Goalkeeper'}),player('b','Max','Muster',{goals:5,shots:7,twoMinPenaltiesCount:1,warningsCount:1,redCardsCount:0})]},
+  guestTeam:{players:[player('c','Marko','Culjak',{goals:3,shots:4,twoMinPenaltiesCount:null}),{id:'x',isPlayer:true,person:{},score:{}}]}}}};
+ const list=parseEhfPlayers(data);
+ assert.equal(list.length,3,'Eintrag ohne Nachnamen entfällt');
+ const gk=list.find(p=>p.id==='a'),field=list.find(p=>p.id==='b'),guest=list.find(p=>p.id==='c');
+ assert.equal(gk.name,'Leon Bergmann');assert.equal(gk.goalkeeper,true);assert.equal(gk.saves,8);assert.equal(gk.savesFaced,17);assert.equal(gk.home,true);
+ assert.equal(field.goals,5);assert.equal(field.shots,7);assert.equal(field.twoMinutes,1);assert.equal(field.yellow,1);assert.equal(field.seven,null);
+ assert.equal(guest.home,false);assert.equal(guest.twoMinutes,null);
+ assert.throws(()=>parseEhfPlayers({}));assert.throws(()=>parseEhfPlayers({matchDetails:{details:{homeTeam:{players:[]}}}}));
+});

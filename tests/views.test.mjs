@@ -184,6 +184,16 @@ test('European League live game: Spielzeit als mm:ss, Hinweis ohne Ereignisverla
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
 
+test('European League live game mit Spielerwerten: Tabellen je Team, Paraden nur für Torhüter, Teamstatistik darüber',()=>{
+ run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[24,11],clock:'35:10',phase:'2nd Half',url:'https://ehfel.eurohandball.com/x',details:{ok:true,updatedAt:new Date().toISOString(),events:null,teamStats:{isLive:true,home:{goals:24,shots:29,misses:5,efficiency:83,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:4},guest:{goals:11,shots:24,misses:13,efficiency:46,sevenGoals:2,sevenShots:2,twoMinutes:1,warnings:0,disqualifications:0,technicalFaults:9}},players:[{id:'a',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:8,savesFaced:17},{id:'b',name:'Max Muster',home:true,goalkeeper:false,goals:5,shots:7,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:0,savesFaced:0},{id:'c',name:'Marko Culjak',home:false,goalkeeper:false,goals:3,shots:4,seven:null,sevenShots:null,twoMinutes:null,yellow:0,red:0,saves:null,savesFaced:null}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
+ const stats=run('liveMatchPage({id:"live"},"stats")');
+ assert.match(stats,/Teamstatistik/);assert.match(stats,/83 %/);
+ assert.match(stats,/Leon Bergmann/);assert.match(stats,/Max Muster/);assert.match(stats,/Marko Culjak/);assert.match(stats,/Toptorschützen/);assert.match(stats,/5\/7/);
+ assert.match(stats,/<th scope="col">Paraden<\/th>/);assert.match(stats,/<td>8\/17<\/td>/);
+ assert.doesNotMatch(stats,/keine Spielerwerte für dieses Spiel/);assert.doesNotMatch(stats,/keine Spielerstatistiken verfügbar/);
+ run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
+});
+
 test('Live game opens internal details with verified events and player statistics',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);

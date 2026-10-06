@@ -30,6 +30,17 @@ export function parseEhfTeamStats(data){
  const pick=t=>({goals:count(t.totalGoals),shots:count(t.totalShots),misses:count(t.totalMisses),efficiency:count(t.shotEfficiency),sevenGoals:count(t.goals7meters),sevenShots:count(t.shots7meters),twoMinutes:count(t.suspensions2minutes),warnings:count(t.warnings),disqualifications:count(t.disqualifications),technicalFaults:count(t.technicalFaults)});
  return {home:pick(data.homeStatistics),guest:pick(data.guestStatistics),isLive:data.isLive===true};
 }
+// Spielerwerte aus GetMatchDetails (matchDetails.details.homeTeam/guestTeam.players[].score). 7-Meter je Spieler liefert die EHF nicht.
+export function parseEhfPlayers(data){
+ const details=data?.matchDetails?.details;
+ if(!details||!Array.isArray(details.homeTeam?.players)||!Array.isArray(details.guestTeam?.players))throw Error('Missing EHF players');
+ const count=v=>Number.isInteger(v)&&v>=0?v:null;
+ const side=(list,home)=>list.filter(p=>p&&p.isPlayer!==false&&p.person?.lastName).map(p=>{
+  const sc=p.score||{};
+  return {id:String(p.id||p.shirtNumber||p.person.lastName),number:p.shirtNumber?String(p.shirtNumber):null,name:[p.person.firstName,p.person.lastName].filter(Boolean).join(' '),home,goalkeeper:p.isGoalkeeper===true||p.playingPosition==='Goalkeeper',goals:count(sc.goals),shots:count(sc.shots),seven:null,sevenShots:null,twoMinutes:count(sc.twoMinPenaltiesCount),yellow:count(sc.warningsCount),red:count(sc.redCardsCount),saves:count(sc.goalkeeperSaves),savesFaced:count(sc.goalkeeperRecievedShots)};
+ });
+ return [...side(details.homeTeam.players,true),...side(details.guestTeam.players,false)];
+}
 export function parseEhfLiveMatch(data){
  if(!Array.isArray(data?.days))throw Error('Missing EHF live feed');
  for(const day of data.days){
@@ -50,13 +61,18 @@ export function parseEhfLiveMatch(data){
  }
  return null;
 }
-const ehfStatisticEndpoint='https://ehfel.eurohandball.com/umbraco/api/matchdetailapi/GetMatchDetailStatistic?matchId=';
+const ehfApi='https://ehfel.eurohandball.com/umbraco/api/matchdetailapi/';
+async function ehfJson(name,id){
+ const r=await fetch(ehfApi+name+'?matchId='+encodeURIComponent(id),{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
+ if(!r.ok)throw Error('EHF '+name+' unavailable');
+ return r.json();
+}
+// Teamwerte und Spielerwerte werden unabhängig geholt; fällt eines aus, bleibt das andere erhalten.
 async function getEhfDetails(id){
- try{
-  const r=await fetch(ehfStatisticEndpoint+encodeURIComponent(id),{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
-  if(!r.ok)throw Error('EHF statistics unavailable');
-  return {ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:parseEhfTeamStats(await r.json())};
- }catch{return {ok:false,updatedAt:null,events:null,players:null,teamStats:null}}
+ const [stats,players]=await Promise.allSettled([ehfJson('GetMatchDetailStatistic',id).then(parseEhfTeamStats),ehfJson('GetMatchDetails',id).then(parseEhfPlayers)]);
+ const teamStats=stats.status==='fulfilled'?stats.value:null,roster=players.status==='fulfilled'?players.value:null;
+ if(!teamStats&&!roster)return {ok:false,updatedAt:null,events:null,players:null,teamStats:null};
+ return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster,teamStats};
 }
 async function getEhfLiveMatch(){const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});if(!r.ok)throw Error('EHF live source unavailable');const match=parseEhfLiveMatch(await r.json());if(match)match.details=await getEhfDetails(match.id);return match}
 async function getNationalLiveMatch(){const games=await liveQuery(liveGamesQuery,{teamId:41473});const selected=selectLiveGame(games)||selectFinishedGame(games);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0])||parseLiveMatch(detail.game[0]);if(match)match.details=statistics;return match}
