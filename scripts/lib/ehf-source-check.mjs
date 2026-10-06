@@ -122,3 +122,21 @@ export const DETAIL_PATHS = [
   'matchDetails.details.guestTeam.players[0]',
   'matchDetails.details.homeTeam.officials[0]'
 ];
+
+// Der ganze Eintrag eines Spiels im Livescore-Feed, ohne Bild-Adressen (zeigt, mit welchen Feldern ein beendetes Spiel markiert ist).
+const IMAGE_KEYS = /^(photos?|newPhoto|logo\w*|flag\w*|cssClass|url)$/i;
+export function findFeedItem(feed, matchId) {
+  for (const day of feed?.days || []) {
+    for (const item of day.liveScoreMatches || []) if (item?.match?.matchID === matchId) return item;
+  }
+  return null;
+}
+export const withoutImages = value => JSON.stringify(value, (key, v) => (IMAGE_KEYS.test(key) ? undefined : v));
+
+// Kurzübersicht des Feeds: je Tag Datum und Anzahl Spiele, dazu die Statusfelder («matchStats») des ersten Spiels je Tag.
+export function feedOverview(feed) {
+  return (feed?.days || []).map(day => {
+    const items = day.liveScoreMatches || [];
+    return {date: day.dayDatumFormatted || day.date, matches: items.length, firstStats: items[0]?.matchStats ?? null};
+  });
+}

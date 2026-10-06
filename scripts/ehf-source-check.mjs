@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -71,6 +71,12 @@ async function probeApis({id, pages, fetchFn}) {
   let match = null;
   try { match = findFeedMatch(JSON.parse(feed?.text || '{}'), id); } catch { /* kein JSON */ }
   write(`\nKennungen des Spiels im Livescore-Feed: ${match ? JSON.stringify(match) : 'Spiel dort nicht gelistet'}`);
+  try {
+    const feedJson = JSON.parse(feed?.text || '{}');
+    const item = findFeedItem(feedJson, id);
+    write(`\nEintrag des Spiels im Livescore-Feed (ohne Bilder):\n\n${item ? code(preview(withoutImages(item), 3500)) : 'nicht vorhanden'}`);
+    write(`\nTage im Livescore-Feed:\n\n${feedOverview(feedJson).map(d => `- ${d.date}: ${d.matches} Spiele, erstes Spiel matchStats ${JSON.stringify(d.firstStats)}`).join('\n') || '- keine'}`);
+  } catch { /* kein JSON */ }
   const calls = [...candidateCalls(id), `${API}homeofhandballapi/GetTeams/1171`, `${API}homeofhandballapi/GetTeams`];
   const worked = new Set();
   for (const url of calls) {
