@@ -140,3 +140,41 @@ test('Prompt verbietet Personen und Spekulation ausdrücklich', () => {
   const [system] = aiMessages(KADETTEN_BASE);
   for (const phrase of [/erstes Heimspiel», «erstes Duell», «Saisonstart»/, /Direktduell nur, wenn die Fakten eines mit Datum und Ergebnis nennen/, /Was dort nicht steht, existiert für diesen Text nicht/, /Waadtländer/, /Wiederhole keinen Fakt/, /keine Trainer, Spieler/, /Meisterschaft, Abstieg, Klassenerhalt/, /Tabellenführer, wenn die Fakten es auf dem 1\. Rang nennen/, /grammatikalisch einwandfreie/]) assert.match(system.content, phrase);
 });
+
+// Antworten aus dem Stilvergleich vom 6. Oktober 2026 (Lauf 37481289008): Mistral lässt den Titel weg.
+const OHNE_TITEL_KADETTEN = 'Kadetten Schaffhausen empfängt HC Izvidac am Dienstag, 6. Oktober 2026, um 18:45 Uhr in der BBC Arena. Kadetten Schaffhausen hat 2 Punkte aus 1 Spielen erzielt. Das Torverhältnis der Kadetten Schaffhausen beträgt 39:32. HC Izvidac hat 2 Punkte aus 1 Spielen erzielt. Das Torverhältnis von HC Izvidac beträgt 34:33.';
+const OHNE_TITEL_FCSG = `FC St.Gallen 1879 und FC Lausanne-Sport messen sich am Sonntag um 16:30 Uhr im Berit Sitterstadion. Der FC St.Gallen 1879 hat in 9 Spielen 13 Punkte geholt. Der FC Lausanne-Sport hat in 9 Spielen 6 Punkte erzielt.
+
+Der FC St.Gallen 1879 weist ein Torverhältnis von 16:19 auf. Der FC Lausanne-Sport hat ein Torverhältnis von 7:15.
+
+Der FC St.Gallen 1879 liegt auf dem 5. Rang. FC Lausanne-Sport belegt den 12. Rang.`;
+
+test('Parser: ohne Titelzeile gilt der bisherige Titel, ein einzelner Block wird an einer Satzgrenze geteilt, mit Titelzeile bleibt sie', () => {
+  const k = parseAiText(OHNE_TITEL_KADETTEN, baseline.headline);
+  assert.equal(k.headline, baseline.headline);
+  assert.equal(k.paragraphs.length, 2);
+  assert.match(k.paragraphs[0], /^Kadetten Schaffhausen empfängt HC Izvidac.*beträgt 39:32\.$/);
+  assert.match(k.paragraphs[1], /^HC Izvidac hat 2 Punkte/);
+  const f = parseAiText(OHNE_TITEL_FCSG, FCSG_BASE.headline);
+  assert.equal(f.headline, FCSG_BASE.headline);
+  assert.equal(f.paragraphs.length, 3);
+  for (const parsed of [k, f]) {
+    const p = toAiPreview(parsed === k ? KADETTEN_BASE : FCSG_BASE, parsed, NOW);
+    const real = Date.now; Date.now = () => NOW.getTime();
+    try { assert.equal(validPreview(p), true); } finally { Date.now = real; }
+  }
+  assert.equal(parseAiText('Kurzer Titel\n\nErster Absatz mit genug Text. Zweiter Satz.\n\nZweiter Absatz.', 'Ersatz').headline, 'Kurzer Titel');
+  assert.equal(parseAiText('Ein ganzer Satz als erste Zeile, der kein Titel ist. Noch ein Satz.\n\nAbsatz zwei.', 'Ersatz').headline, 'Ersatz');
+  assert.equal(parseAiText('nur ein Satz'), null);
+  assert.equal(parseAiText('nur ein Satz', 'Ersatz'), null, 'ein einzelner Satz lässt sich nicht in zwei Absätze teilen');
+  assert.equal(parseAiText(OHNE_TITEL_KADETTEN), null, 'ohne Ersatztitel bleibt die strenge Form');
+});
+
+test('Prompt: Format wird betont, allgemeine Wertungen sind erlaubt, Prognose und neue Fakten nicht', () => {
+  const [system, user] = aiMessages(KADETTEN_BASE);
+  assert.match(system.content, /Format, immer einhalten: Erste Zeile ein kurzer Titel/);
+  assert.match(user.content, /Titelzeile, Leerzeile, dann 2 bis 3 Absätze/);
+  assert.match(system.content, /allgemeinen, wertenden Wörtern einrahmen/);
+  assert.match(system.content, /keine Prognose zum Ausgang oder zur Ausgeglichenheit/);
+  assert.doesNotMatch(system.content, /Stimmung, Erwartungen oder Spannung/);
+});

@@ -58,7 +58,7 @@ export async function main({env = process.env, fetchFn = fetch, data = null, hea
       const row = {club: baseline.club, model, ok: res.ok, ms: res.ms, problems: []};
       rows.push(row);
       if (!res.ok) { row.problems.push(res.error); write(`\n**${model}**: ❌ ${res.error} (${res.ms} ms)`); continue; }
-      const parsed = parseAiText(res.text);
+      const parsed = parseAiText(res.text, baseline.headline);
       row.problems = checkAi(parsed, baseline);
       const verdict = row.problems.length ? `⚠️ ${row.problems.join('; ')}` : '✅ Prüfung bestanden';
       const tokens = res.usage ? `, ${res.usage.prompt_tokens ?? '?'} Eingabe-/${res.usage.completion_tokens ?? '?'} Ausgabe-Tokens` : '';
