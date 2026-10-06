@@ -104,8 +104,9 @@ async function live(request) {
   if (request.method !== 'GET') return getRequired();
   try {
     return json(await getLiveMatch());
-  } catch {
-    return json({ok: false, match: null, error: 'Live source unavailable'}, 503);
+  } catch (e) {
+    // Die Meldungen der Quellen enthalten keine Zugangsdaten; sie zeigen, welche Quelle warum ausfiel.
+    return json({ok: false, match: null, error: 'Live source unavailable', ...(e?.sources ? {sources: e.sources} : {})}, 503);
   }
 }
 

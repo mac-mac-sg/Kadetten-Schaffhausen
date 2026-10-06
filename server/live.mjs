@@ -59,7 +59,7 @@ export function parseEhfLiveMatch(data){
   if(!Array.isArray(day.liveScoreMatches))throw Error('EHF live schema changed');
   for(const item of day.liveScoreMatches){
    const m=item.match,stats=item.matchStats;
-   if(!m||!stats)throw Error('Missing EHF match status');
+   if(!m||!stats)continue; // ein unvollständiger Eintrag eines anderen Spiels darf die Live-Erkennung nicht stören
    if(stats.isLive!==true||!isEhfKadetten(m))continue;
    return ehfMatchBase(item);
   }
@@ -75,7 +75,7 @@ export function parseEhfFinishedMatch(data,today=new Date().toLocaleDateString('
   if(String(day.dayDatumFormatted||String(day.date||'').slice(0,10))!==today)continue;
   for(const item of day.liveScoreMatches){
    const m=item.match,stats=item.matchStats;
-   if(!m||!stats)throw Error('Missing EHF match status');
+   if(!m||!stats)continue;
    if(stats.isLive!==false||stats.stateEnum!==2||!isEhfKadetten(m))continue;
    const base=ehfMatchBase(item);
    if(!base.score)throw Error('Missing EHF final score');
@@ -101,17 +101,19 @@ async function getEhfLiveMatch(){
  const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
  if(!r.ok)throw Error('EHF live source unavailable');
  const feed=await r.json();
- const match=parseEhfLiveMatch(feed)||parseEhfFinishedMatch(feed);
+ let match=parseEhfLiveMatch(feed);
+ if(!match){try{match=parseEhfFinishedMatch(feed)}catch{match=null}}
  if(match)match.details=await getEhfDetails(match.id);
  return match;
 }
+async function getNationalLiveMatch(){const games=await liveQuery(liveGamesQuery,{teamId:41473});const selected=selectLiveGame(games)||selectFinishedGame(games);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0])||parseLiveMatch(detail.game[0]);if(match)match.details=statistics;return match}
 let liveCache,livePending;
 export async function getLiveMatch(){
  if(liveCache&&Date.now()-liveCache.at<20000)return liveCache.value;if(livePending)return livePending;
  livePending=(async()=>{
   const results=await Promise.allSettled([getNationalLiveMatch(),getEhfLiveMatch()]);
-  if(results.every(r=>r.status==='rejected'))throw Error('All live sources unavailable');
-  const sources=Object.fromEntries(results.map((r,i)=>[["SHV","EHF"][i],{ok:r.status==='fulfilled'}]));
+  const sources=Object.fromEntries(results.map((r,i)=>[["SHV","EHF"][i],r.status==='fulfilled'?{ok:true}:{ok:false,error:String(r.reason?.message||r.reason).slice(0,120)}]));
+  if(results.every(r=>r.status==='rejected')){const failure=Error('All live sources unavailable');failure.sources=sources;throw failure}
   const match=results.find(r=>r.status==='fulfilled'&&r.value&&r.value.status!=='finished')?.value||null;
   const finished=results.find(r=>r.status==='fulfilled'&&r.value?.status==='finished')?.value||null;
   const value={ok:true,checkedAt:new Date().toISOString(),sources,match,finished};liveCache={at:Date.now(),value};return value;

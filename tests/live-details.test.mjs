@@ -77,3 +77,13 @@ test('EHF-Spielende: «Match ended» mit Endtoren gilt als beendet, nur heute, n
  assert.equal(parseEhfFinishedMatch(feed('2026-10-06',other),'2026-10-06'),null,'Spiel ohne Kadetten');
  assert.throws(()=>parseEhfFinishedMatch({},'2026-10-06'));
 });
+
+test('EHF-Feed: ein unvollständiger Eintrag eines anderen Spiels stört weder Live- noch Ende-Erkennung',()=>{
+ const base={competitionShortName:'EHF EL - M',matchID:'202711020901029',url:'/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',homeTeam:{id:'uyEpUicNjwv8hCX9B7A3sg',name:'Kadetten Schaffhausen'},guestTeam:{id:'2zXEaNBPEzJP81Ffhy6t9g',name:'HC Izvidac'}};
+ const odd=[{match:null,matchStats:null},{match:{matchID:'x'}},{match:{matchID:'y'},matchStats:null}];
+ const ended={days:[{dayDatumFormatted:'2026-10-06',liveScoreMatches:[...odd,{match:base,homeStats:{totalGoals:42},guestStats:{totalGoals:30},matchStats:{time:'60:00',phase:'Match ended',stateEnum:2,isLive:false}}]}]};
+ assert.equal(parseEhfLiveMatch(ended),null);
+ assert.deepEqual(parseEhfFinishedMatch(ended,'2026-10-06').score,[42,30]);
+ const live={days:[{dayDatumFormatted:'2026-10-06',liveScoreMatches:[...odd,{match:base,homeStats:{totalGoals:5},guestStats:{totalGoals:3},matchStats:{time:'10:00',phase:'1st Half',stateEnum:1,isLive:true}}]}]};
+ assert.deepEqual(parseEhfLiveMatch(live).score,[5,3]);
+});
