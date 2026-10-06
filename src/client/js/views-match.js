@@ -317,7 +317,7 @@ function matchStats(g) {
 }
 
 function matchPreviewSlot(g,club){
- return `<section class="ai-match-preview" data-match-preview="${liveEscape(club+'/'+g.id)}" aria-label="KI-Match-Vorschau"><p class="muted" role="status">Match-Vorschau wird geladen …</p></section>`;
+ return `<section class="ai-match-preview" data-match-preview="${liveEscape(club+'/'+g.id)}" aria-label="Match-Vorschau"><p class="muted" role="status">Match-Vorschau wird geladen …</p></section>`;
 }
 async function loadMatchPreview(){
  const target=document.querySelector('[data-match-preview]');if(!target)return;
@@ -328,7 +328,7 @@ async function loadMatchPreview(){
   if(!target.isConnected||target.dataset.matchPreview!==route)return;
   if(!Array.isArray(p.paragraphs)||!Array.isArray(p.sources))throw Error('Invalid preview');
   const stamp=new Date(p.generatedAt).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-  target.innerHTML=`<p class="eyebrow">KI-Match-Vorschau</p><h3>${liveEscape(p.headline)}</h3>${p.paragraphs.map(text=>`<p>${liveEscape(text)}</p>`).join('')}<details><summary>Quellen & Datenstand</summary><p class="muted">Mit KI aus den verlinkten Quellen erstellt · ${liveEscape(stamp)} Uhr. Einschätzungen sind keine Ergebnisprognose.</p><ul>${p.sources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<li><a href="${liveEscape(s.url)}" target="_blank" rel="noopener noreferrer">${liveEscape(s.label)}</a></li>`).join('')}</ul></details>`;
+  target.innerHTML=`<p class="eyebrow">Match-Vorschau</p><h3>${liveEscape(p.headline)}</h3>${p.paragraphs.map(text=>`<p>${liveEscape(text)}</p>`).join('')}<details><summary>Quellen & Datenstand</summary><p class="muted">Mit KI aus den verlinkten Quellen erstellt · ${liveEscape(stamp)} Uhr. Einschätzungen sind keine Ergebnisprognose.</p><ul>${p.sources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<li><a href="${liveEscape(s.url)}" target="_blank" rel="noopener noreferrer">${liveEscape(s.label)}</a></li>`).join('')}</ul></details>`;
  }catch{if(target.isConnected)target.innerHTML='<p class="muted">Die ausführliche Match-Vorschau ist noch nicht verfügbar. Die bestätigten Spielinformationen findest du hier.</p>'}
 }
 

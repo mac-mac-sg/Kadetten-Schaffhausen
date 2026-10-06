@@ -7,6 +7,8 @@ const key=(club,id)=>`previews/${club}/${id}.json`;
 async function fixture(env,club,id){const saved=await env.BUCKET.get(`${club}/current.json`);const data=saved?await saved.json():club==='fcsg'?fcsgSeed:seed;return data.games.find(g=>String(g.id)===id)}
 const upcoming=g=>g&&!g.score&&!g.live&&g.date>=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Zurich'});
 const plain=(v,min,max)=>typeof v==='string'&&v.length>=min&&v.length<=max&&!/[<>\u0000-\u0008]/.test(v);
+// Gleiche Prüfung für Einsendungen (POST) und für die in Actions erzeugten Vorschauen (scripts/lib/preview-sync.mjs).
+export const validPreview=p=>!(!p||!['kadetten','fcsg'].includes(p.club)||!plain(p.id,1,80)||!/^[a-zA-Z0-9_-]+$/.test(p.id)||!plain(p.headline,3,160)||!Array.isArray(p.paragraphs)||p.paragraphs.length<2||p.paragraphs.length>3||!p.paragraphs.every(x=>plain(x,30,1800))||!Array.isArray(p.sources)||!p.sources.length||p.sources.length>6||!p.sources.every(s=>plain(s.label,2,100)&&typeof s.url==='string'&&s.url.length<1000&&/^https:\/\//.test(s.url)&&(()=>{try{const u=new URL(s.url);return !u.username&&!u.password}catch{return false}})())||!Number.isFinite(Date.parse(p.generatedAt))||Date.parse(p.generatedAt)>Date.now()+300000||Date.parse(p.generatedAt)<Date.now()-86400000);
 export async function previews(request,env){
  const path=new URL(request.url).pathname;
  if(path==='/api/previews'){
@@ -18,7 +20,7 @@ export async function previews(request,env){
   if(!Array.isArray(batch)||!batch.length||batch.length>12)return json({error:'Invalid preview batch'},400);
   const valid=[];
   for(const p of batch){
-   if(!p||!['kadetten','fcsg'].includes(p.club)||!plain(p.id,1,80)||!/^[a-zA-Z0-9_-]+$/.test(p.id)||!plain(p.headline,3,160)||!Array.isArray(p.paragraphs)||p.paragraphs.length<2||p.paragraphs.length>3||!p.paragraphs.every(x=>plain(x,30,1800))||!Array.isArray(p.sources)||!p.sources.length||p.sources.length>6||!p.sources.every(s=>plain(s.label,2,100)&&typeof s.url==='string'&&s.url.length<1000&&/^https:\/\//.test(s.url)&&(()=>{try{const u=new URL(s.url);return !u.username&&!u.password}catch{return false}})())||!Number.isFinite(Date.parse(p.generatedAt))||Date.parse(p.generatedAt)>Date.now()+300000||Date.parse(p.generatedAt)<Date.now()-86400000)return json({error:'Invalid preview'},400);
+   if(!validPreview(p))return json({error:'Invalid preview'},400);
    const g=await fixture(env,p.club,p.id);if(!upcoming(g)||p.fixtureKey!==fixtureKey(g))return json({error:'Fixture changed or finished'},409);
    valid.push({club:p.club,id:p.id,fixtureKey:p.fixtureKey,headline:p.headline,paragraphs:p.paragraphs,sources:p.sources,generatedAt:p.generatedAt});
   }
