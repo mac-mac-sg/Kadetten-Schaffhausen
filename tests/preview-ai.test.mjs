@@ -61,6 +61,9 @@ test('Workers AI: beide Antwortformen, Fehler mit Hinweis auf die Berechtigung, 
   assert.equal(denied.ok, false);
   assert.match(denied.error, /HTTP 403.*Workers AI: Edit/);
   assert.doesNotMatch(JSON.stringify(denied), /GEHEIM/);
+  const blocked = await runModel({accountId: 'k', token: 'GEHEIM', model: 'm', messages: [], fetchFn: fetchFn({status: 403, json: {success: false, errors: [{code: 5018, message: 'AiError: Ai: This account is not allowed to access @cf/x/y.'}]}})});
+  assert.match(blocked.error, /nicht freigeschaltet/);
+  assert.doesNotMatch(blocked.error, /Token ohne Berechtigung/);
   const empty = await runModel({accountId: 'k', token: 't', model: 'm', messages: [], fetchFn: fetchFn({status: 200, json: {success: true, result: {response: ''}}})});
   assert.match(empty.error, /leere Antwort/);
   const down = await runModel({accountId: 'k', token: 't', model: 'm', messages: [], fetchFn: async () => { throw new Error('offline'); }});
@@ -98,4 +101,42 @@ test('Stilvergleich: wählt je Verein die nächste Partie, zeigt Texte und Befun
   assert.doesNotMatch(out, /GEHEIM-TOKEN/);
   assert.equal(result.rows.filter(r => r.ok && !r.problems.length).length >= 1, true);
   await assert.rejects(main({env: {}, fetchFn, data}), /fehlen/);
+});
+
+// Die beiden Texte stammen aus dem Stilvergleich (Lauf 37474406123) mit Mistral Small 3.1.
+const FCSG_GAME = {id: '458', home: 'FC St.Gallen 1879', away: 'FC Lausanne-Sport', league: 'Brack Super League', date: '2026-10-11', time: '16:30', confirmed: true, status: 'NOT STARTED', venue: 'Berit Sitterstadion', url: 'https://www.fcsg.ch/pages/match-center/458'};
+const FCSG_TABLE = [{name: 'FC Lugano', played: 9, gf: 27, ga: 7, points: 25}, {name: 'BSC Young Boys', played: 9, gf: 31, ga: 18, points: 19}, {name: 'FC Basel', played: 9, gf: 20, ga: 15, points: 17}, {name: 'FC Zürich', played: 9, gf: 18, ga: 14, points: 15}, {name: 'FC St. Gallen', played: 9, gf: 16, ga: 19, points: 13}, {name: 'FC X', played: 9, gf: 10, ga: 10, points: 12}, {name: 'FC Y', played: 9, gf: 10, ga: 10, points: 11}, {name: 'FC Z', played: 9, gf: 10, ga: 10, points: 10}, {name: 'FC V', played: 9, gf: 10, ga: 10, points: 9}, {name: 'FC W', played: 9, gf: 10, ga: 10, points: 8}, {name: 'FC U', played: 9, gf: 10, ga: 10, points: 7}, {name: 'FC Lausanne-Sport', played: 9, gf: 7, ga: 15, points: 6}];
+const FCSG_BASE = buildPreview({club: 'fcsg', game: FCSG_GAME, table: FCSG_TABLE, now: NOW});
+const FCSG_KI = `FC St.Gallen 1879 gegen FC Lausanne-Sport
+
+Der FC St.Gallen 1879 hat am kommenden Sonntag die Chance, seine Heimbilanz zu verbessern. Die Espen sind auf dem 5. Rang der Brack Super League und haben aus 9 Spielen 13 Punkte geholt. Das Torverhältnis von 16:19 zeigt, dass die Mannschaft von Trainer Peter Zeidler noch an der Abwehrarbeit feilen muss.
+
+Der FC Lausanne-Sport hingegen kämpft um den Klassenerhalt. Mit nur 6 Punkten aus 9 Spielen und einem Torverhältnis von 7:15 steht der FC Lausanne-Sport auf dem 12. Rang. Die Waadtländer müssen sich gegen die St.Galler steigen, um den Abstiegskampf nicht noch schwieriger zu machen. Das Spiel beginnt um 16:30 Uhr im Berit Sitterstadion.`;
+const KADETTEN_KI = `Kadetten Schaffhausen gegen HC Izvidac
+
+In der BBC Arena in Schaffhausen steht am Dienstag, 6. Oktober 2026, ein spannendes Duell in der EHL bevor. Um 18:45 Uhr treffen die Kadetten Schaffhausen auf den HC Izvidac. Der Tabellenführer aus Schaffhausen hat nach einem Spiel zwei Punkte auf dem Konto und ein Torverhältnis von 39:32. Auch der HC Izvidac hat zwei Punkte aus einem Spiel, allerdings mit einem Torverhältnis von 34:33.
+
+Die Fans dürfen sich auf ein packendes Spiel freuen, bei dem jeder Treffer zählt.`;
+const KADETTEN_BASE = buildPreview({club: 'kadetten', game: {id: 'izvidac', date: '2026-10-06', time: '18:45', home: 'Kadetten Schaffhausen', away: 'HC Izvidac', league: 'EHL', venue: 'BBC Arena, Schaffhausen'}, table: [['Kadetten Schaffhausen', 1, 39, 32, 2], ['HC Izvidac', 1, 34, 33, 2]], now: NOW});
+
+test('Strenge Prüfung: die erfundenen Angaben aus dem echten FCSG-Text werden abgewiesen, der korrekte Kadetten-Text besteht', () => {
+  const bad = checkAi(parseAiText(FCSG_KI), FCSG_BASE).join(' | ');
+  assert.match(bad, /Personen- oder Eigennamen.*Peter Zeidler/);
+  assert.match(bad, /Aussagen, die nicht in den Fakten stehen: .*trainer/);
+  assert.match(bad, /klassenerhalt/);
+  assert.match(bad, /abstieg/);
+  assert.match(bad, /bilanz/);
+  assert.deepEqual(checkAi(parseAiText(KADETTEN_KI), KADETTEN_BASE), []);
+  assert.deepEqual(checkAi(parseAiText(KADETTEN_KI.replace('Der Tabellenführer', 'Der Gastgeber')), KADETTEN_BASE), [], 'ohne Tabellenführer-Aussage kein Befund');
+  // Tabellenführer ohne 1. Rang in den Fakten
+  const nobody = buildPreview({club: 'kadetten', game: {id: 'x', date: '2026-10-06', time: '18:45', home: 'Kadetten Schaffhausen', away: 'HC Izvidac', league: 'EHL', venue: 'BBC Arena, Schaffhausen'}, table: [['HC Izvidac', 1, 34, 33, 2], ['Kadetten Schaffhausen', 1, 39, 32, 2]], now: NOW});
+  assert.match(checkAi(parseAiText(KADETTEN_KI), nobody).join(), /Tabellenführer/);
+  // Satzanfänge und einzelne Hauptwörter sind kein Befund, zwei unbekannte Grossgeschriebene hintereinander schon
+  assert.deepEqual(checkAi(parseAiText(KADETTEN_KI.replace('Die Fans dürfen', 'Die Fans von Schaffhausen dürfen')), KADETTEN_BASE), []);
+  assert.match(checkAi(parseAiText(KADETTEN_KI.replace('Die Fans dürfen', 'Die Fans Peter Muster dürfen')), KADETTEN_BASE).join(), /Peter Muster/);
+});
+
+test('Prompt verbietet Personen und Spekulation ausdrücklich', () => {
+  const [system] = aiMessages(KADETTEN_BASE);
+  for (const phrase of [/keine Trainer, Spieler/, /Meisterschaft, Abstieg, Klassenerhalt/, /Tabellenführer, wenn die Fakten es auf dem 1\. Rang nennen/, /grammatikalisch einwandfreie/]) assert.match(system.content, phrase);
 });

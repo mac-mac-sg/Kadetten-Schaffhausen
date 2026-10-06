@@ -9,7 +9,7 @@ import {aiMessages, parseAiText, checkAi} from '../server/preview-ai.mjs';
 import {getHeadToHead} from '../server/live.mjs';
 import {runModel} from './lib/workers-ai.mjs';
 
-export const DEFAULT_MODELS = ['@cf/swiss-ai/apertus-v1.5-8b', '@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/zai-org/glm-4.7-flash'];
+export const DEFAULT_MODELS = ['@cf/mistralai/mistral-small-3.1-24b-instruct'];
 const TARGET = (process.env.TARGET_URL || 'https://kadetten-api.mac-mac-sg.workers.dev').replace(/\/$/, '');
 const write = text => {
   console.log(text);

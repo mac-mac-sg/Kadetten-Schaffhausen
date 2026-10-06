@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       modelle:
-        description: Modelle, kommagetrennt (leer = Apertus, Mistral Small 3.1, GLM 4.7 Flash)
+        description: Modelle, kommagetrennt (leer = Mistral Small 3.1)
         type: string
         default: ''
 permissions:
