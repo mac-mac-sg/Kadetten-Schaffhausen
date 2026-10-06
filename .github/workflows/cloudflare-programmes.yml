@@ -1,0 +1,25 @@
+name: Cloudflare-Matchprogramme prüfen
+# Trockenlauf (Phase 2b des Cloudflare-Umzugs, docs/cloudflare-umzug.md): sucht auf der offiziellen Kadetten-Homepage nach dem
+# PDF der Matchvorschau, liest die erste Seite und zeigt, ob es zum nächsten Heimspiel passt. Schreibt nichts, braucht keine Secrets.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-programmes
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Matchprogramme suchen und prüfen
+        run: node scripts/cloudflare-programmes.mjs
