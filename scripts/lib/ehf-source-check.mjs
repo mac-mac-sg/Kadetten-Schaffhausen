@@ -155,3 +155,8 @@ export function loadSnippets(text, needles = LOAD_NEEDLES, perNeedle = 2, width 
   }
   return out;
 }
+
+// Stichwörter für das Skript der Ticker-Ansicht (tickerApp): Aufrufe mit POST, Adressen und Basispfade der Daten.
+export const TICKER_NEEDLES = ['$.post(', '$.ajax(', '.post(', 'url:', 'iBall', 'appcontext.', 'GetEvents', 'getEvents', 'Static', 'JSON.parse', 'events'];
+// Direkt abrufbare Adressen, die die Seite als Basispfade nennt (iBall/Static, iBall/StaticGoal); Versuch nur mit GET.
+export const tickerProbeUrls = id => [`https://ticker.ehf.eu/iBall/Static/${id}`, `https://ticker.ehf.eu/iBall/StaticGoal/${id}`];
