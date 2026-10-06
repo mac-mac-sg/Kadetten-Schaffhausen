@@ -1,0 +1,49 @@
+name: Cloudflare-Import und Vergleich
+# Manuell auszulösen (Phase 1 des Cloudflare-Umzugs, docs/cloudflare-umzug.md).
+# pruefen        Trockenlauf: liest den bisherigen Dienst und zeigt, was übernommen würde. Schreibt nichts. (Standard)
+# importieren    schreibt die Inhalte in den KV-Speicher von Cloudflare (überschreibt gleiche Schlüssel)
+# vergleichen    vergleicht die Antworten beider Dienste route für route
+# Braucht für «importieren» die Secrets CLOUDFLARE_API_TOKEN (mit «Workers KV Storage: Edit») und CLOUDFLARE_ACCOUNT_ID.
+on:
+  workflow_dispatch:
+    inputs:
+      modus:
+        description: Was soll geschehen?
+        type: choice
+        options:
+          - pruefen
+          - importieren
+          - vergleichen
+        default: pruefen
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODUS: ${{ inputs.modus }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Trockenlauf
+        if: env.MODUS == 'pruefen'
+        run: node scripts/cloudflare-import.mjs import
+      - name: In den KV-Speicher importieren
+        if: env.MODUS == 'importieren'
+        shell: bash
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen."; exit 1; }
+          node scripts/cloudflare-import.mjs import --schreiben
+      - name: Beide Dienste vergleichen
+        if: env.MODUS == 'vergleichen'
+        run: node scripts/cloudflare-import.mjs compare

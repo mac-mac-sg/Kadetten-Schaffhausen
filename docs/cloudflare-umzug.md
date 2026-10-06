@@ -77,6 +77,14 @@ Grenzen dieses Ergebnisses:
 - Die Abfrage lief aus einem Rechenzentrum in den USA (die Anfrage kam von einem GitHub-Runner). Ob Quellen Abrufe aus europäischen Rechenzentren anders behandeln, ist nicht geprüft.
 - Die gemessenen Zeiten im Ergebnis (alle 0 ms) sind unbrauchbar: Die Zeitfunktion in Workers schreitet nur bei bestimmten Ereignissen voran. Für CPU-Zeiten gilt das Dashboard von Cloudflare.
 
+## Phase 1: Import und Vergleich
+Workflow «Cloudflare-Import und Vergleich» (manuell, Standard ist der Trockenlauf), Code in `scripts/cloudflare-import.mjs` und `scripts/lib/cloudflare-migration.mjs`. Ablauf: erst `pruefen`, dann `importieren`, dann `vergleichen`.
+- **Übernommen** aus den öffentlichen Lese-Routen des bisherigen Dienstes: Datenstand, versionierte Volltext-Artikel, gespeicherte Spielberichte, aktuelle KI-Vorschauen, Matchprogramme samt PDF.
+- **Nicht übernommen:** FCSG-Daten (die öffentliche Route liefert sie ohne Artikeltexte; sie entstehen in Phase 2 neu aus der offiziellen FCSG-API), abgelaufene KI-Vorschauen und Spielberichte, die der bisherige Dienst nicht gespeichert hat.
+- **Prüfpunkt erfüllt**, wenn «vergleichen» in allen Gruppen null Abweichungen zeigt. Wegen der verzögerten Auslieferung von KV fragt der Vergleich bei Abweichungen bis zu viermal im Abstand von 20 Sekunden nach.
+- Der Import überschreibt gleiche Schlüssel. Nach dem ersten Lauf von Phase 2 (Aktualisierung über Actions) darf er **nicht** mehr ausgeführt werden, sonst überschreibt er neuere Daten mit dem Stand des alten Dienstes.
+- Der Token braucht dafür zusätzlich «Workers KV Storage: Edit».
+
 ## Adresse des Datendienstes
 Die `workers.dev`-Subdomain gehört zum Cloudflare-Konto (eine pro Konto, im Dashboard unter *Workers & Pages → Your subdomain* änderbar) und wurde am 06.10.2026 auf `mac-mac-sg` gesetzt. Der Worker `kadetten-api` ist damit unter `https://kadetten-api.mac-mac-sg.workers.dev` erreichbar. Cloudflare sieht `workers.dev` für private und Hobby-Projekte vor; eine eigene Domain kann später ergänzt werden, ohne den Code umzubauen.
 
