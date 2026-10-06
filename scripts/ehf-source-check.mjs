@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -146,7 +146,16 @@ async function tickerData({id, pages, fetchFn, env}) {
     try {
       const r = await fetchFn(target.url, {method: 'POST', headers: {'User-Agent': 'Mozilla/5.0 (kadetten-app-quellenpruefung)', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest'}, body: new URLSearchParams({MatchID: id}), signal: AbortSignal.timeout(20000)});
       const text = await r.text();
-      write(`\n#### POST ${target.url}\n\nStatus ${r.status}, ${r.headers.get('content-type') || 'kein Inhaltstyp'}, ${text.length} Zeichen, ${Date.now() - t} ms\n\n${code(preview(text, 1500))}`);
+      write(`\n#### POST ${target.url}\n\nStatus ${r.status}, ${r.headers.get('content-type') || 'kein Inhaltstyp'}, ${text.length} Zeichen, ${Date.now() - t} ms\n\n${code(preview(text, 600))}`);
+      let json = null;
+      try { json = JSON.parse(text); } catch { /* kein JSON */ }
+      if (json) {
+        const sum = summarizeTicker(json);
+        write(`\nOberste Schlüssel der Antwort:\n\n${code(sum.top.join('\n'))}\nSchlüssel des Ereignisbereichs: ${sum.eventKeys.join(', ') || 'keiner'}\n\nEreignisse insgesamt: ${sum.total}\n\nAnzahl je Art:\n\n${code(Object.entries(sum.counts).map(([k, n]) => k + ': ' + n).join('\n'))}`);
+        write(`\nDie ersten ${sum.firstActions.length} Ereignisse:\n\n${code(preview(JSON.stringify(sum.firstActions), 3500))}`);
+        write(`\nEin Beispiel je Art:\n\n${Object.entries(sum.samples).map(([k, list]) => '- ' + k + ': ' + preview(JSON.stringify(list[0]), 380)).join('\n')}`);
+        for (const key of ['livescores', 'matchstats', 'motiondataStatistics', 'lineup']) if (json[key] !== undefined) write(`\nAufbau von ${key}:\n\n${code(describeShape(json[key], 2, 40).join('\n'))}`);
+      }
     } catch (e) {
       write(`\n#### POST ${target.url}\n\nFehler: ${String(e?.message || e)}`);
     }

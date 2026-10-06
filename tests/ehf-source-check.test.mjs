@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, tickerEventsObject} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -167,4 +167,18 @@ test('appContext aus der echten Ticker-Seite: auskommentierte Pfade zählen nich
   const urls = appContextUrls(ctx, 'https://ticker.ehf.eu/v3/202711020901029');
   assert.deepEqual(urls.map(u => u.url).sort(), ['https://ticker.ehf.eu/v3/MatchImages', 'https://ticker.ehf.eu/v3/TeamData', 'https://ticker.ehf.eu/v3/TickerData']);
   assert.deepEqual(probeTargets(urls).map(u => u.url), ['https://ticker.ehf.eu/v3/TickerData']);
+});
+
+test('Ticker-Antwort: Ereignisse aus events (Liste oder Objekt), Anzahl und Beispiel je Art', () => {
+  const action = (id, a, extra = {}) => ({id, action: a, when: '00:37', period: 'H1', ...extra});
+  const asList = {lineup: {matchID: '1'}, events: [{_version: 3, actions: {action: [action(1, 'SHOT'), action(2, 'SHOT'), action(3, 'TE'), action(4, 'STARTP')]}}]};
+  const asObject = {events: {actions: {action: action(1, 'SHOT')}}};
+  const a = summarizeTicker(asList, {first: 2});
+  assert.equal(a.total, 4);assert.deepEqual(a.counts, {SHOT: 2, TE: 1, STARTP: 1});
+  assert.equal(a.firstActions.length, 2);assert.equal(a.samples.TE[0].id, 3);
+  assert.ok(a.top.includes('lineup: object') && a.top.includes('events: Liste(1)'));
+  assert.deepEqual(a.eventKeys, ['_version', 'actions']);
+  assert.equal(summarizeTicker(asObject).total, 1);
+  assert.equal(tickerEventsObject({}), undefined);
+  assert.deepEqual(summarizeTicker(null), {top: [], eventKeys: [], total: 0, counts: {}, firstActions: [], samples: {}});
 });

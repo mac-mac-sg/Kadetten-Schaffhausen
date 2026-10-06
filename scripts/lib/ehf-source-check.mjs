@@ -188,3 +188,24 @@ export function appContextUrls(context, pageUrl = 'https://ticker.ehf.eu/v3/') {
 // Ereignisdaten der Ticker-Ansicht: nur der Pfad «surl» (TickerData). Die anderen Pfade (Team, Bilder) brauchen weitere Angaben
 // oder sind für unsere Zwecke ohne Belang und werden nicht abgefragt.
 export const probeTargets = urls => urls.filter(u => u.key === 'surl');
+
+// Aufbau der Ticker-Antwort (TickerData): der Ereignisbereich liegt wie im Skript der Seite in `events` (Liste oder Objekt) unter
+// `.actions.action[]`. Rückgabe: Kurzübersicht, Anzahl je Ereignisart, erste Ereignisse und je Art ein Beispiel.
+export function tickerEventsObject(data) {
+  const e = data?.events;
+  return Array.isArray(e) ? e[0] : e;
+}
+export function summarizeTicker(data, {first = 10, perType = 1} = {}) {
+  const top = Object.entries(data && typeof data === 'object' ? data : {}).map(([k, v]) => `${k}: ${Array.isArray(v) ? 'Liste(' + v.length + ')' : v === null ? 'null' : typeof v}`);
+  const eventsObject = tickerEventsObject(data);
+  const raw = eventsObject?.actions?.action;
+  const actions = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  const counts = {};
+  const samples = {};
+  for (const a of actions) {
+    const type = String(a?.action ?? a?.Action ?? '?');
+    counts[type] = (counts[type] || 0) + 1;
+    (samples[type] ||= []).length < perType && samples[type].push(a);
+  }
+  return {top, eventKeys: eventsObject ? Object.keys(eventsObject) : [], total: actions.length, counts, firstActions: actions.slice(0, first), samples};
+}
