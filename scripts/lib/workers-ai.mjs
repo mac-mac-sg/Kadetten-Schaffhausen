@@ -28,7 +28,7 @@ export async function runModel({accountId, token, model, messages, maxTokens = 1
   const ms = Date.now() - started;
   if (!r.ok || body?.success === false) {
     const msg = (body?.errors || []).map(e => `${e.code ?? ''} ${e.message ?? ''}`.trim()).join('; ').slice(0, 200);
-    const hint = r.status === 403 || r.status === 401 || /permission|authenticat|not authorized/i.test(msg) ? ' (Token ohne Berechtigung «Workers AI: Edit»?)' : '';
+    const hint = /not allowed to access|5018/i.test(msg) ? ' (Modell für dieses Konto nicht freigeschaltet?)' : r.status === 401 || /authenticat|permission/i.test(msg) ? ' (Token ohne Berechtigung «Workers AI: Edit»?)' : '';
     return {ok: false, ms, error: `HTTP ${r.status}${msg ? ': ' + msg : ''}${hint}`};
   }
   const text = extractText(body);

@@ -9,9 +9,11 @@ export function aiMessages(baseline) {
       role: 'system',
       content: [
         'Du schreibst kurze Spielvorschauen für die App eines Handball- und Fussball-Fanclubs in der Schweiz.',
-        'Schreibe auf Deutsch mit Schweizer Rechtschreibung (kein «ß»; Anführungszeichen « »).',
-        'Verwende ausschliesslich die gelieferten Fakten. Erfinde nichts: keine Spieler, keine Verletzungen, keine Form, keine Prognosen, keine zusätzlichen Zahlen, Daten, Orte oder Wettbewerbe.',
-        'Jede Zahl im Text muss in den Fakten vorkommen. Gib Rang, Punkte, Spiele, Torverhältnis, Datum, Uhrzeit, Ort und Ergebnis genau so wieder, wie sie in den Fakten stehen.',
+        'Schreibe auf Deutsch mit Schweizer Rechtschreibung (kein «ß»; Anführungszeichen « »). Verwende kurze, grammatikalisch einwandfreie Sätze.',
+        'Verwende ausschliesslich die gelieferten Fakten und erfinde nichts.',
+        'Nenne keine Personen: keine Trainer, Spieler, Schiedsrichter oder andere Namen, ausser den Namen der beiden Teams aus den Fakten.',
+        'Mache keine Aussagen über Form, frühere Spiele, Verletzungen, Rekorde, Meisterschaft, Abstieg, Klassenerhalt oder Saisonziele und keine Prognosen. Erwähne nur Rang, Punkte, Spiele, Torverhältnis, Datum, Uhrzeit, Ort, Wettbewerb und, falls vorhanden, das letzte Direktduell mit seinem Ergebnis.',
+        'Jede Zahl im Text muss in den Fakten vorkommen und genau so wiedergegeben werden. Bezeichne ein Team nur dann als Tabellenführer, wenn die Fakten es auf dem 1. Rang nennen.',
         'Stil: lebendig, gut lesbar, sportjournalistisch, ohne Übertreibungen und ohne Floskeln.',
         'Format: Erste Zeile der Titel (höchstens 80 Zeichen), dann eine Leerzeile, dann 2 bis 3 Absätze mit je 2 bis 4 Sätzen, Absätze durch eine Leerzeile getrennt. Kein Markdown, keine Aufzählungen, keine Anführung des Titels.'
       ].join(' ')
@@ -49,6 +51,37 @@ export function checkAi(parsed, baseline) {
     const key = team.trim().split(/\s+/).filter(w => !/^\d+$/.test(w)).at(-1)?.toLowerCase();
     if (key && !all.toLowerCase().includes(key)) problems.push('Team fehlt: ' + team.trim());
   }
+  const baseText = baseline.paragraphs.join(' ') + ' ' + baseline.headline;
+  problems.push(...riskyClaims(all, baseText));
+  return problems;
+}
+
+// Aussagen, die in den Fakten nicht vorkommen und bei kleinen Sprachmodellen erfahrungsgemäss erfunden sind.
+const RISKY = /trainer|coach|verletz|gesperrt|rekord|abstieg|klassenerhalt|meister|titel|play-?off|derby|rivalit|bilanz|\bserie|ungeschlagen|unbesiegt|kapitän|schlusslicht|tabellenende|tabellenletzt|transfer|vertrag|stürmer|torhüter|torwart|verteidiger|mittelfeld|nationalspieler|saisonziel|aufstieg|champions|favorit|aussenseiter/gi;
+const WORDS = text => (String(text).match(/[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu) || []).map(w => w.replace(/[.'’-]+$/, ''));
+export function riskyClaims(all, baseText) {
+  const problems = [];
+  const base = baseText.toLowerCase();
+  const risky = [...new Set([...all.matchAll(RISKY)].map(m => m[0].toLowerCase()).filter(w => !base.includes(w)))];
+  if (risky.length) problems.push('Aussagen, die nicht in den Fakten stehen: ' + risky.join(', '));
+  const LEADER = /tabellenführ|spitzenreiter|tabellenspitze|an der spitze/i;
+  if (LEADER.test(all)) {
+    const leader = baseText.match(/(?:liegt |, )([^,()]+?) auf dem 1\. Rang/)?.[1];
+    const key = leader?.trim().split(/\s+/).filter(w => !/^\d+$/.test(w)).at(-1)?.toLowerCase();
+    const sentences = all.split(/(?<=[.!?])\s+|\n+/).filter(x => LEADER.test(x));
+    if (!key || !sentences.every(x => x.toLowerCase().includes(key))) problems.push('nennt einen Tabellenführer, den die Fakten nicht belegen');
+  }
+  // Personennamen: mitten im Satz mindestens zwei aufeinanderfolgende grossgeschriebene Wörter, die nicht in den Fakten stehen.
+  const known = new Set(WORDS(baseText).map(w => w.toLowerCase()));
+  const names = [];
+  for (const sentence of all.split(/(?<=[.!?:])\s+|\n+/)) {
+    const tokens = WORDS(sentence);
+    let run = [];
+    const flush = () => { if (run.filter(w => !known.has(w.toLowerCase())).length >= 2) names.push(run.join(' ')); run = []; };
+    tokens.forEach((w, i) => { if (i > 0 && /^[A-ZÄÖÜ]/.test(w) && w.length > 1 && !/^\d/.test(w)) run.push(w); else flush(); });
+    flush();
+  }
+  if (names.length) problems.push('mögliche Personen- oder Eigennamen, die nicht in den Fakten stehen: ' + [...new Set(names)].join(', '));
   return problems;
 }
 

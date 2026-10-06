@@ -6,6 +6,7 @@ name: Cloudflare-Datenaktualisierung
 # Zeitplan: zu den Zeiten des bisherigen Datendienstes (Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20).
 # GitHub rechnet in UTC. Der Zeitplan löst deshalb in beiden Zeitzonen-Versionen (Sommer UTC+2, Winter UTC+1) aus, und der
 # erste Schritt lässt nur Läufe zu, die zur Schweizer Uhrzeit passen. Geplante Läufe schreiben immer.
+# Match-Vorschauen: KI von Cloudflare Workers AI mit Rückfall auf den sachlichen Text; abschaltbar mit der Repository-Variable KI_VORSCHAU = aus.
 # Schreibläufe speichern zusätzlich das Matchprogramm des nächsten Heimspiels (PDF von kadettensh.ch, Phase 2b).
 # Der Import (cloudflare-import.yml) darf nach dem ersten Schreiblauf nicht mehr ausgeführt werden.
 on:
@@ -33,6 +34,7 @@ jobs:
       MODUS: ${{ inputs.modus || 'schreiben' }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      KI_VORSCHAU: ${{ vars.KI_VORSCHAU || 'an' }}
     steps:
       - name: Schweizer Uhrzeit prüfen
         if: github.event_name == 'schedule'
