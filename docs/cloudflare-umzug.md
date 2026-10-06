@@ -82,7 +82,7 @@ Import (81 KV-Einträge, 4,5 MB) und Vergleich ohne Abweichung: Datenstand 1/1, 
 
 ## Phase 2: Aktualisierung über GitHub Actions
 Geklärt mit dem Eigentümer am 06.10.2026:
-- **KI-Vorschauen** schreibt ChatGPT im Auftrag des Eigentümers (Schreibzugriff auf `/api/previews`). Das bleibt vorerst so; mit dem Umschalten muss das Ziel dieser Schreibzugriffe auf den neuen Dienst geändert werden (dafür braucht es dann den Automationsschlüssel `KADETTEN_UPDATE_KEY`).
+- **Vorschauen:** Der Eigentümer hat Weg B gewählt (6. Oktober 2026): Die Texte entstehen ohne KI im Schreiblauf der Aktualisierung (`docs/vorschauen.md`). Der ChatGPT-Auftrag ist damit nicht mehr nötig; ein Automationsschlüssel wird nicht gebraucht.
 - **Matchprogramme** liegen auf der Startseite der Kadetten (Matchvorschau) als PDF. Der Abruf kann ein Actions-Lauf übernehmen (Phase 2b, noch nicht gebaut).
 - **Bisherige Datenautomation** (alle zwei Stunden): Ihr Ort ist unbekannt, sie wurde mit ChatGPT eingerichtet. Der Actions-Lauf ersetzt sie vollständig; abgeschaltet wird sie nur auf ausdrücklichen Auftrag.
 
