@@ -1,0 +1,31 @@
+name: EHF-Quellen prüfen
+# Nur lesend, keine Secrets. Ruft die EHF-Spielseite, ticker.ehf.eu und den bisher genutzten Livescore-Feed von einem
+# GitHub-Runner aus ab und zeigt Status, Aufbau und gefundene Daten-Schnittstellen (scripts/ehf-source-check.mjs).
+# Ergebnis nur zur Erkundung: Ob der Cloudflare-Worker dieselben Quellen erreicht, zeigt erst ein Test über den Worker.
+on:
+  workflow_dispatch:
+    inputs:
+      spiel_id:
+        description: EHF-Spiel-ID
+        type: string
+        default: '202711020901029'
+permissions:
+  contents: read
+concurrency:
+  group: ehf-source-check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SPIEL_ID: ${{ inputs.spiel_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Quellen abrufen
+        run: node scripts/ehf-source-check.mjs
