@@ -1,7 +1,7 @@
 // Stilvergleich der Workers-AI-Modelle für die Match-Vorschau (nur lesend, schreibt nichts).
 // Nimmt je einen künftigen Kadetten- und FCSG-Termin aus dem Cloudflare-Datendienst, bildet den nüchternen Grundtext (Weg B) und lässt
 // jedes Modell daraus eine lebendigere Fassung schreiben; Zahlen, «ß», Markup und Teamnamen werden geprüft.
-//   Umgebung: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (Workers AI), MODELLE (kommagetrennt, optional), TARGET_URL (optional)
+//   Umgebung: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (Workers AI), MODELLE (kommagetrennt, optional), SPIELE (Partien je Verein, 1 bis 3, Standard 1), TARGET_URL (optional)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {buildPreview} from '../server/preview-text.mjs';
@@ -28,15 +28,16 @@ async function loadData(fetchFn) {
 }
 
 // Erste künftige Partie je Verein, für die es einen Grundtext gibt.
-export async function pickBaselines({snapshot, fcsgData}, {now = new Date(), headToHead = getHeadToHead, recentGames = getRecentGames} = {}) {
+export async function pickBaselines({snapshot, fcsgData}, {now = new Date(), headToHead = getHeadToHead, recentGames = getRecentGames, perClub = 1} = {}) {
   const today = now.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
   const out = [];
   for (const [club, data] of [['kadetten', snapshot], ['fcsg', fcsgData]]) {
     const games = (data.games || []).filter(g => !g.score && !g.live && g.status !== 'FINISHED' && g.date >= today).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+    let taken = 0;
     for (const g of games) {
       const facts = await collectFacts(club, g, {snapshot, fcsgData}, {headToHead, recentGames});
       const baseline = buildPreview({club, game: g, ...facts, now});
-      if (baseline) { out.push(baseline); break; }
+      if (baseline) { out.push(baseline); if (++taken >= perClub) break; }
     }
   }
   return out;
@@ -47,7 +48,7 @@ export async function main({env = process.env, fetchFn = fetch, data = null, hea
   if (!token || !accountId) throw Error('CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen.');
   const models = (env.MODELLE || '').split(',').map(m => m.trim()).filter(Boolean);
   const list = models.length ? models : DEFAULT_MODELS;
-  const baselines = await pickBaselines(data || await loadData(fetchFn), {now, headToHead, recentGames});
+  const baselines = await pickBaselines(data || await loadData(fetchFn), {now, headToHead, recentGames, perClub: Math.min(3, Math.max(1, Number(env.SPIELE) || 1))});
   write('### KI-Stilvergleich Workers AI (nur lesend)\n');
   if (!baselines.length) { write('Keine künftige Partie mit genug Daten gefunden.'); return {rows: []}; }
   const rows = [];
