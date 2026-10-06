@@ -61,6 +61,25 @@ Jede Phase endet an einem Prüfpunkt. Erst danach beginnt die nächste.
 - Offen: Der Dienst ist noch **nicht** bereitgestellt (Secrets fehlen). Danach: Speicher einmalig aus den öffentlichen Lese-Routen des alten Dienstes befüllen und vergleichen (Prüfpunkt Phase 1).
 - Zusätzliches Secret für Schreibwege (Phase 2): `KADETTEN_UPDATE_KEY`, ein frei gewählter, langer Zufallswert (zum Beispiel aus einem Passwortmanager). Der Workflow setzt daraus nur den Digest beim Dienst; der Wert selbst bleibt in GitHub.
 
+## Ergebnis Phase 0 (06.10.2026, bestanden)
+Lauf «Cloudflare-Machbarkeitstest» (Bereitstellung und Löschen des Test-Workers erfolgreich). Vom Cloudflare-Worker aus (Rechenzentrum IAD, USA) waren alle acht geprüften Quellen **erreichbar und ohne Fehler**:
+
+| Quelle | Ergebnis |
+| --- | --- |
+| kadettensh.ch Matchcenter (HTML) | HTTP 200, 444 KB |
+| kadettensh.ch News (WordPress-API) | HTTP 200, 24 KB |
+| SHV handball.ch: Live, Spielerwerte, letzte Spiele | ohne Fehler (derzeit kein Live-Spiel) |
+| FCSG-API (Spielerdaten, Live) | ohne Fehler |
+| fcsg.ch Webseite | HTTP 200, 1.4 MB |
+
+Grenzen dieses Ergebnisses:
+- Geprüft ist die Erreichbarkeit mit dem echten Anwendungscode, nicht die inhaltliche Vollständigkeit der Antworten.
+- Die Abfrage lief aus einem Rechenzentrum in den USA (die Anfrage kam von einem GitHub-Runner). Ob Quellen Abrufe aus europäischen Rechenzentren anders behandeln, ist nicht geprüft.
+- Die gemessenen Zeiten im Ergebnis (alle 0 ms) sind unbrauchbar: Die Zeitfunktion in Workers schreitet nur bei bestimmten Ereignissen voran. Für CPU-Zeiten gilt das Dashboard von Cloudflare.
+
+## Adresse des Datendienstes
+Die `workers.dev`-Subdomain gehört zum Cloudflare-Konto (eine pro Konto, im Dashboard unter *Workers & Pages → Your subdomain* änderbar) und wurde am 06.10.2026 auf `mac-mac-sg` gesetzt. Der Worker `kadetten-api` ist damit unter `https://kadetten-api.mac-mac-sg.workers.dev` erreichbar. Cloudflare sieht `workers.dev` für private und Hobby-Projekte vor; eine eigene Domain kann später ergänzt werden, ohne den Code umzubauen.
+
 ## Stand der Verbindungen (06.10.2026)
 - Der Konnektor «Cloudflare Developer Platform» ist verbunden. Er kann lesen und Ressourcen anlegen (Workers lesen, KV, R2, D1), aber **keine Workers bereitstellen**. Das Konto ist leer (0 Workers, 0 KV-Namespaces).
 - Der zweite Konnektor (`plugin:cloudflare:cloudflare`, Adresse laut Cloudflare-Anleitung `https://mcp.cloudflare.com/mcp`) scheiterte in der Cloud-Umgebung am Proxy (403). Vermutlich muss der Host `mcp.cloudflare.com` unter *Network access → Allowed domains* der Umgebung freigegeben werden (Annahme, nicht geprüft).
@@ -76,7 +95,7 @@ Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie
 6. Unter *Actions → Cloudflare-Machbarkeitstest → Run workflow* starten. Das Ergebnis steht in der Zusammenfassung des Laufs.
 
 ## Risiken und offene Punkte
-- Quellen können Cloudflare-Adressen sperren (Phase 0 klärt das).
+- Quellen können Cloudflare-Adressen sperren: in Phase 0 nicht eingetreten (siehe oben), kann sich aber ändern.
 - R2 aktivieren: im Dashboard durch den Eigentümer; ob eine Zahlungsmethode verlangt wird, ist nicht geklärt. Mit KV vermeidbar.
 - KV ist eventuell konsistent (Änderungen können nicht sofort überall sichtbar sein); für den 2-Stunden-Takt der Daten unkritisch, aber vor Phase 1 zu bestätigen.
 - Die Schreibgrenze von KV (1'000 pro Tag) ist für den ersten Datenimport (ca. 60 Artikel plus Berichte) und danach für etwa 12 Läufe pro Tag ausreichend, muss aber beim Import beachtet werden.
