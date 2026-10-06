@@ -110,3 +110,22 @@ test('Nur am Spieltag und am Folgetag, nur für beendete Spiele der Kadetten in 
   assert.equal(live.written, 0);assert.match(live.notes[0], /nicht als beendet/);
   assert.equal(bucket.m.size, 0);
 });
+
+test('Ticker: ein abgebrochener Abruf wird wiederholt, die Fehlermeldung nennt die Ursache', async () => {
+  let tickerCalls = 0;
+  const flaky = failures => async (url, init) => {
+    if (String(url).includes('TickerData')) {
+      tickerCalls++;
+      if (tickerCalls <= failures) throw Object.assign(TypeError('fetch failed'), {cause: {code: 'ECONNRESET', message: 'read ECONNRESET'}});
+    }
+    return mockFetch([])(url, init);
+  };
+  const ok = memory();
+  const out = await syncEhfArchive(ok, {games: [game], fetchFn: flaky(2), write: kiWriter});
+  assert.equal(out.ki, 1);assert.equal(tickerCalls, 3);
+  tickerCalls = 0;
+  const bad = memory();
+  await syncEhfArchive(bad, {games: [game], fetchFn: flaky(9), write: kiWriter});
+  assert.equal(tickerCalls, 3);
+  assert.match(JSON.parse(bad.m.get(archiveKey('izvidac'))).tickerError, /Versuch 3: fetch failed: ECONNRESET/);
+});
