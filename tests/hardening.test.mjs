@@ -42,3 +42,13 @@ test('Missing and malformed fixture IDs are rejected before replacing saved game
   for(const attr of ['', 'data-gameid="bad/id"', 'data-gameid="bad&lt;id"'])
     assert.throws(()=>parseGames('<tr class="mc-row" data-date="2026-10-03T18:00" '+attr+'></tr>',[]),/Game ID schema changed/);
 });
+
+test('Alle GitHub Actions sind auf einen Commit fixiert und laufen mit Timeout', () => {
+  for (const name of fs.readdirSync('.github/workflows').filter(f => /\.ya?ml$/.test(f))) {
+    const text = fs.readFileSync('.github/workflows/' + name, 'utf8');
+    const uses = [...text.matchAll(/^\s*(?:-\s+)?uses:\s*(\S+)/gm)].map(m => m[1]);
+    assert.ok(uses.length > 0, name);
+    for (const ref of uses) assert.match(ref, /^[\w.-]+\/[\w./-]+@[0-9a-f]{40}$/, name + ': ' + ref);
+    assert.equal((text.match(/^\s{4}runs-on:/gm) || []).length, (text.match(/^\s{4}timeout-minutes:/gm) || []).length, name + ': Timeout je Job');
+  }
+});
