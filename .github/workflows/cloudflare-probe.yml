@@ -1,0 +1,70 @@
+name: Cloudflare-Machbarkeitstest
+# Manuell auszulösen. Stellt den Test-Worker (cloudflare/probe) bereit, prüft von Cloudflare aus, ob die Quellen der App
+# erreichbar sind, zeigt das Ergebnis in der Zusammenfassung und löscht den Worker wieder.
+# Braucht die Repository-Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID (siehe docs/cloudflare-umzug.md).
+on:
+  workflow_dispatch:
+    inputs:
+      loeschen:
+        description: Test-Worker nach dem Test löschen
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-probe
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_VERSION: 4.147.0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Zugangsdaten vorhanden?
+        shell: bash
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen (Settings → Secrets and variables → Actions)."; exit 1; }
+      - name: Test-Worker bereitstellen
+        id: deploy
+        shell: bash
+        run: |
+          npx --yes "wrangler@${WRANGLER_VERSION}" deploy -c cloudflare/probe/wrangler.toml | tee deploy.log
+          url=$(grep -Eo 'https://kadetten-probe\.[a-z0-9-]+\.workers\.dev' deploy.log | head -1)
+          [ -n "$url" ] || { echo "::error::Die workers.dev-Adresse wurde in der Ausgabe nicht gefunden."; exit 1; }
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Quellen von Cloudflare aus prüfen
+        shell: bash
+        env:
+          PROBE_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          code=000
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o result.json -w '%{http_code}' "$PROBE_URL/probe" || true)
+            [ "$code" = 200 ] && break
+            sleep 10
+          done
+          echo "HTTP $code"
+          [ "$code" = 200 ] || { echo "::error::Der Test-Worker antwortet nicht (HTTP $code)."; exit 1; }
+          {
+            echo '### Sind die Quellen von Cloudflare aus erreichbar?'
+            echo
+            echo '| Quelle | Ergebnis | ms | Detail |'
+            echo '|---|---|---|---|'
+            jq -r '.results[] | "| \(.name) | \(if .ok then "✅" else "❌" end) | \(.ms) | \(.error // (.detail | tostring)) |"' result.json
+            echo
+            jq -r '"Rechenzentrum: \(.colo), Land: \(.country), alle erreichbar: \(.allOk)"' result.json
+          } >> "$GITHUB_STEP_SUMMARY"
+          jq . result.json
+      - name: Test-Worker löschen
+        if: always() && inputs.loeschen
+        shell: bash
+        run: npx --yes "wrangler@${WRANGLER_VERSION}" delete --name kadetten-probe --force

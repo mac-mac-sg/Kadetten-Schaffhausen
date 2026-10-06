@@ -1,0 +1,6 @@
+# Test-Worker für Phase 0 des Cloudflare-Umzugs. Wird vom Workflow «Cloudflare-Machbarkeitstest» bereitgestellt
+# und danach wieder gelöscht. Enthält keine Geheimnisse und keine Datenbindungen.
+name = "kadetten-probe"
+main = "worker.mjs"
+compatibility_date = "2025-09-01"
+workers_dev = true
