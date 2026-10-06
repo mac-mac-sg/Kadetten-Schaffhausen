@@ -1,0 +1,40 @@
+name: Cloudflare-Schreibweg prüfen
+# Manuell auszulösen. Prüft, ob der Automationsschlüssel auf dem Cloudflare-Datendienst eingerichtet ist (docs/vorschauen.md).
+# Schreibt nichts: gesendet wird eine leere Vorschau-Sendung. Ohne Schlüssel antwortet der Dienst 403, mit gültigem Schlüssel
+# erreicht die Anfrage die Prüfung der Sendung und wird mit 400 abgewiesen. Der Schlüssel wird nie ausgegeben.
+# Secret: KADETTEN_UPDATE_KEY (derselbe Wert, den der Vorschau-Auftrag bei ChatGPT verwendet).
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-write-check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API_URL: https://kadetten-api.mac-mac-sg.workers.dev
+      KADETTEN_UPDATE_KEY: ${{ secrets.KADETTEN_UPDATE_KEY }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Schlüssel vorhanden?
+        shell: bash
+        run: |
+          [ -n "$KADETTEN_UPDATE_KEY" ] || { echo "::error::Das Secret KADETTEN_UPDATE_KEY fehlt. Lege es an (docs/vorschauen.md) und stelle den Datendienst neu bereit."; exit 1; }
+      - name: Schreibweg prüfen
+        shell: bash
+        run: |
+          without=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API_URL/api/previews" -H 'Content-Type: application/json' -d '{"previews":[]}')
+          with=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$API_URL/api/previews" -H 'Content-Type: application/json' -H "X-Kadetten-Update-Key: $KADETTEN_UPDATE_KEY" -d '{"previews":[]}')
+          {
+            echo '### Schreibweg des Cloudflare-Datendienstes'
+            echo
+            echo "- ohne Schlüssel: HTTP $without (erwartet 403)"
+            echo "- mit Schlüssel: HTTP $with (erwartet 400 = angenommen, aber leere Sendung abgewiesen; 403 = Schlüssel passt nicht zum Dienst)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ "$without" = 403 ] || { echo "::error::Ohne Schlüssel erwartet 403, erhalten $without."; exit 1; }
+          [ "$with" = 400 ] || { echo "::error::Mit Schlüssel erwartet 400, erhalten $with. Bei 403: Datendienst nach dem Anlegen des Secrets neu bereitstellen."; exit 1; }
