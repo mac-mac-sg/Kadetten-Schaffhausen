@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -82,4 +82,13 @@ test('describeShape und findKeys zeigen Aufbau und Schlüssel zu Form und Ereign
   assert.ok(keys.includes('matchDetails.headToHead: null'));
   assert.ok(keys.includes('actions: Liste(1)'));
   assert.deepEqual(findKeys(null, /x/), []);
+});
+
+test('valueAt liest Pfade mit Listenindex und liefert undefined, wenn etwas fehlt', () => {
+  const json = {matchDetails: {details: {homeTeam: {players: [{person: {lastName: 'A'}, goals: 3}]}}}, euroStatistics: {x: 1}};
+  assert.equal(valueAt(json, 'matchDetails.details.homeTeam.players[0].goals'), 3);
+  assert.deepEqual(valueAt(json, 'euroStatistics'), {x: 1});
+  assert.equal(valueAt(json, 'matchDetails.details.guestTeam.players[0]'), undefined);
+  assert.equal(valueAt(json, 'matchDetails.details.homeTeam.players[5]'), undefined);
+  assert.equal(valueAt(null, 'a'), undefined);
 });
