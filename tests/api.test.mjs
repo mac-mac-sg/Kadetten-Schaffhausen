@@ -30,3 +30,23 @@ test('Unerwartete Fehler werden protokolliert und bleiben für Besucher ein 503 
   assert.match(String(log.mock.calls[0].arguments[3]),/R2 down/);
  }finally{log.mock.restore()}
 });
+
+test('Autorisierte Aktualisierung speichert alten und neuen Stand, bei Quellenfehlern bleibt alles unverändert',async()=>{
+ const seed=JSON.parse((await import('node:fs')).readFileSync('server/seed.json','utf8'));
+ const owner={'oai-authenticated-user-id':'1','oai-authenticated-user-email':'owner@example.test',Origin:'https://kadetten.example.chatgpt.site'};
+ const url='https://kadetten.example.chatgpt.site/api/refresh';
+ const original=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('offline')};
+ try{
+  const posts=seed.stories.map((s,i)=>({id:1000+i,link:s.url,title:{rendered:'Titel '+i},excerpt:{rendered:'<p>eins zwei drei</p>'},date:'2026-10-01T10:00:00',content:{rendered:'<p>Text '+i+'</p>',protected:false},_embedded:{}}));
+  const ok=fixture();ok.memory.set('kadetten/current.json',JSON.stringify(seed));
+  const r=await worker.fetch(new Request(url,{method:'POST',headers:owner,body:JSON.stringify({posts})}),ok.env);
+  assert.equal(r.status,200);
+  const body=await r.json();assert.equal(body.news,seed.stories.length);assert.equal(body.status.news.ok,true);
+  assert.ok(ok.writes.includes('kadetten/previous.json'));assert.ok(ok.writes.includes('kadetten/current.json'));
+  assert.equal(JSON.parse(ok.memory.get('kadetten/previous.json')).stories.length,seed.stories.length);
+  assert.equal(JSON.parse(ok.memory.get('kadetten/current.json')).stories[0].title,'Titel 0');
+  const failed=fixture();failed.memory.set('kadetten/current.json',JSON.stringify(seed));
+  const bad=await worker.fetch(new Request(url,{method:'POST',headers:owner,body:'{}'}),failed.env);
+  assert.equal(bad.status,502);assert.deepEqual(failed.writes,[]);
+ }finally{globalThis.fetch=original}
+});
