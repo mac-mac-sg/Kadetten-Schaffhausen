@@ -54,6 +54,8 @@ export function findFeedMatch(feed, matchId) {
 
 export const API = 'https://ehfel.eurohandball.com/umbraco/api/';
 export const DATA_ENDPOINTS = ['matchdetailsinfoapi/GetMatchLiveFeed', 'matchdetailapi/GetMatchDetails', 'matchdetailapi/GetMatchDetailStatistic'];
+// Namen der Schnittstellen, deren Aufrufe in den Skripten der Spielseite gesucht werden.
+export const NAMES = ['GetMatchLiveFeed', 'GetMatchDetails', 'GetMatchDetailStatistic', 'GetTeams'];
 export const PARAM_NAMES = ['matchId', 'matchID', 'id'];
 
 // Versuchsaufrufe: jede Schnittstelle mit den bekannten Kennungen unter den üblichen Parameternamen (nur GET).
