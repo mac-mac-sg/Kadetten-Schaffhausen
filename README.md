@@ -17,7 +17,7 @@ Danach http://127.0.0.1:3000 öffnen. Die lokale Vorschau nutzt die mitgeliefert
 
 ```sh
 npm run verify   # alle Prüfungen wie in GitHub Actions
-npm run build    # Sites-Build (nur bei Änderungen an server/)
+npm run build    # bisheriger Sites-Build (nur noch für den alten Dienst)
 ```
 
 Einzelschritte: `npm run check`, `npm test`, `npm run build:pages`, `node scripts/check-pages.mjs`.
@@ -31,7 +31,7 @@ Einzelschritte: `npm run check`, `npm test`, `npm run build:pages`, `node script
 3. Pull Request nach `main` erstellen; GitHub Actions führt Syntaxprüfung, Tests und Build aus.
 4. Änderung überprüfen und übernehmen.
 
-**Aktueller Stand:** GitHub ist die Codebasis. Die Oberfläche wird wie Essens-Check per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Eine separate Testumgebung oder ein neues Cloudflare-Konto werden nicht benötigt. Der bestehende Sites-Datendienst und die Datenautomation versorgen weiterhin News, Volltexte, aktuelle Daten und Live-Werte. Die Pages-App liest ohne Zugangsschlüssel; die GitHub-App liest automatisch aktualisierte Daten ohne manuellen Aktualisieren-Button. Details: [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
+**Aktueller Stand (6. Oktober 2026):** GitHub ist die Codebasis. Die Oberfläche wird per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Der Datendienst läuft als Cloudflare Worker (`kadetten-api`, Speicher Workers KV); Daten, Artikel, Matchprogramme und Match-Vorschauen (KI von Cloudflare Workers AI mit sachlichem Rückfall) aktualisiert ein Workflow in GitHub Actions nach Zeitplan. Der frühere ChatGPT-Sites-Dienst läuft unverändert weiter, wird von der App aber nicht mehr gelesen und bis zu einem ausdrücklichen Auftrag nicht abgeschaltet. Das Android-Widget liest noch von dort. Die Pages-App liest ohne Zugangsschlüssel und ohne manuellen Aktualisieren-Button. Details: [Betrieb](docs/betrieb.md), [Umzug auf Cloudflare](docs/cloudflare-umzug.md), [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
 
 Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Arbeitsregeln für Menschen und KI-Agenten](AGENTS.md), [Einrichtung für Claude](CLAUDE.md), [Betrieb ausserhalb des Repositorys](docs/betrieb.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 
