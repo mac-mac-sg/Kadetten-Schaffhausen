@@ -175,7 +175,8 @@ test('Vereinsnavigation funktioniert nach Kategorie- und Jahreswechsel', () => {
 
 test('European League live game: Spielzeit als mm:ss, Hinweis ohne Ereignisverlauf, Teamstatistik statt Spielerwerte',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[17,9],clock:'18:47',phase:'1st Half',url:'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',details:{ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:{isLive:true,home:{goals:16,shots:19,misses:3,efficiency:84,sevenGoals:0,sevenShots:0,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:2},guest:{goals:8,shots:18,misses:10,efficiency:44,sevenGoals:2,sevenShots:2,twoMinutes:null,warnings:0,disqualifications:0,technicalFaults:4}}}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
- const overview=run('liveMatchPage({id:"live"},"overview")');
+ const overview=run('liveMatchPage({id:"live"},"report")');
+ assert.match(run('liveMatchPage({id:"live"},"overview")'),/Teamstatistik/);
  assert.match(overview,/1st Half · 18:47</);assert.doesNotMatch(overview,/18:47′/);
  assert.match(overview,/European League liefert die EHF während des Spiels keinen Ereignisverlauf/);assert.match(overview,/KI-Matchbericht/);assert.doesNotMatch(overview,/noch kein Ereignisverlauf/);
  assert.match(overview,/Offiziellen Liveticker öffnen/);
@@ -271,7 +272,8 @@ test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und 
   teamStats:{home:{goals:42,shots:54,misses:12,efficiency:78,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:9},guest:{goals:30,shots:49,misses:19,efficiency:61,sevenGoals:4,sevenShots:4,twoMinutes:4,warnings:0,disqualifications:0,technicalFaults:14}},
   players:[{id:'a',number:'20',name:'Luka Maros',home:true,goalkeeper:false,goals:7,shots:8,seven:1,sevenShots:1,twoMinutes:0,yellow:0,red:0,saves:null,savesFaced:null},{id:'g',number:'1',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:12,savesFaced:27},{id:'b',number:'24',name:'Mile Lasic',home:false,goalkeeper:false,goals:6,shots:9,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:null,savesFaced:null}]}};
   globalThis.__g={id:'izvidac',league:'EHL',home:'Kadetten Schaffhausen',away:'HC Izvidac',date:'2026-10-06',time:'18:45',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[42,30],half:[23,11]}`);
- const overview=run('match(__g,"overview")');
+ const overview=run('match(__g,"report")');
+ assert.match(run('match(__g,"overview")'),/<h3>Feldspieler<\/h3>/);
  assert.match(overview,/KI-Matchbericht/);assert.match(overview,/Kadetten ziehen früh davon/);assert.match(overview,/Torfolge \(2 Tore\)/);assert.match(overview,/Mile Lasic/);assert.match(overview,/ohne Gewähr/);
  const stats=run('match(__g,"stats")');
  assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.match(stats,/<h3>Torhüter<\/h3>/);
@@ -284,6 +286,6 @@ test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und 
  assert.match(away,/data-stats-team="away" aria-pressed="true"/);assert.match(away,/data-stats-panel="home" hidden/);
  // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
  run('liveStatsTeam=null;__g.score=[41,30]');
- assert.doesNotMatch(run('match(__g,"overview")'),/KI-Matchbericht/);
+ assert.doesNotMatch(run('match(__g,"report")'),/KI-Matchbericht/);
  run('ehfArchive={}');
 });
