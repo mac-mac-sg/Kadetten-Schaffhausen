@@ -129,3 +129,16 @@ test('Ticker: ein abgebrochener Abruf wird wiederholt, die Fehlermeldung nennt d
   assert.equal(tickerCalls, 3);
   assert.match(JSON.parse(bad.m.get(archiveKey('izvidac'))).tickerError, /Versuch 3: fetch failed: ECONNRESET/);
 });
+
+test('Berichte sind für die Pages-Oberfläche lesbar freigegeben (CORS), nur lesend', async () => {
+  const bucket = memory();
+  bucket.m.set('kadetten/ehf/izvidac.json', JSON.stringify({score: [1, 0]}));
+  bucket.m.set('kadetten/matchreports/staefa.json', JSON.stringify({score: [1, 0]}));
+  for (const path of ['/api/ehf-reports/izvidac', '/api/match-reports/staefa']) {
+    const r = await worker.fetch(new Request('https://app.test' + path), {BUCKET: bucket});
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://mac-mac-sg.github.io');
+  }
+  const unknown = await worker.fetch(new Request('https://app.test/api/match-reports/nicht-da'), {BUCKET: bucket});
+  assert.equal(unknown.status, 404);
+});
