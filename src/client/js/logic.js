@@ -121,3 +121,46 @@ function goalAverage(total, played) {
   return Number.isFinite(total) && played > 0
     ? (total / played).toLocaleString('de-CH', {minimumFractionDigits: 1, maximumFractionDigits: 1}) : '–';
 }
+
+// Datenstand aus dem Datendienst: Texte liegen als HTML-maskierter Text vor (server/update.mjs, esc()).
+// Beim Einlesen wird jeder Text einmal entmaskiert und wieder maskiert. Daten im erwarteten Format bleiben
+// dadurch unverändert (idempotent); rohes Markup aus einer manipulierten Quelle wird unschädlich.
+const SNAPSHOT_ENTITIES = {'&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'"};
+function snapshotText(value) {
+  if (typeof value !== 'string') return value;
+  return value
+    .replace(/&(?:amp|lt|gt|quot|#39);/g, entity => SNAPSHOT_ENTITIES[entity])
+    .replace(/[&<>"']/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[ch]);
+}
+function snapshotFields(item, keys) {
+  const out = {...item};
+  for (const key of keys) if (key in out) out[key] = snapshotText(out[key]);
+  return out;
+}
+const SNAPSHOT_ID = /^[\w-]{1,80}$/;
+const SNAPSHOT_LOGO = /^(?:assets\/[\w.-]+\.(?:png|webp|jpe?g|svg)|https:\/\/[^\s"'<>]+)$/;
+function sanitiseSnapshot(d) {
+  const out = {...d};
+  out.games = d.games
+    .filter(g => g && SNAPSHOT_ID.test(String(g.id)))
+    .map(g => {
+      const game = snapshotFields(g, ['home', 'away', 'league', 'venue', 'date', 'time']);
+      if ('score' in game && !(Array.isArray(game.score) && game.score.length === 2 && game.score.every(Number.isFinite)))
+        delete game.score;
+      return game;
+    });
+  out.stories = d.stories
+    .filter(n => n && SNAPSHOT_ID.test(String(n.id)))
+    .map(n => snapshotFields(n, ['title', 'text', 'date']));
+  out.tables = Object.fromEntries(
+    Object.entries(d.tables).map(([league, rows]) => [
+      league,
+      Array.isArray(rows) ? rows.map(row => (Array.isArray(row) ? row.map(snapshotText) : row)) : rows
+    ])
+  );
+  if (d.clubLogos && typeof d.clubLogos === 'object')
+    out.clubLogos = Object.fromEntries(
+      Object.entries(d.clubLogos).filter(([, logo]) => typeof logo === 'string' && SNAPSHOT_LOGO.test(logo))
+    );
+  return out;
+}

@@ -6,7 +6,8 @@ const SNAPSHOT_KEY = 'kadetten-public-data-v1';
 function validSnapshot(d) {
   return !!d && Array.isArray(d.games) && Array.isArray(d.stories) && Array.isArray(d.tables?.QHL);
 }
-function setCurrentData(d) {
+function setCurrentData(snapshot) {
+  const d = sanitiseSnapshot(snapshot);
   games = d.games;
   if (typeof applyFinishedMatch === 'function') applyFinishedMatch(liveState?.finished);
   tables = d.tables;

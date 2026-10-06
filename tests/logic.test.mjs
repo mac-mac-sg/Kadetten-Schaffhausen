@@ -125,3 +125,33 @@ test('Confirmed API result takes precedence over an older snapshot only on its m
  const after=logic('2026-10-03T22:00:00Z',[old,next]);after.liveState={finished};
  assert.equal(after.homeFixture().game,next);
 });
+
+test('Datenstand: Texte im Serverformat bleiben unverändert, rohes Markup wird maskiert', () => {
+  const {snapshotText, sanitiseSnapshot} = logic('2026-10-05T12:00:00Z');
+  assert.equal(snapshotText('A &amp; B'), 'A &amp; B');
+  assert.equal(snapshotText('A & B'), 'A &amp; B');
+  assert.equal(snapshotText('&amp;amp;'), '&amp;amp;');
+  assert.equal(snapshotText(snapshotText('<b>"x"</b>')), '&lt;b&gt;&quot;x&quot;&lt;/b&gt;');
+  assert.equal(snapshotText(42), 42);
+  const seed = JSON.parse(fs.readFileSync('server/seed.json', 'utf8'));
+  assert.deepEqual(JSON.parse(JSON.stringify(sanitiseSnapshot(seed))), seed);
+});
+
+test('Datenstand: ungültige IDs, Resultate und Wappenpfade werden verworfen', () => {
+  const {sanitiseSnapshot} = logic('2026-10-05T12:00:00Z');
+  const clean = sanitiseSnapshot({
+    games: [
+      {id: 'ok-1', home: 'A', away: 'B', score: [1, 2]},
+      {id: '"><img src=x>', home: 'A', away: 'B'},
+      {id: 'ok-2', home: 'A', away: 'B', score: ['<i>', 2]}
+    ],
+    stories: [{id: 'x y', title: 't'}, {id: '42', title: '<u>t</u>'}],
+    tables: {QHL: [['<b>Team</b>', 1]]},
+    clubLogos: {A: 'assets/club-1.png', B: '" onerror="x', C: 'javascript:alert(1)', D: 'https://example.test/l.png'}
+  });
+  assert.deepEqual(clean.games.map(g => g.id), ['ok-1', 'ok-2']);
+  assert.equal('score' in clean.games[1], false);
+  assert.deepEqual(clean.stories.map(n => n.title), ['&lt;u&gt;t&lt;/u&gt;']);
+  assert.equal(clean.tables.QHL[0][0], '&lt;b&gt;Team&lt;/b&gt;');
+  assert.deepEqual(Object.keys(clean.clubLogos), ['A', 'D']);
+});
