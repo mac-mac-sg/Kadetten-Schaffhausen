@@ -100,65 +100,79 @@ Am Samstag, 10. Oktober 2026, um 18:00 Uhr empfängt Kadetten Schaffhausen den H
 In der Tabelle stehen die Kadetten mit 13 Punkten aus 8 Spielen auf dem 2. Rang, Stäfa ist mit 0 Punkten aus 7 Spielen auf dem 3. Rang. Das Torverhältnis lautet 262:232 gegen 184:255.
 
 Das letzte Direktduell am 14.03.2026 gewannen die Kadetten mit 31:27.`;
-const KI_FCSG_SCHLECHT = `FC St.Gallen 1879 gegen FC Lausanne-Sport
+const KI_FCSG = `FC St.Gallen 1879 gegen FC Lausanne-Sport
 
 Die Mannschaft von Trainer Peter Zeidler empfängt am 11. Oktober 2026 um 16:30 Uhr den FC Lausanne-Sport im Berit Sitterstadion.
 
 Beide Teams kämpfen um den Klassenerhalt, St.Gallen liegt mit 13 Punkten aus 9 Spielen auf dem 5. Rang.`;
-function rewriter(log, {fail = false} = {}) {
+function rewriter(log, {fail = false, texts = {}} = {}) {
   return async baseline => {
     log.push(baseline.club);
     if (fail) return {ok: false, error: 'HTTP 500'};
-    return {ok: true, text: baseline.club === 'kadetten' ? KI_KADETTEN : KI_FCSG_SCHLECHT};
+    return {ok: true, text: texts[baseline.club] ?? (baseline.club === 'kadetten' ? KI_KADETTEN : KI_FCSG)};
   };
 }
 const fcsgTable = [...Array(4)].map((_, i) => ({name: 'FC T' + i, played: 9, gf: 20, ga: 10, points: 30 - i})).concat([{name: 'FC St. Gallen', played: 9, gf: 16, ga: 19, points: 13}]);
 const fcsg2 = {games: [fGame], table: [...fcsgTable, {name: 'FC Lausanne-Sport', played: 9, gf: 7, ga: 15, points: 6}]};
 
-test('KI-Vorschau: besteht die Prüfung, wird sie gespeichert; sonst bleibt der sachliche Text; derselbe KI-Text wird wiederverwendet', async () => {
+test('KI-Vorschau: der Text der KI wird unverändert übernommen (keine inhaltliche Prüfung), derselbe Text wird wiederverwendet', async () => {
   const bucket = memBucket();
   const calls = [];
   const headToHead = async () => ({games: [duel]});
   const first = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: NOW});
-  assert.deepEqual([first.written, first.ki, first.fallback], [2, 1, 1]);
-  assert.match(first.rejected[0].problems.join(), /Trainer Peter Zeidler|trainer/);
+  assert.deepEqual([first.written, first.ki, first.fallback], [2, 2, 0]);
   const k = JSON.parse(bucket.map.get('previews/kadetten/staefa.json')), f = JSON.parse(bucket.map.get('previews/fcsg/458.json'));
-  assert.deepEqual([k.generator, f.generator], ['ki', 'daten']);
+  assert.deepEqual([k.generator, f.generator], ['ki', 'ki']);
   assert.equal(k.headline, 'Kadetten wollen gegen Stäfa nachlegen');
+  assert.match(f.paragraphs.join(' '), /Trainer Peter Zeidler/, 'Text wie von der KI geliefert');
   assert.match(k.baseHash, /^[a-f0-9]{64}$/);
-  assert.doesNotMatch(f.paragraphs.join(' '), /Zeidler/, 'Rückfall enthält nur sachliche Angaben');
 
-  // 3 Stunden später: Kadetten-Text bleibt ohne neuen Aufruf, FCSG wird erneut versucht und bleibt sachlich
+  // Später: gleiche Fakten, kein neuer Aufruf
   calls.length = 0;
   const again = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: new Date(NOW.getTime() + 3 * 3600000)});
-  assert.deepEqual(calls, ['fcsg']);
-  assert.deepEqual([again.written, again.unchanged, again.ki], [0, 2, 0]);
+  assert.deepEqual([calls.length, again.written, again.unchanged], [0, 0, 2]);
 
-  // 13 Stunden später: gleicher KI-Text, nur der Zeitstempel wird erneuert (kein Aufruf)
-  calls.length = 0;
+  // 13 Stunden später: nur der Zeitstempel wird erneuert
   const later = new Date(NOW.getTime() + 13 * 3600000);
   await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: later});
-  assert.deepEqual(calls, ['fcsg']);
+  assert.equal(calls.length, 0);
   const k2 = JSON.parse(bucket.map.get('previews/kadetten/staefa.json'));
   assert.deepEqual([k2.paragraphs, k2.generatedAt], [k.paragraphs, later.toISOString()]);
 
   // Ändern sich die Fakten (Tabelle), wird neu formuliert
-  calls.length = 0;
   const changed = {...snapshot, tables: {QHL: [table[1], table[0], table[2]]}};
   await syncPreviews(bucket, {snapshot: changed, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: later});
   assert.ok(calls.includes('kadetten'));
 });
 
-test('KI-Vorschau: Ausfall der KI führt zum sachlichen Text ohne weitere Versuche im Lauf; ohne KI und mit älterer Einsendung ändert sich nichts', async () => {
+test('KI-Vorschau: nur technische Regeln des Datendienstes gelten; sonst, bei Ausfall oder ohne KI bleibt der sachliche Text', async () => {
+  const headToHead = async () => ({games: [duel]});
+  const run = async texts => {
+    const bucket = memBucket();
+    const r = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter([], {texts}), now: NOW});
+    return {r, k: JSON.parse(bucket.map.get('previews/kadetten/staefa.json'))};
+  };
+  const four = KI_KADETTEN + '\n\nEin vierter Absatz mit genug Zeichen für die Regel.';
+  const merged = await run({kadetten: four});
+  assert.equal(merged.k.generator, 'ki');
+  assert.equal(merged.k.paragraphs.length, 3, 'überzählige Absätze werden dem dritten angehängt');
+  assert.match(merged.k.paragraphs[2], /vierter Absatz/);
+
+  const unparseable = await run({kadetten: 'nur ein Absatz ohne Titel'});
+  assert.equal(unparseable.k.generator, 'daten');
+  assert.match(unparseable.r.rejected[0].problems[0], /nicht in Titel und Absätze/);
+  const tags = await run({kadetten: KI_KADETTEN.replace('Es ist', '<b>Es</b> ist')});
+  assert.equal(tags.k.generator, 'daten', 'Sonderzeichen < und > bleiben ausgeschlossen');
+
   const bucket = memBucket();
   const calls = [];
-  const r = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead: async () => ({games: [duel]}), rewrite: rewriter(calls, {fail: true}), now: NOW});
+  const down = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls, {fail: true}), now: NOW});
   assert.deepEqual(calls, ['kadetten'], 'nach dem ersten Ausfall kein weiterer Aufruf');
-  assert.deepEqual([r.written, r.ki, r.fallback], [2, 0, 2]);
+  assert.deepEqual([down.written, down.ki, down.fallback], [2, 0, 2]);
   assert.equal(JSON.parse(bucket.map.get('previews/fcsg/458.json')).generator, 'daten');
 
   const off = memBucket();
-  const o = await syncPreviews(off, {snapshot, fcsgData: fcsg2}, {headToHead: async () => ({games: [duel]}), now: NOW});
+  const o = await syncPreviews(off, {snapshot, fcsgData: fcsg2}, {headToHead, now: NOW});
   assert.deepEqual([o.ki, o.fallback, o.written], [0, 0, 2]);
 
   const legacy = {club: 'kadetten', id: 'staefa', fixtureKey: fixtureKey(kGame), headline: 'Von ChatGPT', paragraphs: ['a'.repeat(40), 'b'.repeat(40)], sources: [{label: 'Q', url: 'https://kadettensh.ch/'}], generatedAt: new Date(NOW.getTime() - 3600000).toISOString()};
