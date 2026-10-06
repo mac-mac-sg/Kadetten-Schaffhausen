@@ -77,6 +77,17 @@ Grenzen dieses Ergebnisses:
 - Die Abfrage lief aus einem Rechenzentrum in den USA (die Anfrage kam von einem GitHub-Runner). Ob Quellen Abrufe aus europäischen Rechenzentren anders behandeln, ist nicht geprüft.
 - Die gemessenen Zeiten im Ergebnis (alle 0 ms) sind unbrauchbar: Die Zeitfunktion in Workers schreitet nur bei bestimmten Ereignissen voran. Für CPU-Zeiten gilt das Dashboard von Cloudflare.
 
+## Ergebnis Phase 1 (06.10.2026, bestanden)
+Import (81 KV-Einträge, 4,5 MB) und Vergleich ohne Abweichung: Datenstand 1/1, Artikel 67/67, Spielberichte 7/7, Matchprogramme 28/28 (davon ein PDF Byte für Byte), KI-Vorschauen 28/28 gleich. Der Cloudflare-Speicher ist eine Momentaufnahme und veraltet, solange Phase 2 nicht läuft. Umschalten ist erst danach sinnvoll.
+
+## Phase 2: Aktualisierung über GitHub Actions
+Geklärt mit dem Eigentümer am 06.10.2026:
+- **KI-Vorschauen** schreibt ChatGPT im Auftrag des Eigentümers (Schreibzugriff auf `/api/previews`). Das bleibt vorerst so; mit dem Umschalten muss das Ziel dieser Schreibzugriffe auf den neuen Dienst geändert werden (dafür braucht es dann den Automationsschlüssel `KADETTEN_UPDATE_KEY`).
+- **Matchprogramme** liegen auf der Startseite der Kadetten (Matchvorschau) als PDF. Der Abruf kann ein Actions-Lauf übernehmen (Phase 2b, noch nicht gebaut).
+- **Bisherige Datenautomation** (alle zwei Stunden): Ihr Ort ist unbekannt, sie wurde mit ChatGPT eingerichtet. Der Actions-Lauf ersetzt sie vollständig; abgeschaltet wird sie nur auf ausdrücklichen Auftrag.
+
+**Phase 2a (Datenstand, Artikel, Spielberichte, FCSG)** ist gebaut: Workflow «Cloudflare-Datenaktualisierung» (manuell, Standard Trockenlauf), Code `scripts/cloudflare-update.mjs`. Der Lauf verwendet denselben Code wie der Worker (`server/refresh-run.mjs`), liest und schreibt den KV-Speicher über die REST-Schnittstelle (`scripts/lib/kv-rest-store.mjs`) und unterliegt damit nicht den Grenzen des Free Plans (10 ms CPU, 50 externe Abrufe). Es braucht keine Schreibroute am Worker und keinen Automationsschlüssel. Ein Zeitplan ist bewusst noch nicht eingerichtet.
+
 ## Phase 1: Import und Vergleich
 Workflow «Cloudflare-Import und Vergleich» (manuell, Standard ist der Trockenlauf), Code in `scripts/cloudflare-import.mjs` und `scripts/lib/cloudflare-migration.mjs`. Ablauf: erst `pruefen`, dann `importieren`, dann `vergleichen`.
 - **Übernommen** aus den öffentlichen Lese-Routen des bisherigen Dienstes: Datenstand, versionierte Volltext-Artikel, gespeicherte Spielberichte, aktuelle KI-Vorschauen, Matchprogramme samt PDF.
