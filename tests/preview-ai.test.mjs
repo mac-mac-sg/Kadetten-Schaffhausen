@@ -183,7 +183,7 @@ test('Prompt: Format wird betont, allgemeine Wertungen sind erlaubt, Prognose un
 
 test('Prompt: Wärme erlaubt, Serien- und Formurteile und Umlaut-Umschreibungen verboten; Standardmodell GPT-OSS mit grossem Token-Budget', async () => {
   const [system] = aiMessages(KADETTEN_BASE);
-  for (const phrase of [/warm/, /einlädt/, /hintereinander/, /Aufschwung/, /nie «ae»/, /Artikel stimmt/]) assert.match(system.content, phrase);
+  for (const phrase of [/warm/, /einlädt/, /hintereinander/, /Aufschwung/, /nie «ae»/, /im Wettbewerb X/]) assert.match(system.content, phrase);
   const {makeRewriter, DEFAULT_MODEL} = await import('../scripts/lib/preview-rewrite.mjs');
   assert.equal(DEFAULT_MODEL, '@cf/openai/gpt-oss-120b');
   let sent;
@@ -191,6 +191,15 @@ test('Prompt: Wärme erlaubt, Serien- und Formurteile und Umlaut-Umschreibungen 
   await rewrite(KADETTEN_BASE);
   assert.match(sent.url, /gpt-oss-120b/);
   assert.equal(sent.body.max_tokens, 3000);
+});
+
+test('Prompt: Wettbewerb ohne Artikel, wechselnder Schluss, keine Prognosen; Parser normalisiert Sonderzeichen', () => {
+  const [system] = aiMessages(KADETTEN_BASE);
+  for (const phrase of [/«im Wettbewerb X»/, /nie mit einem Artikel/, /jedes Mal neu/, /«Wir freuen uns»/, /«verspricht Spannung»/, /«unter Druck setzen»/, /auf der Tribüne/]) assert.match(system.content, phrase);
+  const p = parseAiText('Titel\u2011Test\n\nFC Lausanne\u2011Sport gewann 45 : 34 gegen\u00A0Basel.\n\nZweiter Absatz mit 3:1.');
+  assert.equal(p.headline, 'Titel-Test');
+  assert.equal(p.paragraphs[0], 'FC Lausanne-Sport gewann 45:34 gegen Basel.');
+  assert.equal(p.paragraphs[1], 'Zweiter Absatz mit 3:1.');
 });
 
 test('Faktenliste für die KI: eindeutige Richtung der Tore, Resultate aus Sicht des Teams mit Ausgang, Direktduelle mit Sieger; nicht Teil der gespeicherten Vorschau', () => {
