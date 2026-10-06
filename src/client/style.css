@@ -64,7 +64,8 @@ h3,
 p {
   margin-top: 0;
 }
-h1 {
+h1,
+.story-copy h2 {
   font:
     clamp(40px, 6vw, 84px)/1.1 var(--font-display),
     var(--font-text);
@@ -445,6 +446,7 @@ select {
 .toggle button {
   background: none;
   border: 0;
+  min-height: 44px;
   padding: 9px 18px;
   border-radius: 25px;
   font-size: 14px;
@@ -1224,7 +1226,8 @@ html {
   position: absolute;
   bottom: 0;
 }
-.story-copy h1 {
+.story-copy h1,
+.story-copy h2 {
   font-size: clamp(38px, 6vw, 78px);
   text-wrap: balance;
   max-width: 650px;
@@ -1462,7 +1465,8 @@ html {
     right: 0;
     max-width: none;
   }
-  .story-copy h1 {
+  .story-copy h1,
+  .story-copy h2 {
     font-family: var(--font-text);
     font-size: 35px;
     font-weight: 800;
@@ -1744,7 +1748,8 @@ html.snap-profile {
   flex-direction: column;
   justify-content: flex-end;
 }
-.snap-news .story-copy h1 {
+.snap-news .story-copy h1,
+.snap-news .story-copy h2 {
   font-size: clamp(30px, 5vw, 64px);
   overflow-wrap: break-word;
 }
