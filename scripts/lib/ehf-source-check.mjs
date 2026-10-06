@@ -100,3 +100,25 @@ export function findKeys(value, pattern, limit = 30, maxDepth = 8) {
   walk(value, '', 1);
   return found;
 }
+
+// Teilbaum an einem Pfad wie «matchDetails.details.homeTeam.players[0]» (undefined, wenn er fehlt).
+export function valueAt(value, path) {
+  let current = value;
+  for (const part of String(path).split('.')) {
+    const m = part.match(/^([^[\]]+)(?:\[(\d+)\])?$/);
+    if (!m || current === null || typeof current !== 'object') return undefined;
+    current = current[m[1]];
+    if (m[2] !== undefined) current = Array.isArray(current) ? current[Number(m[2])] : undefined;
+  }
+  return current;
+}
+
+// Teilbäume von GetMatchDetails, die Spieler- und Teamwerte enthalten könnten (für die Erkundung der Statistik-Daten).
+export const DETAIL_PATHS = [
+  'matchDetails.statistics',
+  'euroStatistics',
+  'topStatistics',
+  'matchDetails.details.homeTeam.players[0]',
+  'matchDetails.details.guestTeam.players[0]',
+  'matchDetails.details.homeTeam.officials[0]'
+];

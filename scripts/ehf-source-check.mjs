@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -88,6 +88,18 @@ async function probeApis({id, pages, fetchFn}) {
         write('\nAufbau der Antwort (zwei Ebenen):\n\n' + code(describeShape(json, 2).join('\n')));
         const keys = findKeys(json, /last|form|head|h2h|duel|result|previous|recent|standing|table|ranking|action|event|ticker/i);
         write(`\nSchlüssel zu Form, letzten Spielen, Direktduellen, Tabelle oder Ereignissen (${keys.length}):\n\n${keys.map(k => '- ' + k).join('\n') || '- keine'}`);
+        if (/GetMatchDetails/.test(endpoint)) {
+          for (const path of DETAIL_PATHS) {
+            const part = valueAt(json, path);
+            write(`\nTeilbaum ${path}: ${part === undefined ? 'nicht vorhanden' : Array.isArray(part) ? 'Liste(' + part.length + ')' : typeof part}`);
+            if (part !== undefined && part !== null && typeof part === 'object') {
+              write(code(describeShape(part, 4, 60).join('\n')));
+              write('Inhalt (gekürzt):\n\n' + code(preview(JSON.stringify(part), 1800)));
+            }
+          }
+          const players = valueAt(json, 'matchDetails.details.homeTeam.players');
+          write(`\nAnzahl Spieler im Heimteam: ${Array.isArray(players) ? players.length : 'unbekannt'}`);
+        }
       }
     }
   }
