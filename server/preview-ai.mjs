@@ -3,7 +3,7 @@
 // der Aufruf des Modells liegt in scripts/lib/workers-ai.mjs.
 
 export function aiMessages(baseline) {
-  const facts = baseline.paragraphs.join('\n\n');
+  const facts = baseline.facts?.length ? baseline.facts.map(x => '- ' + x).join('\n') : baseline.paragraphs.join('\n\n');
   return [
     {
       role: 'system',
@@ -15,6 +15,8 @@ export function aiMessages(baseline) {
         'Zähle und ordne nichts ein: keine Aussagen wie «erstes Heimspiel», «erstes Duell», «Saisonstart», «zum ersten Mal» oder «wieder», und zähle keine Serien («dritter Sieg in Folge»). Erwähne ein Direktduell nur, wenn die Fakten eines mit Datum und Ergebnis nennen; nenne sonst weder ein Duell noch dessen Fehlen.',
         'Über frühere Spiele sprichst du nur, soweit die Fakten sie als letzte Resultate oder Direktduelle nennen; gib sie mit Datum, Paarung und Ergebnis genau so wieder und sage höchstens, wer gewonnen oder verloren hat. Mache keine Aussagen über Spielweise, Stärken, Schwächen, Tabellenregionen («Mittelfeld», «Abstiegszone»), Verletzungen, Rekorde, Meisterschaft, Abstieg, Klassenerhalt oder Saisonziele und keine Prognose zum Ausgang oder zur Ausgeglichenheit des Spiels.',
         'Du darfst das Spiel mit ein bis zwei allgemeinen, wertenden Wörtern einrahmen (zum Beispiel «mit Spannung erwartet», «interessante Ausgangslage»), solange sie keine neue Tatsache, keine Zahl und keine Prognose enthalten. Wertungen müssen sich unmittelbar aus den genannten Fakten ergeben (zum Beispiel Rang oder Resultat).',
+        'Die Fakten stehen als Liste und sind eindeutig: «erzielt» sind die eigenen Tore, «kassiert» die Gegentore. Eine negative Tordifferenz heisst weniger Tore erzielt als kassiert, eine positive mehr. Wer gewonnen oder verloren hat, steht bei den Resultaten (Sieg, Niederlage, Unentschieden); leite es nicht selbst her.',
+        'Nenne Daten nur als Datum («am 3. Oktober»), nie relativ («vor einer Woche», «letzten Sonntag», «gestern»). Beschränke dich auf die genannten Spiele: nichts über weitere Spiele, auch nicht der Gegner, und nichts über den Saisonverlauf («Saisonstart», «ihre Saison»). Verwende die Teamnamen vollständig, wie sie in den Fakten stehen.',
         'Jede Zahl im Text muss in den Fakten vorkommen und genau so wiedergegeben werden. Bezeichne ein Team nur dann als Tabellenführer, wenn die Fakten es auf dem 1. Rang nennen. Wiederhole keinen Fakt.',
         'Stil: lebendig und gut lesbar wie ein kurzer Zeitungsvorbericht. Beginne mit einem Satz, der Spiel, Ort und Zeit anschaulich nennt. Bette die Zahlen in Sätze ein (zum Beispiel «mit 13 Punkten aus 9 Spielen») statt sie aufzuzählen, und wechsle Satzanfänge und Verben ab. Ohne Übertreibungen, ohne Floskeln, ohne neue Fakten.',
         'Format, immer einhalten: Erste Zeile ein kurzer Titel (höchstens 80 Zeichen, kein ganzer Satz mit Punkt), dann eine Leerzeile, dann 2 bis 3 Absätze mit je 2 bis 4 Sätzen, Absätze durch eine Leerzeile getrennt. Kein Markdown, keine Aufzählungen, keine Anführung des Titels.'
@@ -116,5 +118,6 @@ export function riskyClaims(all, baseText) {
 
 // Fertige Vorschau aus der KI-Antwort; Quellen und Spielschlüssel stammen aus dem geprüften Grundtext.
 export function toAiPreview(baseline, parsed, now = new Date()) {
-  return {...baseline, headline: parsed.headline, paragraphs: parsed.paragraphs, generatedAt: now.toISOString(), generator: 'ki'};
+  const {facts, ...rest} = baseline;
+  return {...rest, headline: parsed.headline, paragraphs: parsed.paragraphs, generatedAt: now.toISOString(), generator: 'ki'};
 }

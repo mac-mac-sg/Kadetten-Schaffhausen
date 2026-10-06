@@ -25,6 +25,12 @@ const isNumber = v => Number.isFinite(v);
 
 const fullDate = d => d.split('-').reverse().join('.');
 const shortDate = d => d.split('-').reverse().slice(0, 2).join('.') + '.';
+const signed = n => (n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0');
+// Resultat aus Sicht eines Teams: «03.10.2026 bei SC Brühl (auswärts): 3:3 Unentschieden».
+function viewOf(team, r) {
+  const home = r.home === team, [h, a] = r.score, own = home ? h : a, opp = home ? a : h;
+  return `${fullDate(r.date)} ${home ? 'gegen' : 'bei'} ${home ? r.away : r.home} (${home ? 'zuhause' : 'auswärts'}): ${own}:${opp} ${own > opp ? 'Sieg' : own < opp ? 'Niederlage' : 'Unentschieden'}`;
+}
 const validGame = r => r && Array.isArray(r.score) && r.score.length === 2 && r.score.every(Number.isInteger) && /^\d{4}-\d{2}-\d{2}$/.test(r.date || '') && r.home && r.away;
 
 // input: {club, game, table (Zeilen der passenden Meisterschaftstabelle oder null), duels (letzte Direktduelle, neueste zuerst; oder
@@ -47,6 +53,20 @@ export function buildPreview({club, game: g, table = null, duel = null, duels = 
     if (games.length) third.push(`Zuletzt spielte ${r.team}: ${games.map(x => `${shortDate(x.date)} ${x.home} – ${x.away} ${x.score[0]}:${x.score[1]}`).join('; ')}.`);
   }
   if (third.length) paragraphs.push(third.join(' '));
+  // Eindeutige Faktenliste für die KI (die Absätze oben sind der sachliche Text und der Rückfall).
+  const facts = [`Spiel: ${g.home} (Heimteam) empfängt ${g.away} (Gastteam), Wettbewerb ${g.league}.`, `Termin: ${when(g)}${g.venue ? '; Ort: ' + g.venue : ''}.`];
+  if (ra && rb) {
+    const [a, b] = [list[ra - 1], list[rb - 1]];
+    if ([a, b].every(r => [r.points, r.played, r.gf, r.ga].every(isNumber)))
+      for (const [team, rank, r] of [[g.home, ra, a], [g.away, rb, b]])
+        facts.push(`Tabelle: ${team} steht auf Rang ${rank} mit ${r.points} Punkten aus ${r.played} Spielen, ${r.gf} Tore erzielt, ${r.ga} Tore kassiert (Tordifferenz ${signed(r.gf - r.ga)}).`);
+  }
+  for (const d of duelList)
+    facts.push(`Direktduell am ${fullDate(d.date)}: ${d.home} – ${d.away} ${d.score[0]}:${d.score[1]} (${d.score[0] === d.score[1] ? 'Unentschieden' : 'Sieg ' + (d.score[0] > d.score[1] ? d.home : d.away)}).`);
+  for (const r of recent) {
+    const games = (r.games || []).filter(validGame).slice(0, 3);
+    if (games.length) facts.push(`Letzte Spiele von ${r.team} (neueste zuerst): ${games.map(x => viewOf(r.team, x)).join('; ')}.`);
+  }
   if (paragraphs.length < 2) return null;
   const sources = [];
   const add = (label, url) => { if (typeof url === 'string' && /^https:\/\//.test(url) && !sources.some(s => s.url === url)) sources.push({label, url}); };
@@ -60,7 +80,7 @@ export function buildPreview({club, game: g, table = null, duel = null, duels = 
   }
   return {
     club, id: String(g.id), fixtureKey: fixtureKey(g), headline: `${g.home} gegen ${g.away}`, paragraphs, sources,
-    generatedAt: now.toISOString(), generator: 'daten'
+    generatedAt: now.toISOString(), generator: 'daten', facts
   };
 }
 

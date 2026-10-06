@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       modelle:
-        description: Modelle, kommagetrennt (leer = Mistral Small 3.1)
+        description: Modelle, kommagetrennt (leer = Mistral Small 3.1, Llama 3.3 70B, GPT-OSS 120B)
         type: string
         default: ''
 permissions:

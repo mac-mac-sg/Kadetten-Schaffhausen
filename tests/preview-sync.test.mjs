@@ -124,6 +124,7 @@ test('KI-Vorschau: der Text der KI wird unverändert übernommen (keine inhaltli
   assert.deepEqual([first.written, first.ki, first.fallback], [2, 2, 0]);
   const k = JSON.parse(bucket.map.get('previews/kadetten/staefa.json')), f = JSON.parse(bucket.map.get('previews/fcsg/458.json'));
   assert.deepEqual([k.generator, f.generator], ['ki', 'ki']);
+  assert.equal(k.facts, undefined, 'die Faktenliste wird nicht gespeichert');
   assert.equal(k.headline, 'Kadetten wollen gegen Stäfa nachlegen');
   assert.match(f.paragraphs.join(' '), /Trainer Peter Zeidler/, 'Text wie von der KI geliefert');
   assert.match(k.baseHash, /^[a-f0-9]{64}$/);
@@ -171,6 +172,7 @@ test('KI-Vorschau: nur technische Regeln des Datendienstes gelten; sonst, bei Au
   assert.deepEqual(calls, ['kadetten'], 'nach dem ersten Ausfall kein weiterer Aufruf');
   assert.deepEqual([down.written, down.ki, down.fallback], [2, 0, 2]);
   assert.equal(JSON.parse(bucket.map.get('previews/fcsg/458.json')).generator, 'daten');
+  assert.equal(JSON.parse(bucket.map.get('previews/fcsg/458.json')).facts, undefined);
 
   const off = memBucket();
   const o = await syncPreviews(off, {snapshot, fcsgData: fcsg2}, {headToHead, now: NOW});

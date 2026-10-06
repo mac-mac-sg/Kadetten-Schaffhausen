@@ -23,7 +23,7 @@ test('Prompt: nur Fakten, Schweizer Schreibweise, Format; Antwort wird in Titel 
   const [system, user] = aiMessages(baseline);
   assert.match(system.content, /kein «ß»/);
   assert.match(system.content, /Die gelieferten Fakten sind vollständig/);
-  assert.ok(user.content.includes(baseline.paragraphs[1]), 'Fakten stehen im Auftrag');
+  assert.ok(baseline.facts.length >= 3 && baseline.facts.every(f => user.content.includes('- ' + f)), 'Faktenliste steht im Auftrag');
   const p = parseAiText('<think>Überlegung mit 99 Zahlen</think>\n\n**Titel:** Test\n\nAbsatz eins.\n\nAbsatz zwei.');
   assert.equal(p.paragraphs.length, 2);
   assert.doesNotMatch(JSON.stringify(p), /99|\*\*/);
@@ -50,6 +50,7 @@ test('Prüfung: gute Antwort besteht und ergibt eine gültige KI-Vorschau; Erfun
 test('Workers AI: beide Antwortformen, Fehler mit Hinweis auf die Berechtigung, Token nie in der Meldung', async () => {
   assert.equal(extractText({result: {response: 'A'}}), 'A');
   assert.equal(extractText({result: {choices: [{message: {content: 'B'}}]}}), 'B');
+  assert.equal(extractText({result: {output: [{type: 'reasoning', content: [{type: 'reasoning_text', text: 'Denken'}]}, {type: 'message', content: [{type: 'output_text', text: 'Antwort'}]}]}}), 'Antwort', 'Antwortform der Denkmodelle');
   assert.equal(extractText({result: {}}), '');
   const calls = [];
   const fetchFn = body => async (url, init) => { calls.push({url, init}); return new Response(JSON.stringify(body.json), {status: body.status}); };
@@ -117,6 +118,7 @@ const KADETTEN_KI = `Kadetten Schaffhausen gegen HC Izvidac
 In der BBC Arena in Schaffhausen steht am Dienstag, 6. Oktober 2026, ein spannendes Duell in der EHL bevor. Um 18:45 Uhr treffen die Kadetten Schaffhausen auf den HC Izvidac. Der Tabellenführer aus Schaffhausen hat nach einem Spiel zwei Punkte auf dem Konto und ein Torverhältnis von 39:32. Auch der HC Izvidac hat zwei Punkte aus einem Spiel, allerdings mit einem Torverhältnis von 34:33.
 
 Die Fans dürfen sich auf ein packendes Spiel freuen, bei dem jeder Treffer zählt.`;
+const KADETTEN_GAME_FOR_FACTS = {id: 'staefa', date: '2026-10-10', time: '18:00', home: 'Kadetten Schaffhausen', away: 'Handball Stäfa', league: 'QHL', venue: 'Schaffhausen BBC Arena A, Schaffhausen'};
 const KADETTEN_BASE = buildPreview({club: 'kadetten', game: {id: 'izvidac', date: '2026-10-06', time: '18:45', home: 'Kadetten Schaffhausen', away: 'HC Izvidac', league: 'EHL', venue: 'BBC Arena, Schaffhausen'}, table: [['Kadetten Schaffhausen', 1, 39, 32, 2], ['HC Izvidac', 1, 34, 33, 2]], now: NOW});
 
 test('Strenge Prüfung: die erfundenen Angaben aus dem echten FCSG-Text werden abgewiesen, der korrekte Kadetten-Text besteht', () => {
@@ -177,4 +179,34 @@ test('Prompt: Format wird betont, allgemeine Wertungen sind erlaubt, Prognose un
   assert.match(system.content, /allgemeinen, wertenden Wörtern einrahmen/);
   assert.match(system.content, /keine Prognose zum Ausgang oder zur Ausgeglichenheit/);
   assert.doesNotMatch(system.content, /Stimmung, Erwartungen oder Spannung/);
+});
+
+test('Faktenliste für die KI: eindeutige Richtung der Tore, Resultate aus Sicht des Teams mit Ausgang, Direktduelle mit Sieger; nicht Teil der gespeicherten Vorschau', () => {
+  const recent = [{team: 'FC St.Gallen 1879', games: [
+    {date: '2026-10-03', home: 'SC Brühl', away: 'FC St.Gallen 1879', score: [3, 3]},
+    {date: '2026-09-20', home: 'FC Basel 1893', away: 'FC St.Gallen 1879', score: [1, 3]},
+    {date: '2026-09-10', home: 'FC St.Gallen 1879', away: 'FC Sion', score: [0, 2]}]}];
+  const b = buildPreview({club: 'fcsg', game: FCSG_GAME, table: FCSG_TABLE, recent, now: NOW});
+  assert.deepEqual(b.facts, [
+    'Spiel: FC St.Gallen 1879 (Heimteam) empfängt FC Lausanne-Sport (Gastteam), Wettbewerb Brack Super League.',
+    'Termin: Sonntag, 11. Oktober 2026, 16:30 Uhr; Ort: Berit Sitterstadion.',
+    'Tabelle: FC St.Gallen 1879 steht auf Rang 5 mit 13 Punkten aus 9 Spielen, 16 Tore erzielt, 19 Tore kassiert (Tordifferenz −3).',
+    'Tabelle: FC Lausanne-Sport steht auf Rang 12 mit 6 Punkten aus 9 Spielen, 7 Tore erzielt, 15 Tore kassiert (Tordifferenz −8).',
+    'Letzte Spiele von FC St.Gallen 1879 (neueste zuerst): 03.10.2026 bei SC Brühl (auswärts): 3:3 Unentschieden; 20.09.2026 bei FC Basel 1893 (auswärts): 3:1 Sieg; 10.09.2026 gegen FC Sion (zuhause): 0:2 Niederlage.'
+  ]);
+  const d = buildPreview({club: 'kadetten', game: KADETTEN_GAME_FOR_FACTS, table: [['Kadetten Schaffhausen', 8, 262, 232, 13], ['Handball Stäfa', 7, 184, 255, 0]], duels: [{date: '2026-03-14', home: 'Handball Stäfa', away: 'Kadetten Schaffhausen', score: [27, 31]}, {date: '2025-11-02', home: 'Kadetten Schaffhausen', away: 'Handball Stäfa', score: [30, 30]}], now: NOW});
+  assert.ok(d.facts.includes('Direktduell am 14.03.2026: Handball Stäfa – Kadetten Schaffhausen 27:31 (Sieg Kadetten Schaffhausen).'));
+  assert.ok(d.facts.includes('Direktduell am 02.11.2025: Kadetten Schaffhausen – Handball Stäfa 30:30 (Unentschieden).'));
+  assert.ok(d.facts.includes('Tabelle: Kadetten Schaffhausen steht auf Rang 1 mit 13 Punkten aus 8 Spielen, 262 Tore erzielt, 232 Tore kassiert (Tordifferenz +30).'));
+  assert.equal(toAiPreview(b, parseAiText(FCSG_KI), NOW).facts, undefined, 'Faktenliste wird nicht gespeichert');
+});
+
+test('Prompt: Richtung der Tore, Ausgang aus den Fakten, keine relativen Zeitangaben, keine weiteren Spiele, vollständige Teamnamen', () => {
+  const [system] = aiMessages(KADETTEN_BASE);
+  for (const phrase of [/negative Tordifferenz heisst weniger Tore erzielt als kassiert/, /leite es nicht selbst her/, /nie relativ \(«vor einer Woche»/, /nichts über weitere Spiele, auch nicht der Gegner/, /«Saisonstart», «ihre Saison»/, /Teamnamen vollständig/]) assert.match(system.content, phrase);
+});
+
+test('Stilvergleich: Standardmodelle und Faktenliste im Protokoll', async () => {
+  const {DEFAULT_MODELS} = await import('../scripts/cloudflare-ai-compare.mjs');
+  assert.deepEqual(DEFAULT_MODELS, ['@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/openai/gpt-oss-120b']);
 });

@@ -8,7 +8,9 @@ export function extractText(body) {
   if (typeof r?.response === 'string') return r.response;
   const msg = r?.choices?.[0]?.message;
   if (typeof msg?.content === 'string') return msg.content;
-  return '';
+  // Antwortform mancher Denkmodelle: Liste von Einträgen mit Textteilen.
+  const parts = (Array.isArray(r?.output) ? r.output : []).filter(o => o?.type === 'message').flatMap(o => o.content || []).filter(c => typeof c?.text === 'string');
+  return parts.map(c => c.text).join('\n');
 }
 
 export async function runModel({accountId, token, model, messages, maxTokens = 1500, temperature = 0.4, fetchFn = fetch}) {
