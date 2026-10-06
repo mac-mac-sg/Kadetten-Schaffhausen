@@ -58,12 +58,45 @@ export const DATA_ENDPOINTS = ['matchdetailsinfoapi/GetMatchLiveFeed', 'matchdet
 export const NAMES = ['GetMatchLiveFeed', 'GetMatchDetails', 'GetMatchDetailStatistic', 'GetTeams'];
 export const PARAM_NAMES = ['matchId', 'matchID', 'id'];
 
-// Versuchsaufrufe: jede Schnittstelle mit den bekannten Kennungen unter den üblichen Parameternamen (nur GET).
-export function candidateCalls(match, matchId) {
-  const values = [...new Set([match?.id, matchId].filter(Boolean))];
+// Versuchsaufrufe: jede Spiel-Schnittstelle nur mit der Spiel-ID (die «id» im Livescore-Feed ist die Wettbewerbs-Kennung, keine
+// Spiel-Kennung), unter den üblichen Parameternamen (nur GET).
+export function candidateCalls(matchId) {
   const calls = [];
   for (const endpoint of DATA_ENDPOINTS) {
-    for (const name of PARAM_NAMES) for (const value of values) calls.push(`${API}${endpoint}?${name}=${encodeURIComponent(value)}`);
+    for (const name of PARAM_NAMES) calls.push(`${API}${endpoint}?${name}=${encodeURIComponent(matchId)}`);
   }
   return calls;
+}
+
+// Aufbau einer JSON-Antwort: Schlüssel mit Typ und Länge, bis zu `depth` Ebenen tief.
+export function describeShape(value, depth = 2, maxKeys = 40) {
+  const type = v => Array.isArray(v) ? `Liste(${v.length})` : v === null ? 'null' : typeof v === 'object' ? 'Objekt' : typeof v;
+  const lines = [];
+  const walk = (v, path, level) => {
+    if (level > depth || v === null || typeof v !== 'object') return;
+    const entries = Array.isArray(v) ? (v.length ? [['[0]', v[0]]] : []) : Object.entries(v);
+    for (const [k, child] of entries.slice(0, maxKeys)) {
+      lines.push(`${path}${Array.isArray(v) ? '' : '.'}${k}`.replace(/^\./, '') + ': ' + type(child));
+      walk(child, `${path}${Array.isArray(v) ? '' : '.'}${k}`.replace(/^\./, ''), level + 1);
+    }
+  };
+  walk(value, '', 1);
+  return lines;
+}
+
+// Pfade, deren Schlüssel nach Form, letzten Spielen oder Direktduellen klingen (bis zu `limit` Treffer).
+export function findKeys(value, pattern, limit = 30, maxDepth = 8) {
+  const found = [];
+  const walk = (v, path, level) => {
+    if (found.length >= limit || level > maxDepth || v === null || typeof v !== 'object') return;
+    if (Array.isArray(v)) { if (v.length) walk(v[0], path + '[0]', level + 1); return; }
+    for (const [k, child] of Object.entries(v)) {
+      const here = path ? path + '.' + k : k;
+      if (pattern.test(k)) found.push(`${here}: ${Array.isArray(child) ? 'Liste(' + child.length + ')' : child === null ? 'null' : typeof child}`);
+      walk(child, here, level + 1);
+      if (found.length >= limit) return;
+    }
+  };
+  walk(value, '', 1);
+  return found;
 }
