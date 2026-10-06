@@ -22,7 +22,7 @@ Das letzte Direktduell am 14.03.2026 gewannen die Kadetten mit 31:27.`;
 test('Prompt: nur Fakten, Schweizer Schreibweise, Format; Antwort wird in Titel und Absätze zerlegt', () => {
   const [system, user] = aiMessages(baseline);
   assert.match(system.content, /kein «ß»/);
-  assert.match(system.content, /ausschliesslich die gelieferten Fakten/);
+  assert.match(system.content, /Die gelieferten Fakten sind vollständig/);
   assert.ok(user.content.includes(baseline.paragraphs[1]), 'Fakten stehen im Auftrag');
   const p = parseAiText('<think>Überlegung mit 99 Zahlen</think>\n\n**Titel:** Test\n\nAbsatz eins.\n\nAbsatz zwei.');
   assert.equal(p.paragraphs.length, 2);
@@ -138,5 +138,5 @@ test('Strenge Prüfung: die erfundenen Angaben aus dem echten FCSG-Text werden a
 
 test('Prompt verbietet Personen und Spekulation ausdrücklich', () => {
   const [system] = aiMessages(KADETTEN_BASE);
-  for (const phrase of [/keine Trainer, Spieler/, /Meisterschaft, Abstieg, Klassenerhalt/, /Tabellenführer, wenn die Fakten es auf dem 1\. Rang nennen/, /grammatikalisch einwandfreie/]) assert.match(system.content, phrase);
+  for (const phrase of [/erstes Heimspiel», «erstes Duell», «Saisonstart»/, /Direktduell nur, wenn die Fakten eines mit Datum und Ergebnis nennen/, /Was dort nicht steht, existiert für diesen Text nicht/, /Waadtländer/, /Wiederhole keinen Fakt/, /keine Trainer, Spieler/, /Meisterschaft, Abstieg, Klassenerhalt/, /Tabellenführer, wenn die Fakten es auf dem 1\. Rang nennen/, /grammatikalisch einwandfreie/]) assert.match(system.content, phrase);
 });
