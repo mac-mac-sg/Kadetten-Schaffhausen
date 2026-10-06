@@ -74,6 +74,30 @@ test('Barrierefreiheit: Startseiten haben genau eine h1, Meldungstitel sind h2',
   }
 });
 
+test('Manipulierter Datenstand erzeugt kein rohes Markup in den Ansichten', () => {
+  const X = '<img src=x onerror=PWN>';
+  const taint = (o, key) =>
+    typeof o === 'string'
+      ? ['id', 'date', 'time', 'url', 'image', 'articleVersion', 'logo'].includes(key) || /^\\d/.test(o) ? o : X
+      : Array.isArray(o)
+        ? o.map(x => taint(x, key))
+        : o && typeof o === 'object'
+          ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, taint(v, k)]))
+          : o;
+  context.__saved = run('({games, tables, teamRecords, stories, clubLogos, updateState})');
+  context.__hostile = taint(JSON.parse(fs.readFileSync('server/seed.json', 'utf8')));
+  try {
+    run('setCurrentData(__hostile)');
+    const views = [view('home()'), ...['games', 'table', 'squad'].map(t => view(`season('${t}')`))];
+    for (const g of run('games')) for (const tab of ['overview', 'squad', 'stats']) views.push(view(`match(games.find(g => g.id === ${JSON.stringify(g.id)}), ${JSON.stringify(tab)})`));
+    for (const n of run('stories')) views.push(view(`article(${JSON.stringify(n.id)})`));
+    for (const out of views) assert.ok(!out.includes(X), out.slice(Math.max(0, out.indexOf(X) - 60), out.indexOf(X) + 30));
+    assert.ok(views[0].includes('&lt;img src=x onerror=PWN&gt;'));
+  } finally {
+    run('({games, tables, teamRecords, stories, clubLogos, updateState} = __saved)');
+  }
+});
+
 test('Spielplan: Karten für gespielte Spiele mit Ergebnis-Zustand', () => {
   const out = view("season('games')");
   assert.ok((out.match(/class="game-card/g) || []).length >= 10);
