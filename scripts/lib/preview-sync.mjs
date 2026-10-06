@@ -16,7 +16,7 @@ export const PER_CLUB = 3;
 
 // Fingerabdruck der Fakten: derselbe KI-Text wird wiederverwendet, solange sich die Fakten nicht ändern (kein Flackern, keine Kosten).
 export async function factsHash(baseline) {
-  const text = JSON.stringify([baseline.fixtureKey, baseline.paragraphs, baseline.sources]);
+  const text = JSON.stringify([baseline.fixtureKey, baseline.paragraphs, baseline.sources, baseline.facts]);
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), b => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -49,7 +49,8 @@ export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = n
           continue;
         }
 
-        let preview = {...baseline, baseHash: hash};
+        const {facts: _facts, ...plain} = baseline;
+        let preview = {...plain, baseHash: hash};
         if (rewrite && !aiDown) {
           const res = await rewrite(baseline);
           if (!res.ok) {

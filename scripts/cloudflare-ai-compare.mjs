@@ -10,7 +10,7 @@ import {aiMessages, parseAiText, checkAi} from '../server/preview-ai.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 import {runModel} from './lib/workers-ai.mjs';
 
-export const DEFAULT_MODELS = ['@cf/mistralai/mistral-small-3.1-24b-instruct'];
+export const DEFAULT_MODELS = ['@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/openai/gpt-oss-120b'];
 const TARGET = (process.env.TARGET_URL || 'https://kadetten-api.mac-mac-sg.workers.dev').replace(/\/$/, '');
 const write = text => {
   console.log(text);
@@ -52,9 +52,9 @@ export async function main({env = process.env, fetchFn = fetch, data = null, hea
   if (!baselines.length) { write('Keine künftige Partie mit genug Daten gefunden.'); return {rows: []}; }
   const rows = [];
   for (const baseline of baselines) {
-    write(`\n## ${baseline.headline} (${baseline.club})\n\n**Grundtext (Weg B, sachlich):**\n\n${quote(baseline.paragraphs.join('\n\n'))}`);
+    write(`\n## ${baseline.headline} (${baseline.club})\n\n**Grundtext (Weg B, sachlich):**\n\n${quote(baseline.paragraphs.join('\n\n'))}\n\n**Fakten an die KI:**\n\n${quote((baseline.facts || []).map(f => '- ' + f).join('\n'))}`);
     for (const model of list) {
-      const res = await runModel({accountId, token, model, messages: aiMessages(baseline), fetchFn});
+      const res = await runModel({accountId, token, model, messages: aiMessages(baseline), maxTokens: 3000, fetchFn});
       const row = {club: baseline.club, model, ok: res.ok, ms: res.ms, problems: []};
       rows.push(row);
       if (!res.ok) { row.problems.push(res.error); write(`\n**${model}**: ❌ ${res.error} (${res.ms} ms)`); continue; }
