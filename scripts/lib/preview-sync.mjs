@@ -58,7 +58,7 @@ export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = n
             aiDown = true; // Ausfall der KI: in diesem Lauf nicht weiter versuchen
             out.rejected.push({id: g.id, problems: [res.error]});
           } else {
-            const parsed = parseAiText(res.text);
+            const parsed = parseAiText(res.text, baseline.headline);
             // Mehr als drei Absätze (der Datendienst erlaubt zwei bis drei): die überzähligen werden dem dritten angehängt.
             if (parsed && parsed.paragraphs.length > 3) parsed.paragraphs = [...parsed.paragraphs.slice(0, 2), parsed.paragraphs.slice(2).join(' ')];
             const candidate = parsed ? {...toAiPreview(baseline, parsed, now), baseHash: hash} : null;

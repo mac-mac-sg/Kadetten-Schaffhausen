@@ -13,24 +13,52 @@ export function aiMessages(baseline) {
         'Die gelieferten Fakten sind vollständig: Was dort nicht steht, existiert für diesen Text nicht. Erfinde nichts und ergänze nichts aus Allgemeinwissen.',
         'Nenne keine Personen: keine Trainer, Spieler, Schiedsrichter oder andere Namen, ausser den Namen der beiden Teams aus den Fakten. Verwende keine Spitznamen, Städte- oder Regionsbezeichnungen («Waadtländer», «Ostschweiz») und keine Beschreibungen der Teams, die nicht in den Fakten stehen.',
         'Zähle und ordne nichts ein: keine Aussagen wie «erstes Heimspiel», «erstes Duell», «Saisonstart», «zum ersten Mal» oder «wieder». Erwähne ein Direktduell nur, wenn die Fakten eines mit Datum und Ergebnis nennen; nenne sonst weder ein Duell noch dessen Fehlen.',
-        'Mache keine Aussagen über Form, frühere Spiele, Verletzungen, Rekorde, Meisterschaft, Abstieg, Klassenerhalt, Saisonziele, Stimmung, Erwartungen oder Spannung und keine Prognosen. Erwähne nur Rang, Punkte, Spiele, Torverhältnis, Datum, Uhrzeit, Ort, Wettbewerb und, falls vorhanden, das letzte Direktduell mit seinem Ergebnis.',
+        'Mache keine Aussagen über Form, frühere Spiele, Verletzungen, Rekorde, Meisterschaft, Abstieg, Klassenerhalt oder Saisonziele und keine Prognose zum Ausgang oder zur Ausgeglichenheit des Spiels. Erwähne als Fakten nur Rang, Punkte, Spiele, Torverhältnis, Datum, Uhrzeit, Ort, Wettbewerb und, falls vorhanden, das letzte Direktduell mit seinem Ergebnis.',
+        'Du darfst das Spiel mit ein bis zwei allgemeinen, wertenden Wörtern einrahmen (zum Beispiel «mit Spannung erwartet», «interessante Ausgangslage»), solange sie keine neue Tatsache, keine Zahl und keine Prognose enthalten.',
         'Jede Zahl im Text muss in den Fakten vorkommen und genau so wiedergegeben werden. Bezeichne ein Team nur dann als Tabellenführer, wenn die Fakten es auf dem 1. Rang nennen. Wiederhole keinen Fakt.',
         'Stil: lebendig und gut lesbar wie ein kurzer Zeitungsvorbericht. Beginne mit einem Satz, der Spiel, Ort und Zeit anschaulich nennt. Bette die Zahlen in Sätze ein (zum Beispiel «mit 13 Punkten aus 9 Spielen») statt sie aufzuzählen, und wechsle Satzanfänge und Verben ab. Ohne Übertreibungen, ohne Floskeln, ohne neue Fakten.',
-        'Format: Erste Zeile der Titel (höchstens 80 Zeichen), dann eine Leerzeile, dann 2 bis 3 Absätze mit je 2 bis 4 Sätzen, Absätze durch eine Leerzeile getrennt. Kein Markdown, keine Aufzählungen, keine Anführung des Titels.'
+        'Format, immer einhalten: Erste Zeile ein kurzer Titel (höchstens 80 Zeichen, kein ganzer Satz mit Punkt), dann eine Leerzeile, dann 2 bis 3 Absätze mit je 2 bis 4 Sätzen, Absätze durch eine Leerzeile getrennt. Kein Markdown, keine Aufzählungen, keine Anführung des Titels.'
       ].join(' ')
     },
-    {role: 'user', content: `Fakten zum Spiel:\n\n${facts}\n\nSchreibe daraus die Vorschau.`}
+    {role: 'user', content: `Fakten zum Spiel:\n\n${facts}\n\nSchreibe daraus die Vorschau: Titelzeile, Leerzeile, dann 2 bis 3 Absätze.`}
   ];
 }
 
-// Entfernt Denkblöcke, Markdown-Reste und Umrahmungen; zerlegt in Titel und Absätze.
-export function parseAiText(raw) {
+// Entfernt Denkblöcke, Markdown-Reste und Umrahmungen; zerlegt in Titel und Absätze. Liefert das Modell keinen Titel (erster Block
+// länger als ein Titel), gilt `fallbackHeadline` und alle Blöcke sind Absätze; ein einzelner Block wird an einer Satzgrenze geteilt.
+export function parseAiText(raw, fallbackHeadline = '') {
   let text = String(raw ?? '').replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<\/?think>/gi, '').replace(/\r/g, '').trim();
   text = text.replace(/^```[a-z]*\n?|\n?```$/g, '').trim();
   const chunks = text.split(/\n\s*\n/).map(c => c.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean);
-  if (chunks.length < 3) return null;
-  const [headline, ...paragraphs] = chunks;
-  return {headline: headline.replace(/^(Titel|Überschrift)\s*:\s*/i, '').replace(/^[«"]|[»"]$/g, '').trim(), paragraphs};
+  const isTitle = c => c.length <= 90 && !/[.!?]\s+\S/.test(c);
+  if (chunks.length >= 3 && isTitle(chunks[0])) return {headline: cleanTitle(chunks[0]), paragraphs: chunks.slice(1)};
+  if (chunks.length === 2 && isTitle(chunks[0])) {
+    const split = splitSentences(chunks[1]);
+    return split ? {headline: cleanTitle(chunks[0]), paragraphs: split} : null;
+  }
+  if (!fallbackHeadline) return chunks.length >= 3 ? {headline: cleanTitle(chunks[0]), paragraphs: chunks.slice(1)} : null;
+  if (chunks.length >= 2) return {headline: fallbackHeadline, paragraphs: chunks};
+  const split = splitSentences(chunks[0] || '');
+  return split ? {headline: fallbackHeadline, paragraphs: split} : null;
+}
+const cleanTitle = t => t.replace(/^(Titel|Überschrift)\s*:\s*/i, '').replace(/^[«"]|[»"]$/g, '').trim();
+// Teilt einen Block an einer Satzgrenze in zwei Absätze (mindestens zwei Sätze nötig). Ein Punkt hinter einer Ordnungszahl
+// («6. Oktober», «5. Rang») ist keine Satzgrenze.
+const ORDINAL_NEXT = /^(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember|Rang|Platz|Spieltag|Runde|Minute)\b/;
+function splitSentences(text) {
+  const sentences = [];
+  let start = 0;
+  for (const m of text.matchAll(/([.!?])\s+(?=[A-ZÄÖÜ])/g)) {
+    const before = text.slice(0, m.index + 1), after = text.slice(m.index + m[0].length);
+    if (m[1] === '.' && /(^|\s)\d{1,2}\.$/.test(before) && ORDINAL_NEXT.test(after)) continue;
+    sentences.push(text.slice(start, m.index + 1));
+    start = m.index + m[0].length;
+  }
+  sentences.push(text.slice(start));
+  const list = sentences.map(x => x.trim()).filter(Boolean);
+  if (list.length < 2) return null;
+  const cut = Math.ceil(list.length / 2);
+  return [list.slice(0, cut).join(' '), list.slice(cut).join(' ')];
 }
 
 const numbers = text => new Set(String(text).match(/\d+/g) || []);

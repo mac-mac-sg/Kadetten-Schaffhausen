@@ -182,6 +182,16 @@ test('KI-Vorschau: nur technische Regeln des Datendienstes gelten; sonst, bei Au
   assert.deepEqual([kept.kept, calls2.length, keep.writes.length], [1, 0, 0]);
 });
 
+test('KI-Vorschau: Antwort ohne Titelzeile wird mit dem bisherigen Titel gespeichert', async () => {
+  const bucket = memBucket();
+  const ohne = 'Kadetten Schaffhausen empfängt Handball Stäfa am Samstag, 10. Oktober 2026, um 18:00 Uhr in Schaffhausen BBC Arena A. Es ist ein Spiel der QHL. Kadetten Schaffhausen liegt mit 13 Punkten aus 8 Spielen auf dem 2. Rang. Handball Stäfa liegt mit 0 Punkten aus 7 Spielen auf dem 3. Rang.';
+  const r = await syncPreviews(bucket, {snapshot, fcsgData: {games: []}}, {headToHead: async () => ({games: [duel]}), rewrite: rewriter([], {texts: {kadetten: ohne}}), now: NOW});
+  const k = JSON.parse(bucket.map.get('previews/kadetten/staefa.json'));
+  assert.deepEqual([r.ki, r.fallback, k.generator], [1, 0, 'ki']);
+  assert.equal(k.headline, 'Kadetten Schaffhausen gegen Handball Stäfa');
+  assert.equal(k.paragraphs.length, 2);
+});
+
 test('Oberfläche: «KI-Match-Vorschau» nur für KI-Texte und ältere Einsendungen, «Match-Vorschau» für Texte aus Daten', () => {
   const src = fs.readFileSync('src/client/js/views-match.js', 'utf8');
   assert.match(src, /const ai=p\.generator!=='daten'/);
