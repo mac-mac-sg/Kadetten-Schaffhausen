@@ -19,6 +19,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       KADETTEN_UPDATE_KEY: ${{ secrets.KADETTEN_UPDATE_KEY }}
+      DISPATCH_TOKEN: ${{ secrets.WORKFLOW_DISPATCH_TOKEN }}
       WRANGLER_VERSION: 4.147.0
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -63,6 +64,14 @@ jobs:
             exit 0
           fi
           printf '%s' "$KADETTEN_UPDATE_KEY" | sha256sum | cut -d' ' -f1 | npx --yes "wrangler@${WRANGLER_VERSION}" secret put KADETTEN_UPDATE_KEY_SHA256 -c cloudflare/api/wrangler.toml
+      - name: Zeitplan-Token setzen (löst die Datenaktualisierung aus)
+        shell: bash
+        run: |
+          if [ -z "$DISPATCH_TOKEN" ]; then
+            echo "::notice::WORKFLOW_DISPATCH_TOKEN ist nicht gesetzt. Der Cron-Trigger des Workers kann die Datenaktualisierung nicht auslösen (docs/betrieb.md)."
+            exit 0
+          fi
+          printf '%s' "$DISPATCH_TOKEN" | npx --yes "wrangler@${WRANGLER_VERSION}" secret put DISPATCH_TOKEN -c cloudflare/api/wrangler.toml
       - name: Antwort prüfen
         shell: bash
         env:

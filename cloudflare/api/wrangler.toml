@@ -9,3 +9,8 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "DATA"
 id = "7f675583f88f4ebb8cd74ce0efab9006"
+
+# Zeitplan der Datenaktualisierung (UTC, Minute 20): deckt Sommer- und Winterzeit ab; server/scheduler.mjs lässt nur die
+# Schweizer Stunden 06, 09, 12, 15, 18, 21 und 22 zu. Der Worker löst den GitHub-Workflow aus (Secret DISPATCH_TOKEN).
+[triggers]
+crons = ["20 4,5,7,8,10,11,13,14,16,17,19,20,21 * * *"]
