@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -141,7 +141,7 @@ test('appContext der Ticker-Seite: Basisadresse und Datenpfade, nur Adressen auf
 });
 
 test('POST nur mit POST_PROBE=1, dann je Datenpfad ein POST mit der Spiel-ID', async () => {
-  const html = "<script>window.appContext={baseUrl:'/v3/',url:'Ticker/Data'};</script>";
+  const html = "<script>window.appContext={baseUrl:'/v3/'};window.appContext.surl='Ticker/Data';</script>";
   const make = () => { const calls = []; return {calls, fetchFn: async (url, init) => { calls.push({url: String(url), method: init?.method || 'GET', body: String(init?.body || '')}); return String(url).includes('/v3/202711020901029') ? new Response(html, {headers: {'content-type': 'text/html'}}) : new Response('{"events":[]}', {headers: {'content-type': 'application/json'}}); }}; };
   const off = make();
   await main({env: {}, fetchFn: off.fetchFn});
@@ -152,4 +152,19 @@ test('POST nur mit POST_PROBE=1, dann je Datenpfad ein POST mit der Spiel-ID', a
   assert.equal(posts.length, 1);
   assert.equal(posts[0].url, 'https://ticker.ehf.eu/v3/Ticker/Data');
   assert.match(posts[0].body, /MatchID=202711020901029/);
+});
+
+test('appContext aus der echten Ticker-Seite: auskommentierte Pfade zählen nicht, abgefragt wird nur TickerData', () => {
+  const html = `<script type="text/javascript"> window.appContext = window.appContext || { matchId: '', ticket: '', useTicketForUpdate: false, baseUrl: '//ticker.ehf.eu/v3/', rootUrl: '//ticker.ehf.eu/', uuid: null };
+ window.appContext.surl= "TickerData";
+ //window.appContext.purl= "PlayerData";
+ window.appContext.turl= "TeamData";
+ //window.appContext.nurl= "NewsData";
+ window.appContext.iurl= "MatchImages"; </script>`;
+  const ctx = parseAppContext(html);
+  assert.equal(ctx.base, '//ticker.ehf.eu/v3/');
+  assert.deepEqual(Object.keys(ctx.paths).sort(), ['iurl', 'surl', 'turl']);
+  const urls = appContextUrls(ctx, 'https://ticker.ehf.eu/v3/202711020901029');
+  assert.deepEqual(urls.map(u => u.url).sort(), ['https://ticker.ehf.eu/v3/MatchImages', 'https://ticker.ehf.eu/v3/TeamData', 'https://ticker.ehf.eu/v3/TickerData']);
+  assert.deepEqual(probeTargets(urls).map(u => u.url), ['https://ticker.ehf.eu/v3/TickerData']);
 });
