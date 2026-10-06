@@ -11,15 +11,26 @@ const UA = 'Mozilla/5.0 (compatible; kadetten-app-matchbericht)';
 export const archiveKey = id => 'kadetten/ehf/' + id + '.json';
 const swissDate = d => d.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
 
-async function fetchTicker(matchId, fetchFn) {
-  const r = await fetchFn(TICKER_URL, {
-    method: 'POST',
-    headers: {'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest'},
-    body: new URLSearchParams({MatchID: matchId}),
-    signal: AbortSignal.timeout(30000)
-  });
-  if (!r.ok) throw Error('Ticker HTTP ' + r.status);
-  return parseTicker(await r.json());
+// Der Ticker liefert rund 450 KB; Verbindungsabbrüche kommen vor. Bis zu drei Versuche, die Fehlermeldung nennt die Ursache.
+const describe = e => [e?.message, e?.cause?.code, e?.cause?.message].filter(Boolean).join(': ').slice(0, 140);
+async function fetchTicker(matchId, fetchFn, {retries = 3, pause = 3000} = {}) {
+  let last;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const r = await fetchFn(TICKER_URL, {
+        method: 'POST',
+        headers: {'User-Agent': UA, Accept: 'application/json, text/javascript, */*; q=0.01', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Origin: 'https://ticker.ehf.eu', Referer: 'https://ticker.ehf.eu/v3/' + matchId},
+        body: new URLSearchParams({MatchID: matchId}),
+        signal: AbortSignal.timeout(45000)
+      });
+      if (!r.ok) throw Error('Ticker HTTP ' + r.status);
+      return parseTicker(await r.json());
+    } catch (e) {
+      last = Error(`Versuch ${attempt}: ${describe(e)}`);
+      if (attempt < retries && pause) await new Promise(res => setTimeout(res, pause));
+    }
+  }
+  throw last;
 }
 
 // games: Spiele des Datenstands; write(model) -> {ok, text} | {ok: false, error} oder null (ohne KI).
@@ -60,7 +71,7 @@ async function buildRecord(g, match, fetchFn) {
   const details = await getEhfDetails(match.id, fetchFn);
   if (!details.ok) throw Error('Spielerwerte und Teamwerte nicht verfügbar');
   let ticker = null, tickerError = null;
-  try { ticker = await fetchTicker(match.id, fetchFn); } catch (e) { tickerError = String(e?.message || e).slice(0, 100); }
+  try { ticker = await fetchTicker(match.id, fetchFn, {pause: fetchFn === fetch ? 3000 : 0}); } catch (e) { tickerError = String(e?.message || e).slice(0, 160); }
   // Die Ereignisse gelten nur, wenn sie zum Endstand des Feeds passen (sonst ist die Torfolge unvollständig).
   if (ticker && (!ticker.final || ticker.final[0] !== match.score[0] || ticker.final[1] !== match.score[1] || ticker.goals.length !== match.score[0] + match.score[1])) {
     tickerError = 'Ereignisse passen nicht zum Endstand'; ticker = null;
