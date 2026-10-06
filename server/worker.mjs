@@ -100,6 +100,16 @@ async function reports(request, env, u) {
   }
 }
 
+// Gesicherter Endstand eines European-League-Spiels (Team- und Spielerwerte, Torfolge, KI-Matchbericht); schreibt nur der Actions-Lauf.
+async function ehfReports(request, env, u) {
+  if (request.method !== 'GET') return getRequired();
+  const id = u.pathname.slice('/api/ehf-reports/'.length);
+  if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return json({error: 'Invalid report'}, 400);
+  const stored = await env.BUCKET.get('kadetten/ehf/' + id + '.json');
+  if (!stored) return json({error: 'Report not stored yet'}, 404);
+  return json({ok: true, report: await stored.json()});
+}
+
 async function live(request) {
   if (request.method !== 'GET') return getRequired();
   try {
@@ -191,6 +201,7 @@ const routes = [
   [isPath('/api/head-to-head'), headToHead],
   [isPath('/api/recent-games'), recentGames],
   [isUnder('/api/reports/'), reports],
+  [isUnder('/api/ehf-reports/'), ehfReports],
   [isPath('/api/live'), live],
   [isUnder('/api/articles/'), articles],
   [isPath('/api/data'), data],

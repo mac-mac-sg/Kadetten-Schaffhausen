@@ -2924,3 +2924,7 @@ html.snap-profile {
 .fcsg-player-stat-list dt { color: var(--muted); }
 .fcsg-player-stat-list dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 @media(max-width:600px) { .fcsg-player-stat-grid { grid-template-columns: 1fr; } }
+.stats-table th,.stats-table td{text-align:center;font-variant-numeric:tabular-nums}
+.stats-table th[scope='row']{text-align:left}
+.stats-table td:first-child,.stats-table th:first-child{width:2.2rem;color:#bbc5b3}
+.ai-match-report{margin-top:0}

@@ -15,7 +15,7 @@ export function parseFinishedMatch(g) {
  if(!match?.score)throw Error('Missing final score');
  return {...match,status:'finished',date:String(g.gameDateTime).slice(0,10)};
 }
-const ehfLiveEndpoint='https://ehfel.eurohandball.com/umbraco/api/livescoreapi/GetLiveScoreMatches/138790';
+export const ehfLiveEndpoint='https://ehfel.eurohandball.com/umbraco/api/livescoreapi/GetLiveScoreMatches/138790';
 const ehfKadettenId='uyEpUicNjwv8hCX9B7A3sg';
 // Die EHF meldet die Spieluhr als «mm:ss» (zum Beispiel «18:47»); nur eine reine Minutenzahl bekommt das Minutenzeichen.
 export function ehfClock(value){
@@ -85,14 +85,14 @@ export function parseEhfFinishedMatch(data,today=new Date().toLocaleDateString('
  return null;
 }
 const ehfApi='https://ehfel.eurohandball.com/umbraco/api/matchdetailapi/';
-async function ehfJson(name,id){
- const r=await fetch(ehfApi+name+'?matchId='+encodeURIComponent(id),{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
+async function ehfJson(name,id,fetchFn=fetch){
+ const r=await fetchFn(ehfApi+name+'?matchId='+encodeURIComponent(id),{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
  if(!r.ok)throw Error('EHF '+name+' unavailable');
  return r.json();
 }
 // Teamwerte und Spielerwerte werden unabhängig geholt; fällt eines aus, bleibt das andere erhalten.
-async function getEhfDetails(id){
- const [stats,players]=await Promise.allSettled([ehfJson('GetMatchDetailStatistic',id).then(parseEhfTeamStats),ehfJson('GetMatchDetails',id).then(parseEhfPlayers)]);
+export async function getEhfDetails(id,fetchFn=fetch){
+ const [stats,players]=await Promise.allSettled([ehfJson('GetMatchDetailStatistic',id,fetchFn).then(parseEhfTeamStats),ehfJson('GetMatchDetails',id,fetchFn).then(parseEhfPlayers)]);
  const teamStats=stats.status==='fulfilled'?stats.value:null,roster=players.status==='fulfilled'?players.value:null;
  if(!teamStats&&!roster)return {ok:false,updatedAt:null,events:null,players:null,teamStats:null};
  return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster,teamStats};

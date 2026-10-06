@@ -175,9 +175,10 @@ test('Vereinsnavigation funktioniert nach Kategorie- und Jahreswechsel', () => {
 
 test('European League live game: Spielzeit als mm:ss, Hinweis ohne Ereignisverlauf, Teamstatistik statt Spielerwerte',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[17,9],clock:'18:47',phase:'1st Half',url:'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',details:{ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:{isLive:true,home:{goals:16,shots:19,misses:3,efficiency:84,sevenGoals:0,sevenShots:0,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:2},guest:{goals:8,shots:18,misses:10,efficiency:44,sevenGoals:2,sevenShots:2,twoMinutes:null,warnings:0,disqualifications:0,technicalFaults:4}}}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
- const overview=run('liveMatchPage({id:"live"},"overview")');
+ const overview=run('liveMatchPage({id:"live"},"report")');
+ assert.match(run('liveMatchPage({id:"live"},"overview")'),/Teamstatistik/);
  assert.match(overview,/1st Half · 18:47</);assert.doesNotMatch(overview,/18:47′/);
- assert.match(overview,/European League liefert die EHF keinen Ereignisverlauf/);assert.doesNotMatch(overview,/noch kein Ereignisverlauf/);
+ assert.match(overview,/European League liefert die EHF während des Spiels keinen Ereignisverlauf/);assert.match(overview,/KI-Matchbericht/);assert.doesNotMatch(overview,/noch kein Ereignisverlauf/);
  assert.match(overview,/Offiziellen Liveticker öffnen/);
  const stats=run('liveMatchPage({id:"live"},"stats")');
  assert.match(stats,/Teamstatistik/);assert.match(stats,/Wurfquote/);assert.match(stats,/84 %/);assert.match(stats,/2\/2/);assert.match(stats,/Teamwerte der EHF/);assert.doesNotMatch(stats,/keine Spielerstatistiken verfügbar/);
@@ -188,8 +189,9 @@ test('European League live game mit Spielerwerten: Tabellen je Team, Paraden nur
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[24,11],clock:'35:10',phase:'2nd Half',url:'https://ehfel.eurohandball.com/x',details:{ok:true,updatedAt:new Date().toISOString(),events:null,teamStats:{isLive:true,home:{goals:24,shots:29,misses:5,efficiency:83,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:4},guest:{goals:11,shots:24,misses:13,efficiency:46,sevenGoals:2,sevenShots:2,twoMinutes:1,warnings:0,disqualifications:0,technicalFaults:9}},players:[{id:'a',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:8,savesFaced:17},{id:'b',name:'Max Muster',home:true,goalkeeper:false,goals:5,shots:7,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:0,savesFaced:0},{id:'c',name:'Marko Culjak',home:false,goalkeeper:false,goals:3,shots:4,seven:null,sevenShots:null,twoMinutes:null,yellow:0,red:0,saves:null,savesFaced:null}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const stats=run('liveMatchPage({id:"live"},"stats")');
  assert.match(stats,/Teamstatistik/);assert.match(stats,/83 %/);
- assert.match(stats,/Leon Bergmann/);assert.match(stats,/Max Muster/);assert.match(stats,/Marko Culjak/);assert.match(stats,/Toptorschützen/);assert.match(stats,/5\/7/);
- assert.match(stats,/<th scope="col">Paraden<\/th>/);assert.match(stats,/<td>8\/17<\/td>/);
+ assert.match(stats,/Leon Bergmann/);assert.match(stats,/Max Muster/);assert.match(stats,/Marko Culjak/);assert.match(stats,/Toptorschützen/);assert.match(stats,/<th scope="row">Max Muster<\/th><td>1<\/td><td>1<\/td><td>0<\/td><td>7<\/td><td>5<\/td>/);
+ assert.match(stats,/<th scope="col" title="Fangquote">SV%<\/th>/);assert.match(stats,/<td>8<\/td><td>17<\/td><td>47 %<\/td>/);
+ assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.match(stats,/<h3>Torhüter<\/h3>/);assert.match(stats,/data-stats-team="home" aria-pressed="true"/);assert.match(stats,/data-stats-team="away" aria-pressed="false"/);assert.match(stats,/data-stats-panel="away" hidden/);
  assert.doesNotMatch(stats,/keine Spielerwerte für dieses Spiel/);assert.doesNotMatch(stats,/keine Spielerstatistiken verfügbar/);
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
@@ -204,9 +206,9 @@ test('European League: bestätigtes Endresultat setzt die Karte auf beendet und 
 test('Live game opens internal details with verified events and player statistics',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);
- const overview=run('liveMatchPage({id:"live"},"overview")');assert.match(overview,/19:36/);assert.match(overview,/LUTZ Milan/);assert.match(overview,/Spielverlauf/);
- const stats=run('liveMatchPage({id:"live"},"stats")');assert.match(stats,/3\/–/);assert.match(stats,/Toptorschützen/);
- run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"overview")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
+ const overview=run('liveMatchPage({id:"live"},"report")');assert.match(overview,/19:36/);assert.match(overview,/LUTZ Milan/);assert.match(overview,/Spielverlauf/);
+ const stats=run('liveMatchPage({id:"live"},"stats")');assert.match(stats,/<td>–<\/td><td>3<\/td>/);assert.match(stats,/Toptorschützen/);
+ run('liveRequestFailed=true');const stale=run('liveMatchPage({id:"live"},"report")');assert.match(stale,/Verbindung unterbrochen/);assert.match(stale,/21 : 14/);assert.equal(run('freshLive()'),null);
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
 
@@ -219,7 +221,7 @@ test('Direct live statistics route works before a local fixture exists',()=>{
 
 test('Live fixture uses the shared matchday ticker and confirmed completion updates the fixture',()=>{
  run(`globalThis.beforeGames=games;globalThis.testFixture={id:'live-test',date:swissToday(),home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',url:'https://kadettensh.ch/',venue:'BBC Arena'};games=[testFixture];liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:testFixture.home,away:testFixture.away,league:'QHL',score:[33,23],clock:'44:00',url:'https://www.handball.ch/de/matchcenter/spiele/508373'}};liveRequestFailed=false`);
- const markup=run('card(testFixture,true)');assert.match(markup,/home-matchday games-matchday/);assert.match(markup,/id="live-match"/);assert.match(markup,/#match\/live-test\/overview/);
+ const markup=run('card(testFixture,true)');assert.match(markup,/home-matchday games-matchday/);assert.match(markup,/id="live-match"/);assert.match(markup,/#match\/live-test\/stats/);
  run(`applyFinishedMatch({status:'finished',date:swissToday(),home:testFixture.home,away:testFixture.away,score:[45,34],half:[21,14]});liveState.match=null`);
  assert.match(run('card(games[0])'),/45 : 34/);assert.match(run('card(games[0])'),/Rückblick/);
  run('games=beforeGames;liveState=null;liveRequestFailed=false');
@@ -261,4 +263,39 @@ test('FCSG live view shows a provisional score and ticker, separate from complet
  assert.equal(run("fcsgData.games.find(g=>g.id==='458').score"),null);
  assert.ok(run("fcsgLiveState(fcsgGame('458'))").includes('JETZT LIVE'));
  run("fcsgLiveGames.clear();activeClub='kadetten'");
+});
+
+test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und Statistik mit Mannschaftswahl',()=>{
+ run(`ehfArchive={izvidac:{fixtureId:'izvidac',matchId:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',score:[42,30],half:[23,11],
+  report:{headline:'Kadetten ziehen früh davon',paragraphs:['Unsere Kadetten gewinnen 42:30 und führen zur Pause 23:11.','Nach dem Rückstand zu Beginn folgten viele Tore in Folge.'],generator:'ki',generatedAt:new Date().toISOString()},
+  goals:[{t:'1:00',s:[0,1],h:false,n:'Mile Lasic',p:false},{t:'1:37',s:[1,1],h:true,n:'Luka Maros',p:true}],
+  teamStats:{home:{goals:42,shots:54,misses:12,efficiency:78,sevenGoals:1,sevenShots:1,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:9},guest:{goals:30,shots:49,misses:19,efficiency:61,sevenGoals:4,sevenShots:4,twoMinutes:4,warnings:0,disqualifications:0,technicalFaults:14}},
+  players:[{id:'a',number:'20',name:'Luka Maros',home:true,goalkeeper:false,goals:7,shots:8,seven:1,sevenShots:1,twoMinutes:0,yellow:0,red:0,saves:null,savesFaced:null},{id:'g',number:'1',name:'Leon Bergmann',home:true,goalkeeper:true,goals:0,shots:0,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0,saves:12,savesFaced:27},{id:'b',number:'24',name:'Mile Lasic',home:false,goalkeeper:false,goals:6,shots:9,seven:null,sevenShots:null,twoMinutes:1,yellow:1,red:0,saves:null,savesFaced:null}]}};
+  globalThis.__g={id:'izvidac',league:'EHL',home:'Kadetten Schaffhausen',away:'HC Izvidac',date:'2026-10-06',time:'18:45',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[42,30],half:[23,11]}`);
+ const overview=run('match(__g,"report")');
+ assert.match(run('match(__g,"overview")'),/<h3>Feldspieler<\/h3>/);
+ assert.match(overview,/KI-Matchbericht/);assert.match(overview,/Kadetten ziehen früh davon/);assert.match(overview,/Torfolge \(2 Tore\)/);assert.match(overview,/Mile Lasic/);assert.match(overview,/ohne Gewähr/);
+ const stats=run('match(__g,"stats")');
+ assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.match(stats,/<h3>Torhüter<\/h3>/);
+ assert.match(stats,/<th scope="col" title="Siebenmeter-Tore\/Würfe">7 m<\/th>/);assert.match(stats,/<td>1\/1<\/td>/);
+ assert.match(stats,/<td>12<\/td><td>27<\/td><td>44 %<\/td>/);
+ assert.match(stats,/data-stats-panel="away" hidden/);
+ // Gewählte Mannschaft bleibt bei der nächsten Darstellung erhalten.
+ run(`liveStatsTeam={id:'izvidac',side:'away'}`);
+ const away=run('match(__g,"stats")');
+ assert.match(away,/data-stats-team="away" aria-pressed="true"/);assert.match(away,/data-stats-panel="home" hidden/);
+ // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
+ run('liveStatsTeam=null;__g.score=[41,30]');
+ assert.doesNotMatch(run('match(__g,"report")'),/KI-Matchbericht/);
+ run('ehfArchive={}');
+});
+
+test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
+ run(`globalThis.__q={id:'qhl-test',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa',date:'2026-10-03',time:'18:00',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[45,34],half:[21,14]}`);
+ const open=run('match(__q,"overview")');
+ assert.match(open,/Endresultat/);assert.ok(open.indexOf('>Statistik<')<open.indexOf('>Rückblick<'));
+ assert.match(open,/#match\/qhl-test\/report/);
+ assert.match(run('match(__q,"report")'),/Der Rückblick/);
+ run('globalThis.__q.score=null');
+ assert.match(run('match(__q,"overview")'),/>Vorschau</);
 });

@@ -31,6 +31,9 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 - **Grenzen (Cloudflare Free, laut Dokumentation, nicht über längere Zeit gemessen):** 100'000 Worker-Anfragen und 100'000 KV-Lesezugriffe pro Tag, 1'000 KV-Schreibvorgänge pro Tag, 10'000 Workers-AI-Neurons pro Tag. Bei Überschreiten schlagen Aufrufe fehl; die KI fällt dann auf den sachlichen Text zurück.
 - **Token ersetzen:** neuen Cloudflare-Token anlegen (Berechtigungen siehe oben), in Settings → Secrets and variables → Actions das Secret `CLOUDFLARE_API_TOKEN` überschreiben, danach einen manuellen Schreiblauf starten und prüfen. Tokens nie in Chats, Issues, PRs oder Commits.
 
+## European-League-Spiele: Endstand und KI-Matchbericht
+Der Schreiblauf von `cloudflare-update.yml` sichert am Spieltag und am Folgetag den Endstand und erzeugt den KI-Matchbericht (Abschnitt «European League» im Protokoll, mit einer Zeile je Spiel). Der Livescore-Feed der EHF führt ein Spiel nur am Spieltag; wurde der Lauf versäumt, den Workflow am selben Abend manuell starten. Ein Eintrag ohne Bericht (Ticker nicht erreichbar, Ereignisse unvollständig) wird im nächsten Lauf ergänzt. Der Matchbericht ist abschaltbar mit `KI_VORSCHAU=aus` (dann entsteht der sachliche Text). Die Nutzungsbedingungen des Livetickers (ticker.ehf.eu/Disclaimer.aspx) enthalten einen Haftungsausschluss, aber kein Weitergabeverbot; die App nennt die EHF als Quelle und kennzeichnet KI-Texte.
+
 ## Vom Eigentümer zu ergänzen
 - [x] Wo läuft die Datenautomation genau? Seit 6. Oktober 2026 in GitHub Actions (Tabelle oben). Die frühere ChatGPT-Automation schreibt nur noch in den bisherigen Sites-Dienst.
 - [x] Wo liegt der Automationsschlüssel? Im Regelbetrieb gibt es keinen; Zugangsdaten liegen als GitHub-Secrets (Namen oben).

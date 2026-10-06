@@ -13,7 +13,8 @@ import {refreshFcsg} from '../server/fcsg.mjs';
 import {kvRestStore} from './lib/kv-rest-store.mjs';
 import {syncProgrammes} from './lib/programmes-source.mjs';
 import {syncPreviews} from './lib/preview-sync.mjs';
-import {makeRewriter} from './lib/preview-rewrite.mjs';
+import {makeRewriter, makeReportWriter} from './lib/preview-rewrite.mjs';
+import {syncEhfArchive} from './lib/ehf-archive.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 
 const write = text => {
@@ -35,7 +36,7 @@ const programmeHttp = {
   }
 };
 
-export async function main({schreiben = false, env = process.env, fetchFn = fetch, supplied = {}, programmeFetch = programmeHttp, previewDuels = getHeadToHead, previewRecent = getRecentGames, rewrite = makeRewriter(env)} = {}) {
+export async function main({schreiben = false, env = process.env, fetchFn = fetch, supplied = {}, programmeFetch = programmeHttp, previewDuels = getHeadToHead, previewRecent = getRecentGames, rewrite = makeRewriter(env), reportWriter = makeReportWriter(env), ehfFetch = fetch} = {}) {
   const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;
   if (!token || !accountId) throw Error('CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen.');
   const namespaceId = fs.readFileSync(new URL('../cloudflare/api/wrangler.toml', import.meta.url), 'utf8').match(/^id = "([a-f0-9]{32})"/m)?.[1];
@@ -70,6 +71,14 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
       for (const r of v.rejected.slice(0, 4)) write(`- KI-Text für ${r.id} nicht verwendet: ${r.problems.join('; ').slice(0, 200)}`);
     } catch (e) {
       write(`\nVorschauen: Fehler (${String(e.message).slice(0, 120)}); bestehende bleiben.`);
+    }
+    // Endstand und KI-Matchbericht der European League (nur am Spieltag und am Tag danach). Fehler lassen alles Übrige unberührt.
+    try {
+      const e = await syncEhfArchive(bucket, {games: result.next.games, fetchFn: ehfFetch, write: reportWriter});
+      write(`\nEuropean League (Endstand und Matchbericht): ${e.checked} Spiele geprüft, ${e.written} geschrieben, ${e.kept} fertig vorhanden, ${e.reports} Berichte (${e.ki} mit KI).`);
+      for (const note of e.notes) write(`- ${note}`);
+    } catch (e) {
+      write(`\nEuropean League: Fehler (${String(e.message).slice(0, 120)}); bestehende Einträge bleiben.`);
     }
     write('\nDer KV-Speicher ist aktualisiert.');
   } else {
