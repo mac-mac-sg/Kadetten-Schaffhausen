@@ -4,7 +4,9 @@
 export const matchUrls = id => [
   `https://ehfel.eurohandball.com/men/2026-27/matches/details/${id}/KadettenSchaffhausen-HCIzvidac/`,
   'https://ticker.ehf.eu/',
-  `https://ticker.ehf.eu/match/?${id}`
+  `https://ticker.ehf.eu/match/?${id}`,
+  // Neuere Ticker-Ansicht mit Play-by-Play (Torfolge, Strafen, Time-outs), Fundstelle: Screenshot des Eigentümers vom 6. Oktober 2026.
+  `https://ticker.ehf.eu/v3/${id}`
 ];
 
 // Adressen aus HTML oder JavaScript, die nach Daten-Schnittstellen aussehen (api, json, socket, signalr, feed, ticker, livescore).
@@ -139,4 +141,17 @@ export function feedOverview(feed) {
     const items = day.liveScoreMatches || [];
     return {date: day.dayDatumFormatted || day.date, matches: items.length, firstStats: items[0]?.matchStats ?? null};
   });
+}
+
+// Stichwörter, an denen eine Seite ihre Daten nachlädt (Ausschnitte rund um die Fundstelle zeigen Adresse und Parameter).
+export const LOAD_NEEDLES = ['.json', '/api/', 'ajax', 'fetch(', 'WebSocket', 'EventSource', 'signalR', 'getJSON', 'axios', 'XMLHttpRequest', '.ashx', '.aspx'];
+export function loadSnippets(text, needles = LOAD_NEEDLES, perNeedle = 2, width = 150, max = 12) {
+  const out = [];
+  for (const needle of needles) {
+    for (const snippet of contextAround(text, needle, width, perNeedle)) {
+      if (out.length >= max) return out;
+      out.push(`${needle}: ${snippet}`);
+    }
+  }
+  return out;
 }

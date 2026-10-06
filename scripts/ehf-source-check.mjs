@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -42,11 +42,16 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
     const endpoints = findEndpoints(r.text, url);
     write(`\nAdressen im HTML, die nach Schnittstellen aussehen (${endpoints.length}):\n\n${endpoints.slice(0, 25).map(s => '- ' + s).join('\n') || '- keine'}`);
     // Erste Ebene der eigenen Skripte nach Schnittstellen durchsuchen (nur Skripte der EHF-Hosts).
-    const own = scripts.filter(s => /(^|\.)ehf\.eu\b|eurohandball\.com/.test(new URL(s).hostname)).slice(0, 6);
+    if (/ticker\.ehf\.eu\/v3\//.test(url)) write('\nAnfang des HTML-Quelltexts:\n\n' + code(preview(r.text, 1500)) + '\n\nDaten-Hinweise im HTML:\n\n' + (loadSnippets(r.text).map(x => '- ' + x).join('\n') || '- keine'));
+    const own = scripts.filter(s => /(^|\.)ehf\.eu\b|eurohandball\.com/.test(new URL(s).hostname)).slice(0, 10);
     for (const s of own) {
       const js = await get(fetchFn, s);
       const found = findEndpoints(js.text, s).filter(u => /api|socket|signalr|feed|ticker|livescore/i.test(u)).slice(0, 15);
       if (found.length) write(`\nSchnittstellen in ${s} (${found.length}):\n\n${found.map(u => '- ' + u).join('\n')}`);
+      if (/ticker\.ehf\.eu\/v3\//.test(url) || /ticker\.ehf\.eu/.test(s)) {
+        const hints = loadSnippets(js.text);
+        if (hints.length) write(`\nDaten-Hinweise in ${s} (${js.text.length} Zeichen):\n\n${hints.map(x => '- ' + x).join('\n')}`);
+      }
     }
   }
   await probeApis({id, pages, fetchFn});
