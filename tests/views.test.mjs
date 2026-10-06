@@ -173,6 +173,17 @@ test('Vereinsnavigation funktioniert nach Kategorie- und Jahreswechsel', () => {
   } finally { context.document.querySelector=oldQuery; context.document.getElementById=oldId; }
 });
 
+test('European League live game: Spielzeit als mm:ss, Hinweis ohne Ereignisverlauf, Teamstatistik statt Spielerwerte',()=>{
+ run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[17,9],clock:'18:47',phase:'1st Half',url:'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',details:{ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:{isLive:true,home:{goals:16,shots:19,misses:3,efficiency:84,sevenGoals:0,sevenShots:0,twoMinutes:0,warnings:0,disqualifications:0,technicalFaults:2},guest:{goals:8,shots:18,misses:10,efficiency:44,sevenGoals:2,sevenShots:2,twoMinutes:null,warnings:0,disqualifications:0,technicalFaults:4}}}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
+ const overview=run('liveMatchPage({id:"live"},"overview")');
+ assert.match(overview,/1st Half · 18:47</);assert.doesNotMatch(overview,/18:47′/);
+ assert.match(overview,/European League liefert die EHF keinen Ereignisverlauf/);assert.doesNotMatch(overview,/noch kein Ereignisverlauf/);
+ assert.match(overview,/Offiziellen Liveticker öffnen/);
+ const stats=run('liveMatchPage({id:"live"},"stats")');
+ assert.match(stats,/Teamstatistik/);assert.match(stats,/Wurfquote/);assert.match(stats,/84 %/);assert.match(stats,/2\/2/);assert.match(stats,/Teamwerte der EHF/);assert.doesNotMatch(stats,/keine Spielerstatistiken verfügbar/);
+ run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
+});
+
 test('Live game opens internal details with verified events and player statistics',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);

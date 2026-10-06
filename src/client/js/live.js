@@ -108,13 +108,20 @@ function liveMatchContent(g, tab) {
 }
 function liveEventFeed(live) {
  const events=live.details?.events;
+ if(!events&&live.league==='European League')return '<h2>Spielverlauf</h2><p class="notice">Für Spiele der European League liefert die EHF keinen Ereignisverlauf. Spielstand und Spielzeit werden live angezeigt, die Teamwerte findest du unter «Statistiken»; weitere Angaben im offiziellen Liveticker.</p>';
  if(!events)return '<h2>Spielverlauf</h2><p class="notice">Für dieses Spiel ist noch kein Ereignisverlauf verfügbar.</p>';
  // Goals and disciplinary decisions form the readable feed; all source events remain expandable.
  const highlights=events.filter(e=>/tor|zeitstrafe|verwarn|disqual|time.?out/i.test(e.action));
  const markup=list=>list.map(e=>`<li class="live-event"><time>${liveEscape(e.time||'–')}</time><div><strong>${liveEscape(e.action)}${e.score?' · '+e.score.join(' : '):''}</strong>${e.homePlayer?`<span>${liveEscape(e.homePlayer)} <small>${liveEscape(live.home)}</small></span>`:''}${e.awayPlayer?`<span>${liveEscape(e.awayPlayer)} <small>${liveEscape(live.away)}</small></span>`:''}</div></li>`).join('');
  return `<h2>Spielverlauf</h2><p class="muted">Neueste Ereignisse zuerst</p>${events.length?`<ol class="live-events">${markup(highlights)}</ol><details class="live-all-events"><summary>Alle Spielereignisse (${events.length})</summary><ol class="live-events">${markup(events)}</ol></details>`:'<p class="muted">Noch keine Ereignisse gemeldet.</p>'}`;
 }
+function liveTeamStats(live) {
+ const t=live.details.teamStats, value=n=>n===null||n===undefined?'–':n, pair=(a,b)=>a===null||a===undefined?'–':b===null||b===undefined?String(a):a+'/'+b;
+ const rows=[['Tore',x=>value(x.goals)],['Würfe',x=>value(x.shots)],['Fehlwürfe',x=>value(x.misses)],['Wurfquote',x=>x.efficiency===null?'–':x.efficiency+' %'],['7 m (Tore/Würfe)',x=>pair(x.sevenGoals,x.sevenShots)],['2-Minuten-Strafen',x=>value(x.twoMinutes)],['Verwarnungen',x=>value(x.warnings)],['Disqualifikationen',x=>value(x.disqualifications)],['Technische Fehler',x=>value(x.technicalFaults)]];
+ return `<h2>Teamstatistik</h2><div class="report-table-wrap" tabindex="0" role="region" aria-label="Teamstatistik"><table class="report-table"><thead><tr><th scope="col">${liveEscape(live.home)}</th><th scope="col"><span class="live-sr-context">Wert</span></th><th scope="col">${liveEscape(live.away)}</th></tr></thead><tbody>${rows.map(([label,f])=>`<tr><td>${f(t.home)}</td><th scope="row">${label}</th><td>${f(t.guest)}</td></tr>`).join('')}</tbody></table></div><p class="muted">Teamwerte der EHF. Die EHF liefert keine Spielerwerte für dieses Spiel · –: Wert nicht verfügbar</p>`;
+}
 function livePlayerStats(live) {
+ if(live.details?.teamStats)return liveTeamStats(live);
  const roster=live.details?.players, value=n=>n===null||n===undefined?'–':n;
  if(!roster)return '<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
  return [true,false].map(home=>{

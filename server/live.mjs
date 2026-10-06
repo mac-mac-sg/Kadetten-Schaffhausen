@@ -17,6 +17,19 @@ export function parseFinishedMatch(g) {
 }
 const ehfLiveEndpoint='https://ehfel.eurohandball.com/umbraco/api/livescoreapi/GetLiveScoreMatches/138790';
 const ehfKadettenId='uyEpUicNjwv8hCX9B7A3sg';
+// Die EHF meldet die Spieluhr als «mm:ss» (zum Beispiel «18:47»); nur eine reine Minutenzahl bekommt das Minutenzeichen.
+export function ehfClock(value){
+ if(value===null||value===undefined||value===''||value==='-')return null;
+ const text=String(value).trim();
+ return /^\d{1,2}:\d{2}$/.test(text)?text:text+'′';
+}
+// Teamwerte aus GetMatchDetailStatistic (die EHF liefert keine Spielerwerte und für diese Spiele keinen Ereignisverlauf).
+export function parseEhfTeamStats(data){
+ if(!data||typeof data!=='object'||!data.homeStatistics||!data.guestStatistics)throw Error('Missing EHF statistics');
+ const count=v=>Number.isInteger(v)&&v>=0?v:null;
+ const pick=t=>({goals:count(t.totalGoals),shots:count(t.totalShots),misses:count(t.totalMisses),efficiency:count(t.shotEfficiency),sevenGoals:count(t.goals7meters),sevenShots:count(t.shots7meters),twoMinutes:count(t.suspensions2minutes),warnings:count(t.warnings),disqualifications:count(t.disqualifications),technicalFaults:count(t.technicalFaults)});
+ return {home:pick(data.homeStatistics),guest:pick(data.guestStatistics),isLive:data.isLive===true};
+}
 export function parseEhfLiveMatch(data){
  if(!Array.isArray(data?.days))throw Error('Missing EHF live feed');
  for(const day of data.days){
@@ -31,13 +44,21 @@ export function parseEhfLiveMatch(data){
    if(!m.homeTeam.name||!m.guestTeam.name)throw Error('Missing EHF teams');
    const valid=v=>Number.isInteger(v)&&v>=0;
    const score=valid(item.homeStats?.totalGoals)&&valid(item.guestStats?.totalGoals)?[item.homeStats.totalGoals,item.guestStats.totalGoals]:null;
-   const time=stats.time!==null&&stats.time!==undefined&&stats.time!==''&&stats.time!=='-'?String(stats.time)+'′':null;
+   const time=ehfClock(stats.time);
    return {id,home:m.homeTeam.name,away:m.guestTeam.name,score,league:'European League',clock:time,phase:typeof stats.phase==='string'?stats.phase:null,url:url.href};
   }
  }
  return null;
 }
-async function getEhfLiveMatch(){const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});if(!r.ok)throw Error('EHF live source unavailable');return parseEhfLiveMatch(await r.json())}
+const ehfStatisticEndpoint='https://ehfel.eurohandball.com/umbraco/api/matchdetailapi/GetMatchDetailStatistic?matchId=';
+async function getEhfDetails(id){
+ try{
+  const r=await fetch(ehfStatisticEndpoint+encodeURIComponent(id),{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
+  if(!r.ok)throw Error('EHF statistics unavailable');
+  return {ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:parseEhfTeamStats(await r.json())};
+ }catch{return {ok:false,updatedAt:null,events:null,players:null,teamStats:null}}
+}
+async function getEhfLiveMatch(){const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});if(!r.ok)throw Error('EHF live source unavailable');const match=parseEhfLiveMatch(await r.json());if(match)match.details=await getEhfDetails(match.id);return match}
 async function getNationalLiveMatch(){const games=await liveQuery(liveGamesQuery,{teamId:41473});const selected=selectLiveGame(games)||selectFinishedGame(games);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0])||parseLiveMatch(detail.game[0]);if(match)match.details=statistics;return match}
 let liveCache,livePending;
 export async function getLiveMatch(){
