@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, tickerValueCounts, htmlText, excerptFrom, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -60,6 +60,13 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
     }
   }
   await tickerData({id, pages, fetchFn, env});
+  const tickerPage = pages.find(p => p.url.includes('ticker.ehf.eu/v3/') && p.text);
+  if (tickerPage) {
+    const disclaimer = excerptFrom(htmlText(tickerPage.text), 'Disclaimer x', 2500) || excerptFrom(htmlText(tickerPage.text), 'The EHF does not guarantee', 2500);
+    write(`\n### Disclaimer der Ticker-Seite (Text aus dem HTML)\n\n${disclaimer ? code(disclaimer) : 'nicht gefunden'}`);
+  }
+  const terms = await get(fetchFn, 'https://ticker.ehf.eu/Disclaimer.aspx');
+  write(`\n### https://ticker.ehf.eu/Disclaimer.aspx\n\nStatus ${terms.status || 'Fehler'}, ${terms.text.length} Zeichen\n\n${terms.text ? code(preview(htmlText(terms.text), 3500)) : ''}`);
   for (const url of tickerProbeUrls(id)) {
     const r = await get(fetchFn, url);
     write(`\n#### ${url}\n\nStatus ${r.status || 'Fehler'}, ${r.type || 'kein Inhaltstyp'}, ${r.text.length} Zeichen${r.error ? ' (' + r.error + ')' : ''}`);
@@ -154,6 +161,9 @@ async function tickerData({id, pages, fetchFn, env}) {
         write(`\nOberste Schlüssel der Antwort:\n\n${code(sum.top.join('\n'))}\nSchlüssel des Ereignisbereichs: ${sum.eventKeys.join(', ') || 'keiner'}\n\nEreignisse insgesamt: ${sum.total}\n\nAnzahl je Art:\n\n${code(Object.entries(sum.counts).map(([k, n]) => k + ': ' + n).join('\n'))}`);
         write(`\nDie ersten ${sum.firstActions.length} Ereignisse:\n\n${code(preview(JSON.stringify(sum.firstActions), 3500))}`);
         write(`\nEin Beispiel je Art:\n\n${Object.entries(sum.samples).map(([k, list]) => '- ' + k + ': ' + preview(JSON.stringify(list[0]), 380)).join('\n')}`);
+        const counts = tickerValueCounts(json);
+        write(`\nWerte der Würfe und Ereignisse:\n\n${code(['Wurfergebnis (result): ' + JSON.stringify(counts.shotResult), 'Wurfzone (loc): ' + JSON.stringify(counts.shotLoc), 'Zusatz (actionAdd): ' + JSON.stringify(counts.actionAdd), 'Abschnitt je Art: ' + JSON.stringify(counts.periodByAction), 'Rollen je Art: ' + JSON.stringify(counts.roleByAction), 'Phasenstände (phaseScores): ' + preview(JSON.stringify(counts.phaseScores), 600)].join('\n'))}`);
+        if (json.playerstats) write(`\nAufbau von playerstats:\n\n${code(describeShape(json.playerstats, 3, 40).join('\n'))}`);
         for (const key of ['livescores', 'matchstats', 'motiondataStatistics', 'lineup']) if (json[key] !== undefined) write(`\nAufbau von ${key}:\n\n${code(describeShape(json[key], 2, 40).join('\n'))}`);
       }
     } catch (e) {
