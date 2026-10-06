@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {buildPreview, tableFor} from '../server/preview-text.mjs';
 import {syncPreviews as sync} from '../scripts/lib/preview-sync.mjs';
+import {collectFacts} from '../scripts/lib/preview-facts.mjs';
 import {previews, fixtureKey, validPreview} from '../server/previews.mjs';
 
 const NOW = new Date('2026-10-06T11:00:00Z');
@@ -190,6 +191,62 @@ test('KI-Vorschau: Antwort ohne Titelzeile wird mit dem bisherigen Titel gespeic
   assert.deepEqual([r.ki, r.fallback, k.generator], [1, 0, 'ki']);
   assert.equal(k.headline, 'Kadetten Schaffhausen gegen Handball Stäfa');
   assert.equal(k.paragraphs.length, 2);
+});
+
+test('Fakten: letzte Resultate des eigenen Teams aus dem Datenstand, des QHL-Gegners aus der SHV-Quelle, Direktduelle; Fehler und fehlende Quellen lassen Angaben weg', async () => {
+  const played = (id, date, home, away, score) => ({id, date, home, away, score, league: 'QHL'});
+  const snap = {tables: {QHL: table}, games: [
+    played('a', '2026-09-01', 'Kadetten Schaffhausen', 'A', [30, 20]), played('b', '2026-09-08', 'B', 'Kadetten Schaffhausen', [25, 28]),
+    played('c', '2026-09-15', 'Kadetten Schaffhausen', 'C', [31, 31]), played('d', '2026-09-22', 'D', 'Kadetten Schaffhausen', [20, 27]),
+    {id: 'offen', date: '2026-09-29', home: 'Kadetten Schaffhausen', away: 'E', league: 'QHL'}, kGame]};
+  const recentGames = async team => ({games: [played('x', '2026-10-01', team, 'Z', [22, 21]), played('y', '2026-09-20', 'Y', team, [18, 19]), played('spaeter', '2026-10-20', team, 'Q', [1, 2])]});
+  const f = await collectFacts('kadetten', kGame, {snapshot: snap, fcsgData: fcsg}, {headToHead: async () => ({games: [duel, duel, duel, duel]}), recentGames});
+  assert.deepEqual(f.recent[0].games.map(x => x.id ?? x.date), ['2026-09-22', '2026-09-15', '2026-09-08'], 'drei neueste abgeschlossene, ohne offene und spätere');
+  assert.equal(f.recent[1].team, 'Handball Stäfa');
+  assert.deepEqual(f.recent[1].games.map(x => x.date), ['2026-10-01', '2026-09-20'], 'Resultate nach dem Spieltag werden ignoriert');
+  assert.equal(f.recent[1].shv, true);
+  assert.equal(f.duels.length, 3);
+  assert.equal(f.table, table);
+
+  const ehl = await collectFacts('kadetten', {...kGame, league: 'EHL'}, {snapshot: {...snap, tables: {EHL: table}}, fcsgData: fcsg}, {headToHead: async () => { throw Error('nie'); }, recentGames: async () => { throw Error('nie'); }});
+  assert.deepEqual([ehl.recent.length, ehl.duels.length], [1, 0], 'EHL: nur das eigene Team, keine SHV-Abfragen');
+
+  const broken = await collectFacts('kadetten', kGame, {snapshot: snap, fcsgData: fcsg}, {headToHead: async () => { throw Error('weg'); }, recentGames: async () => { throw Error('weg'); }});
+  assert.deepEqual([broken.duels.length, broken.recent[1].games.length], [0, 0]);
+
+  const fc = await collectFacts('fcsg', fGame, {snapshot: snap, fcsgData: {...fcsg, games: [{...fGame, id: 'v1', date: '2026-10-04', home: 'FC Basel', away: 'FC St.Gallen 1879', score: [1, 2], status: 'FINISHED'}, fGame]}}, {});
+  assert.deepEqual([fc.recent.length, fc.recent[0].team, fc.recent[0].games.length], [1, 'FC St.Gallen 1879', 1], 'FCSG: nur eigene Resultate, Gegner ohne Angabe');
+});
+
+test('Vorschau-Text mit letzten Resultaten und mehreren Direktduellen: Absatz drei, höchstens drei Absätze, Quellen', () => {
+  const g1 = {date: '2026-09-22', home: 'D', away: 'Kadetten Schaffhausen', score: [20, 27]};
+  const g2 = {date: '2026-09-15', home: 'Kadetten Schaffhausen', away: 'C', score: [31, 31]};
+  const d2 = {...duel, id: '8', date: '2025-11-02', home: 'Kadetten Schaffhausen', away: 'Handball Stäfa', score: [35, 26], externalUrl: 'https://www.handball.ch/de/matchcenter/spiele/8'};
+  const p = buildPreview({club: 'kadetten', game: kGame, table: table.QHL, duels: [duel, d2], recent: [{team: 'Kadetten Schaffhausen', games: [g1, g2]}, {team: 'Handball Stäfa', games: [{date: '2026-10-03', home: 'Handball Stäfa', away: 'BSV Bern', score: [24, 30]}], shv: true}], now: NOW});
+  assert.equal(p.paragraphs.length, 3);
+  assert.equal(p.paragraphs[2], 'Die letzten Direktduelle: 14.03.2026 Handball Stäfa – Kadetten Schaffhausen 27:31; 02.11.2025 Kadetten Schaffhausen – Handball Stäfa 35:26. Zuletzt spielte Kadetten Schaffhausen: 22.09. D – Kadetten Schaffhausen 20:27; 15.09. Kadetten Schaffhausen – C 31:31. Zuletzt spielte Handball Stäfa: 03.10. Handball Stäfa – BSV Bern 24:30.');
+  assert.deepEqual(p.sources.map(s => s.label), ['Kadetten Schaffhausen: Matchcenter', 'handball.ch: Direktduell vom 14.03.2026', 'handball.ch: Direktduell vom 02.11.2025', 'handball.ch: Matchcenter']);
+  assert.equal(validPreview(p), true);
+  const onlyForm = buildPreview({club: 'kadetten', game: kGame, table: null, recent: [{team: 'Kadetten Schaffhausen', games: [g1]}], now: NOW});
+  assert.equal(onlyForm.paragraphs.length, 2, 'Spielangaben und letzte Resultate genügen');
+  const broken = buildPreview({club: 'kadetten', game: kGame, table: table.QHL, recent: [{team: 'X', games: [{date: 'kaputt', home: 'a', away: 'b', score: ['1', 2]}]}], now: NOW});
+  assert.equal(broken.paragraphs.length, 2, 'ungültige Resultate werden ignoriert');
+});
+
+test('Schreiblauf: die KI und der sachliche Text erhalten die gesammelten Fakten (letzte Resultate, Direktduelle)', async () => {
+  const snap = {...snapshot, games: [{id: 'c', date: '2026-09-15', home: 'Kadetten Schaffhausen', away: 'C', score: [31, 31], league: 'QHL'}, kGame]};
+  const seen = [];
+  const bucket = memBucket();
+  await syncPreviews(bucket, {snapshot: snap, fcsgData: {games: []}}, {
+    headToHead: async () => ({games: [duel]}),
+    recentGames: async team => ({games: [{id: 'z', date: '2026-10-01', home: team, away: 'Z', score: [22, 21]}]}),
+    rewrite: async baseline => { seen.push(baseline.paragraphs.at(-1)); return {ok: false, error: 'HTTP 500'}; },
+    now: NOW
+  });
+  assert.match(seen[0], /Das letzte Direktduell/);
+  assert.match(seen[0], /Zuletzt spielte Kadetten Schaffhausen: 15\.09\. Kadetten Schaffhausen – C 31:31\./);
+  assert.match(seen[0], /Zuletzt spielte Handball Stäfa: 01\.10\. Handball Stäfa – Z 22:21\./);
+  assert.equal(JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).paragraphs.at(-1), seen[0], 'Rückfalltext enthält dieselben Fakten');
 });
 
 test('Oberfläche: «KI-Match-Vorschau» nur für KI-Texte und ältere Einsendungen, «Match-Vorschau» für Texte aus Daten', () => {

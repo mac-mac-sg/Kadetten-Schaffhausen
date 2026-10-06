@@ -23,8 +23,13 @@ function standings(rows) {
 const line = (team, rank, r) => `${team} auf dem ${rank}. Rang (${r.points} Punkte aus ${r.played} Spielen, Torverhältnis ${r.gf}:${r.ga})`;
 const isNumber = v => Number.isFinite(v);
 
-// input: {club, game, table (Zeilen der passenden Meisterschaftstabelle oder null), duel (letztes Direktduell oder null), now}
-export function buildPreview({club, game: g, table = null, duel = null, now = new Date()}) {
+const fullDate = d => d.split('-').reverse().join('.');
+const shortDate = d => d.split('-').reverse().slice(0, 2).join('.') + '.';
+const validGame = r => r && Array.isArray(r.score) && r.score.length === 2 && r.score.every(Number.isInteger) && /^\d{4}-\d{2}-\d{2}$/.test(r.date || '') && r.home && r.away;
+
+// input: {club, game, table (Zeilen der passenden Meisterschaftstabelle oder null), duels (letzte Direktduelle, neueste zuerst; oder
+// `duel` für das letzte), recent ([{team, games}] letzte Resultate je Team, neueste zuerst), now}
+export function buildPreview({club, game: g, table = null, duel = null, duels = null, recent = [], now = new Date()}) {
   const paragraphs = [`${g.home} empfängt ${g.away} (${g.league}), ${when(g)}${g.venue ? ' in ' + g.venue : ''}.`];
   const {list, rank} = standings(table);
   const [ra, rb] = [rank(g.home), rank(g.away)];
@@ -33,14 +38,22 @@ export function buildPreview({club, game: g, table = null, duel = null, now = ne
     if ([a, b].every(r => [r.points, r.played, r.gf, r.ga].every(isNumber)))
       paragraphs.push(`In der Tabelle liegt ${line(g.home, ra, a)}, ${line(g.away, rb, b)}.`);
   }
-  if (duel?.score?.length === 2 && /^\d{4}-\d{2}-\d{2}$/.test(duel.date || ''))
-    paragraphs.push(`Das letzte Direktduell (${duel.date.split('-').reverse().join('.')}, ${duel.home} – ${duel.away}) endete ${duel.score[0]}:${duel.score[1]}.`);
+  const duelList = (duels ?? (duel ? [duel] : [])).filter(validGame).slice(0, 3);
+  const third = [];
+  if (duelList.length === 1) third.push(`Das letzte Direktduell (${fullDate(duelList[0].date)}, ${duelList[0].home} – ${duelList[0].away}) endete ${duelList[0].score[0]}:${duelList[0].score[1]}.`);
+  else if (duelList.length > 1) third.push(`Die letzten Direktduelle: ${duelList.map(d => `${fullDate(d.date)} ${d.home} – ${d.away} ${d.score[0]}:${d.score[1]}`).join('; ')}.`);
+  for (const r of recent) {
+    const games = (r.games || []).filter(validGame).slice(0, 3);
+    if (games.length) third.push(`Zuletzt spielte ${r.team}: ${games.map(x => `${shortDate(x.date)} ${x.home} – ${x.away} ${x.score[0]}:${x.score[1]}`).join('; ')}.`);
+  }
+  if (third.length) paragraphs.push(third.join(' '));
   if (paragraphs.length < 2) return null;
   const sources = [];
   const add = (label, url) => { if (typeof url === 'string' && /^https:\/\//.test(url) && !sources.some(s => s.url === url)) sources.push({label, url}); };
   if (club === 'kadetten') {
     add('Kadetten Schaffhausen: Matchcenter', 'https://kadettensh.ch/matchcenter/');
-    if (duel) add('handball.ch: Direktduell', duel.externalUrl);
+    for (const d of duelList) add(duelList.length === 1 ? 'handball.ch: Direktduell' : `handball.ch: Direktduell vom ${fullDate(d.date)}`, d.externalUrl);
+    if (recent.some(r => r.shv)) add('handball.ch: Matchcenter', 'https://www.handball.ch/de/matchcenter/');
   } else {
     add('FC St. Gallen: Spiel im Match-Center', g.url);
     add('FC St. Gallen: offizielle Daten', 'https://www.fcsg.ch/');

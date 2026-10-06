@@ -5,7 +5,8 @@
 // der KI bleibt der sachliche Text (Rückfall).
 // Je Verein die nächsten Spiele; vorhandene gültige Vorschauen anderer Herkunft (z. B. früher von ChatGPT) bleiben bis zu ihrem
 // Ablauf unberührt. Fehler bei einer Vorschau lassen alle anderen und den Datenstand unberührt.
-import {buildPreview, tableFor} from '../../server/preview-text.mjs';
+import {buildPreview} from '../../server/preview-text.mjs';
+import {collectFacts} from './preview-facts.mjs';
 import {parseAiText, toAiPreview} from '../../server/preview-ai.mjs';
 import {validPreview, fixtureKey} from '../../server/previews.mjs';
 
@@ -19,9 +20,9 @@ export async function factsHash(baseline) {
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// deps.headToHead(home, away) -> {games: [...]} | wirft; nur für Kadetten-Spiele der QHL.
+// deps.headToHead(home, away) und deps.recentGames(team) -> {games: [...]} | wirft; nur für Kadetten-Spiele der QHL.
 // deps.rewrite(baseline) -> {ok, text} | {ok: false, error}; ohne rewrite entstehen nur die sachlichen Texte.
-export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = null, rewrite = null, now = new Date()} = {}) {
+export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = null, recentGames = null, rewrite = null, now = new Date()} = {}) {
   const today = now.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
   const out = {written: 0, unchanged: 0, kept: 0, skipped: 0, errors: 0, ki: 0, fallback: 0, rejected: []};
   let aiDown = false;
@@ -34,11 +35,8 @@ export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = n
         const old = saved ? await saved.json() : null;
         const fresh = old && old.fixtureKey === fixtureKey(g) && Date.parse(old.generatedAt) > now.getTime() - 72 * HOURS;
         if (fresh && !old.generator) { out.kept++; continue; }
-        let duel = null;
-        if (club === 'kadetten' && g.league === 'QHL' && headToHead) {
-          try { duel = (await headToHead(g.home, g.away)).games?.[0] || null; } catch {}
-        }
-        const baseline = buildPreview({club, game: g, table: tableFor(club, g, snapshot, fcsgData), duel, now});
+        const facts = await collectFacts(club, g, {snapshot, fcsgData}, {headToHead, recentGames});
+        const baseline = buildPreview({club, game: g, ...facts, now});
         if (!baseline || !validPreview(baseline)) { out.skipped++; continue; }
         const hash = await factsHash(baseline);
         const recent = fresh && Date.parse(old.generatedAt) > now.getTime() - 12 * HOURS;
