@@ -2926,5 +2926,10 @@ html.snap-profile {
 @media(max-width:600px) { .fcsg-player-stat-grid { grid-template-columns: 1fr; } }
 .stats-table th,.stats-table td{text-align:center;font-variant-numeric:tabular-nums}
 .stats-table th[scope='row']{text-align:left}
-.stats-table td:first-child,.stats-table th:first-child{width:2.2rem;color:#bbc5b3}
+.stats-table .num{width:2rem;color:#bbc5b3}
 .ai-match-report{margin-top:0}
+/* Spielerstatistik: passt auf Handybreite ohne Scrollen; Namen dürfen umbrechen. */
+.report-table.stats-table{min-width:0;width:100%;font-size:13px}
+.report-table.stats-table th,.report-table.stats-table td{padding:9px 4px}
+.report-table.stats-table tbody th{white-space:normal;overflow-wrap:anywhere;padding-left:8px}
+.report-table.stats-table thead th{padding:9px 3px}

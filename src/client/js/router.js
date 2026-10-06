@@ -133,7 +133,7 @@ function render() {
             ? id === 'live' ? liveMatchPage({id:'live'},tab) : games.find(g => g.id === id)
               ? match(
                   games.find(g => g.id === id),
-                  ['overview', 'squad', 'stats'].includes(tab) ? tab : 'overview'
+                  ['overview', 'report', 'squad', 'stats'].includes(tab) ? tab : 'overview'
                 )
               : notFound()
             : page === 'player'

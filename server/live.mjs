@@ -184,7 +184,7 @@ async function getNationalLiveDetails(game) {
 // Archived reports use the final SHV feed, independent of the matchday clock.
 const reportQuery = liveStatsQuery.replace('totalSuspension useReducedResultDisplay', 'totalSuspension totalSaves totalShotsGK useReducedResultDisplay');
 const reportTeamQuery = 'query($gameId:Int){gameTeamStats(gameId:$gameId){gameId teamId turnovers totalShots totalScore totalSaves throwPercentage savePercentage isHome}}';
-const reportId = id => ({staefa:508373,stgallen:508367})[id] || (/^[1-9][0-9]{0,8}$/.test(String(id)) ? Number(id) : null);
+export const reportId = id => ({staefa:508373,stgallen:508367})[id] || (/^[1-9][0-9]{0,8}$/.test(String(id)) ? Number(id) : null);
 const reportNumber = v => typeof v === 'string' && /^\d+$/.test(v) ? nonnegative(Number(v)) : nonnegative(v);
 export function parseArchivedReport(data, game) {
  const match = parseFinishedMatch(game);

@@ -230,7 +230,7 @@ test('Live fixture uses the shared matchday ticker and confirmed completion upda
 test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne fehlende Werte als Null zu deuten',()=>{
  run(`globalThis.reportFixture=games.find(g=>g.id==='stgallen'); gameReports.stgallen={gameId:508367,score:reportFixture.score,half:[12,16],checkedAt:'2026-10-04T00:00:00Z',spectators:null,referees:[],source:'https://www.handball.ch/de/matchcenter/spiele/508367',teams:[{id:41571,name:reportFixture.home,shots:48,saves:6,turnovers:9,throwPercentage:52,savePercentage:17,twoMinutes:2,warnings:0,timeouts:3,players:[{id:1,name:'A & B',keeper:false,goals:null,shots:4,seven:0,sevenShots:0,twoMinutes:0,warnings:0,redCards:0}]},{id:41473,name:reportFixture.away,shots:40,saves:14,turnovers:13,throwPercentage:78,savePercentage:36,twoMinutes:3,warnings:0,timeouts:2,players:[{id:2,name:'C',keeper:false,goals:31,shots:40,seven:5,sevenShots:7,twoMinutes:3,warnings:0,redCards:0}]}],events:[{id:1,seconds:90,time:'01:30',score:[1,0],action:'Tor',homePlayer:'A & B'}]};`);
  try{
-  const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/–\/4<\/td><td>–/);
+  const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/data-stats-team="home"/);assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);assert.doesNotMatch(stats,/Zwischen den Pfosten/);
   const history=view('reportHistory(reportFixture)');assert.match(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
   assert.match(view("matchOverview(reportFixture)"),/Torverlauf/);
  }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
@@ -286,7 +286,7 @@ test('European League: gesicherter Endstand zeigt KI-Matchbericht, Torfolge und 
  assert.match(away,/data-stats-team="away" aria-pressed="true"/);assert.match(away,/data-stats-panel="home" hidden/);
  // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
  run('liveStatsTeam=null;__g.score=[41,30]');
- assert.doesNotMatch(run('match(__g,"report")'),/KI-Matchbericht/);
+ assert.doesNotMatch(run('match(__g,"report")'),/Kadetten ziehen früh davon/);
  run('ehfArchive={}');
 });
 
@@ -294,8 +294,28 @@ test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
  run(`globalThis.__q={id:'qhl-test',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa',date:'2026-10-03',time:'18:00',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[45,34],half:[21,14]}`);
  const open=run('match(__q,"overview")');
  assert.match(open,/Endresultat/);assert.ok(open.indexOf('>Statistik<')<open.indexOf('>Rückblick<'));
- assert.match(open,/#match\/qhl-test\/report/);
+ assert.match(open,/#match\/qhl-test\/report/);assert.doesNotMatch(open,/Aufgebot/);assert.match(run('match(__q,"squad")'),/Endresultat/);
  assert.match(run('match(__q,"report")'),/Der Rückblick/);
  run('globalThis.__q.score=null');
  assert.match(run('match(__q,"overview")'),/>Vorschau</);
+});
+
+test('Statistik abgeschlossener QHL-Spiele: Mannschaftswahl, Feldspieler mit Tore/Würfe, Quote, 7 m, Gelb, Rot; Torhüter als Kacheln «Zwischen den Pfosten»',()=>{
+ run(`globalThis.__r=games.find(g=>g.id==='stgallen'); gameReports.stgallen={gameId:508367,score:__r.score,half:[12,16],checkedAt:'2026-10-04T00:00:00Z',spectators:null,referees:[],source:'https://www.handball.ch/de/matchcenter/spiele/508367',teams:[{id:41571,name:__r.home,shots:48,saves:6,turnovers:9,throwPercentage:52,savePercentage:17,twoMinutes:2,warnings:0,timeouts:3,players:[{id:1,name:'MUSTER Max',keeper:false,goals:5,shots:8,seven:1,sevenShots:2,twoMinutes:1,warnings:1,redCards:0},{id:3,name:'KEEPER Karl',keeper:true,goals:0,shots:0,seven:0,sevenShots:0,twoMinutes:0,warnings:0,redCards:0,saves:6,keeperShots:20}]},{id:41473,name:__r.away,shots:40,saves:14,turnovers:13,throwPercentage:78,savePercentage:36,twoMinutes:3,warnings:0,timeouts:2,players:[{id:2,name:'C',keeper:false,goals:31,shots:40,seven:5,sevenShots:7,twoMinutes:3,warnings:0,redCards:0}]}],events:[]};liveStatsTeam=null`);
+ try{
+  const stats=view('reportStats(__r)');
+  const field=stats.slice(stats.indexOf('<h3>Feldspieler</h3>'),stats.indexOf('<h4>Zwischen den Pfosten</h4>'));
+  assert.match(field,/MUSTER Max/);assert.doesNotMatch(field,/KEEPER Karl/);
+  assert.match(field,/<th scope="col">Tore\/ Würfe<\/th><th scope="col">Quote<\/th><th scope="col">7 m<\/th><th scope="col">2 min<\/th><th scope="col">Gelb<\/th><th scope="col">Rot<\/th>/);
+  assert.match(field,/<td>5\/8<\/td><td>62[.,]5 %<\/td><td>1\/2<\/td><td>1<\/td><td>1<\/td><td>0<\/td>/);
+  assert.doesNotMatch(stats,/gehaltene Siebenmeter/);
+  assert.match(stats,/<h4>Zwischen den Pfosten<\/h4><div class="facts"><div><span>KEEPER Karl<\/span><strong>6 Paraden · 30 %<\/strong>/);
+  assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);
+  assert.match(stats,/data-stats-team="away"/);assert.match(stats,/data-stats-panel="(home|away)" hidden/);
+  assert.match(stats,/Das Spiel in Zahlen/);assert.match(stats,/1\. Halbzeit/);
+ }finally{run('delete gameReports.stgallen;delete globalThis.__r');}
+});
+
+test('Router kennt den Tab «report»',()=>{
+ assert.match(fs.readFileSync('src/client/js/router.js','utf8'),/\['overview', 'report', 'squad', 'stats'\]\.includes\(tab\)/);
 });
