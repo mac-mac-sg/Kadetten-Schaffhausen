@@ -12,6 +12,8 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 | Datenautomation | Externe Automation, Zeiten siehe docs/architecture.md (Abschnitt «Aktualisierung») | Ruft `POST /api/refresh` mit einem Automationsschlüssel auf |
 | Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/` |
 
+Geplant: Umzug des Datendienstes auf Cloudflare, Phasen und Prüfpunkte in [cloudflare-umzug.md](cloudflare-umzug.md). Bis zum Umschalten bleibt alles wie oben.
+
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - Datendienst: `KADETTEN_OWNER_EMAIL`, `KADETTEN_AUTH_PROVIDER`, `KADETTEN_SITES_ORIGIN`, `KADETTEN_UPDATE_KEY_SHA256` (nur der SHA-256-Digest des Automationsschlüssels), bei `cloudflare-access` zusätzlich `KADETTEN_ACCESS_ISSUER` und `KADETTEN_ACCESS_AUD`.
 - GitHub: keine eigenen Secrets nötig; die Workflows laufen ohne Zugangsschlüssel. Pages-Quelle: Settings → Pages → Source → GitHub Actions.
