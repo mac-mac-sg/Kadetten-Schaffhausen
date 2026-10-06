@@ -306,9 +306,9 @@ test('Statistik abgeschlossener QHL-Spiele: Mannschaftswahl, Feldspieler mit Tor
   const stats=view('reportStats(__r)');
   const field=stats.slice(stats.indexOf('<h3>Feldspieler</h3>'),stats.indexOf('<h4>Zwischen den Pfosten</h4>'));
   assert.match(field,/MUSTER Max/);assert.doesNotMatch(field,/KEEPER Karl/);
-  assert.match(field,/<th scope="col">Tore\/ Würfe<\/th><th scope="col">Quote<\/th><th scope="col">7 m<\/th><th scope="col">Gelb<\/th><th scope="col">Rot<\/th>/);
-  assert.doesNotMatch(field,/2 min|2M/);
-  assert.match(field,/<td>5\/8<\/td><td>62[.,]5 %<\/td><td>1\/2<\/td><td>1<\/td><td>0<\/td>/);
+  assert.match(field,/<th scope="col">Tore\/ Würfe<\/th><th scope="col">Quote<\/th><th scope="col">7 m<\/th><th scope="col">2 min<\/th><th scope="col">Gelb<\/th><th scope="col">Rot<\/th>/);
+  assert.match(field,/<td>5\/8<\/td><td>62[.,]5 %<\/td><td>1\/2<\/td><td>1<\/td><td>1<\/td><td>0<\/td>/);
+  assert.doesNotMatch(stats,/gehaltene Siebenmeter/);
   assert.match(stats,/<h4>Zwischen den Pfosten<\/h4><div class="facts"><div><span>KEEPER Karl<\/span><strong>6 Paraden · 30 %<\/strong>/);
   assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);
   assert.match(stats,/data-stats-team="away"/);assert.match(stats,/data-stats-panel="(home|away)" hidden/);
