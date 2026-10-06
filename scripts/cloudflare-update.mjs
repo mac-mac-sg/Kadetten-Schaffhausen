@@ -11,6 +11,7 @@ import fcsgSeed from '../server/fcsg-seed.json' with {type: 'json'};
 import {runRefresh} from '../server/refresh-run.mjs';
 import {refreshFcsg} from '../server/fcsg.mjs';
 import {kvRestStore} from './lib/kv-rest-store.mjs';
+import {syncProgrammes} from './lib/programmes-source.mjs';
 
 const write = text => {
   console.log(text);
@@ -20,7 +21,18 @@ const statusRows = status =>
   Object.entries(status || {}).map(([k, v]) => `| ${k} | ${v.ok ? '✅' : '❌'} | ${v.updatedAt || ''} | ${v.error ? String(v.error).slice(0, 120) : ''} |`);
 const table = (title, status) => [`\n**${title}**\n`, '| Quelle | Ergebnis | Stand | Fehler |', '|---|---|---|---|', ...statusRows(status)].join('\n');
 
-export async function main({schreiben = false, env = process.env, fetchFn = fetch, supplied = {}} = {}) {
+const programmeHttp = {
+  async text(url) {
+    const r = await fetch(url, {headers: {'User-Agent': 'Mozilla/5.0 (compatible; kadetten-app-programmes)'}, signal: AbortSignal.timeout(30000)});
+    return {status: r.status, text: await r.text()};
+  },
+  async bytes(url) {
+    const r = await fetch(url, {headers: {'User-Agent': 'Mozilla/5.0 (compatible; kadetten-app-programmes)'}, signal: AbortSignal.timeout(60000)});
+    return {status: r.status, bytes: new Uint8Array(await r.arrayBuffer()), type: r.headers.get('content-type') || ''};
+  }
+};
+
+export async function main({schreiben = false, env = process.env, fetchFn = fetch, supplied = {}, programmeFetch = programmeHttp} = {}) {
   const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;
   if (!token || !accountId) throw Error('CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen.');
   const namespaceId = fs.readFileSync(new URL('../cloudflare/api/wrangler.toml', import.meta.url), 'utf8').match(/^id = "([a-f0-9]{32})"/m)?.[1];
@@ -40,6 +52,13 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     write(table('FCSG', result.fcsg.status));
     write(`\nFCSG: ${result.fcsg.games} Spiele, ${result.fcsg.news} Meldungen, ${result.fcsg.players} Spieler.`);
     write(`\nSpielberichte: ${result.reports.ok ? 'ok' : 'mit Fehlern'}, ${result.reports.reports.length} geprüft.`);
+    // Matchprogramm des nächsten Heimspiels (Phase 2b). Ein Fehler hier lässt den Datenstand unberührt und das bisherige Programm stehen.
+    try {
+      const p = await syncProgrammes(programmeFetch, bucket, result.next.games);
+      write(`\nMatchprogramm${p.game ? ` (${p.game.home} – ${p.game.away}, ${p.game.date})` : ''}: ${p.result}.`);
+    } catch (e) {
+      write(`\nMatchprogramm: Fehler (${String(e.message).slice(0, 120)}); bisheriges Programm bleibt.`);
+    }
     write('\nDer KV-Speicher ist aktualisiert.');
   } else {
     const savedFcsg = await bucket.get('fcsg/current.json');

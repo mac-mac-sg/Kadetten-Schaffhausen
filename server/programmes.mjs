@@ -1,7 +1,7 @@
 import {mayUpdate} from './auth.mjs';
 import seed from './seed.json' with {type:'json'};
 const reply=(x,status=200)=>Response.json(x,{status,headers:{'Cache-Control':'no-store'}});
-const identity=g=>JSON.stringify([g.id,g.home,g.away,g.date,g.time||'']);
+export const identity=g=>JSON.stringify([g.id,g.home,g.away,g.date,g.time||'']);
 const normal=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
 async function game(env,id){const saved=await env.BUCKET.get('kadetten/current.json');return (saved?await saved.json():seed).games.find(g=>g.id===id)}
 export function programmeMatches(g,text){return !!g&&g.home==='Kadetten Schaffhausen'&&typeof text==='string'&&normal(text).includes(normal(g.home))&&normal(text).includes(normal(g.away).replace(/^(hc|rk|tsv)/,''))&&normal(text).includes(g.date.split('-').reverse().join(''))}
