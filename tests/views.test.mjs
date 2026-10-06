@@ -194,6 +194,13 @@ test('European League live game mit Spielerwerten: Tabellen je Team, Paraden nur
  run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
 });
 
+test('European League: bestätigtes Endresultat setzt die Karte auf beendet und zeigt Endstand mit Statistik',()=>{
+ run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:null,finished:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[42,30],clock:'60:00',phase:'Match ended',status:'finished',date:swissToday(),url:'https://ehfel.eurohandball.com/x',details:{ok:true,updatedAt:new Date().toISOString(),events:null,players:null,teamStats:{isLive:false,home:{goals:42,shots:50,misses:8,efficiency:84,sevenGoals:2,sevenShots:2,twoMinutes:1,warnings:0,disqualifications:0,technicalFaults:5},guest:{goals:30,shots:52,misses:22,efficiency:58,sevenGoals:3,sevenShots:3,twoMinutes:3,warnings:1,disqualifications:0,technicalFaults:11}}}}};liveRequestFailed=false;lastLiveMatch=liveState.finished;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
+ const page=run('liveMatchPage({id:"live"},"stats")');
+ assert.match(page,/Spiel beendet/);assert.match(page,/Beendet · Endresultat/);assert.match(page,/42 : 30/);assert.match(page,/Teamstatistik/);assert.match(page,/84 %/);
+ run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false');
+});
+
 test('Live game opens internal details with verified events and player statistics',()=>{
  run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508373,home:'Kadetten Schaffhausen',away:'Handball Stäfa',league:'QHL',score:[21,14],clock:'30:00',phase:'1. Halbzeit',url:'https://www.handball.ch/de/matchcenter/spiele/508373',details:{ok:true,events:[{id:1,time:'19:36',seconds:1176,action:'Tor',homePlayer:'LUTZ Milan',awayPlayer:null,score:[13,7]}],players:[{id:1,name:'LUTZ Milan',home:true,goals:3,shots:null,seven:null,sevenShots:null,twoMinutes:0,yellow:0,red:0}]}}};liveRequestFailed=false;lastLiveMatch=liveState.match;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday()`);
  const href=run('liveMatchHref(liveState.match)');assert.match(href,/^#match\//);

@@ -61,3 +61,19 @@ test('EHF-Spielerwerte: Namen, Tore, Würfe, Strafen, Paraden; Staff-Einträge u
  assert.equal(guest.home,false);assert.equal(guest.twoMinutes,null);
  assert.throws(()=>parseEhfPlayers({}));assert.throws(()=>parseEhfPlayers({matchDetails:{details:{homeTeam:{players:[]}}}}));
 });
+
+import {parseEhfFinishedMatch} from '../server/live.mjs';
+test('EHF-Spielende: «Match ended» mit Endtoren gilt als beendet, nur heute, nie ohne Endtore und nie für ein laufendes Spiel',()=>{
+ const item=(stats,extra={})=>({match:{competitionShortName:'EHF EL - M',matchID:'202711020901029',url:'/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',homeTeam:{id:'uyEpUicNjwv8hCX9B7A3sg',name:'Kadetten Schaffhausen'},guestTeam:{id:'2zXEaNBPEzJP81Ffhy6t9g',name:'HC Izvidac'}},homeStats:{totalGoals:42},guestStats:{totalGoals:30},matchStats:stats,...extra});
+ const ended={time:'60:00',startTime:'18:45',phase:'Match ended',state:2,stateEnum:2,isLive:false};
+ const feed=(day,i)=>({days:[{dayDatumFormatted:day,liveScoreMatches:[i]}]});
+ const m=parseEhfFinishedMatch(feed('2026-10-06',item(ended)),'2026-10-06');
+ assert.equal(m.status,'finished');assert.deepEqual(m.score,[42,30]);assert.equal(m.date,'2026-10-06');assert.equal(m.home,'Kadetten Schaffhausen');assert.equal(m.away,'HC Izvidac');assert.equal(m.league,'European League');assert.equal(m.clock,'60:00');assert.equal(m.phase,'Match ended');
+ assert.equal(parseEhfFinishedMatch(feed('2026-10-05',item(ended)),'2026-10-06'),null,'nur Spiele von heute');
+ assert.equal(parseEhfFinishedMatch(feed('2026-10-06',item({...ended,stateEnum:1,isLive:true,phase:'2nd Half'})),'2026-10-06'),null,'laufendes Spiel');
+ assert.equal(parseEhfFinishedMatch(feed('2026-10-06',item({...ended,stateEnum:0,phase:null,time:null})),'2026-10-06'),null,'noch nicht begonnen');
+ assert.throws(()=>parseEhfFinishedMatch(feed('2026-10-06',item(ended,{homeStats:{}})),'2026-10-06'),/final score/);
+ const other=item(ended);other.match.homeTeam={id:'x',name:'A'};other.match.guestTeam={id:'y',name:'B'};
+ assert.equal(parseEhfFinishedMatch(feed('2026-10-06',other),'2026-10-06'),null,'Spiel ohne Kadetten');
+ assert.throws(()=>parseEhfFinishedMatch({},'2026-10-06'));
+});

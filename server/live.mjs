@@ -41,6 +41,18 @@ export function parseEhfPlayers(data){
  });
  return [...side(details.homeTeam.players,true),...side(details.guestTeam.players,false)];
 }
+// Gemeinsame Prüfung eines Feed-Eintrags der Kadetten (European League); liefert die Felder, die für Live und Ende gleich sind.
+function ehfMatchBase(item){
+ const m=item.match,stats=item.matchStats;
+ const id=m.matchID;if(!/^202711\d{9}$/.test(id))throw Error('Unexpected EHF season');
+ const url=new URL(m.url,'https://ehfel.eurohandball.com');
+ if(url.origin!=='https://ehfel.eurohandball.com'||!url.pathname.startsWith('/men/2026-27/matches/details/'+id+'/'))throw Error('Unexpected EHF match URL');
+ if(!m.homeTeam.name||!m.guestTeam.name)throw Error('Missing EHF teams');
+ const valid=v=>Number.isInteger(v)&&v>=0;
+ const score=valid(item.homeStats?.totalGoals)&&valid(item.guestStats?.totalGoals)?[item.homeStats.totalGoals,item.guestStats.totalGoals]:null;
+ return {id,home:m.homeTeam.name,away:m.guestTeam.name,score,league:'European League',clock:ehfClock(stats.time),phase:typeof stats.phase==='string'?stats.phase:null,url:url.href};
+}
+const isEhfKadetten=m=>m.competitionShortName==='EHF EL - M'&&(m.homeTeam?.id===ehfKadettenId||m.guestTeam?.id===ehfKadettenId);
 export function parseEhfLiveMatch(data){
  if(!Array.isArray(data?.days))throw Error('Missing EHF live feed');
  for(const day of data.days){
@@ -48,15 +60,26 @@ export function parseEhfLiveMatch(data){
   for(const item of day.liveScoreMatches){
    const m=item.match,stats=item.matchStats;
    if(!m||!stats)throw Error('Missing EHF match status');
-   if(stats.isLive!==true||m.competitionShortName!=='EHF EL - M'||(m.homeTeam?.id!==ehfKadettenId&&m.guestTeam?.id!==ehfKadettenId))continue;
-   const id=m.matchID;if(!/^202711\d{9}$/.test(id))throw Error('Unexpected EHF season');
-   const url=new URL(m.url,'https://ehfel.eurohandball.com');
-   if(url.origin!=='https://ehfel.eurohandball.com'||!url.pathname.startsWith('/men/2026-27/matches/details/'+id+'/'))throw Error('Unexpected EHF match URL');
-   if(!m.homeTeam.name||!m.guestTeam.name)throw Error('Missing EHF teams');
-   const valid=v=>Number.isInteger(v)&&v>=0;
-   const score=valid(item.homeStats?.totalGoals)&&valid(item.guestStats?.totalGoals)?[item.homeStats.totalGoals,item.guestStats.totalGoals]:null;
-   const time=ehfClock(stats.time);
-   return {id,home:m.homeTeam.name,away:m.guestTeam.name,score,league:'European League',clock:time,phase:typeof stats.phase==='string'?stats.phase:null,url:url.href};
+   if(stats.isLive!==true||!isEhfKadetten(m))continue;
+   return ehfMatchBase(item);
+  }
+ }
+ return null;
+}
+// Beendetes Spiel von heute: der Feed führt es weiter, mit matchStats.stateEnum 2 («Match ended») und den Endtoren (Feed vom 6. Oktober 2026:
+// {time:"60:00", phase:"Match ended", state:2, stateEnum:2, isLive:false}, 42:30). Ohne bestätigte Endtore gilt es nicht als beendet.
+export function parseEhfFinishedMatch(data,today=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Zurich'})){
+ if(!Array.isArray(data?.days))throw Error('Missing EHF live feed');
+ for(const day of data.days){
+  if(!Array.isArray(day.liveScoreMatches))throw Error('EHF live schema changed');
+  if(String(day.dayDatumFormatted||String(day.date||'').slice(0,10))!==today)continue;
+  for(const item of day.liveScoreMatches){
+   const m=item.match,stats=item.matchStats;
+   if(!m||!stats)throw Error('Missing EHF match status');
+   if(stats.isLive!==false||stats.stateEnum!==2||!isEhfKadetten(m))continue;
+   const base=ehfMatchBase(item);
+   if(!base.score)throw Error('Missing EHF final score');
+   return {...base,status:'finished',date:today};
   }
  }
  return null;
@@ -74,8 +97,14 @@ async function getEhfDetails(id){
  if(!teamStats&&!roster)return {ok:false,updatedAt:null,events:null,players:null,teamStats:null};
  return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster,teamStats};
 }
-async function getEhfLiveMatch(){const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});if(!r.ok)throw Error('EHF live source unavailable');const match=parseEhfLiveMatch(await r.json());if(match)match.details=await getEhfDetails(match.id);return match}
-async function getNationalLiveMatch(){const games=await liveQuery(liveGamesQuery,{teamId:41473});const selected=selectLiveGame(games)||selectFinishedGame(games);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0])||parseLiveMatch(detail.game[0]);if(match)match.details=statistics;return match}
+async function getEhfLiveMatch(){
+ const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
+ if(!r.ok)throw Error('EHF live source unavailable');
+ const feed=await r.json();
+ const match=parseEhfLiveMatch(feed)||parseEhfFinishedMatch(feed);
+ if(match)match.details=await getEhfDetails(match.id);
+ return match;
+}
 let liveCache,livePending;
 export async function getLiveMatch(){
  if(liveCache&&Date.now()-liveCache.at<20000)return liveCache.value;if(livePending)return livePending;
