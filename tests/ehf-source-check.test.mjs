@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets} from '../scripts/lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -116,4 +116,14 @@ test('loadSnippets findet Stellen, an denen eine Seite Daten nachlädt, und begr
   assert.ok(found.some(x => x.startsWith('fetch(:')));
   assert.equal(loadSnippets(js, ['a'], 5, 3, 2).length, 2);
   assert.deepEqual(loadSnippets('nichts'), []);
+});
+
+test('Ticker-Erkundung: Stichwörter und Probe-Adressen mit der Spiel-ID, nur ticker.ehf.eu', () => {
+  assert.ok(TICKER_NEEDLES.includes('$.post(') && TICKER_NEEDLES.includes('iBall'));
+  const urls = tickerProbeUrls('202711020901029');
+  assert.deepEqual(urls, ['https://ticker.ehf.eu/iBall/Static/202711020901029', 'https://ticker.ehf.eu/iBall/StaticGoal/202711020901029']);
+  const js = 'x=1;$.post("/v3/Ticker/Events",{id:i});var u={url:"/iBall/Static/"}';
+  const found = loadSnippets(js, TICKER_NEEDLES, 4, 80, 40);
+  assert.ok(found.some(x => x.startsWith('$.post(:') && x.includes('/v3/Ticker/Events')));
+  assert.ok(found.some(x => x.startsWith('iBall:')));
 });
