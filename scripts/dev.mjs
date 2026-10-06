@@ -3,7 +3,7 @@ import {readFile,mkdir,writeFile,stat} from 'node:fs/promises';
 import {resolve,sep,extname} from 'node:path';
 import worker from '../server/worker.mjs';
 const root=resolve('src/client'),dataRoot=resolve('.local-data');
-const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ttf':'font/ttf'};
+const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ttf':'font/ttf','.svg':'image/svg+xml'};
 function contained(root,path){const p=resolve(root,path);if(!p.startsWith(root+sep))throw Error('Invalid path');return p}
 const env={
   BUCKET:{
