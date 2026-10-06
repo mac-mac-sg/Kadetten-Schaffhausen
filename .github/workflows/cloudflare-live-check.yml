@@ -1,0 +1,24 @@
+name: Cloudflare-Live-Routen prüfen
+# Nur lesend, braucht keine Secrets (Phase 3 des Cloudflare-Umzugs, docs/cloudflare-umzug.md).
+# Ruft die Live-Routen (Live-Spiel, FCSG live, Kader, letzte Spiele, Direktvergleich) beim bisherigen und beim neuen
+# Datendienst ab und zeigt, ob der neue Dienst die externen Quellen von Cloudflare aus erreicht.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-live-check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Live-Routen vergleichen
+        run: node scripts/cloudflare-live-check.mjs

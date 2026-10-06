@@ -121,5 +121,8 @@ Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie
 - Der Actions-Zeitplan (`cron`) ist nicht sekundengenau und kann sich verzögern.
 - Der Test-Worker ist öffentlich erreichbar, solange er läuft (nur Erfolg, Dauer und gekürzte Fehlermeldung, keine Inhalte). Das Ergebnis in der Zusammenfassung ist in einem öffentlichen Repository öffentlich.
 
+## Prüfung der Live-Routen (vor Phase 3)
+Workflow «Cloudflare-Live-Routen prüfen» (manuell, nur lesend, ohne Secrets, Code `scripts/cloudflare-live-check.mjs`). Er ruft Live-Spiel, FCSG live, FCSG-Kader, letzte Spiele und Direktvergleich beim bisherigen und beim neuen Dienst ab. Diese Routen holen beim Aufruf Daten aus externen Quellen; die Kadetten-Quelle lehnt laut `docs/legacy-notes.md` Zugriffe direkt von Workern ab. Geprüft wird, ob der neue Dienst die Routen gesund liefert (HTTP 200, kein `ok: false`), nicht ob die Live-Werte gleich sind. Rot heisst: der neue Dienst liefert eine Route nicht, die der bisherige liefert. Dann ist die Umstellung nicht ohne Weiteres möglich.
+
 ## Rückfall
 Bis Phase 3 ändert sich für Besucher nichts. Nach dem Umschalten genügt ein Revert-Commit der drei Konfigurationsstellen, um wieder den alten Dienst zu verwenden, solange er nicht abgeschaltet ist.
