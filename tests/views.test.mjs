@@ -59,6 +59,21 @@ test('Startseite zeigt alle Nachrichten mit Titel', () => {
   for (const story of run('stories.slice(0, 5)')) assert.ok(out.includes(story.title), story.title);
 });
 
+test('Barrierefreiheit: Startseiten haben genau eine h1, Meldungstitel sind h2', () => {
+  const count = (out, tag) => (out.match(new RegExp('<' + tag + '[ >]', 'g')) || []).length;
+  const kadetten = view('home()');
+  assert.equal(count(kadetten, 'h1'), 1);
+  assert.equal(count(kadetten, 'h2'), run('stories.length'));
+  run("activeClub='fcsg'");
+  try {
+    const fcsg = view("fcsgView('home')");
+    assert.equal(count(fcsg, 'h1'), 1);
+    assert.equal(count(fcsg, 'h2'), run('fcsgData.stories.length'));
+  } finally {
+    run("activeClub='kadetten'");
+  }
+});
+
 test('Spielplan: Karten für gespielte Spiele mit Ergebnis-Zustand', () => {
   const out = view("season('games')");
   assert.ok((out.match(/class="game-card/g) || []).length >= 10);

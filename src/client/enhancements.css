@@ -1652,8 +1652,9 @@ html.snap-news {
   background: var(--accent);
   flex-shrink: 0;
 }
-.home-news-heading h2 {
+.home-news-heading h1 {
   margin: 0;
+  line-height: 1.2;
   font-family: var(--font-text);
   font-size: 16px;
   font-weight: 650;
@@ -1684,7 +1685,8 @@ html.snap-news {
 .home-front-page .story-copy {
   padding: 24px 6% calc(90px + env(safe-area-inset-bottom));
 }
-.home-front-page .story-copy h1 {
+.home-front-page .story-copy h1,
+.home-front-page .story-copy h2 {
   font-size: clamp(26px, 4vw, 44px);
   margin-block: 8px 14px;
 }
@@ -1748,7 +1750,7 @@ html.snap-news {
 }
 .home-title-zone .home-matchday,
 .home-title-zone .home-news-heading { background: transparent; }
-.home-title-zone .home-news-heading h2 { color: var(--cream); }
+.home-title-zone .home-news-heading h1 { color: var(--cream); }
 .home-matchday .live-match,
 .home-matchday .live-match.match-preview {
   background: #101310b8;
