@@ -11,3 +11,11 @@ export function makeRewriter(env = process.env, fetchFn = fetch) {
   const model = env.KI_MODELL || DEFAULT_MODEL;
   return baseline => runModel({accountId, token, model, messages: aiMessages(baseline), temperature: 0.2, fetchFn});
 }
+
+// Schreiber für den Matchbericht: nimmt fertige Nachrichten (server/report-ai.mjs) entgegen. Gleiche Schalter wie bei den Vorschauen.
+export function makeReportWriter(env = process.env, fetchFn = fetch) {
+  const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;
+  if (String(env.KI_VORSCHAU || '').toLowerCase() === 'aus' || !token || !accountId) return null;
+  const model = env.KI_MODELL || DEFAULT_MODEL;
+  return messages => runModel({accountId, token, model, messages, temperature: 0.3, fetchFn});
+}
