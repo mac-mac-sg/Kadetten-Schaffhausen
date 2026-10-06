@@ -1,33 +1,42 @@
 # Betrieb: was nicht im Repository liegt
 
-Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet. Nur Namen und Orte, niemals Werte oder Schlüssel.
+Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet. Nur Namen und Orte, niemals Werte oder Schlüssel. Stand: 6. Oktober 2026, nach dem Umzug auf Cloudflare (Verlauf: [cloudflare-umzug.md](cloudflare-umzug.md)). Im Regelbetrieb ist kein ChatGPT-Dienst beteiligt.
 
 ## Übersicht
 
 | Teil | Wo es läuft | Wie es aktualisiert wird |
 | --- | --- | --- |
 | Oberfläche (`src/client/`) | GitHub Pages: https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ | Automatisch nach Merge auf `main` (`.github/workflows/deploy.yml`) |
-| Datendienst (`server/`) | ChatGPT Sites, Adresse in `src/client/platform-config.js` (erzeugt durch `scripts/build-pages.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung nur über Sites durch den Eigentümer |
-| Objektspeicher | R2-kompatibel, Bindung `BUCKET`; Schlüssel siehe docs/architecture.md | Schreibt nur der Datendienst |
-| Datenautomation | Externe Automation, Zeiten siehe docs/architecture.md (Abschnitt «Aktualisierung») | Ruft `POST /api/refresh` mit einem Automationsschlüssel auf |
-| Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/` |
-
-Geplant: Umzug des Datendienstes auf Cloudflare, Phasen und Prüfpunkte in [cloudflare-umzug.md](cloudflare-umzug.md). Bis zum Umschalten bleibt alles wie oben.
-
-Cloudflare (im Aufbau): Worker `kadetten-api` (`cloudflare/api/wrangler.toml`), Speicher Workers KV `kadetten-data` (Bindung `DATA`), Bereitstellung per Workflow «Cloudflare-Datendienst bereitstellen». Noch nicht in Betrieb, die App liest weiterhin vom Sites-Dienst.
+| Datendienst (`server/`) | Cloudflare Worker `kadetten-api`: https://kadetten-api.mac-mac-sg.workers.dev (Konfiguration `cloudflare/api/wrangler.toml`; Adresse in der App durch `scripts/build.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung per Workflow «Cloudflare-Datendienst bereitstellen» (manuell) |
+| Speicher | Workers KV `kadetten-data`, Bindung `DATA`; Schlüssel siehe docs/architecture.md | Schreibt nur der Aktualisierungslauf (REST-Schnittstelle von Cloudflare) |
+| Datenaktualisierung | GitHub Actions: Workflow «Cloudflare-Datenaktualisierung» (`cloudflare-update.yml`), Zeitplan Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20, jederzeit auch manuell | Holt Quellen, rechnet, schreibt Datenstand, Artikel, Berichte, FCSG, Matchprogramm des nächsten Heimspiels und die Match-Vorschauen |
+| Match-Vorschauen | im selben Lauf; KI von Cloudflare Workers AI (Mistral Small 3.1) mit sachlichem Text als Rückfall, Details [vorschauen.md](vorschauen.md) | Abschaltbar mit der Repository-Variable `KI_VORSCHAU` = `aus` |
+| Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/`. **Liest noch vom bisherigen Sites-Dienst** (`WidgetRepository.java`), zeigt daher veraltete Daten, bis eine neue Widget-Version erscheint |
+| Bisheriger Sites-Dienst | ChatGPT Sites, https://kadetten.ma-ra10.chatgpt.site | Läuft unverändert weiter, wird von der App nicht mehr gelesen. Abschalten nur auf ausdrücklichen Auftrag des Eigentümers (Phase 4) |
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
-- Datendienst: `KADETTEN_OWNER_EMAIL`, `KADETTEN_AUTH_PROVIDER`, `KADETTEN_SITES_ORIGIN`, `KADETTEN_UPDATE_KEY_SHA256` (nur der SHA-256-Digest des Automationsschlüssels), bei `cloudflare-access` zusätzlich `KADETTEN_ACCESS_ISSUER` und `KADETTEN_ACCESS_AUD`.
-- GitHub: keine eigenen Secrets nötig; die Workflows laufen ohne Zugangsschlüssel. Pages-Quelle: Settings → Pages → Source → GitHub Actions.
+- **GitHub-Secrets:** `CLOUDFLARE_API_TOKEN` (Cloudflare-Token mit den Berechtigungen für Workers-Skripte, Workers KV Storage: Edit und Workers AI: Edit) und `CLOUDFLARE_ACCOUNT_ID`. Optional `KADETTEN_UPDATE_KEY`: wird nur gebraucht, wenn Dritte per `POST` in den Datendienst schreiben sollen; im Regelbetrieb nicht eingerichtet.
+- **GitHub-Variablen:** `KI_VORSCHAU` (`aus` schaltet die KI ab, sonst an). Umgebungsvariable `KI_MODELL` im Workflow ändert das Modell.
+- **Worker-Geheimnis** `KADETTEN_UPDATE_KEY_SHA256` (nur der SHA-256-Digest) wird nur gesetzt, wenn `KADETTEN_UPDATE_KEY` existiert.
+- Die Sites-Variablen `KADETTEN_OWNER_EMAIL`, `KADETTEN_AUTH_PROVIDER`, `KADETTEN_SITES_ORIGIN` gehören zum bisherigen Sites-Dienst. Auf Cloudflare gibt es keine Eigentümer-Anmeldung (fehlende Konfiguration sperrt Browser-Schreibzugriffe).
+- Pages-Quelle: Settings → Pages → Source → GitHub Actions.
 - Projektbezug des alten Hostings: `.openai/hosting.json` (nur Dokumentation, keine portable Konfiguration).
 
+## Regelbetrieb und Störungen
+- **Läuft die Aktualisierung?** Actions → «Cloudflare-Datenaktualisierung»: Läufe mit Auslöser «schedule» zu den Zeiten oben. Zum Zeitplan gehört pro Termin ein zweiter Auslöser eine Stunde früher oder später (Sommer- und Winterzeit); er endet grün und tut nichts. GitHub kann geplante Läufe verzögern oder auslassen; am 6. Oktober 2026 war der Lauf um 15:20 bis 15:35 Uhr nicht ausgelöst worden. Fehlen Läufe, genügt «Run workflow» mit `schreiben`.
+- **Wie frisch sind die Daten?** `checkedAt` in `GET /api/data` des Datendienstes. Die App kennzeichnet veraltete Stände.
+- **KI-Vorschau fehlerhaft?** Variable `KI_VORSCHAU` auf `aus`; beim nächsten Schreiblauf entstehen wieder sachliche Texte. Die KI-Texte werden ohne inhaltliche Prüfung übernommen (Entscheid vom 6. Oktober 2026).
+- **Die App zeigt keine Daten?** Rückweg auf den bisherigen Dienst: die Umschalt-Änderung (PR «Phase 3», Commit `af01a06`) per Revert-Commit auf `main` zurücknehmen; er liefert dann seinen letzten Stand (Aktualisierung steht dort still).
+- **Grenzen (Cloudflare Free, laut Dokumentation, nicht über längere Zeit gemessen):** 100'000 Worker-Anfragen und 100'000 KV-Lesezugriffe pro Tag, 1'000 KV-Schreibvorgänge pro Tag, 10'000 Workers-AI-Neurons pro Tag. Bei Überschreiten schlagen Aufrufe fehl; die KI fällt dann auf den sachlichen Text zurück.
+- **Token ersetzen:** neuen Cloudflare-Token anlegen (Berechtigungen siehe oben), in Settings → Secrets and variables → Actions das Secret `CLOUDFLARE_API_TOKEN` überschreiben, danach einen manuellen Schreiblauf starten und prüfen. Tokens nie in Chats, Issues, PRs oder Commits.
+
 ## Vom Eigentümer zu ergänzen
-Folgendes ist im Repository nicht dokumentiert und sollte hier eingetragen werden, damit ein Agent ohne Rückfrage weiterarbeiten kann:
-- [ ] Wo läuft die Datenautomation genau, und wer kann sie anpassen?
-- [ ] Wo liegt der Automationsschlüssel (Ort, nicht Wert), und wie wird er erneuert?
-- [ ] Wie wird der Datendienst neu bereitgestellt (Schritte, wer darf das)?
+- [x] Wo läuft die Datenautomation genau? Seit 6. Oktober 2026 in GitHub Actions (Tabelle oben). Die frühere ChatGPT-Automation schreibt nur noch in den bisherigen Sites-Dienst.
+- [x] Wo liegt der Automationsschlüssel? Im Regelbetrieb gibt es keinen; Zugangsdaten liegen als GitHub-Secrets (Namen oben).
+- [x] Wie wird der Datendienst neu bereitgestellt? Workflow «Cloudflare-Datendienst bereitstellen» (manuell, Eigentümer oder Agent mit Actions-Zugriff).
 - [ ] Ist Branchschutz auf `main` eingerichtet (README sagt: noch nicht)?
 - [ ] Wer ist Ansprechperson bei den Vereinen für Bild- und Textrechte?
+- [ ] Wann wird der bisherige Sites-Dienst abgeschaltet (Phase 4) und das Widget umgestellt?
 
 ## Verfügbarkeit und Rückfall
-Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand.
+Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand. Quellenfehler beim Aktualisieren behalten den letzten gültigen Stand je Quelle.

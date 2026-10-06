@@ -8,9 +8,9 @@ Import von Sites Version 56, editierbare Oberfläche in src/client, lokaler Star
 
 Auf Wunsch des Eigentümers keine separate Testumgebung und kein neues Cloudflare-Setup. GitHub Actions prüft Änderungen und veröffentlicht die Oberfläche von main auf GitHub Pages. Projektpfade, PWA und Offline-Cache sind dafür angepasst. Einmalige Pages-Einstellung siehe [Betrieb](pages.md).
 
-## 3. Datenbetrieb — vorhandenen Dienst weiterverwenden
+## 3. Datenbetrieb — auf Cloudflare umgezogen (6. Oktober 2026)
 
-Volltexte, aktuelle Daten und bestätigte Live-Werte bleiben im bestehenden Sites-Datendienst. Die GitHub-Pages-Oberfläche liest ausschliesslich öffentliche Endpunkte ohne Zugangsschlüssel. Geschützte Aktualisierungen und der Zweistundentask bleiben beim vorhandenen Dienst. Ein späterer vollständiger Backendwechsel ist eine eigene Entscheidung; er ist für das gewählte Pages-Setup nicht notwendig.
+Der Datendienst läuft als Cloudflare Worker mit Workers KV; die Aktualisierung (Daten, Artikel, Berichte, FCSG, Matchprogramme, Match-Vorschauen) läuft nach Zeitplan in GitHub Actions. Die Pages-Oberfläche liest weiterhin ausschliesslich öffentliche Endpunkte ohne Zugangsschlüssel. Der frühere Sites-Dienst bleibt unverändert erreichbar, bis der Eigentümer das Abschalten beauftragt. Verlauf, Prüfpunkte und Rückweg: [cloudflare-umzug.md](cloudflare-umzug.md), Betrieb: [betrieb.md](betrieb.md).
 
 ## 4. Weiterentwicklung
 

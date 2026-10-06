@@ -1,6 +1,6 @@
 # Veröffentlichung wie Essens-Check
 
-> Stand 06.10.2026: Der Datendienst soll auf Cloudflare umziehen, siehe [Umzug auf Cloudflare](cloudflare-umzug.md). Bis zum Umschalten gilt weiterhin der hier beschriebene Sites-Datendienst.
+> Stand 06.10.2026: Die App liest seit dem Umschalten vom Cloudflare-Datendienst, siehe [Umzug auf Cloudflare](cloudflare-umzug.md) und [Betrieb](betrieb.md). Der bisherige Sites-Dienst läuft unverändert weiter, wird aber nicht mehr gelesen.
 
 Entscheid vom 03.10.2026: keine separate Testumgebung; GitHub Actions und GitHub Pages wie bei Essens-Check. Kein eigenes Cloudflare-Konto erforderlich.
 

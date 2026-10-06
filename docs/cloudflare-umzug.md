@@ -2,6 +2,16 @@
 
 Auftrag des Eigentümers vom 06.10.2026: Den Datendienst (`server/`, bisher ChatGPT Sites) auf Cloudflare umziehen, damit Entwicklung und Betrieb von jedem Agenten und jedem Rechner aus über das Repository möglich sind. Diese Entscheidung ersetzt die Aussage vom 03.10.2026 («kein Cloudflare-Konto erforderlich», docs/pages.md, docs/test-host.md) für den **Datendienst**. Die Oberfläche bleibt auf GitHub Pages.
 
+## Stand am 6. Oktober 2026 (Abend)
+| Phase | Stand | Beleg |
+| --- | --- | --- |
+| 0 Machbarkeit | bestanden | Quellen von Cloudflare aus erreichbar |
+| 1 Lesender Worker, Import, Vergleich | bestanden | Artikel 67/67, Berichte 7/7, Matchprogramme 28/28 inkl. PDF, Vorschauen 28/28 gleich; beim Datenstand war das erste abweichende Feld `checkedAt`, weitere Felder wurden nicht einzeln geprüft |
+| 2a Aktualisierung in Actions | läuft, manuell belegt | mehrere Schreibläufe grün; **der Zeitplan hat bis zu diesem Stand noch nie von allein ausgelöst** (der Lauf um 15:20 war um 15:35 Uhr nicht ausgelöst) |
+| 2b Matchprogramme, Vorschauen | umgesetzt | PDF-Fund auf der Startseite; Vorschauen mit KI (Workers AI) und sachlichem Rückfall |
+| 3 Umschalten | erledigt | PR «Phase 3», Commit `af01a06`; Live-Routen auf beiden Diensten gesund |
+| 4 Abschalten des alten Dienstes | **offen, nur auf Auftrag** | Beobachtungszeit abwarten; Android-Widget liest noch vom alten Dienst |
+
 ## Rahmen (aus AGENTS.md)
 - Der bestehende Sites-Dienst und seine Automation laufen **unverändert weiter**, bis der Eigentümer das Umschalten ausdrücklich beauftragt. Abgeschaltet wird nichts ohne eigenen Auftrag.
 - Keine Schlüssel im Repository, im Chat, in Issues oder PRs. Zugangsdaten liegen nur in GitHub-Secrets bzw. bei Cloudflare.

@@ -1,3 +1,5 @@
+> Historische Notizen zum früheren ChatGPT-Sites-Datendienst (Stand vor dem Umzug auf Cloudflare, 6. Oktober 2026). Der heutige Betrieb steht in [betrieb.md](betrieb.md) und [cloudflare-umzug.md](cloudflare-umzug.md).
+
 # Kadetten automatic updates
 Owner-private Site. POST /api/refresh accepts public source content: {matchHtml,tableHtml,posts,shvData}. Writes additionally require owner identity or the configured automation credential. Use get_site's service token only in memory and hidden stdin; never in files, logs or client code. GET /api/data reads the persistent R2 snapshot.
 

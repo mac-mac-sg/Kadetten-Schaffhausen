@@ -14,7 +14,7 @@ npm run dev     # lokale, schreibgeschützte Vorschau auf http://127.0.0.1:3000
 npm run verify  # alle Prüfungen wie in GitHub Actions: check, test, build:pages, check-pages
 ```
 
-`npm run verify` muss vor jedem Push grün sein. Zusätzlich gilt `npm run build` (Sites-Build), wenn `server/` geändert wurde.
+`npm run verify` muss vor jedem Push grün sein. Zusätzlich gilt `npm run build` (bisheriger Sites-Build), wenn `server/` geändert wurde, solange der alte Dienst besteht.
 
 ## Arbeitsablauf
 1. Aktuellen Stand von `origin/main` holen; Änderungen anderer erhalten.
@@ -35,9 +35,9 @@ Definition of Done: `npm run verify` grün, neues Verhalten durch einen Test abg
 - Behauptungen belegen: nicht „geprüft" schreiben, ohne den Befehl oder die Messung zu nennen. Nicht Geprüftes ausdrücklich als solches kennzeichnen.
 
 ## Sicherheit und Grenzen
-- Öffentliche Leser dürfen niemals schreiben. Plattform-Identitätsheader sind nur hinter dem Sites-Gateway vertrauenswürdig. Bei einem Hosting-Wechsel zuerst Authentifizierung ersetzen; Header allein sind dort kein Login.
+- Öffentliche Leser dürfen niemals schreiben. Plattform-Identitätsheader sind nur hinter dem Sites-Gateway vertrauenswürdig; auf Cloudflare gibt es keine Eigentümer-Anmeldung, Schreibzugriffe laufen nur über die Actions-Läufe oder den Automationsschlüssel. Bei einem Hosting-Wechsel zuerst Authentifizierung ersetzen; Header allein sind kein Login.
 - Keine Tokens, persönlichen Servicezugänge oder `.env`-Dateien committen oder in Chats, Issues oder PRs schreiben. Laufende Daten und Artikel bleiben im Objektspeicher, nicht in Git.
-- `server/` läuft im getrennten Sites-Datendienst. Ein Frontend-Merge aktualisiert ihn nicht. Bestehende Datenautomation und Backend-Speicher nicht ohne entsprechenden Auftrag umstellen oder abschalten.
+- `server/` läuft als Cloudflare Worker `kadetten-api` (Speicher Workers KV); ein Frontend-Merge aktualisiert ihn nicht, die Bereitstellung geschieht mit dem Workflow «Cloudflare-Datendienst bereitstellen». Die Datenaktualisierung läuft in GitHub Actions (`cloudflare-update.yml`, Zeitplan und manuell). Zeitplan, KI-Vorschau (`KI_VORSCHAU`) und den noch bestehenden Sites-Dienst nicht ohne entsprechenden Auftrag umstellen oder abschalten. Betrieb: docs/betrieb.md.
 - Keine zusätzliche Testumgebung einrichten, ausser der Eigentümer beauftragt es ausdrücklich.
 - Kann ein Agent nicht schreiben oder pushen, die fehlende Berechtigung konkret melden. Nie behaupten, etwas sei gepusht, gemergt oder veröffentlicht, ohne es geprüft zu haben (Commit, PR und Deploy-Lauf verlinken).
 
