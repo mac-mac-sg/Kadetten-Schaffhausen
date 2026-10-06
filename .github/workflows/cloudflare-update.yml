@@ -1,0 +1,47 @@
+name: Cloudflare-Datenaktualisierung
+# Phase 2 des Cloudflare-Umzugs (docs/cloudflare-umzug.md): ruft die Quellen selbst ab (kadettensh.ch, SHV, FCSG), rechnet mit dem Code
+# des Datendienstes und schreibt das Ergebnis in den KV-Speicher. Quellenfehler behalten den letzten gültigen Stand.
+# pruefen        Trockenlauf: ruft die Quellen ab, zeigt das Ergebnis, schreibt nichts (Standard)
+# schreiben      schreibt in den KV-Speicher
+# Vorerst nur manuell. Ein Zeitplan folgt erst nach erfolgreichen Läufen und deinem Auftrag.
+# Der Import (cloudflare-import.yml) darf nach dem ersten Schreiblauf nicht mehr ausgeführt werden.
+on:
+  workflow_dispatch:
+    inputs:
+      modus:
+        description: Was soll geschehen?
+        type: choice
+        options:
+          - pruefen
+          - schreiben
+        default: pruefen
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODUS: ${{ inputs.modus }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Zugangsdaten vorhanden?
+        shell: bash
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen."; exit 1; }
+      - name: Trockenlauf
+        if: env.MODUS == 'pruefen'
+        run: node scripts/cloudflare-update.mjs
+      - name: In den KV-Speicher schreiben
+        if: env.MODUS == 'schreiben'
+        run: node scripts/cloudflare-update.mjs --schreiben

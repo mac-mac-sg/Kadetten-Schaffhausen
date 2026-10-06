@@ -1,12 +1,12 @@
 import {programmes} from './programmes.mjs';
 import {previews} from './previews.mjs';
-import {publicFcsgData, storeFcsgUpdate, getFcsgLive, getFcsgPlayers} from './fcsg.mjs';
+import {publicFcsgData, getFcsgLive, getFcsgPlayers} from './fcsg.mjs';
 import fcsgSeed from './fcsg-seed.json' with {type: 'json'};
 import {publicReadCors} from './cors.mjs';
 import {isOwner, mayUpdate} from './auth.mjs';
-import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport, archiveCompletedReports} from './live.mjs';
+import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
 import seed from './seed.json' with {type: 'json'};
-import {refresh} from './update.mjs';
+import {runRefresh} from './refresh-run.mjs';
 import {kvStore} from './kv-store.mjs';
 
 const json = (x, status = 200) =>
@@ -150,21 +150,16 @@ async function refreshData(request, env, u) {
   }
   if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))
     return json({error: 'JSON object required'}, 400);
-  const next = await refresh(previous, supplied, article =>
-    env.BUCKET.put('kadetten/articles/' + article.id + '/' + article.version + '.json', JSON.stringify(article))
-  );
-  if (!Object.values(next.status).some(x => x.ok)) return json({error: 'All sources failed', status: next.status}, 502);
-  if (previousObject) await env.BUCKET.put('kadetten/previous.json', JSON.stringify(previous));
-  await env.BUCKET.put('kadetten/current.json', JSON.stringify(next));
-  const reportResult = await archiveCompletedReports(env.BUCKET);
-  const fcsg = await storeFcsgUpdate(env.BUCKET, fcsgSeed);
+  const result = await runRefresh(env.BUCKET, {previous, hadPrevious: !!previousObject, supplied});
+  if (!result.ok) return json({error: 'All sources failed', status: result.next.status}, 502);
+  const {next} = result;
   return json({
-    fcsg,
+    fcsg: result.fcsg,
     checkedAt: next.checkedAt,
     status: next.status,
     games: next.games.length,
     news: next.stories.length,
-    reports: reportResult
+    reports: result.reports
   });
 }
 
