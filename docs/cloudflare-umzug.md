@@ -139,3 +139,5 @@ Workflow «Cloudflare-Live-Routen prüfen» (manuell, nur lesend, ohne Secrets, 
 
 ## Rückfall
 Bis Phase 3 ändert sich für Besucher nichts. Nach dem Umschalten genügt ein Revert-Commit der beiden Konfigurationsstellen, um wieder den alten Dienst zu verwenden, solange er nicht abgeschaltet ist.
+
+Workflow «EHF-Quellen prüfen» (manuell, nur lesend, ohne Secrets, Code `scripts/ehf-source-check.mjs`). Er ruft die EHF-Spielseite, `ticker.ehf.eu` (Startseite und Spielseite) und den bisher genutzten Livescore-Feed von einem GitHub-Runner aus ab und zeigt Status, Aufbau und gefundene Daten-Schnittstellen. Er dient der Erkundung einer Quelle für Ereignisse bei Europacup-Spielen; die Anbindung ist noch nicht gebaut. Der Runner ersetzt keinen Test über den Cloudflare-Worker.

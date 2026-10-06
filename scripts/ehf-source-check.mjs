@@ -1,0 +1,55 @@
+// Ruft die EHF-Quellen ab (nur lesend, keine Zugangsdaten) und zeigt Statuscode, Inhaltstyp, Aufbau und gefundene
+// Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
+import fs from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {matchUrls, findEndpoints, scriptSources, preview} from './lib/ehf-source-check.mjs';
+
+const write = text => {
+  console.log(text);
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
+};
+const code = text => '```\n' + text.replaceAll('```', "'''") + '\n```';
+const LIVESCORE = 'https://ehfel.eurohandball.com/umbraco/api/livescoreapi/GetLiveScoreMatches/138790';
+
+async function get(fetchFn, url) {
+  const t = Date.now();
+  try {
+    const r = await fetchFn(url, {headers: {'User-Agent': 'Mozilla/5.0 (kadetten-app-quellenpruefung)', Accept: '*/*'}, signal: AbortSignal.timeout(20000)});
+    return {url, status: r.status, type: r.headers.get('content-type') || '', text: await r.text(), ms: Date.now() - t};
+  } catch (e) {
+    return {url, status: 0, type: '', text: '', error: String(e?.message || e), ms: Date.now() - t};
+  }
+}
+
+export async function main({env = process.env, fetchFn = fetch} = {}) {
+  const id = env.SPIEL_ID || '202711020901029';
+  write(`### EHF-Quellen für Spiel ${id} (nur lesend)\n`);
+  const pages = [];
+  for (const url of [...matchUrls(id), LIVESCORE]) {
+    const r = await get(fetchFn, url);
+    pages.push(r);
+    write(`\n#### ${url}\n\nStatus ${r.status || 'Fehler'}${r.error ? ' (' + r.error + ')' : ''}, ${r.type || 'kein Inhaltstyp'}, ${r.text.length} Zeichen, ${r.ms} ms`);
+    if (!r.text) continue;
+    if (/json/i.test(r.type) || /^\s*[\[{]/.test(r.text)) {
+      write('\nAnfang der Antwort:\n\n' + code(preview(r.text, 1500)));
+      const mine = r.text.includes(id) ? 'Die Spiel-ID kommt in der Antwort vor.' : 'Die Spiel-ID kommt in der Antwort nicht vor.';
+      write(mine);
+      continue;
+    }
+    write('\nAnfang der Seite:\n\n' + code(preview(r.text.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' '), 600)));
+    const scripts = scriptSources(r.text, url);
+    write(`\nSkripte (${scripts.length}):\n\n${scripts.slice(0, 15).map(s => '- ' + s).join('\n') || '- keine'}`);
+    const endpoints = findEndpoints(r.text, url);
+    write(`\nAdressen im HTML, die nach Schnittstellen aussehen (${endpoints.length}):\n\n${endpoints.slice(0, 25).map(s => '- ' + s).join('\n') || '- keine'}`);
+    // Erste Ebene der eigenen Skripte nach Schnittstellen durchsuchen (nur Skripte der EHF-Hosts).
+    const own = scripts.filter(s => /(^|\.)ehf\.eu\b|eurohandball\.com/.test(new URL(s).hostname)).slice(0, 6);
+    for (const s of own) {
+      const js = await get(fetchFn, s);
+      const found = findEndpoints(js.text, s).filter(u => /api|socket|signalr|feed|ticker|livescore/i.test(u)).slice(0, 15);
+      if (found.length) write(`\nSchnittstellen in ${s} (${found.length}):\n\n${found.map(u => '- ' + u).join('\n')}`);
+    }
+  }
+  return pages.every(p => p.status === 0) ? 1 : 0;
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) process.exitCode = await main();
