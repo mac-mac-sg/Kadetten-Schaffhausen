@@ -52,7 +52,7 @@ Jede Phase endet an einem Prüfpunkt. Erst danach beginnt die nächste.
 **Phase 2 – Aktualisierung über GitHub Actions.** Geplanter Workflow (alle zwei Stunden zu den bisherigen Zeiten, Europe/Zurich) ruft die Quellen ab, rechnet mit dem vorhandenen Code (`server/update.mjs`, `live.mjs`, `fcsg.mjs`) und schreibt den fertigen Stand in den Speicher. Das Hochladen von Matchprogrammen und KI-Vorschauen wird entsprechend umgestellt.
 - *Prüfpunkt:* Mehrere aufeinanderfolgende Läufe ohne Fehler; Quellenfehler behalten den letzten gültigen Stand.
 
-**Phase 3 – Parallelbetrieb und Umschalten (nur auf ausdrücklichen Auftrag).** Beide Dienste laufen parallel und werden verglichen. Umschalten heisst: `apiOrigin` in `scripts/build.mjs`, `connect-src` in `src/client/index.html` und `pagesOrigin` in `server/cors.mjs` anpassen. Jede Änderung geschieht in einem PR mit Rückfallweg.
+**Phase 3 – Parallelbetrieb und Umschalten (nur auf ausdrücklichen Auftrag).** Beide Dienste laufen parallel und werden verglichen. Umschalten heisst: `apiOrigin` in `scripts/build.mjs` und `connect-src` in `src/client/index.html` anpassen. `pagesOrigin` in `server/cors.mjs` bleibt unverändert, weil es den Ursprung der App (GitHub Pages) nennt, nicht den des Datendienstes. Der Android-Widget (`android-widget/…/WidgetRepository.java`) liest eine eigene Adresse und wird erst mit einer neuen Widget-Version umgestellt. Jede Änderung geschieht in einem PR mit Rückfallweg.
 
 **Phase 4 – Abschalten des alten Dienstes (nur auf ausdrücklichen Auftrag).** Erst nach einer Beobachtungszeit.
 
@@ -125,4 +125,4 @@ Dazu braucht es dich, weil Konto und Zugangsdaten bei dir liegen. Schlüssel nie
 Workflow «Cloudflare-Live-Routen prüfen» (manuell, nur lesend, ohne Secrets, Code `scripts/cloudflare-live-check.mjs`). Er ruft Live-Spiel, FCSG live, FCSG-Kader, letzte Spiele und Direktvergleich beim bisherigen und beim neuen Dienst ab. Diese Routen holen beim Aufruf Daten aus externen Quellen; die Kadetten-Quelle lehnt laut `docs/legacy-notes.md` Zugriffe direkt von Workern ab. Geprüft wird, ob der neue Dienst die Routen gesund liefert (HTTP 200, kein `ok: false`), nicht ob die Live-Werte gleich sind. Rot heisst: der neue Dienst liefert eine Route nicht, die der bisherige liefert. Dann ist die Umstellung nicht ohne Weiteres möglich.
 
 ## Rückfall
-Bis Phase 3 ändert sich für Besucher nichts. Nach dem Umschalten genügt ein Revert-Commit der drei Konfigurationsstellen, um wieder den alten Dienst zu verwenden, solange er nicht abgeschaltet ist.
+Bis Phase 3 ändert sich für Besucher nichts. Nach dem Umschalten genügt ein Revert-Commit der beiden Konfigurationsstellen, um wieder den alten Dienst zu verwenden, solange er nicht abgeschaltet ist.

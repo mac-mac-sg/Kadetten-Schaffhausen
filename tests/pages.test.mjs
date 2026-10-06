@@ -5,10 +5,10 @@ import vm from 'node:vm';
 import {publicReadCors} from '../server/cors.mjs';
 test('Pages adapter reads public APIs without cookies and rejects writes',async()=>{
  const calls=[];
- const context={window:{KADETTEN_PLATFORM:{apiOrigin:'https://kadetten.ma-ra10.chatgpt.site'}},Response,fetch:async(...args)=>{calls.push(args);return Response.json({ok:true})}};
+ const context={window:{KADETTEN_PLATFORM:{apiOrigin:'https://kadetten-api.mac-mac-sg.workers.dev'}},Response,fetch:async(...args)=>{calls.push(args);return Response.json({ok:true})}};
  vm.createContext(context);vm.runInContext(fs.readFileSync('src/client/platform.js','utf8'),context);
  await context.apiFetch('/api/data',{credentials:'include'});
- assert.equal(calls[0][0],'https://kadetten.ma-ra10.chatgpt.site/api/data');assert.equal(calls[0][1].credentials,'omit');
+ assert.equal(calls[0][0],'https://kadetten-api.mac-mac-sg.workers.dev/api/data');assert.equal(calls[0][1].credentials,'omit');
  assert.deepEqual(await (await context.apiFetch('/api/access')).json(),{canUpdate:false});assert.equal(calls.length,1);
  await assert.rejects(context.apiFetch('/api/refresh',{method:'POST'}));assert.equal(calls.length,1);
 });
@@ -18,4 +18,14 @@ test('CORS exposes only public reads and never update or identity routes',()=>{
  }
  for(const path of ['/api/access','/api/refresh','/admin/login'])assert.equal(publicReadCors(Response.json({ok:true}),new Request('https://service.test'+path)).headers.get('Access-Control-Allow-Origin'),null);
  assert.equal(publicReadCors(Response.json({ok:true}),new Request('https://service.test/api/data',{method:'POST'})).headers.get('Access-Control-Allow-Origin'),null);
+});
+
+test('Umschaltung: Build-Adresse des Datendienstes steht im CSP, der bisherige Dienst nicht mehr',()=>{
+ const build=fs.readFileSync('scripts/build.mjs','utf8'),html=fs.readFileSync('src/client/index.html','utf8');
+ const origin=build.match(/apiOrigin=process\.env\.KADETTEN_TARGET==='pages'\?'(https:\/\/[^']+)'/)[1];
+ assert.equal(origin,'https://kadetten-api.mac-mac-sg.workers.dev');
+ const csp=html.match(/Content-Security-Policy" content="([^"]+)"/)[1];
+ assert.match(csp,new RegExp('connect-src[^;]*'+origin.replace(/[.]/g,'\\.')));
+ assert.doesNotMatch(csp,/chatgpt\.site/);
+ assert.match(fs.readFileSync('server/cors.mjs','utf8'),/pagesOrigin='https:\/\/mac-mac-sg\.github\.io'/,'CORS erlaubt weiterhin nur den Pages-Ursprung der App');
 });

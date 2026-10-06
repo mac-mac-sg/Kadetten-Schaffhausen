@@ -7,7 +7,7 @@ cpSync('node_modules/pdfjs-dist/LICENSE','dist/client/vendor/PDFJS-LICENSE');
 import {build} from 'esbuild';
 await build({entryPoints:['server/worker.mjs'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022'});
 
-const apiOrigin=process.env.KADETTEN_TARGET==='pages'?'https://kadetten.ma-ra10.chatgpt.site':'';
+const apiOrigin=process.env.KADETTEN_TARGET==='pages'?'https://kadetten-api.mac-mac-sg.workers.dev':'';
 fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JSON.stringify({apiOrigin})+';\n');
 
 // Content-version the complete shell on every build, including future UI edits.
