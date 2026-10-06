@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -71,7 +71,7 @@ async function probeApis({id, pages, fetchFn}) {
   let match = null;
   try { match = findFeedMatch(JSON.parse(feed?.text || '{}'), id); } catch { /* kein JSON */ }
   write(`\nKennungen des Spiels im Livescore-Feed: ${match ? JSON.stringify(match) : 'Spiel dort nicht gelistet'}`);
-  const calls = [...candidateCalls(match, id), `${API}homeofhandballapi/GetTeams/1171`, `${API}homeofhandballapi/GetTeams`];
+  const calls = [...candidateCalls(id), `${API}homeofhandballapi/GetTeams/1171`, `${API}homeofhandballapi/GetTeams`];
   const worked = new Set();
   for (const url of calls) {
     const endpoint = url.split('?')[0];
@@ -82,6 +82,13 @@ async function probeApis({id, pages, fetchFn}) {
     if (usable) {
       worked.add(endpoint);
       write('\n' + code(preview(r.text, 1500)));
+      let json = null;
+      try { json = JSON.parse(r.text); } catch { /* kein JSON */ }
+      if (json && /GetMatchDetails|GetMatchLiveFeed|GetMatchDetailStatistic/.test(endpoint)) {
+        write('\nAufbau der Antwort (zwei Ebenen):\n\n' + code(describeShape(json, 2).join('\n')));
+        const keys = findKeys(json, /last|form|head|h2h|duel|result|previous|recent|standing|table|ranking|action|event|ticker/i);
+        write(`\nSchlüssel zu Form, letzten Spielen, Direktduellen, Tabelle oder Ereignissen (${keys.length}):\n\n${keys.map(k => '- ' + k).join('\n') || '- keine'}`);
+      }
     }
   }
 }
