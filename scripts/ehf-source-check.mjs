@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, API} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -54,8 +54,6 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) process.exitCode = await main();
-
-const NAMES = ['GetMatchLiveFeed', 'GetMatchDetails', 'GetMatchDetailStatistic', 'GetTeams'];
 
 // Zweiter Teil: Aufrufe der Seitenskripte lesen und die Daten-Schnittstellen der EHF-Seite versuchsweise abrufen.
 async function probeApis({id, pages, fetchFn}) {

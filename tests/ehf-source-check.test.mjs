@@ -63,3 +63,9 @@ test('main mit Erweiterung: ruft nur per GET ab und schreibt die brauchbare Antw
   assert.ok(calls.some(c => c.url.includes('GetMatchLiveFeed?matchId=GUID1')));
   assert.equal(calls.filter(c => c.url.includes('GetMatchLiveFeed')).length, 1, 'nach dem ersten brauchbaren Treffer keine weiteren Versuche');
 });
+
+test('Skript startet als Programm ohne Initialisierungsfehler (Netzwerk gesperrt)', async () => {
+  const {spawnSync} = await import('node:child_process');
+  const r = spawnSync(process.execPath, ['scripts/ehf-source-check.mjs'], {encoding: 'utf8', env: {...process.env, HTTPS_PROXY: 'http://127.0.0.1:9', HTTP_PROXY: 'http://127.0.0.1:9', NODE_USE_ENV_PROXY: '1'}, timeout: 60000});
+  assert.doesNotMatch(r.stderr + r.stdout, /ReferenceError|before initialization/);
+});
