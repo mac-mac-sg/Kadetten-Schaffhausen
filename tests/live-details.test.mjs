@@ -30,3 +30,19 @@ test('Clock, half-time whistle and missing scores cannot manufacture a final res
  assert.equal(parseFinishedMatch({...complete,gameStatusId:1,ltGameStatusId:2}),null);
  assert.throws(()=>parseFinishedMatch({...complete,homeTeamScore:null}));
 });
+
+import {ehfClock,parseEhfTeamStats,parseEhfLiveMatch} from '../server/live.mjs';
+test('EHF-Spieluhr: «mm:ss» bleibt unverändert, nur eine Minutenzahl bekommt das Minutenzeichen',()=>{
+ assert.equal(ehfClock('18:47'),'18:47');
+ assert.equal(ehfClock('5:03'),'5:03');
+ assert.equal(ehfClock('19'),'19′');
+ assert.equal(ehfClock(''),null);assert.equal(ehfClock('-'),null);assert.equal(ehfClock(null),null);
+ const feed={days:[{liveScoreMatches:[{match:{competitionShortName:'EHF EL - M',matchID:'202711020901029',url:'/men/2026-27/matches/details/202711020901029/KadettenSchaffhausen-HCIzvidac/',homeTeam:{id:'uyEpUicNjwv8hCX9B7A3sg',name:'Kadetten Schaffhausen'},guestTeam:{id:'x',name:'HC Izvidac'}},matchStats:{isLive:true,time:'18:47',phase:'1st Half'},homeStats:{totalGoals:17},guestStats:{totalGoals:9}}]}]};
+ const m=parseEhfLiveMatch(feed);assert.equal(m.clock,'18:47');assert.deepEqual(m.score,[17,9]);
+});
+test('EHF-Teamwerte: Zahlen, fehlende Werte bleiben leer, ohne Teamblöcke wird abgelehnt',()=>{
+ const stats={id:'202711020901029',isLive:true,homeStatistics:{totalGoals:16,totalShots:19,totalMisses:3,shotEfficiency:84,goals7meters:0,shots7meters:0,suspensions2minutes:0,warnings:0,disqualifications:0,technicalFaults:2,turnover:null},guestStatistics:{totalGoals:8,totalShots:18,totalMisses:10,shotEfficiency:44,goals7meters:2,shots7meters:2,suspensions2minutes:null,warnings:0,disqualifications:0,technicalFaults:4}};
+ const t=parseEhfTeamStats(stats);
+ assert.equal(t.home.goals,16);assert.equal(t.home.efficiency,84);assert.equal(t.guest.sevenGoals,2);assert.equal(t.guest.twoMinutes,null);assert.equal(t.isLive,true);
+ assert.throws(()=>parseEhfTeamStats({}));assert.throws(()=>parseEhfTeamStats(null));
+});
