@@ -33,6 +33,18 @@ jobs:
         shell: bash
         run: |
           [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen (Settings → Secrets and variables → Actions)."; exit 1; }
+      - name: workers.dev-Subdomain vorhanden?
+        shell: bash
+        run: |
+          response=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" || true)
+          if [ "$(echo "$response" | jq -r '.success' 2>/dev/null)" != "true" ]; then
+            echo "::notice::Die Subdomain konnte nicht abgefragt werden; die Bereitstellung wird trotzdem versucht."
+          elif [ -z "$(echo "$response" | jq -r '.result.subdomain // empty')" ]; then
+            echo "::error::In deinem Cloudflare-Konto ist noch keine workers.dev-Subdomain festgelegt. Lege sie einmal im Dashboard fest (Workers & Pages, Onboarding bzw. «Your subdomain») und starte den Workflow erneut."
+            exit 1
+          else
+            echo "workers.dev-Subdomain ist festgelegt."
+          fi
       - name: Test-Worker bereitstellen
         id: deploy
         shell: bash
@@ -67,4 +79,6 @@ jobs:
       - name: Test-Worker löschen
         if: always() && inputs.loeschen
         shell: bash
-        run: npx --yes "wrangler@${WRANGLER_VERSION}" delete --name kadetten-probe --force
+        run: |
+          # Gab es nichts zu löschen (z. B. weil die Bereitstellung fehlschlug), ist das kein zusätzlicher Fehler.
+          npx --yes "wrangler@${WRANGLER_VERSION}" delete --name kadetten-probe --force || echo "::notice::Kein Test-Worker zum Löschen vorhanden."
