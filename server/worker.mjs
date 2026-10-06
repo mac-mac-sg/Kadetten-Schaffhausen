@@ -110,6 +110,16 @@ async function ehfReports(request, env, u) {
   return json({ok: true, report: await stored.json()});
 }
 
+// KI-Matchbericht zu einem abgeschlossenen QHL-Spiel (nur lesend; schreibt der Actions-Lauf).
+async function matchReports(request, env, u) {
+  if (request.method !== 'GET') return getRequired();
+  const id = u.pathname.slice('/api/match-reports/'.length);
+  if (!/^[a-zA-Z0-9_-]{1,80}$/.test(id)) return json({error: 'Invalid report'}, 400);
+  const stored = await env.BUCKET.get('kadetten/matchreports/' + id + '.json');
+  if (!stored) return json({error: 'Report not stored yet'}, 404);
+  return json({ok: true, report: await stored.json()});
+}
+
 async function live(request) {
   if (request.method !== 'GET') return getRequired();
   try {
@@ -202,6 +212,7 @@ const routes = [
   [isPath('/api/recent-games'), recentGames],
   [isUnder('/api/reports/'), reports],
   [isUnder('/api/ehf-reports/'), ehfReports],
+  [isUnder('/api/match-reports/'), matchReports],
   [isPath('/api/live'), live],
   [isUnder('/api/articles/'), articles],
   [isPath('/api/data'), data],

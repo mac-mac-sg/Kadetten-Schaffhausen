@@ -229,28 +229,13 @@ function reportRoster(g) {
 }
 function reportStats(g) {
   const r = verifiedReport(g);
-  const percent = v => (Number.isFinite(v) ? v.toLocaleString('de-CH', {maximumFractionDigits: 1}) + ' %' : '–');
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}${r.teams
-    .map(
-      t =>
-        `<section class="report-roster"><h3>${liveEscape(t.name)}</h3><p class="muted">Tore/Würfe · Siebenmeter-Tore/Versuche · 2-Minuten-Strafen</p><div class="report-table-wrap" tabindex="0" role="region" aria-label="Einzelstatistiken ${liveEscape(t.name)}"><table class="report-table"><thead><tr><th scope="col">Spieler</th><th scope="col">Tore/Würfe</th><th scope="col">Quote</th><th scope="col">7 m</th><th scope="col">2 min</th><th scope="col">Gelb</th><th scope="col">Rot</th></tr></thead><tbody>${t.players
-          .filter(p => !p.keeper)
-          .sort((a, b) => b.goals - a.goals)
-          .map(p => {
-            const person = reportPlayer(p);
-            return `<tr><th scope="row">${person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name)}</th><td>${p.goals ?? '–'}/${p.shots ?? '–'}</td><td>${p.goals !== null && p.shots > 0 ? percent((p.goals / p.shots) * 100) : '–'}</td><td>${p.seven ?? '–'}/${p.sevenShots ?? '–'}</td><td>${p.twoMinutes ?? '–'}</td><td>${p.warnings ?? '–'}</td><td>${p.redCards ?? '–'}</td></tr>`;
-          })
-          .join('')}</tbody></table></div><h4>Zwischen den Pfosten</h4><div class="facts">${t.players
-          .filter(p => p.keeper)
-          .map(p => {
-            const person = reportPlayer(p);
-            return `<div><span>${liveEscape(person.name)}</span><strong>${p.saves ?? '–'} Paraden · ${p.saves !== null && p.keeperShots > 0 ? percent((p.saves / p.keeperShots) * 100) : '–'}</strong><p class="muted">${p.sevenSaves ?? '–'} gehaltene Siebenmeter</p></div>`;
-          })
-          .join('')}</div></section>`
-    )
-    .join('')}${reportSource(r)}`;
+  const convert = (t, home) => t.players.map(p => {
+    const person = reportPlayer(p);
+    return {id: p.id, number: person.number ? String(person.number) : null, profile: person.number || null, name: person.name, home, goalkeeper: !!p.keeper, goals: p.goals, shots: p.shots, seven: p.seven, sevenShots: p.sevenShots, twoMinutes: p.twoMinutes, yellow: p.warnings, red: p.redCards, saves: p.saves, savesFaced: p.keeperShots};
+  });
+  const src = {id: String(g.id), home: r.teams[0].name, away: r.teams[1].name, players: [...convert(r.teams[0], true), ...convert(r.teams[1], false)]};
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}${statsPlayers(src)}${reportSource(r)}`;
 }
-
 
 function reportComparison(g,r) {
  const [h,a]=r.teams, value=v=>v??'–', percentage=v=>v===null||v===undefined?'–':v+' %';

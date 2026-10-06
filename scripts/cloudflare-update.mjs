@@ -14,7 +14,7 @@ import {kvRestStore} from './lib/kv-rest-store.mjs';
 import {syncProgrammes} from './lib/programmes-source.mjs';
 import {syncPreviews} from './lib/preview-sync.mjs';
 import {makeRewriter, makeReportWriter} from './lib/preview-rewrite.mjs';
-import {syncEhfArchive} from './lib/ehf-archive.mjs';
+import {syncEhfArchive, syncQhlReports} from './lib/ehf-archive.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 
 const write = text => {
@@ -79,6 +79,14 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
       for (const note of e.notes) write(`- ${note}`);
     } catch (e) {
       write(`\nEuropean League: Fehler (${String(e.message).slice(0, 120)}); bestehende Einträge bleiben.`);
+    }
+    // KI-Matchbericht zu abgeschlossenen QHL-Spielen (aus dem gesicherten SHV-Spielbericht).
+    try {
+      const q = await syncQhlReports(bucket, {games: result.next.games, write: reportWriter});
+      write(`\nQHL-Matchberichte: ${q.checked} abgeschlossene Spiele, ${q.written} geschrieben, ${q.kept} fertig vorhanden, ${q.reports} Berichte (${q.ki} mit KI).`);
+      for (const note of q.notes) write(`- ${note}`);
+    } catch (e) {
+      write(`\nQHL-Matchberichte: Fehler (${String(e.message).slice(0, 120)}); bestehende bleiben.`);
     }
     write('\nDer KV-Speicher ist aktualisiert.');
   } else {

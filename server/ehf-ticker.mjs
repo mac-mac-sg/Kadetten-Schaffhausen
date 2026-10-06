@@ -135,15 +135,18 @@ function longestDrought(goals) {
 const percent = (a, b) => (Number.isFinite(a) && Number.isFinite(b) && b > 0 ? Math.round((a / b) * 100) : null);
 
 // players: [{home, name, goals, shots, goalkeeper, saves, savesFaced}] (parseEhfPlayers); teamStats: parseEhfTeamStats. Beides darf fehlen.
-export function matchFacts({home, away, ticker, players = null, teamStats = null}) {
+export function matchFacts({home, away, ticker, players = null, teamStats = null, league = 'European League'}) {
   const goals = ticker.goals, final = ticker.final;
   const halves = ticker.halftime && final ? {first: ticker.halftime, second: [final[0] - ticker.halftime[0], final[1] - ticker.halftime[1]]} : null;
   const squad = side => (players || []).filter(p => p.home === (side === 'home'));
   const topScorers = side => squad(side).filter(p => !p.goalkeeper && p.goals > 0).sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name)).slice(0, 4).map(p => ({name: p.name, goals: p.goals, shots: p.shots ?? null}));
   const keepers = side => squad(side).filter(p => p.goalkeeper && p.savesFaced > 0).map(p => ({name: p.name, saves: p.saves, faced: p.savesFaced, percent: percent(p.saves, p.savesFaced)}));
-  const suspensionCount = side => teamStats?.[side === 'home' ? 'home' : 'guest']?.twoMinutes ?? ticker.suspensions.filter(s => s.side === side).length;
+  const suspensionCount = side => {
+    const n = teamStats?.[side === 'home' ? 'home' : 'guest']?.twoMinutes;
+    return Number.isInteger(n) ? n : ticker.suspensionsKnown === false ? null : ticker.suspensions.filter(s => s.side === side).length;
+  };
   return {
-    home, away, final, halves,
+    home, away, league, final, halves,
     firstGoal: goals[0] ? {side: goals[0].side, sec: goals[0].sec, score: goals[0].score, name: goals[0].name} : null,
     ...leadFacts(goals),
     run: longestRun(goals),
@@ -167,7 +170,7 @@ const tore = n => (n === 1 ? '1 Tor' : `${n} Tore`);
 export function factLines(f) {
   const lines = [];
   const [h, a] = f.final;
-  lines.push(`Spiel: ${roleName(f, 'home')} gegen ${roleName(f, 'away')}, Wettbewerb European League. Endstand ${scoreText(f.final)} (Heimteam zuerst genannt).`);
+  lines.push(`Spiel: ${roleName(f, 'home')} gegen ${roleName(f, 'away')}, Wettbewerb ${f.league || 'European League'}. Endstand ${scoreText(f.final)} (Heimteam zuerst genannt).`);
   lines.push(h === a ? 'Das Spiel endete unentschieden.' : `${teamName(f, h > a ? 'home' : 'away')} gewann das Spiel mit ${Math.abs(h - a)} Toren Unterschied.`);
   if (f.halves) lines.push(`Halbzeitstand ${scoreText(f.halves.first)}; in der zweiten Halbzeit fielen ${scoreText(f.halves.second)} (Heimteam zuerst).`);
   if (f.firstGoal) lines.push(`Das erste Tor erzielte ${teamName(f, f.firstGoal.side)} in der ${minuteText(f.firstGoal.sec)}, es hiess ${scoreText(f.firstGoal.score)}.`);
@@ -177,7 +180,7 @@ export function factLines(f) {
   if (f.run) lines.push(`Längste Serie: ${teamName(f, f.run.side)} erzielte ${f.run.goals} Tore in Folge (von ${scoreText(f.run.from)} auf ${scoreText(f.run.to)}, zwischen der ${minuteText(f.run.fromSec)} und der ${minuteText(f.run.toSec)}).`);
   if (f.drought) lines.push(`${teamName(f, f.drought.side)} blieb von der ${minuteText(f.drought.fromSec)} bis zur ${minuteText(f.drought.toSec)} ohne eigenes Tor.`);
   if (f.timeouts.length) lines.push(`Auszeiten: ${f.timeouts.map(t => `${teamName(f, t.side)} in der ${minuteText(t.sec)} beim Stand von ${scoreText(t.score)}`).join('; ')}.`);
-  lines.push(`Zwei-Minuten-Strafen: ${f.home} ${f.suspensions.home}, ${f.away} ${f.suspensions.away}.`);
+  if (Number.isInteger(f.suspensions.home) && Number.isInteger(f.suspensions.away)) lines.push(`Zwei-Minuten-Strafen: ${f.home} ${f.suspensions.home}, ${f.away} ${f.suspensions.away}.`);
   if (f.sevenMeters && f.sevenMeters.home.every(Number.isInteger) && f.sevenMeters.away.every(Number.isInteger)) lines.push(`Siebenmeter (Tore von Würfen): ${f.home} ${f.sevenMeters.home[0]} von ${f.sevenMeters.home[1]}, ${f.away} ${f.sevenMeters.away[0]} von ${f.sevenMeters.away[1]}.`);
   if (f.efficiency && Number.isInteger(f.efficiency.home) && Number.isInteger(f.efficiency.away)) lines.push(`Wurfquote: ${f.home} ${f.efficiency.home} %, ${f.away} ${f.efficiency.away} %.`);
   if (f.technicalFaults && Number.isInteger(f.technicalFaults.home) && Number.isInteger(f.technicalFaults.away)) lines.push(`Technische Fehler: ${f.home} ${f.technicalFaults.home}, ${f.away} ${f.technicalFaults.away}.`);
@@ -201,11 +204,11 @@ export function plainReport(f) {
   const second = [];
   if (f.run) second.push(`${teamName(f, f.run.side)} erzielte zwischen der ${minuteText(f.run.fromSec)} und der ${minuteText(f.run.toSec)} ${f.run.goals} Tore in Folge (${scoreText(f.run.from)} auf ${scoreText(f.run.to)}).`);
   if (f.drought) second.push(`${teamName(f, f.drought.side)} blieb von der ${minuteText(f.drought.fromSec)} bis zur ${minuteText(f.drought.toSec)} ohne Tor.`);
-  second.push(`Zwei-Minuten-Strafen: ${f.home} ${f.suspensions.home}, ${f.away} ${f.suspensions.away}.`);
+  if (Number.isInteger(f.suspensions.home) && Number.isInteger(f.suspensions.away)) second.push(`Zwei-Minuten-Strafen: ${f.home} ${f.suspensions.home}, ${f.away} ${f.suspensions.away}.`);
   const third = [];
   for (const side of ['home', 'away']) if (f.scorers[side].length) third.push(`Die meisten Tore für ${teamName(f, side)} erzielten ${f.scorers[side].slice(0, 3).map(p => `${p.name} (${p.goals})`).join(', ')}.`);
   for (const side of ['home', 'away']) for (const k of f.keepers[side].slice(0, 1)) third.push(`${k.name} hielt für ${teamName(f, side)} ${k.saves} von ${k.faced} Würfen.`);
-  return {headline: head, paragraphs: [first.join(' '), second.join(' '), ...(third.length ? [third.join(' ')] : [])]};
+  return {headline: head, paragraphs: [first.join(' '), ...(second.length ? [second.join(' ')] : []), ...(third.length ? [third.join(' ')] : [])]};
 }
 
 // Torfolge für die Anzeige in der App: «t» als Spielminute, «s» Spielstand, «h» wahr, wenn das Heimteam traf.

@@ -2,8 +2,9 @@
 // Quellen: Livescore-Feed (Spiel-ID, Endstand), Team- und Spielerwerte der EHF-Spielseite und die Ereignisse des Livetickers
 // (ticker.ehf.eu/v3, zu gross für den Worker). Ergebnis: kadetten/ehf/<Spiel-ID>.json im KV-Speicher, von /api/ehf-reports/<Spiel-ID> geliefert.
 // Ein Fehler lässt bestehende Einträge unberührt; ein Eintrag ohne Bericht wird im nächsten Lauf ergänzt.
-import {ehfLiveEndpoint, getEhfDetails, parseEhfFinishedMatch} from '../../server/live.mjs';
-import {parseTicker, withSevenMeters, matchFacts, factLines, plainReport, goalFeed} from '../../server/ehf-ticker.mjs';
+import {ehfLiveEndpoint, getEhfDetails, parseEhfFinishedMatch, reportId} from '../../server/live.mjs';
+import {qhlInputs} from '../../server/qhl-report.mjs';
+import {parseTicker, withSevenMeters, matchFacts, factLines, plainReport, goalFeed, clockText} from '../../server/ehf-ticker.mjs';
 import {reportMessages, toReport} from '../../server/report-ai.mjs';
 
 const TICKER_URL = 'https://ticker.ehf.eu/v3/TickerData';
@@ -96,9 +97,9 @@ async function buildRecord(g, match, fetchFn) {
 }
 
 // Ergänzt `record.report` (KI oder sachlicher Rückfall) aus den Ereignissen; ohne Ereignisse gibt es keinen Bericht.
-async function addReport(record, write) {
+async function addReport(record, write, league = 'European League') {
   if (!record.ticker) return {reason: record.tickerError || 'keine Ereignisse'};
-  const facts = matchFacts({home: record.home, away: record.away, ticker: record.ticker, players: record.players, teamStats: record.teamStats});
+  const facts = matchFacts({home: record.home, away: record.away, ticker: record.ticker, players: record.players, teamStats: record.teamStats, league});
   const base = {...plainReport(facts), facts: factLines(facts)};
   let report = {headline: base.headline, paragraphs: base.paragraphs, generator: 'daten'};
   let note = null;
@@ -116,4 +117,44 @@ async function addReport(record, write) {
   // Die Rohereignisse bleiben nur, solange noch ein KI-Versuch möglich ist; die Torfolge steht in `goals`.
   if (report.generator === 'ki' || !write || attempts >= 3) delete record.ticker;
   return {report: record.report, reason: note};
+}
+
+// --- QHL: KI-Matchbericht zu abgeschlossenen Spielen aus dem gesicherten SHV-Spielbericht ---------------------------------------
+// Alle abgeschlossenen QHL-Spiele der Kadetten ohne Bericht (neueste zuerst, höchstens `limit` KI-Aufrufe je Lauf). Eingabe ist der
+// Spielbericht unter kadetten/reports/<SHV-ID>.json (archiveCompletedReports); Ergebnis unter kadetten/matchreports/<Spiel-ID>.json.
+export const qhlKey = id => 'kadetten/matchreports/' + id + '.json';
+export async function syncQhlReports(bucket, {games, write = null, limit = 3}) {
+  const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
+  const done = (games || []).filter(g => g.league === 'QHL' && Array.isArray(g.score) && /Kadetten/.test(g.home + ' ' + g.away) && /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))).sort((a, b) => b.date.localeCompare(a.date));
+  let used = 0;
+  for (const g of done) {
+    out.checked++;
+    try {
+      const saved = await bucket.get(qhlKey(g.id));
+      const old = saved ? await saved.json() : null;
+      if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) { out.kept++; continue; }
+      if (used >= limit) continue;
+      let record = old?.ticker ? old : null;
+      if (!record) {
+        const gameId = reportId(g.id);
+        const stored = gameId ? await bucket.get('kadetten/reports/' + gameId + '.json') : null;
+        if (!stored) { out.notes.push(`${g.id}: kein gesicherter Spielbericht`); continue; }
+        const report = await stored.json();
+        if (!Array.isArray(report.score) || report.score.some((v, i) => v !== g.score[i])) { out.notes.push(`${g.id}: Spielbericht passt nicht zum Endstand`); continue; }
+        let inputs;
+        try { inputs = qhlInputs(report); } catch (e) { out.notes.push(`${g.id}: ohne Bericht (${String(e.message).slice(0, 80)})`); continue; }
+        record = {v: 1, fixtureId: String(g.id), gameId, home: inputs.home, away: inputs.away, date: g.date, score: report.score, half: inputs.ticker.halftime, checkedAt: new Date().toISOString(), players: inputs.players, teamStats: inputs.teamStats, goals: inputs.ticker.goals.map(x => ({t: clockText(x.sec), s: x.score, h: x.side === 'home', n: x.name, p: false})), ticker: inputs.ticker, source: {label: 'SHV Spielbericht', url: report.source || null}};
+      }
+      if (write) used++;
+      const result = await addReport(record, write, 'Quickline Handball League (QHL)');
+      if (!record.ticker) { delete record.players; delete record.teamStats; }
+      if (result.report) { out.reports++; if (result.report.generator === 'ki') out.ki++; }
+      await bucket.put(qhlKey(g.id), JSON.stringify(record));
+      out.written++;
+      out.notes.push(`${g.id}: Bericht (${record.report?.generator || 'keiner'})${result.reason ? ', ' + String(result.reason).slice(0, 80) : ''}`);
+    } catch (e) {
+      out.notes.push(`${g.id}: Fehler (${String(e?.message || e).slice(0, 100)})`);
+    }
+  }
+  return out;
 }
