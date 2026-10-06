@@ -1,0 +1,13 @@
+{
+  "name": "Kadetten-App",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "npm ci",
+  "forwardPorts": [
+    3000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Lokale Vorschau (schreibgeschützt)"
+    }
+  }
+}
