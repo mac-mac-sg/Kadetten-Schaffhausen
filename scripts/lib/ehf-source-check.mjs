@@ -163,7 +163,8 @@ export const tickerProbeUrls = id => [`https://ticker.ehf.eu/iBall/Static/${id}`
 
 // Einstellungen der Ticker-Seite (window.appContext): Basisadresse und die Pfade der Datenaufrufe (url, turl, nurl, ...).
 export function parseAppContext(html) {
-  const text = String(html);
+  // Auskommentierte Zuweisungen («//window.appContext.purl= "PlayerData";») zählen nicht.
+  const text = String(html).replace(/\/\/\s*window\.appContext\.\w+\s*=\s*["'][^"']*["'];?/g, '');
   const base = text.match(/baseUrl\s*[:=]\s*["']([^"']+)["']/)?.[1] ?? null;
   const paths = {};
   for (const m of text.matchAll(/\b([a-z]?url)\s*[:=]\s*["']([^"']+)["']/gi)) {
@@ -183,3 +184,7 @@ export function appContextUrls(context, pageUrl = 'https://ticker.ehf.eu/v3/') {
   }
   return out;
 }
+
+// Ereignisdaten der Ticker-Ansicht: nur der Pfad «surl» (TickerData). Die anderen Pfade (Team, Bilder) brauchen weitere Angaben
+// oder sind für unsere Zwecke ohne Belang und werden nicht abgefragt.
+export const probeTargets = urls => urls.filter(u => u.key === 'surl');

@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -46,6 +46,7 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
     const own = scripts.filter(s => /(^|\.)ehf\.eu\b|eurohandball\.com/.test(new URL(s).hostname)).slice(0, 10);
     for (const s of own) {
       const js = await get(fetchFn, s);
+      if (/ticker\.ehf\.eu\/v3\/bundles\/tickerApp/.test(s)) pages.push(js);
       const found = findEndpoints(js.text, s).filter(u => /api|socket|signalr|feed|ticker|livescore/i.test(u)).slice(0, 15);
       if (found.length) write(`\nSchnittstellen in ${s} (${found.length}):\n\n${found.map(u => '- ' + u).join('\n')}`);
       if (/ticker\.ehf\.eu\/v3\/bundles\/tickerApp/.test(s)) {
@@ -132,13 +133,15 @@ async function tickerData({id, pages, fetchFn, env}) {
   const page = pages.find(p => p.url.includes('ticker.ehf.eu/v3/') && p.text);
   if (!page) return;
   write('\n### Ticker-Ansicht: Einstellungen der Seite (appContext)\n');
+  const bundle = pages.find(p => /ticker\.ehf\.eu\/v3\/bundles\/tickerApp/.test(p.url));
+  if (bundle?.text) write('\nParameter des Datenaufrufs im Ticker-Skript:\n\n' + loadSnippets(bundle.text, ['VersionmotiondataStatistics', 'window.appContext.surl', 'appContext.ticket'], 2, 700, 6).map(x => '- ' + x).join('\n'));
   const hints = loadSnippets(page.text, ['appContext', 'baseUrl', 'MatchID'], 3, 400, 9);
   write(hints.map(x => '- ' + x).join('\n') || '- keine Fundstellen im HTML');
   const context = parseAppContext(page.text);
   const targets = appContextUrls(context, page.url);
   write(`\nBasisadresse: ${context.base ?? 'nicht gefunden'}\n\nDatenpfade (${targets.length}):\n\n${targets.map(t => `- ${t.key}: ${t.url}`).join('\n') || '- keine'}`);
   if (env.POST_PROBE !== '1') return write('\nPOST-Versuch ausgeschaltet (Eingabe «post_probe» des Workflows).');
-  for (const target of targets.slice(0, 6)) {
+  for (const target of probeTargets(targets)) {
     const t = Date.now();
     try {
       const r = await fetchFn(target.url, {method: 'POST', headers: {'User-Agent': 'Mozilla/5.0 (kadetten-app-quellenpruefung)', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest'}, body: new URLSearchParams({MatchID: id}), signal: AbortSignal.timeout(20000)});
