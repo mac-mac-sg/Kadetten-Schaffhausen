@@ -1,10 +1,12 @@
 // Match-Vorschauen in GitHub Actions erzeugen und in den KV-Speicher schreiben (docs/vorschauen.md).
 // Grundlage ist der sachliche Text aus bestätigten Daten (Weg B, `buildPreview`). Ist eine KI angebunden (`rewrite`), formuliert sie
-// ihn lebendiger um; besteht ihr Text die Prüfung nicht oder fällt sie aus, bleibt der sachliche Text (Rückfall).
+// ihn lebendiger um und der Text wird unverändert übernommen (auf Wunsch des Eigentümers ohne inhaltliche Prüfung). Nur die technischen
+// Regeln des Datendienstes (`validPreview`: Absatzzahl, Länge, keine Sonderzeichen `<` und `>`) müssen erfüllt sein; sonst oder bei Ausfall
+// der KI bleibt der sachliche Text (Rückfall).
 // Je Verein die nächsten Spiele; vorhandene gültige Vorschauen anderer Herkunft (z. B. früher von ChatGPT) bleiben bis zu ihrem
 // Ablauf unberührt. Fehler bei einer Vorschau lassen alle anderen und den Datenstand unberührt.
 import {buildPreview, tableFor} from '../../server/preview-text.mjs';
-import {parseAiText, checkAi, toAiPreview} from '../../server/preview-ai.mjs';
+import {parseAiText, toAiPreview} from '../../server/preview-ai.mjs';
 import {validPreview, fixtureKey} from '../../server/previews.mjs';
 
 const HOURS = 3600000;
@@ -57,10 +59,11 @@ export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = n
             out.rejected.push({id: g.id, problems: [res.error]});
           } else {
             const parsed = parseAiText(res.text);
-            const problems = checkAi(parsed, baseline);
-            const candidate = problems.length ? null : {...toAiPreview(baseline, parsed, now), baseHash: hash};
+            // Mehr als drei Absätze (der Datendienst erlaubt zwei bis drei): die überzähligen werden dem dritten angehängt.
+            if (parsed && parsed.paragraphs.length > 3) parsed.paragraphs = [...parsed.paragraphs.slice(0, 2), parsed.paragraphs.slice(2).join(' ')];
+            const candidate = parsed ? {...toAiPreview(baseline, parsed, now), baseHash: hash} : null;
             if (candidate && validPreview(candidate)) { preview = candidate; out.ki++; }
-            else out.rejected.push({id: g.id, problems: problems.length ? problems : ['Regeln des Datendienstes nicht erfüllt']});
+            else out.rejected.push({id: g.id, problems: [parsed ? 'Regeln des Datendienstes nicht erfüllt (Absatzzahl, Länge oder Sonderzeichen)' : 'Antwort nicht in Titel und Absätze zerlegbar']});
           }
         }
         if (rewrite && preview.generator !== 'ki') out.fallback++;
