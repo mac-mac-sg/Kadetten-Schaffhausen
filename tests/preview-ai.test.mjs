@@ -30,7 +30,7 @@ test('Prompt: nur Fakten, Schweizer Schreibweise, Format; Antwort wird in Titel 
   assert.equal(parseAiText('nur ein Absatz'), null);
 });
 
-test('Prüfung: gute Antwort besteht und ergibt eine gültige KI-Vorschau; Erfundenes, ß, Markup und fehlende Teams werden erkannt', () => {
+test('Prüfung: gute Antwort besteht und ergibt eine gültige KI-Vorschau; Erfundenes, Markup und fehlende Teams werden erkannt', () => {
   const parsed = parseAiText(GOOD);
   assert.deepEqual(checkAi(parsed, baseline), []);
   const p = toAiPreview(baseline, parsed, NOW);
@@ -41,7 +41,7 @@ test('Prüfung: gute Antwort besteht und ergibt eine gültige KI-Vorschau; Erfun
   try { assert.equal(validPreview(p), true); } finally { Date.now = real; }
 
   assert.match(checkAi(parseAiText(GOOD.replace('13 Punkten', '15 Punkten')), baseline).join(), /Zahlen.*15/);
-  assert.match(checkAi(parseAiText(GOOD.replace('Kadetten wollen', 'Grosse Kadetten wollen').replace('nachlegen', 'nachlegen ß')), baseline).join(), /ß/);
+  assert.deepEqual(checkAi(parseAiText(GOOD.replace('nachlegen', 'nachlegen ß')), baseline), [], 'ß wird schon im Parser zu ss');
   assert.match(checkAi(parseAiText(GOOD.replace('Das letzte Direktduell', '- Das letzte Direktduell')), baseline).join(), /Markup|Aufzählung/);
   assert.match(checkAi(parseAiText(GOOD.replaceAll('Stäfa', 'Gegner')), baseline).join(), /Team fehlt/);
   assert.match(checkAi(null, baseline).join(), /zerlegbar/);
@@ -185,21 +185,21 @@ test('Prompt: Wärme erlaubt, Serien- und Formurteile und Umlaut-Umschreibungen 
   const [system] = aiMessages(KADETTEN_BASE);
   for (const phrase of [/warm/, /einlädt/, /hintereinander/, /Aufschwung/, /nie «ae»/, /im Wettbewerb X/]) assert.match(system.content, phrase);
   const {makeRewriter, DEFAULT_MODEL} = await import('../scripts/lib/preview-rewrite.mjs');
-  assert.equal(DEFAULT_MODEL, '@cf/openai/gpt-oss-120b');
+  assert.equal(DEFAULT_MODEL, '@cf/mistralai/mistral-small-3.1-24b-instruct');
   let sent;
   const rewrite = makeRewriter({CLOUDFLARE_API_TOKEN: 't', CLOUDFLARE_ACCOUNT_ID: 'a'}, async (url, init) => { sent = {url, body: JSON.parse(init.body)}; return new Response(JSON.stringify({success: true, result: {response: 'x'}})); });
   await rewrite(KADETTEN_BASE);
-  assert.match(sent.url, /gpt-oss-120b/);
-  assert.equal(sent.body.max_tokens, 3000);
+  assert.match(sent.url, /mistral-small-3.1/);
+  assert.equal(sent.body.max_tokens, 1500);
 });
 
 test('Prompt: Wettbewerb ohne Artikel, wechselnder Schluss, keine Prognosen; Parser normalisiert Sonderzeichen', () => {
   const [system] = aiMessages(KADETTEN_BASE);
-  for (const phrase of [/«im Wettbewerb X»/, /nie mit einem Artikel/, /jedes Mal neu/, /«Wir freuen uns»/, /«verspricht Spannung»/, /«unter Druck setzen»/, /auf der Tribüne/]) assert.match(system.content, phrase);
-  const p = parseAiText('Titel\u2011Test\n\nFC Lausanne\u2011Sport gewann 45 : 34 gegen\u00A0Basel.\n\nZweiter Absatz mit 3:1.');
+  for (const phrase of [/«im Wettbewerb X»/, /nie mit einem Artikel/, /jedes Mal neu/, /«Wir freuen uns»/, /«verspricht Spannung»/, /«unter Druck setzen»/, /nenne keinen Ort/]) assert.match(system.content, phrase);
+  const p = parseAiText('Titel\u2011Test\n\nFC Lausanne\u2011Sport gewann 45 : 34 gegen\u00A0Basel.\n\nZweiter Absatz mit 3:1 zum Genießen.');
   assert.equal(p.headline, 'Titel-Test');
   assert.equal(p.paragraphs[0], 'FC Lausanne-Sport gewann 45:34 gegen Basel.');
-  assert.equal(p.paragraphs[1], 'Zweiter Absatz mit 3:1.');
+  assert.equal(p.paragraphs[1], 'Zweiter Absatz mit 3:1 zum Geniessen.');
 });
 
 test('Faktenliste für die KI: eindeutige Richtung der Tore, Resultate aus Sicht des Teams mit Ausgang, Direktduelle mit Sieger; nicht Teil der gespeicherten Vorschau', () => {
