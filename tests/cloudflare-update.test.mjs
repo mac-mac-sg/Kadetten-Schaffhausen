@@ -91,3 +91,19 @@ test('Aktualisierung in Actions: Trockenlauf ändert nichts, Schreiblauf aktuali
     await assert.rejects(main({schreiben: true, env: {}, fetchFn: down.fetchFn}), /fehlen/);
   });
 });
+
+test('Zeitplan: deckt die sieben Schweizer Zeiten in Sommer und Winter ab und lässt nur diese Läufe zu', () => {
+  const wf = fs.readFileSync('.github/workflows/cloudflare-update.yml', 'utf8');
+  const cron = wf.match(/- cron: '20 ([0-9,]+) \* \* \*'/);
+  assert.ok(cron, 'Zeitplan mit Minute 20 vorhanden');
+  const utcHours = cron[1].split(',').map(Number);
+  const wanted = [6, 9, 12, 15, 18, 21, 22];
+  const guard = wf.match(/case " ([0-9 ]+) " in/)[1].split(' ').map(Number);
+  assert.deepEqual(guard, wanted, 'Prüfliste im Workflow entspricht den Aktualisierungszeiten');
+  for (const day of ['2026-01-15', '2026-07-15', '2026-03-29', '2026-10-25']) {
+    const zurich = new Set(utcHours.map(h => Number(new Intl.DateTimeFormat('en-GB', {hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Zurich'}).format(new Date(`${day}T${String(h).padStart(2, '0')}:20:00Z`)))));
+    for (const w of wanted) assert.ok(zurich.has(w), `${day}: ${w}:20 Schweizer Zeit wird ausgelöst`);
+  }
+  assert.match(wf, /MODUS: \$\{\{ inputs\.modus \|\| 'schreiben' \}\}/, 'geplante Läufe schreiben');
+  assert.doesNotMatch(wf, /\n\s+- (uses|name: (Zugangsdaten|Trockenlauf|In den KV))[^\n]*\n(?!\s+if: env\.SKIP)/, 'Schritte nach der Prüfung respektieren SKIP');
+});
