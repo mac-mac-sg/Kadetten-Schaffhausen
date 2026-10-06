@@ -181,10 +181,15 @@ function statsView(src) {
  if(!src.players?.length)return teamPart||'<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
  return teamPart+statsPlayers(src);
 }
+// Mannschaftsumschalter mit je einem Bereich pro Mannschaft; beide Bereiche stehen im Dokument, das Umschalten braucht keine Abfrage.
+function teamSwitchMarkup(id,home,away,panel) {
+ const side=liveStatsTeam?.id===id?liveStatsTeam.side:(/Kadetten/.test(home)||!/Kadetten/.test(away)?'home':'away');
+ const teams=[['home',home],['away',away]];
+ return `<div class="team-switch" role="group" aria-label="Mannschaft wählen" data-stats-switch="${liveEscape(id)}" style="--selected:${side==='home'?0:1}"><span class="team-switch-slider" aria-hidden="true"></span>${teams.map(([k,name])=>`<button type="button" data-stats-team="${k}" aria-pressed="${k===side}">${badge(name)}<span>${liveEscape(name)}</span></button>`).join('')}</div>${teams.map(([k,name])=>`<section class="live-team-stats" data-stats-panel="${k}" ${k===side?'':'hidden'}><h2 class="live-sr-context">${liveEscape(name)}</h2>${panel(k,name)}</section>`).join('')}`;
+}
 function statsPlayers(src) {
- const side=liveStatsTeam?.id===src.id?liveStatsTeam.side:(/Kadetten/.test(src.home)||!/Kadetten/.test(src.away)?'home':'away'), seven=src.players.some(p=>p.seven!==null&&p.seven!==undefined);
- const teams=[['home',src.home],['away',src.away]];
- return `<h2>Spielerstatistiken</h2><div class="team-switch" role="group" aria-label="Mannschaft wählen" data-stats-switch="${liveEscape(src.id)}" style="--selected:${side==='home'?0:1}"><span class="team-switch-slider" aria-hidden="true"></span>${teams.map(([k,name])=>`<button type="button" data-stats-team="${k}" aria-pressed="${k===side}">${badge(name)}<span>${liveEscape(name)}</span></button>`).join('')}</div>${teams.map(([k,name])=>`<section class="live-team-stats" data-stats-panel="${k}" ${k===side?'':'hidden'}><h2 class="live-sr-context">${liveEscape(name)}</h2>${playerTables(src.players.filter(p=>p.home===(k==='home')),name,seven)}</section>`).join('')}<p class="muted">YC: Gelbe Karte · 2M: 2-Minuten-Strafe · RC: Rote Karte · S: Würfe · G: Tore · SV: Paraden · SH: erhaltene Würfe · SV%: Fangquote${seven?' · 7 m: Siebenmeter-Tore/Würfe':''} · –: Wert nicht verfügbar</p>`;
+ const seven=src.players.some(p=>p.seven!==null&&p.seven!==undefined);
+ return `<h2>Spielerstatistiken</h2>${teamSwitchMarkup(src.id,src.home,src.away,(k,name)=>playerTables(src.players.filter(p=>p.home===(k==='home')),name,seven))}<p class="muted">YC: Gelbe Karte · 2M: 2-Minuten-Strafe · RC: Rote Karte · S: Würfe · G: Tore · SV: Paraden · SH: erhaltene Würfe · SV%: Fangquote${seven?' · 7 m: Siebenmeter-Tore/Würfe':''} · –: Wert nicht verfügbar</p>`;
 }
 function livePlayerStats(live,archive) {
  const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home,away:archive.away,teamStats:archive.teamStats,players:archive.players}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};

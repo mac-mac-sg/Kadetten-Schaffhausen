@@ -229,12 +229,19 @@ function reportRoster(g) {
 }
 function reportStats(g) {
   const r = verifiedReport(g);
-  const convert = (t, home) => t.players.map(p => {
-    const person = reportPlayer(p);
-    return {id: p.id, number: person.number ? String(person.number) : null, profile: person.number || null, name: person.name, home, goalkeeper: !!p.keeper, goals: p.goals, shots: p.shots, seven: p.seven, sevenShots: p.sevenShots, twoMinutes: p.twoMinutes, yellow: p.warnings, red: p.redCards, saves: p.saves, savesFaced: p.keeperShots};
-  });
-  const src = {id: String(g.id), home: r.teams[0].name, away: r.teams[1].name, players: [...convert(r.teams[0], true), ...convert(r.teams[1], false)]};
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}${statsPlayers(src)}${reportSource(r)}`;
+  const percent = v => (Number.isFinite(v) ? v.toLocaleString('de-CH', {maximumFractionDigits: 1}) + ' %' : '–');
+  const link = (p, person) => (person.number ? `<a href="#player/${person.number}">${liveEscape(person.name)}</a>` : liveEscape(person.name));
+  // Je Mannschaft: Feldspieler (Tore/Würfe, Quote, 7 m, Gelb, Rot) und «Zwischen den Pfosten» als Kacheln.
+  const team = t => {
+    const field = t.players.filter(p => !p.keeper).sort((a, b) => b.goals - a.goals);
+    const keepers = t.players.filter(p => p.keeper);
+    return `<h3>Feldspieler</h3><p class="muted">Tore/Würfe · Quote · Siebenmeter-Tore/Versuche · Gelbe und Rote Karten</p><div class="report-table-wrap" tabindex="0" role="region" aria-label="Einzelstatistiken ${liveEscape(t.name)}"><table class="report-table stats-table"><thead><tr><th scope="col">Spieler</th><th scope="col">Tore/ Würfe</th><th scope="col">Quote</th><th scope="col">7 m</th><th scope="col">Gelb</th><th scope="col">Rot</th></tr></thead><tbody>${field
+      .map(p => `<tr><th scope="row">${link(p, reportPlayer(p))}</th><td>${p.goals ?? '–'}/${p.shots ?? '–'}</td><td>${p.goals !== null && p.shots > 0 ? percent((p.goals / p.shots) * 100) : '–'}</td><td>${p.seven ?? '–'}/${p.sevenShots ?? '–'}</td><td>${p.warnings ?? '–'}</td><td>${p.redCards ?? '–'}</td></tr>`)
+      .join('')}</tbody></table></div>${keepers.length ? `<h4>Zwischen den Pfosten</h4><div class="facts">${keepers
+      .map(p => `<div><span>${link(p, reportPlayer(p))}</span><strong>${p.saves ?? '–'} Paraden · ${p.saves !== null && p.keeperShots > 0 ? percent((p.saves / p.keeperShots) * 100) : '–'}</strong><p class="muted">${p.sevenSaves ?? '–'} gehaltene Siebenmeter</p></div>`)
+      .join('')}</div>` : ''}`;
+  };
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p>` : ''}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => team(r.teams[k === 'home' ? 0 : 1]))}${reportSource(r)}`;
 }
 
 function reportComparison(g,r) {
