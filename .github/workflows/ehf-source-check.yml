@@ -9,6 +9,10 @@ on:
         description: EHF-Spiel-ID
         type: string
         default: '202711020901029'
+      post_probe:
+        description: Die Datenpfade der Ticker-Ansicht je einmal per POST abfragen (wie die Seite im Browser; liest nur)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -20,6 +24,7 @@ jobs:
     timeout-minutes: 10
     env:
       SPIEL_ID: ${{ inputs.spiel_id }}
+      POST_PROBE: ${{ inputs.post_probe && '1' || '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

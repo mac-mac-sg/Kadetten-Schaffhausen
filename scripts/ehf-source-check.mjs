@@ -2,7 +2,7 @@
 // Daten-Schnittstellen. Aufruf: node scripts/ehf-source-check.mjs   (Umgebungsvariable SPIEL_ID, Standard 202711020901029)
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, API, NAMES} from './lib/ehf-source-check.mjs';
+import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, DETAIL_PATHS, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, API, NAMES} from './lib/ehf-source-check.mjs';
 
 const write = text => {
   console.log(text);
@@ -58,6 +58,7 @@ export async function main({env = process.env, fetchFn = fetch} = {}) {
       }
     }
   }
+  await tickerData({id, pages, fetchFn, env});
   for (const url of tickerProbeUrls(id)) {
     const r = await get(fetchFn, url);
     write(`\n#### ${url}\n\nStatus ${r.status || 'Fehler'}, ${r.type || 'kein Inhaltstyp'}, ${r.text.length} Zeichen${r.error ? ' (' + r.error + ')' : ''}`);
@@ -121,6 +122,30 @@ async function probeApis({id, pages, fetchFn}) {
           write(`\nAnzahl Spieler im Heimteam: ${Array.isArray(players) ? players.length : 'unbekannt'}`);
         }
       }
+    }
+  }
+}
+
+// Ticker-Ansicht (ticker.ehf.eu/v3): zeigt die Einstellungen der Seite (window.appContext) und, nur auf ausdrücklichen Wunsch
+// (POST_PROBE=1), einen einzigen lesenden POST je Datenpfad mit der Spiel-ID, wie ihn die Seite selbst im Browser sendet.
+async function tickerData({id, pages, fetchFn, env}) {
+  const page = pages.find(p => p.url.includes('ticker.ehf.eu/v3/') && p.text);
+  if (!page) return;
+  write('\n### Ticker-Ansicht: Einstellungen der Seite (appContext)\n');
+  const hints = loadSnippets(page.text, ['appContext', 'baseUrl', 'MatchID'], 3, 400, 9);
+  write(hints.map(x => '- ' + x).join('\n') || '- keine Fundstellen im HTML');
+  const context = parseAppContext(page.text);
+  const targets = appContextUrls(context, page.url);
+  write(`\nBasisadresse: ${context.base ?? 'nicht gefunden'}\n\nDatenpfade (${targets.length}):\n\n${targets.map(t => `- ${t.key}: ${t.url}`).join('\n') || '- keine'}`);
+  if (env.POST_PROBE !== '1') return write('\nPOST-Versuch ausgeschaltet (Eingabe «post_probe» des Workflows).');
+  for (const target of targets.slice(0, 6)) {
+    const t = Date.now();
+    try {
+      const r = await fetchFn(target.url, {method: 'POST', headers: {'User-Agent': 'Mozilla/5.0 (kadetten-app-quellenpruefung)', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest'}, body: new URLSearchParams({MatchID: id}), signal: AbortSignal.timeout(20000)});
+      const text = await r.text();
+      write(`\n#### POST ${target.url}\n\nStatus ${r.status}, ${r.headers.get('content-type') || 'kein Inhaltstyp'}, ${text.length} Zeichen, ${Date.now() - t} ms\n\n${code(preview(text, 1500))}`);
+    } catch (e) {
+      write(`\n#### POST ${target.url}\n\nFehler: ${String(e?.message || e)}`);
     }
   }
 }
