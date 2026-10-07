@@ -47,12 +47,16 @@ function calendar() {
   )}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">Gegnerlogo antippen für Spielinfos und Resultat.</p>`;
 }
 function recordBar(name, total) {
-  const r =
-    tableLeague === 'QHL'
-      ? teamRecords[name]
-      : name === 'Kadetten Schaffhausen' || name === 'HC Izvidac'
-        ? [1, 0, 0]
-        : [0, 0, 1];
+  // EHL: Siege/Unentschieden/Niederlagen aus Spielen und Punkten (2 pro Sieg, 1 pro Unentschieden), möglichst wenige Unentschieden
+  const row = tables.EHL.find(t => t[0] === name),
+    derived = () => {
+      const points = Number(row[4]),
+        d = points % 2,
+        w = (points - d) / 2,
+        l = total - w - d;
+      return l >= 0 ? [w, d, l] : null;
+    };
+  const r = tableLeague === 'QHL' ? teamRecords[name] : row ? derived() : null;
   if (!r || !total) return '';
   const label = `${r[0]} Siege, ${r[1]} Unentschieden, ${r[2]} Niederlagen`;
   return `<div class="record-bar" role="img" aria-label="${label}" title="${label}">${r.map((n, i) => `<span class="record-${i}" style="width:${(n / total) * 100}%"></span>`).join('')}</div><small class="record-text">${r[0]} S · ${r[1]} U · ${r[2]} N</small>`;

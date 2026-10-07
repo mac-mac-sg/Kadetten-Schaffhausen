@@ -35,7 +35,7 @@ test('Vorschau-Text: nur bestätigte Angaben, keine Siege/Niederlagen-Zähler, l
   assert.doesNotMatch(p.paragraphs.join(' '), /Siege|Niederlagen|Unentschieden/);
   assert.deepEqual(p.sources.map(s => s.url), ['https://kadettensh.ch/matchcenter/', duel.externalUrl]);
   assert.equal(p.fixtureKey, fixtureKey(kGame));
-  assert.equal(validPreview(p), true);
+  assert.equal(validPreview({...p, generatedAt: new Date().toISOString()}), true);
 });
 
 test('Vorschau-Text: fehlende Angaben entfallen, ohne genug Daten gibt es keine Vorschau, Tabelle nur im passenden Wettbewerb', () => {
@@ -228,7 +228,7 @@ test('Vorschau-Text mit letzten Resultaten und mehreren Direktduellen: Absatz dr
   assert.equal(p.paragraphs.length, 3);
   assert.equal(p.paragraphs[2], 'Die letzten Direktduelle: 14.03.2026 Handball Stäfa – Kadetten Schaffhausen 27:31; 02.11.2025 Kadetten Schaffhausen – Handball Stäfa 35:26. Zuletzt spielte Kadetten Schaffhausen: 22.09. D – Kadetten Schaffhausen 20:27; 15.09. Kadetten Schaffhausen – C 31:31. Zuletzt spielte Handball Stäfa: 03.10. Handball Stäfa – BSV Bern 24:30.');
   assert.deepEqual(p.sources.map(s => s.label), ['Kadetten Schaffhausen: Matchcenter', 'handball.ch: Direktduell vom 14.03.2026', 'handball.ch: Direktduell vom 02.11.2025', 'handball.ch: Matchcenter']);
-  assert.equal(validPreview(p), true);
+  assert.equal(validPreview({...p, generatedAt: new Date().toISOString()}), true);
   const onlyForm = buildPreview({club: 'kadetten', game: kGame, table: null, recent: [{team: 'Kadetten Schaffhausen', games: [g1]}], now: NOW});
   assert.equal(onlyForm.paragraphs.length, 2, 'Spielangaben und letzte Resultate genügen');
   const broken = buildPreview({club: 'kadetten', game: kGame, table: table.QHL, recent: [{team: 'X', games: [{date: 'kaputt', home: 'a', away: 'b', score: ['1', 2]}]}], now: NOW});

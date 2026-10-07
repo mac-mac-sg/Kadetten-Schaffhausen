@@ -338,3 +338,16 @@ test('Statistik abgeschlossener QHL-Spiele: Mannschaftswahl, Feldspieler mit Tor
 test('Router kennt den Tab «report»',()=>{
  assert.match(fs.readFileSync('src/client/js/router.js','utf8'),/\['overview', 'report', 'squad', 'stats'\]\.includes\(tab\)/);
 });
+
+test('European-League-Tabelle: Siege, Unentschieden und Niederlagen folgen aus Spielen und Punkten', () => {
+  run(`tableLeague = 'EHL'; tables.EHL = [['Kadetten Schaffhausen',2,81,62,4],['Chambery Savoie Mont Blanc HB',2,66,59,2],['HC Izvidac',2,64,75,2],['CSM Bucuresti',2,57,72,0]]`);
+  try {
+    const bars = name => run(`recordBar(${JSON.stringify(name)}, 2)`).match(/\d+ S · \d+ U · \d+ N/)[0];
+    assert.equal(bars('Kadetten Schaffhausen'), '2 S · 0 U · 0 N');
+    assert.equal(bars('Chambery Savoie Mont Blanc HB'), '1 S · 0 U · 1 N');
+    assert.equal(bars('HC Izvidac'), '1 S · 0 U · 1 N');
+    assert.equal(bars('CSM Bucuresti'), '0 S · 0 U · 2 N');
+  } finally {
+    run(`tableLeague = 'QHL'`);
+  }
+});
