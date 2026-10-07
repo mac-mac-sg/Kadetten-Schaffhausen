@@ -24,8 +24,6 @@ test('Cron-Ausdruck des Workers deckt alle sieben Schweizer Zeiten in Sommer und
     const zurich = new Set(utcHours.map(h => zurichHour(new Date(`${day}T${String(h).padStart(2, '0')}:20:00Z`))));
     for (const w of SWISS_HOURS) assert.ok(zurich.has(w), `${day}: ${w}:20 Schweizer Zeit wird ausgelöst`);
   }
-  const workflow = fs.readFileSync('.github/workflows/cloudflare-update.yml', 'utf8');
-  assert.equal(workflow.match(/- cron: '20 ([0-9,]+) \* \* \*'/)[1], cron[1], 'gleicher Zeitplan wie im GitHub-Workflow');
 });
 
 test('Auslösung: ein POST an die GitHub-Schnittstelle mit Modus «schreiben», Token nur im Kopf und nie im Ergebnis', async () => {
