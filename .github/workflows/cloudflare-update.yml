@@ -3,15 +3,12 @@ name: Cloudflare-Datenaktualisierung
 # des Datendienstes und schreibt das Ergebnis in den KV-Speicher. Quellenfehler behalten den letzten gültigen Stand.
 # pruefen        Trockenlauf: ruft die Quellen ab, zeigt das Ergebnis, schreibt nichts (Standard)
 # schreiben      schreibt in den KV-Speicher
-# Zeitplan: zu den Zeiten des bisherigen Datendienstes (Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20).
-# GitHub rechnet in UTC. Der Zeitplan löst deshalb in beiden Zeitzonen-Versionen (Sommer UTC+2, Winter UTC+1) aus, und der
-# erste Schritt lässt nur Läufe zu, die zur Schweizer Uhrzeit passen. Geplante Läufe schreiben immer.
+# Zeitplan: kein GitHub-Zeitplan mehr. Der Cron-Trigger des Workers (server/scheduler.mjs) löst zu den Schweizer Zeiten
+# 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20 per workflow_dispatch aus (Modus «schreiben»).
 # Match-Vorschauen: KI von Cloudflare Workers AI mit Rückfall auf den sachlichen Text; abschaltbar mit der Repository-Variable KI_VORSCHAU = aus.
 # Schreibläufe speichern zusätzlich das Matchprogramm des nächsten Heimspiels (PDF von kadettensh.ch, Phase 2b).
 # Der Import (cloudflare-import.yml) darf nach dem ersten Schreiblauf nicht mehr ausgeführt werden.
 on:
-  schedule:
-    - cron: '20 4,5,7,8,10,11,13,14,16,17,19,20,21 * * *'
   workflow_dispatch:
     inputs:
       modus:
@@ -36,35 +33,20 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       KI_VORSCHAU: ${{ vars.KI_VORSCHAU || 'an' }}
     steps:
-      - name: Schweizer Uhrzeit prüfen
-        if: github.event_name == 'schedule'
-        shell: bash
-        run: |
-          hour=$(TZ=Europe/Zurich date +%H)
-          case " 06 09 12 15 18 21 22 " in
-            *" $hour "*) echo "Geplanter Lauf um $hour Uhr Schweizer Zeit." ;;
-            *) echo "SKIP=1" >> "$GITHUB_ENV"; echo "Ausgelassen: $hour Uhr Schweizer Zeit ist kein Aktualisierungszeitpunkt." ;;
-          esac
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        if: env.SKIP != '1'
         with:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        if: env.SKIP != '1'
         with:
           node-version: '22'
           cache: npm
       - name: Zugangsdaten vorhanden?
-        if: env.SKIP != '1'
         shell: bash
         run: |
           [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen."; exit 1; }
       - name: Abhängigkeiten installieren
-        if: env.SKIP != '1'
         run: npm ci
-      - name: Trockenlauf
-        if: env.SKIP != '1' && env.MODUS == 'pruefen'
+      - name: Trockenlauf && env.MODUS == 'pruefen'
         run: node scripts/cloudflare-update.mjs
-      - name: In den KV-Speicher schreiben
-        if: env.SKIP != '1' && env.MODUS == 'schreiben'
+      - name: In den KV-Speicher schreiben && env.MODUS == 'schreiben'
         run: node scripts/cloudflare-update.mjs --schreiben
