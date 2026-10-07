@@ -238,6 +238,7 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
   assert.match(overview,/match-preview-facts/);assert.match(overview,/<span>Spieldatum<\/span>/);assert.match(overview,/<span>Anspielzeit<\/span><strong>[^<]*Beendet<\/strong>/);assert.match(overview,/venue-preview/);
   assert.doesNotMatch(overview,/Offizieller Spielplan|Originalbericht lesen/);
   assert.doesNotMatch(overview,/Schiedsrichter/);
+  assert.doesNotMatch(view("matchOverview({...reportFixture,home:'Kadetten Schaffhausen'})"),/data-match-programme/);assert.match(view("matchOverview({...reportFixture,home:'Kadetten Schaffhausen',score:null})"),/data-match-programme/);
   assert.doesNotMatch(stats,/Paradenquote gemäss SHV/);assert.match(stats,/<th scope="col" class="name">Spieler<\/th>/);
  }finally{run('delete gameReports.stgallen;delete globalThis.reportFixture');}
 });
