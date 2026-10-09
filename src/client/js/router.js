@@ -61,7 +61,7 @@ function setupViews() {
       },
       {threshold: 0.45}
     );
-    document.querySelectorAll('.story-screen,.profile-slide').forEach(e => viewObserver.observe(e));
+    document.querySelectorAll('.story-screen,.profile-slide,.fcsg-profile-slide').forEach(e => viewObserver.observe(e));
   }
   // Initialise both clubs identically before observers begin reporting visibility.
   if (document.querySelector('.story-screen')) updateNewsDots(0);
@@ -203,7 +203,7 @@ function render() {
   loadMatchProgramme();
   if (activeClub === 'fcsg') {
     document.body.classList.toggle('player-mode', false);
-    scrollRoot.classList.toggle('snap-profile', false);
+    scrollRoot.classList.toggle('snap-profile', page === 'player');
     document.querySelector('[data-nav="games"]')?.classList.remove('is-matchday');
     document.querySelector('[data-nav="games"]')?.setAttribute('aria-label', 'Spiele');
     if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
