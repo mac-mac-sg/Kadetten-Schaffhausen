@@ -61,13 +61,16 @@ function previewComparison(g) {
 }
 let recentSelection = null;
 const recentCache = new Map();
+function recentData(g, team) {
+  return g.league === 'QHL' ? recentCache.get(team) : g.league === 'EHL' ? updateState?.ehlRecentGames?.[team] : null;
+}
 function recentSelector(g) {
   const team = recentSelection?.match === g.id ? recentSelection.team : g.home.includes('Kadetten') ? g.home : g.away;
   recentSelection = {match: g.id, team};
   return `<div id="form-comparison">${formComparison(g)}</div><h3 class="history-heading">Letzte Spiele im Detail</h3><div class="team-switch" role="group" aria-label="Team für letzte Spiele" style="--selected:${team === g.home ? 0 : 1}"><span class="team-switch-slider" aria-hidden="true"></span>${[g.home, g.away].map(t => `<button data-recent-team="${liveEscape(t)}" aria-pressed="${t === team}">${badge(t)}<span>${t}</span></button>`).join('')}</div><div id="recent-results" aria-live="polite">${recentGamesMarkup(g, team)}</div><h3 class="history-heading">Direkte Duelle</h3><div id="head-to-head" aria-live="polite">${headToHeadMarkup(g)}</div>`;
 }
 function recentGamesMarkup(g, team) {
-  const cached = g.league === 'QHL' ? recentCache.get(team) : null;
+  const cached = recentData(g, team);
   const list =
     cached?.games ||
     games
@@ -84,7 +87,7 @@ function recentGamesMarkup(g, team) {
     })
     .join(
       ''
-    )}</div>${!list.length ? '<p class="muted">Noch keine verifizierten Resultate erfasst.</p>' : ''}<p class="muted recent-note">${cached?.ok ? 'Die letzten fünf abgeschlossenen Saisonspiele' : g.league === 'QHL' ? 'Offizielle Resultate werden geladen …' : 'Hier erfasste Saisonspiele. Eine vollständige Gegnerhistorie ist noch nicht verfügbar.'}</p>`;
+    )}</div>${!list.length ? '<p class="muted">Noch keine verifizierten Resultate erfasst.</p>' : ''}<p class="muted recent-note">${g.league === 'EHL' && cached?.games ? 'Letzte bis zu fünf EHL-Saisonspiele · Quelle: EHF' + (cached.ok === false ? ' · Letzter gültiger Stand' : '') : cached?.ok ? 'Die letzten fünf abgeschlossenen Saisonspiele' : g.league === 'QHL' ? 'Offizielle Resultate werden geladen …' : 'Hier erfasste Saisonspiele. Eine vollständige Gegnerhistorie ist noch nicht verfügbar.'}</p>`;
 }
 const recentPending = new Map(),
   duelCache = new Map(),
@@ -101,7 +104,7 @@ function localRecent(g, team) {
 function formComparison(g) {
   return `<div class="form-comparison">${[g.home, g.away]
     .map(team => {
-      const cached = g.league === 'QHL' ? recentCache.get(team) : null,
+      const cached = recentData(g, team),
         list = cached?.games || localRecent(g, team);
       return `<div class="form-team">${badge(team)}<strong>${liveEscape(team)}</strong><div class="form-strip" aria-label="Form von ältestem zu neuestem Spiel">${[
         ...list

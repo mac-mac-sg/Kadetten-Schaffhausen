@@ -81,6 +81,10 @@ Abgeschlossene QHL-Spiele: `/api/reports/:id` liest den bestätigten SHV-Bericht
 
 ## Zwei Vereine
 
+### EHL-Gegnerform
+
+Der bestehende Actions-Aktualisierungslauf liest die Teamseiten der laufenden EHF-European-League-Saison (`scripts/lib/ehl-results.mjs`). Er entdeckt die Seiten über die offizielle Vereinsliste und speichert je EHL-Team die letzten bis zu fünf publizierten Resultate unter `ehlRecentGames` im Saison-Snapshot. Historische Saisons, künftige Spiele und leere Spielstände zählen nicht; Resultate vom laufenden Tag werden erst am Folgetag übernommen, damit Live-Zwischenstände nicht als Endresultat erscheinen. Quellenfehler erhalten Spiele und Zeitstempel des letzten gültigen Stands. Die bestehende Gegnerauswahl, Resultateliste und Formkurve lesen diese Daten; Layout, QHL-Datenabfragen und direkte Duelle bleiben unverändert. Kein neuer Worker-Endpunkt und keine separate Worker-Bereitstellung nötig. Die Daten erscheinen nach dem nächsten regulären Aktualisierungslauf.
+
 `js/clubs.js` verwaltet die Vereinswahl und die FCSG-Ansichten unabhängig von Kadetten-Snapshots. Der Umschalt-Button im Titelbereich wechselt zwischen den Vereinen. Beim normalen Start öffnet die App immer Kadetten, unabhängig von der letzten Auswahl; `?club=fcsg` bzw. `?club=kadetten` hat Vorrang und macht Links teilbar. Bereichsrouten bleiben erhalten; Artikel-, Spiel- und Spieler-Details gehen beim Wechsel zur zugehörigen Übersicht.
 
 FCSG verwendet dieselbe Navigation, News-Screens, Spielkarten, Tabellenstruktur und Kalendergestaltung. Der Kader enthält 30 öffentlich sichtbare Spieler der Saison 2026/27; Staff wird ausgeschlossen. Die Vereinsgeschichte bietet eine eigene Zeitleiste und den gemeinsamen Trophäenschrank mit FCSG-Daten. Das offizielle Wappen stammt von https://www.fcsg.ch/cdn/shop/files/logo.svg?v=1711098308&width=600 .

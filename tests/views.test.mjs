@@ -53,6 +53,23 @@ const view = code => {
   return out;
 };
 
+test('EHL-Vorschau: Gegnerform und Resultate nutzen EHF-Saisondaten im bestehenden Layout, QHL bleibt gleich', () => {
+  const saved = run('updateState');
+  const qhlBefore = view("formComparison({id:'qhl',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa'})");
+  try {
+    context.__ehl = {ehlRecentGames: {'Chambéry': {ok: true, games: [
+      {id:'ehf-2', date:'2026-10-06', home:'CSM Bucuresti', away:'Chambéry', score:[25,33], externalUrl:'https://ehfel.eurohandball.com/men/2026-27/matches/details/2/Teams/'},
+      {id:'ehf-1', date:'2026-09-29', home:'HC Izvidac', away:'Chambéry', score:[34,33], externalUrl:'https://ehfel.eurohandball.com/men/2026-27/matches/details/1/Teams/'}
+    ]}}};
+    run('updateState=__ehl');
+    const form = view("formComparison({id:'chambery',league:'EHL',home:'Chambéry',away:'Kadetten Schaffhausen'})");
+    assert.match(form, /form-result loss[^>]*>N<\/span>.*form-result win[^>]*>S<\/span>/s);
+    const recent = view("recentGamesMarkup({league:'EHL'},'Chambéry')");
+    assert.match(recent, /25:33/); assert.match(recent, /34:33/); assert.match(recent, /Quelle: EHF/);
+    assert.equal(view("formComparison({id:'qhl',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa'})"), qhlBefore);
+  } finally { context.__savedEhl = saved; run('updateState=__savedEhl'); }
+});
+
 test('Startseite zeigt alle Nachrichten mit Titel', () => {
   const out = view('home()');
   assert.match(out, /story-feed/);

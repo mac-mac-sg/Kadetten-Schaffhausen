@@ -152,6 +152,13 @@ function sanitiseSnapshot(d) {
   out.stories = d.stories
     .filter(n => n && SNAPSHOT_ID.test(String(n.id)))
     .map(n => snapshotFields(n, ['title', 'text', 'date']));
+  if (d.ehlRecentGames && typeof d.ehlRecentGames === 'object')
+    out.ehlRecentGames = Object.fromEntries(Object.entries(d.ehlRecentGames).map(([team, entry]) => [snapshotText(team), {
+      ...entry,
+      games: Array.isArray(entry?.games) ? entry.games
+        .filter(g => g && SNAPSHOT_ID.test(String(g.id)) && Array.isArray(g.score) && g.score.length === 2 && g.score.every(v => Number.isInteger(v) && v >= 0))
+        .map(g => snapshotFields(g, ['home', 'away', 'league', 'date'])) : undefined
+    }]));
   out.tables = Object.fromEntries(
     Object.entries(d.tables).map(([league, rows]) => [
       league,
