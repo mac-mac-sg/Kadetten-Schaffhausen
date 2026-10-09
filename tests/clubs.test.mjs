@@ -138,6 +138,23 @@ test('FCSG player profile displays source facts and separates seasons without in
 
 });
 
+test('FCSG-Spieler haben zwei stabile Scroll-Abschnitte, auch nach dem Nachladen der Statistik', async () => {
+ const a=app('https://example.test/?club=fcsg#player/5426');
+ a.run("restoreActiveClub(); document.getElementById('app').innerHTML=fcsgPlayer('5426')");
+ const intro=a.document.getElementById('fcsg-profile-intro'), stats=a.document.getElementById('fcsg-profile-stats');
+ assert.equal(a.document.querySelectorAll('.fcsg-profile-slide').length,2);
+ assert.ok(intro.querySelector('h1'));assert.ok(intro.querySelector('.fcsg-player-photo'));
+ assert.equal(intro.querySelector('.fcsg-player-bento'),null);
+ assert.ok(stats.querySelector('#fcsg-player-stats'));
+ for(const button of a.document.querySelectorAll('.fcsg-profile-jumps button'))assert.ok(a.document.getElementById(button.dataset.section));
+ a.run("apiFetch=async()=>({ok:true,json:async()=>({ok:true,players:fcsgData.players.map(p=>({...p,seasons:[{season:'2026/2027',competition:'Super League',appearances:6,minutes:502,goals:2,assists:1}]}))})})");
+ await a.run('loadFcsgPlayerDetails()');
+ assert.equal(a.document.getElementById('fcsg-profile-intro'),intro);
+ assert.equal(a.document.getElementById('fcsg-profile-stats'),stats);
+ assert.equal(intro.querySelector('.fcsg-player-bento'),null);
+ assert.equal(stats.querySelector('.fcsg-bento-primary strong').textContent,'502');
+});
+
 test('Punkt am Vereinsknopf: ruhig vor Anspielzeit, 2 Stunden pulsierend, danach Farbe des Resultats, ohne Resultat grau', () => {
   const a = app('https://example.test/?club=kadetten');
   const dot = (time, now, result) => a.run(`clubMatchDot({time:${JSON.stringify(time)}}, ${now}, ${JSON.stringify(result)}).state`);
