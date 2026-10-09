@@ -24,16 +24,6 @@ function setupViews() {
   viewObserver?.disconnect();
   newsRegionObserver?.disconnect();
   document.body.classList.toggle('player-mode', location.hash.startsWith('#player/'));
-  document.querySelectorAll('[data-player-competition]').forEach(
-    b =>
-      (b.onclick = () => {
-        playerCompetition = b.dataset.playerCompetition;
-        document
-          .querySelectorAll('[data-player-competition]')
-          .forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-        $('#player-stats').innerHTML = playerStats(Number(location.hash.split('/')[1]));
-      })
-  );
   document.body.classList.toggle('immersive', location.hash === '#home' || !location.hash);
   document.documentElement.classList.toggle('snap-news', location.hash === '#home' || !location.hash);
   document.documentElement.classList.toggle('snap-profile', location.hash.startsWith('#player/'));
