@@ -155,3 +155,17 @@ test('Datenstand: ungültige IDs, Resultate und Wappenpfade werden verworfen', (
   assert.equal(clean.tables.QHL[0][0], '&lt;b&gt;Team&lt;/b&gt;');
   assert.deepEqual(Object.keys(clean.clubLogos), ['A', 'D']);
 });
+
+test('Arena-Puls beschleunigt zum Zürcher Anpfiff und erfindet keinen Live-Status', () => {
+  const g = game('2026-10-03', '18:00');
+  const phase = iso => logic(iso).matchPulsePhase(g, false);
+  assert.equal(phase('2026-10-02T15:00:00Z'), 'quiet');
+  assert.equal(phase('2026-10-03T10:00:00Z'), 'matchday');
+  assert.equal(phase('2026-10-03T14:00:00Z'), 'close');
+  assert.equal(phase('2026-10-03T15:45:00Z'), 'imminent');
+  assert.equal(phase('2026-10-03T16:00:00Z'), 'quiet');
+  const l = logic('2026-10-03T15:50:00Z');
+  assert.equal(l.matchPulsePhase({...g, time: ''}), 'quiet');
+  assert.equal(l.matchPulsePhase({...g, score: [30, 20]}), 'off');
+  assert.equal(l.matchPulsePhase(g, true), 'live');
+});

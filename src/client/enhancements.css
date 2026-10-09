@@ -2006,3 +2006,41 @@ footer .source-details summary { margin-inline: auto; }
 .install-intro-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
 .install-intro .button { min-height:48px; cursor:pointer; }
 .install-intro :focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+
+/* Kadetten: arena glow + double heartbeat. Content never scales. */
+@keyframes arena-heartbeat {
+  0%, 4%, 22%, 100% { opacity: .1; transform: scale(.97); }
+  8% { opacity: .52; transform: scale(1.025); }
+  13% { opacity: .18; transform: scale(.99); }
+  17% { opacity: .38; transform: scale(1.015); }
+}
+.home-matchday #live-match[data-pulse] { isolation: isolate; }
+.home-matchday #live-match[data-pulse]:not(.is-matchday-intro) { animation: none; }
+.home-matchday #live-match[data-pulse]::after {
+  content: ''; display: block; inset: 0; width: auto; border-radius: inherit;
+  background: none; border: 1px solid #ffb469;
+  box-shadow: inset 0 0 16px #ff931b30; transform: none;
+  opacity: .1; pointer-events: none;
+  animation: arena-heartbeat var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
+  animation-delay: 0s;
+}
+.home-matchday #live-match[data-pulse] .arena-team { position: relative; isolation: isolate; }
+.home-matchday #live-match[data-pulse] .arena-team::before {
+  content: ''; position: absolute; width: 110px; height: 110px; top: -22px;
+  left: calc(50% - 55px); z-index: -1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, #ffae4c50 0, #ff841b25 40%, transparent 72%);
+  opacity: .1; animation: arena-heartbeat var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
+}
+.home-matchday #live-match[data-pulse='matchday'] { --arena-period: 8s; }
+.home-matchday #live-match[data-pulse='close'] { --arena-period: 5s; }
+.home-matchday #live-match[data-pulse='imminent'] { --arena-period: 3s; }
+.home-matchday #live-match[data-pulse='live'] { --arena-period: 5s; }
+.home-matchday #live-match[data-pulse] .live-heading i { animation: none; }
+.home-matchday #live-match[data-pulse='off']::after,
+.home-matchday #live-match[data-pulse='off'] .arena-team::before { display: none; }
+.home-matchday #live-match.pulse-paused::after,
+.home-matchday #live-match.pulse-paused .arena-team::before { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .home-matchday #live-match[data-pulse]::after,
+  .home-matchday #live-match[data-pulse] .arena-team::before { animation: none; transform: none; opacity: .12; }
+}

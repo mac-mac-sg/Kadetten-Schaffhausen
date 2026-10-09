@@ -12,6 +12,14 @@ function playMatchdayIntro(slot, day) {
   slot.classList.add('is-matchday-intro');
   setTimeout(() => slot.classList.remove('is-matchday-intro'), 2200);
 }
+function updateMatchPulse() {
+  const slot = document.getElementById('live-match');
+  if (!slot || slot.hidden) return;
+  const {game, live} = homeFixture();
+  const phase = matchPulsePhase(game, !!live);
+  if (slot.dataset.pulse !== phase) slot.dataset.pulse = phase;
+  slot.classList.toggle('pulse-paused', document.hidden);
+}
 function showLiveMatch() {
   const slot = document.getElementById('live-match');
   if (!slot) return;
@@ -32,7 +40,7 @@ function showLiveMatch() {
         month: '2-digit'
       });
   const result = ended ? teamResult(g, 'Kadetten Schaffhausen') : null;
-  const html = `<div class="live-heading"><span>${live ? '<i aria-hidden="true"></i>JETZT LIVE' : ended ? 'HEUTE GESPIELT' : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL'}</span><small>${liveEscape(g.league)}${live && g.phase ? ' · ' + liveEscape(g.phase) : ''}${live && g.clock ? ' · ' + liveEscape(g.clock) : ''}</small></div><div class="live-score"><span>${badge(g.home)}<b>${liveEscape(g.home)}</b></span><strong>${live || ended ? (g.score ? g.score.join(' : ') : '– : –') : 'VS'}</strong><span>${badge(g.away)}<b>${liveEscape(g.away)}</b></span></div>${live ? '<span class="live-link">Spiel live verfolgen</span>' : ended ? `<p class="match-preview-time">${result.label} · Zum Resultat und Rückblick</p>` : `<p class="match-preview-time">${relativeDay(g.date) ? relativeDay(g.date) + ' · ' : ''}${matchDate}${g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen'}</p>${today ? `<p class="home-countdown${countdownSoon(g) ? ' is-soon' : ''}" data-countdown="${g.id}">${countdownText(g)}</p>` : ''}`}`;
+  const html = `<div class="live-heading"><span>${live ? '<i aria-hidden="true"></i>JETZT LIVE' : ended ? 'HEUTE GESPIELT' : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL'}</span><small>${liveEscape(g.league)}${live && g.phase ? ' · ' + liveEscape(g.phase) : ''}${live && g.clock ? ' · ' + liveEscape(g.clock) : ''}</small></div><div class="live-score"><span class="${teamName(g.home).includes('Kadetten') ? 'arena-team' : ''}">${badge(g.home)}<b>${liveEscape(g.home)}</b></span><strong>${live || ended ? (g.score ? g.score.join(' : ') : '– : –') : 'VS'}</strong><span class="${teamName(g.away).includes('Kadetten') ? 'arena-team' : ''}">${badge(g.away)}<b>${liveEscape(g.away)}</b></span></div>${live ? '<span class="live-link">Spiel live verfolgen</span>' : ended ? `<p class="match-preview-time">${result.label} · Zum Resultat und Rückblick</p>` : `<p class="match-preview-time">${relativeDay(g.date) ? relativeDay(g.date) + ' · ' : ''}${matchDate}${g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen'}</p>${today ? `<p class="home-countdown${countdownSoon(g) ? ' is-soon' : ''}" data-countdown="${g.id}">${countdownText(g)}</p>` : ''}`}`;
   slot.href = live ? liveMatchHref(live) : '#match/' + encodeURIComponent(g.id) + '/overview';
   slot.removeAttribute('target');
   slot.removeAttribute('rel');
@@ -53,6 +61,7 @@ function showLiveMatch() {
   slot.classList.toggle('matchday-over', ended && result?.state !== 'win');
   if (slot.innerHTML !== html) slot.innerHTML = html;
   slot.hidden = false;
+  updateMatchPulse();
   if (today) playMatchdayIntro(slot, g.date);
 }
 
@@ -257,3 +266,5 @@ function applyFinishedMatch(finished) {
  if(!finished || finished.status!=='finished' || finished.date!==swissToday() || !Array.isArray(finished.score) || finished.score.length!==2 || !finished.score.every(v=>Number.isInteger(v)&&v>=0))return;
  games=games.map(g=>g.date===finished.date&&sameFixture(g,finished)?{...g,score:finished.score,half:finished.half||g.half}:g);
 }
+
+document.addEventListener('visibilitychange', updateMatchPulse);
