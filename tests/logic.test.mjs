@@ -159,7 +159,9 @@ test('Datenstand: ungültige IDs, Resultate und Wappenpfade werden verworfen', (
 test('Arena-Puls beschleunigt zum Zürcher Anpfiff und erfindet keinen Live-Status', () => {
   const g = game('2026-10-03', '18:00');
   const phase = iso => logic(iso).matchPulsePhase(g, false);
-  assert.equal(phase('2026-10-02T15:00:00Z'), 'quiet');
+  assert.equal(phase('2026-10-02T15:00:00Z'), 'distant');
+  assert.equal(phase('2026-10-02T16:00:00Z'), 'quiet');
+  assert.equal(phase('2026-10-02T17:00:00Z'), 'quiet');
   assert.equal(phase('2026-10-03T10:00:00Z'), 'matchday');
   assert.equal(phase('2026-10-03T14:00:00Z'), 'close');
   assert.equal(phase('2026-10-03T15:45:00Z'), 'imminent');
