@@ -53,21 +53,25 @@ const view = code => {
   return out;
 };
 
-test('EHL-Spielerprofile: aktuelle EHF-Werte; QHL-Spielerwerte und beide Tabellen bleiben unverändert', () => {
-  const saved = run('updateState'), savedLeague = run('tableLeague'), savedCompetition = run('playerCompetition');
-  run("playerCompetition='QHL'"); const qhl = view('playerStats(6)');
+test('Spielerabschnitt zeigt ausschliesslich QHL und alle vorhandenen Feldspielerwerte; beide Tabellen bleiben gleich', () => {
+  const saved = run('updateState'), savedLeague = run('tableLeague');
   run("tableLeague='QHL'"); const qhlTable = view("season('table')");
   run("tableLeague='EHL'"); const ehlTable = view("season('table')");
-  context.__playerSnapshot = {...saved, ehlPlayerSeason: {ok: true, checkedAt: '2026-10-09T12:00:00Z', players: {6: {goals: 23, twoMinutes: 0, yellowCards: 0, disqualifications: 0}, 1: {goals: 1, twoMinutes: 0, disqualifications: 0}}}};
+  context.__playerSnapshot = {...saved,
+    playerSeason: {players: {6: {goals:67, games:9, goalsPerGame:7.4, fieldGoals:34, sevenMeterGoals:33, yellowCards:0, twoMinutes:0, disqualifications:0}}},
+    ehlPlayerSeason: {players: {6: {goals:23}}}};
   try {
     run('updateState=__playerSnapshot');
-    assert.equal(view('playerStats(6)'), qhl);
+    const out = view('playerStats(6)');
+    assert.match(out, /<span>Tore<\/span><strong>67<\/strong>/);
+    assert.match(out, /<span>Feldtore<\/span><strong>34<\/strong>/);
+    assert.match(out, /<span>Verwarnungen<\/span><strong>0<\/strong>/);
+    assert.doesNotMatch(view('profile(6)'), /data-player-competition|European League|EHF-Werte/);
+    assert.match(view('playerStats(12)'), /keine QHL-Saisonstatistik/);
+    context.__playerSnapshot.playerSeason = saved?.playerSeason;
     run("tableLeague='QHL'"); assert.equal(view("season('table')"), qhlTable);
     run("tableLeague='EHL'"); assert.equal(view("season('table')"), ehlTable);
-    run("playerCompetition='EHL'");
-    const out = view('playerStats(6)'); assert.match(out, /<span>Tore<\/span><strong>23<\/strong>/); assert.doesNotMatch(out, /Bukarest|30\.09\.2026/);
-    assert.match(view('playerStats(1)'), /<span>Paraden<\/span><strong>–<\/strong>/);
-  } finally {context.__previousPlayers = saved; run('updateState=__previousPlayers'); context.__previousLeague = savedLeague; context.__previousCompetition = savedCompetition; run('tableLeague=__previousLeague;playerCompetition=__previousCompetition');}
+  } finally {context.__previousPlayers = saved; run('updateState=__previousPlayers'); context.__previousLeague = savedLeague; run('tableLeague=__previousLeague');}
 });
 
 test('EHL-Vorschau: Gegnerform und Resultate nutzen EHF-Saisondaten im bestehenden Layout, QHL bleibt gleich', () => {
