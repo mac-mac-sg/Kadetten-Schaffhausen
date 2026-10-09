@@ -211,13 +211,48 @@ function fcsgPlayerFacts(p){
  const facts=[['Geburtsdatum',p.birthDate],['Körpergrösse',p.height?`${p.height} cm`:null],['Nationalität',p.nationality],['Beim FCSG seit',p.since],['Vertrag bis',p.contract],['FCSG-Debüt',p.debutDate],['Debüt gegen',p.debutOpponent]];
  return `<h2>Steckbrief</h2><dl class="facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${dateFact(v)}</dd></div>`).join('')}</dl>`;
 }
+const fcsgPlayerStatChoices = new Map();
+function fcsgPlayerStatRow(p, choice = fcsgPlayerStatChoices.get(p.id)) {
+ const rows = p.seasons || [];
+ const season = rows.some(r => r.season === choice?.season) ? choice.season : rows[0]?.season;
+ const available = rows.filter(r => r.season === season);
+ return available.find(r => r.competition === choice?.competition) || available.find(r => r.competition === 'Super League') || available[0];
+}
+function fcsgPlayerBento(p, row) {
+ const value = (v, decimals = 0) => Number.isFinite(v) && v >= 0 ? v.toLocaleString('de-CH', {minimumFractionDigits: decimals, maximumFractionDigits: decimals}).replace('.', ',') : '–';
+ const average = Number.isFinite(row.minutes) && row.appearances > 0 ? row.minutes / row.appearances : null;
+ const per90 = row.minutes > 0 && Number.isFinite(row.goals) && Number.isFinite(row.assists) ? (row.goals + row.assists) / row.minutes * 90 : null;
+ const metric = (label, v, classes = '', note = '') => `<div class="fcsg-bento-tile ${classes}"><span>${label}</span><strong>${value(v)}</strong>${note ? `<small>${note}</small>` : ''}</div>`;
+ return `<div class="fcsg-bento-grid">${metric('Spielminuten', row.minutes, 'fcsg-bento-primary', `${value(average, 1)} Minuten pro Einsatz`)}${metric('Einsätze', row.appearances, '', 'Im gewählten Wettbewerb')}<div class="fcsg-bento-tile fcsg-bento-wide fcsg-bento-duo">${metric('Tore', row.goals)}${metric('Vorlagen', row.assists)}</div><div class="fcsg-bento-tile fcsg-bento-wide fcsg-bento-rate"><div><span>Tor + Vorlage pro 90 Min.</span><small>Aus Toren, Vorlagen und Minuten</small></div><strong>${value(per90, 2)}</strong></div><section class="fcsg-bento-tile fcsg-bento-wide"><h3>Disziplin</h3><div class="fcsg-bento-cards">${metric('Gelbe Karten', row.yellow)}${metric('Gelb-Rot', row.secondYellow)}${metric('Rote Karten', row.red)}</div></section></div>${p.position === 'Tor' ? '<p class="fcsg-bento-note">Die Spielerstatistik liefert keine Paraden oder Fangquoten.</p>' : ''}`;
+}
 function fcsgPlayerStats(p){
- const rows=p.seasons||[],value=v=>v===null||v===undefined?'–':liveEscape(v),metrics=[['Einsätze','appearances'],['Tore','goals'],['Vorlagen','assists'],['Spielminuten','minutes'],['Gelbe Karten','yellow'],['Rote Karten','red'],['Gelb-Rot','secondYellow']];
+ const rows = p.seasons || [];
  if(p.seasons===undefined&&!fcsgPlayerDetailsError)return '<h2>Daten & Fakten</h2><p class="muted" role="status">Weitere Spielerfakten werden geladen.</p>';
  if(!rows.length)return `<h2>Daten & Fakten</h2><p class="notice">${fcsgPlayerDetailsError?'Weitere Spielerfakten sind gerade nicht verfügbar.':'Für diesen Spieler sind noch keine Saisonstatistiken verfügbar.'}</p>`;
- const seasons=[...new Set(rows.map(r=>r.season))];
- return `<h2>Daten & Fakten beim FCSG</h2><p class="muted">Offizielle Vereinsstatistik nach Saison und Wettbewerb. –: Wert nicht verfügbar.</p>${seasons.map(season=>`<h3>Saison ${liveEscape(season)}</h3><div class="fcsg-player-stat-grid">${rows.filter(r=>r.season===season).map(r=>`<section class="fcsg-stat-panel"><h4>${liveEscape(r.competition==='Schweizer Pokal'?'Schweizer Cup':r.competition)}</h4><dl class="fcsg-player-stat-list">${metrics.map(([label,key])=>`<div><dt>${label}</dt><dd>${value(r[key])}</dd></div>`).join('')}</dl></section>`).join('')}</div>`).join('')}`;
+ const row = fcsgPlayerStatRow(p), seasons = [...new Set(rows.map(r => r.season))];
+ const label = competition => competition === 'Schweizer Pokal' ? 'Schweizer Cup' : competition;
+ return `<section class="fcsg-player-bento" data-fcsg-bento-player="${liveEscape(p.id || '')}"><h2>Saison auf einen Blick</h2><div class="fcsg-bento-filters"><label>Saison<select data-fcsg-stat-season>${seasons.map(season => `<option value="${liveEscape(season)}"${season === row.season ? ' selected' : ''}>${liveEscape(season)}</option>`).join('')}</select></label><label>Wettbewerb<select data-fcsg-stat-competition>${rows.filter(r => r.season === row.season).map(r => `<option value="${liveEscape(r.competition)}"${r.competition === row.competition ? ' selected' : ''}>${liveEscape(label(r.competition))}</option>`).join('')}</select></label></div><div class="fcsg-bento-values" aria-live="polite" aria-atomic="true">${fcsgPlayerBento(p, row)}</div><details class="source-details"><summary>Quelle & Datenstand</summary><p>Offizielle Vereinsstatistik nach Saison und Wettbewerb. <span data-fcsg-update-key="players">${fcsgStamp('players')}</span> · ${ext(p.url || 'https://www.fcsg.ch/pages/1-mannschaft', 'FCSG', '')}</p><p>Minuten pro Einsatz und Tor + Vorlage pro 90 Minuten sind aus den Saisonwerten berechnet. – = Wert nicht verfügbar.</p></details></section>`;
 }
+function changeFcsgPlayerStats(event) {
+ const select = event.target;
+ if(!select?.matches?.('[data-fcsg-stat-season], [data-fcsg-stat-competition]'))return;
+ const dashboard = select.closest('.fcsg-player-bento');
+ const id = dashboard?.dataset.fcsgBentoPlayer;
+ if(activeClub !== 'fcsg' || !id)return;
+ const base = fcsgData.players.find(p => p.id === id);
+ if(!base)return;
+ const p = {...base, ...fcsgPlayerDetails.get(id)};
+ const choice = {season: dashboard.querySelector('[data-fcsg-stat-season]').value, competition: dashboard.querySelector('[data-fcsg-stat-competition]').value};
+ const row = fcsgPlayerStatRow(p, choice);
+ if(!row)return;
+ fcsgPlayerStatChoices.set(id, {season: row.season, competition: row.competition});
+ if(select.matches('[data-fcsg-stat-season]')) {
+  const competition = dashboard.querySelector('[data-fcsg-stat-competition]');
+  competition.innerHTML = (p.seasons || []).filter(r => r.season === row.season).map(r => `<option value="${liveEscape(r.competition)}"${r.competition === row.competition ? ' selected' : ''}>${liveEscape(r.competition === 'Schweizer Pokal' ? 'Schweizer Cup' : r.competition)}</option>`).join('');
+ }
+ dashboard.querySelector('.fcsg-bento-values').innerHTML = fcsgPlayerBento(p, row);
+}
+document.addEventListener('change', changeFcsgPlayerStats);
 function fcsgPlayer(id){const base=fcsgData.players.find(p=>p.id===id);if(!base)return notFound();const p={...base,...fcsgPlayerDetails.get(id)};return `<section class="fcsg-player content narrow">${backLink('#season/squad','Zurück zum Kader')}<img class="fcsg-player-photo" src="${liveEscape(p.cover||p.image||'assets/fcsg-logo.svg')}" alt="${liveEscape(p.name)}"><p class="eyebrow">${liveEscape(p.position)} · Nr. ${p.number??'–'}</p><h1>${liveEscape(p.name)}</h1><div id="fcsg-player-facts" data-player-id="${liveEscape(id)}">${fcsgPlayerFacts(p)}${fcsgPlayerStats(p)}</div>${ext(p.url,'Offizielles Spielerprofil','button subtle')}</section>${fcsgFooter('players')}`;}
 async function loadFcsgPlayerDetails(){
  if(activeClub!=='fcsg'||!location.hash.startsWith('#player/')||document.hidden||fcsgPlayerDetailsBusy||Date.now()-fcsgPlayerDetailsAt<1800000)return;
