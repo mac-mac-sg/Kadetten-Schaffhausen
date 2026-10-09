@@ -2021,7 +2021,7 @@ footer .source-details summary { margin-inline: auto; }
   background: none; border: 1px solid #ffb469;
   box-shadow: inset 0 0 16px #ff931b30; transform: none;
   opacity: .1; pointer-events: none;
-  animation: arena-heartbeat var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
+  animation: var(--arena-animation, arena-heartbeat) var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
   animation-delay: 0s;
 }
 .home-matchday #live-match[data-pulse] .arena-team { position: relative; isolation: isolate; }
@@ -2029,7 +2029,18 @@ footer .source-details summary { margin-inline: auto; }
   content: ''; position: absolute; width: 110px; height: 110px; top: -22px;
   left: calc(50% - 55px); z-index: -1; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, #ffae4c50 0, #ff841b25 40%, transparent 72%);
-  opacity: .1; animation: arena-heartbeat var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
+  opacity: .1; animation: var(--arena-animation, arena-heartbeat) var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
+}
+/* Before the last 24 hours: one slow arena breath, not two sharp beats. */
+@keyframes arena-breath {
+  0%, 100% { opacity: .22; transform: scale(.96); }
+  45%, 55% { opacity: .7; transform: scale(1.07); }
+}
+.home-matchday #live-match[data-pulse='distant'] {
+  --arena-animation: arena-breath; --arena-period: 12s;
+}
+.home-matchday #live-match[data-pulse='distant'] .arena-team::before {
+  background: radial-gradient(circle, #ffae4c75 0, #ff841b38 40%, transparent 72%);
 }
 .home-matchday #live-match[data-pulse='matchday'] { --arena-period: 8s; }
 .home-matchday #live-match[data-pulse='close'] { --arena-period: 5s; }
