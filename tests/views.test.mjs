@@ -74,6 +74,35 @@ test('Spielerabschnitt zeigt ausschliesslich QHL und alle vorhandenen Feldspiele
   } finally {context.__previousPlayers = saved; run('updateState=__previousPlayers'); context.__previousLeague = savedLeague; run('tableLeague=__previousLeague');}
 });
 
+test('Bento: Toranteil ist keine Wurfquote, fehlende Werte bleiben leer und Torhüter erhalten Einsätze', () => {
+  const saved = run('updateState');
+  const intro = parseHTML(view('profile(6)')).document.querySelector('#profile-intro').outerHTML;
+  context.__bento = {playerSeason: {players: {
+    6: {goals:67, games:9, goalsPerGame:7.4, fieldGoals:34, sevenMeterGoals:33, yellowCards:0, twoMinutes:0, disqualifications:0},
+    1: {games:9, yellowCards:0, twoMinutes:0, disqualifications:0}
+  }}};
+  try {
+    run('updateState=__bento');
+    const field = parseHTML(view('playerStats(6)')).document;
+    assert.equal(field.querySelector('.bento-primary').textContent, 'Tore67');
+    assert.equal(field.querySelector('.bento-ring').getAttribute('aria-label'), '49 Prozent der Tore durch 7-Meter');
+    assert.equal(parseHTML(view('profile(6)')).document.querySelector('#profile-intro').outerHTML, intro);
+    const keeper = parseHTML(view('playerStats(1)')).document;
+    assert.equal(keeper.querySelector('.bento-primary').textContent, 'Einsätze9');
+    assert.equal(keeper.querySelectorAll('.keeper-metrics strong').length, 3);
+    for (const value of keeper.querySelectorAll('.keeper-metrics strong')) assert.equal(value.textContent, '–');
+    assert.equal(keeper.querySelector('.bento-ring'), null);
+    const missing = parseHTML(view('playerStats(13)')).document;
+    assert.equal(missing.querySelector('.bento-primary strong').textContent, '–');
+    assert.equal(missing.querySelector('.bento-ring'), null);
+    context.__bento.playerSeason.players[6] = {goals:0, games:0, fieldGoals:0, sevenMeterGoals:0};
+    assert.match(view('playerStats(6)'), /Noch keine Tore/);
+    assert.doesNotMatch(view('playerStats(6)'), /class="bento-ring"/);
+    context.__bento.playerSeason.players[6] = {goals:10, fieldGoals:9, sevenMeterGoals:9};
+    assert.doesNotMatch(view('playerStats(6)'), /class="bento-ring"/);
+  } finally {context.__savedBento = saved; run('updateState=__savedBento');}
+});
+
 test('EHL-Vorschau: Gegnerform und Resultate nutzen EHF-Saisondaten im bestehenden Layout, QHL bleibt gleich', () => {
   const saved = run('updateState');
   const qhlBefore = view("formComparison({id:'qhl',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa'})");
