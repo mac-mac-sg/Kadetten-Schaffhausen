@@ -8,7 +8,9 @@ let playerCompetition = 'QHL';
 function playerStats(id) {
   const keeper = players.find(p => p[0] === id)?.[2] === 'Tor',
     qhl = playerCompetition === 'QHL',
-    p = updateState?.playerSeason?.players?.[id];
+    p = updateState?.playerSeason?.players?.[id],
+    ehl = updateState?.ehlPlayerSeason,
+    e = ehl?.players?.[id];
   const show = (v, suffix = '') => (v === null || v === undefined ? '–' : String(v).replace('.', ',') + suffix);
   const items = qhl
     ? keeper
@@ -30,18 +32,22 @@ function playerStats(id) {
         ]
     : keeper
       ? [
-          ['Paraden', id === 1 ? 12 : id === 16 ? 1 : null],
-          ['Paradenquote', id === 1 ? '38 %' : id === 16 ? '8 %' : null],
+          ['Paraden', null],
+          ['Paradenquote', null],
           ['Gehaltene 7-Meter', null],
-          ['Einsätze', null]
+          ['Einsätze', null],
+          ['2-Minuten-Strafen', e?.twoMinutes],
+          ['Disqualifikationen', e?.disqualifications]
         ]
       : [
-          ['Tore', Object.hasOwn(goals, id) ? goals[id] : null],
-          ['7-Meter-Tore', id === 6 ? 3 : null],
+          ['Tore', e?.goals],
+          ['7-Meter-Tore', null],
           ['Wurfquote', null],
-          ['2-Minuten-Strafen', null]
+          ['2-Minuten-Strafen', e?.twoMinutes],
+          ['Verwarnungen', e?.yellowCards],
+          ['Disqualifikationen', e?.disqualifications]
         ];
-  return `<p class="stat-scope">${qhl ? 'QHL · Saisonwerte' : 'European League · bisher nur Bukarest erfasst'}</p>${statFacts(items.map(([k, v]) => [k, show(v)]))}<p class="stat-note">${qhl ? '– = von der Quelle nicht verfügbar. Einsätze gemäss offiziellem Spielbericht; keine Aussage zur Einsatzdauer.' : '– = noch nicht verifiziert. Die Werte beziehen sich auf das Spiel vom 30.09.2026, nicht auf eine vollständig erfasste Saison.'}</p><details class="source-details"><summary>Quelle & Datenstand</summary><p>${qhl ? updateLabel('players') : 'Stand 02.10.2026'} · ${ext(qhl ? updateState?.playerSeason?.source || 'https://www.handball.ch/de/matchcenter/teams/41473' : report, qhl ? 'SHV' : 'Vereinsbericht', '')}</p></details>${qhl ? '' : '<a class="text-link" href="#match/bukarest/stats">Zum erfassten Spiel</a>'}`;
+  return `<p class="stat-scope">${qhl ? 'QHL · Saisonwerte' : 'European League · EHF-Werte 2026/27'}</p>${statFacts(items.map(([k, v]) => [k, show(v)]))}<p class="stat-note">${qhl ? '– = von der Quelle nicht verfügbar. Einsätze gemäss offiziellem Spielbericht; keine Aussage zur Einsatzdauer.' : '– = von der EHF-Teamseite nicht verlässlich verfügbar. Werte des dort ausgewählten Wettbewerbsabschnitts.'}</p><details class="source-details"><summary>Quelle & Datenstand</summary><p>${qhl ? updateLabel('players') : ehl?.checkedAt ? (ehl.ok === false ? 'Letzter gültiger Stand: ' : 'Aktualisiert: ') + new Date(ehl.checkedAt).toLocaleString('de-CH', {timeZone: 'Europe/Zurich'}) + ' Uhr' : 'Noch keine EHF-Saisonwerte geladen'} · ${ext(qhl ? updateState?.playerSeason?.source || 'https://www.handball.ch/de/matchcenter/teams/41473' : ehl?.source || 'https://ehfel.eurohandball.com/men/2026-27/clubs/details/uyEpUicNjwv8hCX9B7A3sg/KadettenSchaffhausen/', qhl ? 'SHV' : 'EHF', '')}</p></details>`;
 }
 function profile(id) {
   const p = players.find(x => x[0] === id);

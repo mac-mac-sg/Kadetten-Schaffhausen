@@ -17,6 +17,7 @@ import {makeRewriter, makeReportWriter} from './lib/preview-rewrite.mjs';
 import {syncEhfArchive, syncQhlReports} from './lib/ehf-archive.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 import {refreshEhlResults} from './lib/ehl-results.mjs';
+import {refreshEhlPlayerSeason} from './lib/ehl-player-season.mjs';
 
 const write = text => {
   console.log(text);
@@ -54,6 +55,8 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
   if (!result.ok) throw Error('Alle Quellen der Kadetten sind fehlgeschlagen; es wurde nichts geschrieben.');
 
   result.next.ehlRecentGames = await refreshEhlResults(result.next, {fetchFn: ehfFetch});
+  result.next.ehlPlayerSeason = await refreshEhlPlayerSeason(result.next, {fetchFn: ehfFetch});
+  write(table('EHL-Spielerwerte', {players: {...result.next.ehlPlayerSeason, updatedAt: result.next.ehlPlayerSeason.checkedAt}}));
   write(table('EHL-Saisonresultate', Object.fromEntries(Object.entries(result.next.ehlRecentGames).map(([team, value]) => [team, {...value, updatedAt: value.checkedAt}]))));
   if (schreiben) await bucket.put('kadetten/current.json', JSON.stringify(result.next));
 
