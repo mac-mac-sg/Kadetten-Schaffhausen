@@ -103,6 +103,60 @@ test('Bento: Toranteil ist keine Wurfquote, fehlende Werte bleiben leer und Torh
   } finally {context.__savedBento = saved; run('updateState=__savedBento');}
 });
 
+test('FCSG Bento Performance: Wettbewerb/Saison wechseln nur Statistikwerte, fehlende Minuten erzeugen keine Rate', () => {
+  const savedClub = run('activeClub');
+  const p = {id:'5426', position:'Mittelfeld', url:'https://www.fcsg.ch/pages/kader/goertler-lukas', seasons:[
+    {season:'2026/2027',competition:'Schweizer Pokal',appearances:0,minutes:0,goals:0,assists:0,yellow:0,secondYellow:0,red:0},
+    {season:'2026/2027',competition:'Super League',appearances:6,minutes:502,goals:2,assists:1,yellow:3,secondYellow:0,red:0},
+    {season:'2026/2027',competition:'UEFA Conference League',appearances:4,minutes:343,goals:1,assists:1,yellow:2,secondYellow:0,red:0},
+    {season:'2025/2026',competition:'Super League',appearances:33,minutes:2598,goals:9,assists:6,yellow:10,secondYellow:1,red:1}
+  ]};
+  context.__fcsgBentoPlayer = p;
+  const savedDetails = run("fcsgPlayerDetails.get('5426')");
+  run("activeClub='fcsg'; fcsgPlayerDetails.set('5426', __fcsgBentoPlayer); fcsgPlayerStatChoices.delete('5426')");
+  const squad = view('fcsgSquad()'), table = view('fcsgStanding()'), facts = view('fcsgPlayerFacts(__fcsgBentoPlayer)');
+  const doc = parseHTML(view('fcsgPlayerStats(__fcsgBentoPlayer)')).document;
+  const dashboard = doc.querySelector('.fcsg-player-bento');
+  const choose = (selector, value) => {
+    const select = dashboard.querySelector(selector);
+    for(const option of select.querySelectorAll('option')) {
+      if(option.getAttribute('value') === value)option.setAttribute('selected','');
+      else option.removeAttribute('selected');
+    }
+    context.__fcsgBentoEvent = {target:select};
+    run('changeFcsgPlayerStats(__fcsgBentoEvent)');
+  };
+  try {
+    assert.equal(dashboard.querySelector('[data-fcsg-stat-competition]').value, 'Super League');
+    assert.equal(dashboard.querySelector('.fcsg-bento-primary strong').textContent, '502');
+    assert.equal(dashboard.querySelector('.fcsg-bento-rate strong').textContent, '0,54');
+    choose('[data-fcsg-stat-competition]', 'UEFA Conference League');
+    assert.equal(dashboard.querySelector('.fcsg-bento-primary strong').textContent, '343');
+    assert.equal(dashboard.querySelector('.fcsg-bento-rate strong').textContent, '0,52');
+    choose('[data-fcsg-stat-season]', '2025/2026');
+    assert.equal(dashboard.querySelector('[data-fcsg-stat-competition]').value, 'Super League');
+    assert.equal(dashboard.querySelectorAll('[data-fcsg-stat-competition] option').length, 1);
+    assert.match(dashboard.querySelector('.fcsg-bento-primary strong').textContent, /^2['’]598$/);
+    assert.match(view('fcsgPlayerStats(__fcsgBentoPlayer)'), /value="2025\/2026" selected/);
+    choose('[data-fcsg-stat-season]', '2026/2027');
+    choose('[data-fcsg-stat-competition]', 'Schweizer Pokal');
+    assert.equal(dashboard.querySelector('.fcsg-bento-primary strong').textContent, '0');
+    assert.equal(dashboard.querySelector('.fcsg-bento-rate strong').textContent, '–');
+    p.seasons[0].minutes = null;
+    choose('[data-fcsg-stat-competition]', 'Schweizer Pokal');
+    assert.equal(dashboard.querySelector('.fcsg-bento-primary strong').textContent, '–');
+    assert.equal(view('fcsgSquad()'), squad);
+    assert.equal(view('fcsgStanding()'), table);
+    assert.equal(view('fcsgPlayerFacts(__fcsgBentoPlayer)'), facts);
+    context.__fcsgKeeper = {...p, position:'Tor'};
+    assert.match(view('fcsgPlayerStats(__fcsgKeeper)'), /keine Paraden oder Fangquoten/);
+    assert.doesNotMatch(view('fcsgPlayerStats(__fcsgKeeper)'), /Paradenquote.*0/);
+  } finally {
+    context.__savedFcsgBentoClub = savedClub; context.__savedFcsgBentoDetails = savedDetails;
+    run("activeClub=__savedFcsgBentoClub; fcsgPlayerStatChoices.delete('5426'); if(__savedFcsgBentoDetails)fcsgPlayerDetails.set('5426',__savedFcsgBentoDetails);else fcsgPlayerDetails.delete('5426')");
+  }
+});
+
 test('EHL-Vorschau: Gegnerform und Resultate nutzen EHF-Saisondaten im bestehenden Layout, QHL bleibt gleich', () => {
   const saved = run('updateState');
   const qhlBefore = view("formComparison({id:'qhl',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa'})");
