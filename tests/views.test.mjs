@@ -53,6 +53,23 @@ const view = code => {
   return out;
 };
 
+test('EHL-Spielerprofile: aktuelle EHF-Werte; QHL-Spielerwerte und beide Tabellen bleiben unverändert', () => {
+  const saved = run('updateState'), savedLeague = run('tableLeague'), savedCompetition = run('playerCompetition');
+  run("playerCompetition='QHL'"); const qhl = view('playerStats(6)');
+  run("tableLeague='QHL'"); const qhlTable = view("season('table')");
+  run("tableLeague='EHL'"); const ehlTable = view("season('table')");
+  context.__playerSnapshot = {...saved, ehlPlayerSeason: {ok: true, checkedAt: '2026-10-09T12:00:00Z', players: {6: {goals: 23, twoMinutes: 0, yellowCards: 0, disqualifications: 0}, 1: {goals: 1, twoMinutes: 0, disqualifications: 0}}}};
+  try {
+    run('updateState=__playerSnapshot');
+    assert.equal(view('playerStats(6)'), qhl);
+    run("tableLeague='QHL'"); assert.equal(view("season('table')"), qhlTable);
+    run("tableLeague='EHL'"); assert.equal(view("season('table')"), ehlTable);
+    run("playerCompetition='EHL'");
+    const out = view('playerStats(6)'); assert.match(out, /<span>Tore<\/span><strong>23<\/strong>/); assert.doesNotMatch(out, /Bukarest|30\.09\.2026/);
+    assert.match(view('playerStats(1)'), /<span>Paraden<\/span><strong>–<\/strong>/);
+  } finally {context.__previousPlayers = saved; run('updateState=__previousPlayers'); context.__previousLeague = savedLeague; context.__previousCompetition = savedCompetition; run('tableLeague=__previousLeague;playerCompetition=__previousCompetition');}
+});
+
 test('EHL-Vorschau: Gegnerform und Resultate nutzen EHF-Saisondaten im bestehenden Layout, QHL bleibt gleich', () => {
   const saved = run('updateState');
   const qhlBefore = view("formComparison({id:'qhl',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa'})");
