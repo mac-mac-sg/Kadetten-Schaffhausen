@@ -176,3 +176,16 @@ function sanitiseSnapshot(d) {
     );
   return out;
 }
+
+// Anticipation follows the confirmed Zurich kickoff; overdue is never treated as live.
+function matchPulsePhase(g, live = false, now = new Date()) {
+  if (live) return 'live';
+  if (!g || g.score) return 'off';
+  const at = kickoffAt(g);
+  if (!at) return 'quiet';
+  const left = at.getTime() - now.getTime();
+  if (left <= 0) return 'quiet';
+  if (left <= 15 * 60000) return 'imminent';
+  if (left <= 2 * 3600000) return 'close';
+  return g.date === swissToday(now) ? 'matchday' : 'quiet';
+}

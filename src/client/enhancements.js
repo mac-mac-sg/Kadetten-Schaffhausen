@@ -117,6 +117,7 @@ function setupEnhancements() {
   clearInterval(dayTimer);
   dayTimer = setInterval(() => {
     if (document.hidden) return;
+    updateMatchPulse();
     if (displayedDay !== swissToday()) {
       showLiveMatch();
       setupEnhancements();
