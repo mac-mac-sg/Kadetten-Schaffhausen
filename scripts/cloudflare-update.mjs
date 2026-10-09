@@ -16,6 +16,7 @@ import {syncPreviews} from './lib/preview-sync.mjs';
 import {makeRewriter, makeReportWriter} from './lib/preview-rewrite.mjs';
 import {syncEhfArchive, syncQhlReports} from './lib/ehf-archive.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
+import {refreshEhlResults} from './lib/ehl-results.mjs';
 
 const write = text => {
   console.log(text);
@@ -51,6 +52,10 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
   write(table('Kadetten', result.next.status));
   write(`\nNach der Aktualisierung: ${result.next.games.length} Spiele, ${result.next.stories.length} Meldungen.`);
   if (!result.ok) throw Error('Alle Quellen der Kadetten sind fehlgeschlagen; es wurde nichts geschrieben.');
+
+  result.next.ehlRecentGames = await refreshEhlResults(result.next, {fetchFn: ehfFetch});
+  write(table('EHL-Saisonresultate', Object.fromEntries(Object.entries(result.next.ehlRecentGames).map(([team, value]) => [team, {...value, updatedAt: value.checkedAt}]))));
+  if (schreiben) await bucket.put('kadetten/current.json', JSON.stringify(result.next));
 
   if (schreiben) {
     write(table('FCSG', result.fcsg.status));

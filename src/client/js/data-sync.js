@@ -40,7 +40,7 @@ function viewDataSignature() {
       ? stories
       : page === 'news'
         ? stories.find(n => String(n.id) === id)
-        : {games, tables, teamRecords, clubLogos, playerSeason: updateState?.playerSeason}
+        : {games, tables, teamRecords, clubLogos, playerSeason: updateState?.playerSeason, ehlRecentGames: page === 'match' ? updateState?.ehlRecentGames : undefined}
   );
 }
 function syncUpdateLabels() {
