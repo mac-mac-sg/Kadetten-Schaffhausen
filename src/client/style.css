@@ -2811,6 +2811,29 @@ html.snap-profile {
   font-weight: 700;
 }
 .club-switch svg { width: 20px; height: 20px; color: var(--accent); }
+.club-switch { position: relative; }
+.club-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg, #121614);
+}
+.club-switch[data-dot='pending'] .club-dot { background: #8a918c; }
+.club-switch[data-dot='win'] .club-dot { background: var(--win); }
+.club-switch[data-dot='draw'] .club-dot { background: #6fa8dc; }
+.club-switch[data-dot='loss'] .club-dot { background: var(--loss); }
+.club-switch[data-dot='live'] .club-dot { animation: club-dot-pulse 1.4s ease-in-out infinite; }
+@keyframes club-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .club-switch[data-dot='live'] .club-dot { animation: none; }
+}
 .club-switch:hover { background: #ffffff20; }
 .club-switch:active { background: #ffffff30; }
 .club-switch:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }

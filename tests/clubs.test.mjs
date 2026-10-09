@@ -128,3 +128,16 @@ test('FCSG player profile displays source facts and separates seasons without in
  const a=app('https://example.test/?club=fcsg#player/7470');a.run(`fcsgData.players=[{id:'7470',name:'Lukas Daschner',position:'Mittelfeld',height:185,nationality:'Deutschland',debutDate:'2025-02-05',debutOpponent:'FC Lugano',seasons:[{season:'2026/2027',competition:'Super League',appearances:9,goals:0,assists:null,minutes:708,yellow:2,red:0,secondYellow:null},{season:'2025/2026',competition:'Schweizer Pokal',appearances:4,goals:1}],url:'https://www.fcsg.ch/pages/kader/daschner-lukas'}]`);
  const html=a.run("fcsgPlayer('7470')");assert.match(html,/185 cm/);assert.match(html,/Deutschland/);assert.match(html,/05\.02\.2025/);assert.match(html,/FC Lugano/);assert.match(html,/Saison 2026\/2027/);assert.match(html,/Saison 2025\/2026/);assert.match(html,/Schweizer Cup/);assert.match(html,/<dt>Tore<\/dt><dd>0<\/dd>/);assert.match(html,/<dt>Vorlagen<\/dt><dd>–<\/dd>/);assert.doesNotMatch(html,/undefined|NaN/);
 });
+
+test('Punkt am Vereinsknopf: ruhig vor Anspielzeit, 2 Stunden pulsierend, danach Farbe des Resultats, ohne Resultat grau', () => {
+  const a = app('https://example.test/?club=kadetten');
+  const dot = (time, now, result) => a.run(`clubMatchDot({time:${JSON.stringify(time)}}, ${now}, ${JSON.stringify(result)}).state`);
+  assert.equal(dot('18:00', 17 * 60 + 59, null), 'soon');
+  assert.equal(dot('18:00', 18 * 60, null), 'live');
+  assert.equal(dot('18:00', 19 * 60 + 59, 'win'), 'live', 'Resultat erst nach den zwei Stunden');
+  assert.equal(dot('18:00', 20 * 60, 'win'), 'win');
+  assert.equal(dot('18:00', 20 * 60, 'draw'), 'draw');
+  assert.equal(dot('18:00', 21 * 60, 'loss'), 'loss');
+  assert.equal(dot('18:00', 20 * 60, null), 'pending');
+  assert.equal(dot('', 20 * 60, null), 'soon', 'ohne Anspielzeit nur «heute»');
+});

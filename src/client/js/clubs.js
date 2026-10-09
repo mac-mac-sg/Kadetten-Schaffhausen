@@ -33,10 +33,56 @@ function updateClubHeader() {
   const button = document.getElementById('club-switch');
   if (button) {
     button.querySelector('span').textContent = other === 'fcsg' ? 'FCSG' : 'Kadetten';
+    button.dataset.base = fanClubs[other].name;
     button.setAttribute('aria-label', 'Aktueller Verein: ' + club.name + '. Zu ' + fanClubs[other].name + ' wechseln');
     button.title = 'Zu ' + fanClubs[other].name + ' wechseln';
   }
+  updateClubDot();
 }
+/* Punkt am Vereinsknopf: der andere Verein hat heute ein Spiel.
+   Vor der Anspielzeit ruhig, ab Anspielzeit 2 Stunden pulsierend, danach in der Farbe des Resultats (Sieg grün, Unentschieden blau,
+   Niederlage rot) bis Mitternacht. Ohne Resultat bleibt der Punkt grau; der andere Verein wird dann höchstens alle 10 Minuten neu geladen. */
+const CLUB_DOT_MINUTES = 120, CLUB_DOT_RETRY_MS = 600000;
+let clubDotRefreshedAt = 0;
+function clubMatchDot(game, nowMinutes, resultState) {
+  const m = /^(\d{2}):(\d{2})$/.exec(game?.time || '');
+  if (!m) return {state: 'soon'};
+  const elapsed = nowMinutes - (Number(m[1]) * 60 + Number(m[2]));
+  if (elapsed < 0) return {state: 'soon'};
+  if (elapsed < CLUB_DOT_MINUTES) return {state: 'live'};
+  return resultState ? {state: resultState} : {state: 'pending'};
+}
+function otherClubTodayGame(today) {
+  const list = (activeClub === 'kadetten' ? (typeof fcsgData !== 'undefined' && fcsgData.games) : (typeof games !== 'undefined' && games)) || [];
+  return list.filter(g => g.date === today).sort((a, b) => String(a.time).localeCompare(String(b.time)))[0] || null;
+}
+function otherClubResultState(game) {
+  if (activeClub === 'kadetten') return fcsgResult(game)?.state || null;
+  if (!Array.isArray(game.score)) return null;
+  const home = game.home === 'Kadetten Schaffhausen', diff = game.score[home ? 0 : 1] - game.score[home ? 1 : 0];
+  return diff > 0 ? 'win' : diff < 0 ? 'loss' : 'draw';
+}
+function updateClubDot() {
+  const button = document.getElementById('club-switch');
+  if (!button) return;
+  let dot = button.querySelector('.club-dot');
+  const today = swissToday(), game = otherClubTodayGame(today);
+  const parts = new Intl.DateTimeFormat('en-GB', {timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).formatToParts(new Date());
+  const nowMinutes = Number(parts.find(p => p.type === 'hour').value) * 60 + Number(parts.find(p => p.type === 'minute').value);
+  const info = game ? clubMatchDot(game, nowMinutes, otherClubResultState(game)) : null;
+  if (!info) { dot?.remove(); delete button.dataset.dot; return; }
+  if (!dot) { dot = document.createElement('i'); dot.className = 'club-dot'; dot.setAttribute('aria-hidden', 'true'); button.append(dot); }
+  button.dataset.dot = info.state;
+  const other = button.dataset.base || '';
+  const note = {soon: 'spielt heute', live: 'spielt gerade', pending: 'hat heute gespielt', win: 'hat heute gewonnen', draw: 'hat heute unentschieden gespielt', loss: 'hat heute verloren'}[info.state];
+  button.setAttribute('aria-label', button.getAttribute('aria-label').replace(/ · .*$/, '') + ' · ' + other + ' ' + note);
+  button.title = 'Zu ' + other + ' wechseln · ' + note;
+  if (info.state === 'pending' && navigator.onLine && !document.hidden && Date.now() - clubDotRefreshedAt > CLUB_DOT_RETRY_MS) {
+    clubDotRefreshedAt = Date.now();
+    (activeClub === 'kadetten' ? loadFcsgData() : loadCurrentData())?.finally?.(updateClubDot);
+  }
+}
+setInterval(updateClubDot, 30000);
 let clubTransitionBusy = false;
 function switchClub(id) {
   if (clubTransitionBusy || !Object.hasOwn(fanClubs, id) || id === activeClub) return;
