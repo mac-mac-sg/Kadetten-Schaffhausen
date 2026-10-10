@@ -248,6 +248,7 @@ function render() {
   if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
   setupEnhancements();
   loadGameReports();
+  loadPlayerReports();
   loadEhfArchive();
   loadFullArticle();
   window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
