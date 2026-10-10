@@ -84,11 +84,12 @@ test('Bento: Toranteil ist keine Wurfquote, fehlende Werte bleiben leer und Torh
   try {
     run('updateState=__bento');
     const field = parseHTML(view('playerStats(6)')).document;
-    assert.equal(field.querySelector('.bento-primary').textContent, 'Tore67');
+    assert.equal(field.querySelector('.bento-primary strong').textContent, '67');
     assert.equal(field.querySelector('.bento-ring').getAttribute('aria-label'), '49 Prozent der Tore durch 7-Meter');
     assert.equal(parseHTML(view('profile(6)')).document.querySelector('#profile-intro').outerHTML, intro);
     const keeper = parseHTML(view('playerStats(1)')).document;
-    assert.equal(keeper.querySelector('.bento-primary').textContent, 'Einsätze9');
+    assert.equal(keeper.querySelector('.bento-primary strong').textContent, '–');
+    assert.equal(keeper.querySelector('.player-bento > .bento-metric:nth-child(2) strong').textContent,'9');
     assert.equal(keeper.querySelectorAll('.keeper-metrics strong').length, 3);
     for (const value of keeper.querySelectorAll('.keeper-metrics strong')) assert.equal(value.textContent, '–');
     assert.equal(keeper.querySelector('.bento-ring'), null);
@@ -559,4 +560,69 @@ test('Geglättete Torkurven überschwingen nicht, bleiben monoton und verarbeite
   assert.doesNotMatch(run('reportScoreCurve(curvePoints)'),/NaN|Infinity/);
   assert.equal(run('reportScoreCurve([])'), '');
  } finally {delete context.curvePoints;}
+});
+
+
+test('Spieler-Verläufe nutzen nur bestätigte QHL-Berichte und gewichten Fangquoten nach Würfen', () => {
+ const saved={state:run('updateState'),games:run('games'),reports:run('gameReports')};
+ const fixtures=Array.from({length:6},(_,i)=>({id:'recent-'+i,date:'2026-09-'+String(10+i).padStart(2,'0'),league:'QHL',home:'Kadetten Schaffhausen',away:'Gegner',score:[30,20]}));
+ context.__recentFixtures=[...fixtures,{...fixtures[5],id:'ehf-recent',league:'EHL'}];
+ context.__recentState={playerSeason:{players:{1:{shvPlayerId:101,games:9},6:{shvPlayerId:106,games:9,goals:67,fieldGoals:34,sevenMeterGoals:33,goalsPerGame:7.4}}}};
+ context.__recentReports=Object.fromEntries(fixtures.map((g,i)=>[g.id,{score:[30,20],teams:[{id:41473,players:[{id:101,saves:i===5?10:2,keeperShots:i===5?20:10,sevenSaves:null},{id:106,goals:i,shots:i+2}]},{id:5,players:[]}]}]));
+ // One unavailable report and one corrected score must both remain gaps.
+ delete context.__recentReports['recent-2'];context.__recentReports['recent-3'].score=[31,20];
+ try {
+  run('updateState=__recentState;games=__recentFixtures;gameReports=__recentReports');
+  const keeper=parseHTML(view('playerStats(1)')).document;
+  assert.equal(keeper.querySelector('.bento-primary strong').textContent,'35 %'); // (2+2+10)/(10+10+20)
+  assert.match(keeper.querySelector('.bento-primary small').textContent,/3 von 5/);
+  assert.equal(keeper.querySelectorAll('.player-mini-bars a').length,5);
+  assert.equal(keeper.querySelectorAll('.player-mini-bars .is-missing').length,2);
+  assert.equal(keeper.querySelector('.keeper-metrics .bento-metric strong').textContent,'14');
+  assert.equal(keeper.querySelector('.keeper-metrics .bento-metric:nth-child(3) strong').textContent,'–');
+  const field=parseHTML(view('playerStats(6)')).document;
+  assert.equal(field.querySelector('.bento-primary strong').textContent,'67');
+  assert.equal(field.querySelector('.player-form-panel .keeper-metrics .bento-metric:nth-child(3) strong').textContent,'62,5 %');
+  assert.doesNotMatch(field.querySelector('.player-mini-bars').outerHTML,/recent-0|ehf-recent/);
+  const first=field.querySelector('.player-mini-bars a');
+  assert.equal(first.getAttribute('href'),'#match/recent-1/stats');
+  context.__recentReports['recent-1'].teams[0].players[1].goals=0;
+  assert.equal(parseHTML(view('playerStats(6)')).document.querySelector('.player-mini-bars a span').textContent,'0');
+  assert.equal(run("playerMiniBars([{game:games[0],player:null}], 'goals', 'Tore')"),'');
+ } finally {context.__restoreRecent=saved;run('updateState=__restoreRecent.state;games=__restoreRecent.games;gameReports=__restoreRecent.reports');}
+});
+
+test('FCSG verbindet Tore, Vorlagen und 90-Minuten-Wert im Offensivblock und zeichnet keine erfundene Form', () => {
+ context.__offensePlayer={position:'Mittelfeld'};context.__offenseRow={minutes:450,appearances:5,goals:2,assists:1,yellow:0,secondYellow:0,red:0};
+ const doc=parseHTML(view('fcsgPlayerBento(__offensePlayer,__offenseRow)')).document;
+ assert.equal(doc.querySelector('.fcsg-bento-offense h3').textContent,'Offensivbeitrag');
+ assert.equal(doc.querySelector('.fcsg-bento-offense .fcsg-bento-rate strong').textContent,'0,60');
+ assert.equal(doc.querySelectorAll('.fcsg-bento-offense .fcsg-bento-duo strong').length,2);
+ assert.equal(doc.querySelector('.player-mini-bars'),null);
+ assert.match(doc.querySelector('.fcsg-bento-note').textContent,/Einzelspielverläufe sind nicht verfügbar/);
+ delete context.__offensePlayer;delete context.__offenseRow;
+});
+
+test('Spielerberichte laden nur letzte QHL-Spiele, bewahren gültige Berichte bei Fehlern und überschreiben keine andere Seite', async () => {
+ const saved={club:run('activeClub'),games:run('games'),reports:run('gameReports'),hash:location.hash,fetch:context.apiFetch,get:context.document.getElementById};
+ const fixture={id:'load-recent',date:'2026-09-30',league:'QHL',home:'Kadetten Schaffhausen',away:'Gegner',score:[30,20]};
+ const original={score:[30,20],teams:[{id:41473,name:fixture.home,players:[]},{id:5,name:fixture.away,players:[]}]};
+ context.__loadFixtures=[fixture,{...fixture,id:'load-ehf',league:'EHL'}];context.__loadReports={'load-recent':original};
+ context.AbortSignal=AbortSignal;
+ const target={innerHTML:'unchanged'},calls=[];
+ context.document.getElementById=()=>target;
+ try {
+  run("activeClub='kadetten';games=__loadFixtures;gameReports=__loadReports;playerReportAttempts.clear()");location.hash='#player/6';
+  context.apiFetch=async url=>{calls.push(url);return {ok:true,json:async()=>({report:{...original,score:[99,20]}})}};
+  await run('loadPlayerReports()');
+  assert.deepEqual(calls,['/api/reports/load-recent']);
+  assert.equal(run("gameReports['load-recent']"),original);
+  assert.match(target.innerHTML,/QHL · Saisonwerte/);
+  await run('loadPlayerReports()');assert.equal(calls.length,1);
+  run('playerReportAttempts.clear()');target.innerHTML='another page';
+  context.apiFetch=async()=>{location.hash='#season/squad';throw Error('offline')};location.hash='#player/6';
+  await run('loadPlayerReports()');assert.equal(target.innerHTML,'another page');
+  run("activeClub='fcsg';playerReportAttempts.clear()");location.hash='#player/6';
+  await run('loadPlayerReports()');assert.equal(calls.length,1);
+ } finally {context.__restoreLoader=saved;run('activeClub=__restoreLoader.club;games=__restoreLoader.games;gameReports=__restoreLoader.reports;playerReportAttempts.clear()');location.hash=saved.hash;context.apiFetch=saved.fetch;context.document.getElementById=saved.get;}
 });
