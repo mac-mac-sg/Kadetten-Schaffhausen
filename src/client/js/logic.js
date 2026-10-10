@@ -188,5 +188,5 @@ function matchPulsePhase(g, live = false, now = new Date()) {
   if (left > 24 * 3600000) return 'distant';
   if (left <= 15 * 60000) return 'imminent';
   if (left <= 2 * 3600000) return 'close';
-  return g.date === swissToday(now) ? 'matchday' : 'quiet';
+  return g.date === swissToday(now) ? 'matchday' : 'anticipation';
 }
