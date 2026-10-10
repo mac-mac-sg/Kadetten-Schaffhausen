@@ -20,13 +20,39 @@ function updateNewsDots(index) {
     .querySelectorAll('.story-screen')
     .forEach(el => el.classList.toggle('story-current', el.id === 'story-' + index));
 }
+let fcsgProfileViewportObserver;
+function setupFcsgProfileViewport() {
+  fcsgProfileViewportObserver?.disconnect();
+  const root = document.documentElement;
+  const enabled = activeClub === 'fcsg' && location.hash.startsWith('#player/');
+  document.body.classList.toggle('fcsg-profile-mode', enabled);
+  for (const name of ['--fcsg-profile-top', '--fcsg-profile-bottom']) root.style.removeProperty(name);
+  if (!enabled) return;
+  const header = document.querySelector('body > .top');
+  const dock = document.querySelector('body > .dock');
+  const measure = () => {
+    if (header) root.style.setProperty('--fcsg-profile-top', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+    if (dock) root.style.setProperty('--fcsg-profile-bottom', `${Math.ceil(window.innerHeight - dock.getBoundingClientRect().top + 16)}px`);
+  };
+  measure();
+  if (typeof ResizeObserver !== 'undefined') {
+    fcsgProfileViewportObserver = new ResizeObserver(measure);
+    for (const element of [header, dock]) if (element) fcsgProfileViewportObserver.observe(element);
+  }
+  window.removeEventListener('resize', measureFcsgProfileViewport);
+  window.addEventListener('resize', measureFcsgProfileViewport);
+}
+function measureFcsgProfileViewport() {
+  if (document.body.classList.contains('fcsg-profile-mode')) setupFcsgProfileViewport();
+}
 function setupViews() {
   viewObserver?.disconnect();
   newsRegionObserver?.disconnect();
-  document.body.classList.toggle('player-mode', location.hash.startsWith('#player/'));
+  document.body.classList.toggle('player-mode', activeClub !== 'fcsg' && location.hash.startsWith('#player/'));
   document.body.classList.toggle('immersive', location.hash === '#home' || !location.hash);
   document.documentElement.classList.toggle('snap-news', location.hash === '#home' || !location.hash);
   document.documentElement.classList.toggle('snap-profile', location.hash.startsWith('#player/'));
+  setupFcsgProfileViewport();
   document
     .querySelectorAll('[data-story]')
     .forEach(
