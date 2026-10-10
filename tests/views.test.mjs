@@ -491,7 +491,7 @@ test('FCSG arena pulse uses confirmed kickoff and lights its crest at home and a
 });
 
 
-test('Glas-Torverlauf beginnt bei 0:0, bleibt exakt gestuft und ordnet Farben auch auswärts korrekt zu', () => {
+test('Glas-Torverlauf beginnt bei 0:0, wird geglättet und ordnet Farben auch auswärts korrekt zu', () => {
  context.chartGame={id:'chart-test',home:'Kadetten Schaffhausen',away:'A & B'};
  context.chartReport={score:[3,2],teams:[{id:41473},{id:41571}],events:[
   {id:4,seconds:3000,score:[3,2]}, {id:2,seconds:1200,score:[1,1]},
@@ -501,8 +501,14 @@ test('Glas-Torverlauf beginnt bei 0:0, bleibt exakt gestuft und ordnet Farben au
   const doc=parseHTML(view('reportScoreChart(chartGame,chartReport)')).document;
   const lines=doc.querySelectorAll('.chart-line');
   assert.equal(lines.length,2);
-  assert.equal(lines[0].getAttribute('d'),'M36 182 H93.33 V166 H150.67 V166 H208 V150 H322.67 V134 H380');
-  assert.equal(lines[1].getAttribute('d'),'M36 182 H93.33 V182 H150.67 V166 H208 V166 H322.67 V150 H380');
+  assert.match(lines[0].getAttribute('d'),/^M36 182 C/);
+  assert.match(lines[0].getAttribute('d'),/93\.33 166 C/);
+  assert.match(lines[0].getAttribute('d'),/208 150 C/);
+  assert.match(lines[0].getAttribute('d'),/380 134$/);
+  assert.match(lines[1].getAttribute('d'),/^M36 182 C/);
+  assert.match(lines[1].getAttribute('d'),/150\.67 166 C/);
+  assert.match(lines[1].getAttribute('d'),/380 150$/);
+  assert.match(doc.querySelector('.report-score-caption').textContent,/Geglätteter Verlauf/);
   assert.ok(lines[0].classList.contains('chart-kadetten'));
   assert.ok(lines[1].classList.contains('chart-opponent'));
   assert.equal(doc.querySelectorAll('.chart-area').length,2);
@@ -517,8 +523,33 @@ test('Glas-Torverlauf beginnt bei 0:0, bleibt exakt gestuft und ordnet Farben au
   context.chartReport.events=[{id:1,seconds:1200,score:[1,0]}];
   const partial=parseHTML(view('reportScoreChart(chartGame,chartReport)')).document;
   assert.match(partial.querySelector('.report-score-caption').textContent,/Torfolge unvollständig/);
-  assert.equal(partial.querySelector('.chart-line').getAttribute('d'),'M36 182 H150.67 V166');
+  assert.match(partial.querySelector('.chart-line').getAttribute('d'),/^M36 182 C.*150\.67 166$/);
   context.chartReport.events=[{id:1,seconds:4500,score:[3,2]}];
   assert.match(view('reportScoreChart(chartGame,chartReport)'),/75′/);
  } finally {delete context.chartGame;delete context.chartReport;}
+});
+
+
+test('Geglättete Torkurven überschwingen nicht, bleiben monoton und verarbeiten gleiche Zeitpunkte', () => {
+ const points=[{x:0,y:100},{x:1,y:98},{x:2,y:50},{x:4,y:50},{x:5,y:49},{x:10,y:0}];
+ context.curvePoints=points;
+ try {
+  const curve=run('reportScoreCurve(curvePoints)');
+  const segments=[...curve.matchAll(/C([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+) ([\d.-]+)/g)];
+  assert.equal(segments.length,points.length-1);
+  segments.forEach((segment,i)=>{
+   const [,x1,y1,x2,y2,x3,y3]=segment.map(Number), a=points[i], b=points[i+1];
+   assert.equal(x3,b.x);assert.equal(y3,b.y);
+   let previous=a.y;
+   for(let step=0;step<=100;step++){
+    const t=step/100,u=1-t,v=u*u*u*a.y+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y3;
+    assert.ok(v<=a.y+1e-9&&v>=b.y-1e-9);
+    assert.ok(v<=previous+1e-9);previous=v;
+   }
+   assert.ok(x1>=a.x&&x2<=b.x);
+  });
+  context.curvePoints=[{x:0,y:100},{x:1,y:90},{x:1,y:80},{x:2,y:70}];
+  assert.doesNotMatch(run('reportScoreCurve(curvePoints)'),/NaN|Infinity/);
+  assert.equal(run('reportScoreCurve([])'), '');
+ } finally {delete context.curvePoints;}
 });
