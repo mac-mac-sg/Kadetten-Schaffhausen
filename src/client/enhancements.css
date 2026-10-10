@@ -2007,28 +2007,28 @@ footer .source-details summary { margin-inline: auto; }
 .install-intro .button { min-height:48px; cursor:pointer; }
 .install-intro :focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
 
-/* Kadetten: arena glow + double heartbeat. Content never scales. */
+/* Both clubs: arena glow + double heartbeat. Content never scales. */
 @keyframes arena-heartbeat {
   0%, 4%, 22%, 100% { opacity: .1; transform: scale(.97); }
   8% { opacity: .52; transform: scale(1.025); }
   13% { opacity: .18; transform: scale(.99); }
   17% { opacity: .38; transform: scale(1.015); }
 }
-.home-matchday #live-match[data-pulse] { isolation: isolate; }
-.home-matchday #live-match[data-pulse]:not(.is-matchday-intro) { animation: none; }
-.home-matchday #live-match[data-pulse]::after {
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse] { isolation: isolate; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]:not(.is-matchday-intro) { animation: none; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]::after {
   content: ''; display: block; inset: 0; width: auto; border-radius: inherit;
-  background: none; border: 1px solid #ffb469;
-  box-shadow: inset 0 0 16px #ff931b30; transform: none;
+  background: none; border: 1px solid var(--arena-border, #ffb469);
+  box-shadow: inset 0 0 16px var(--arena-shadow, #ff931b30); transform: none;
   opacity: .1; pointer-events: none;
   animation: var(--arena-animation, arena-heartbeat) var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
   animation-delay: 0s;
 }
-.home-matchday #live-match[data-pulse] .arena-team { position: relative; isolation: isolate; }
-.home-matchday #live-match[data-pulse] .arena-team::before {
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse] .arena-team { position: relative; isolation: isolate; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse] .arena-team::before {
   content: ''; position: absolute; width: 110px; height: 110px; top: -22px;
   left: calc(50% - 55px); z-index: -1; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, #ffae4c50 0, #ff841b25 40%, transparent 72%);
+  background: radial-gradient(circle, var(--arena-core, #ffae4c50) 0, var(--arena-halo, #ff841b25) 40%, transparent 72%);
   opacity: .1; animation: var(--arena-animation, arena-heartbeat) var(--arena-period, 12s) cubic-bezier(.23,1,.32,1) infinite;
 }
 /* Before the last 24 hours: one slow arena breath, not two sharp beats. */
@@ -2036,22 +2036,32 @@ footer .source-details summary { margin-inline: auto; }
   0%, 100% { opacity: .22; transform: scale(.96); }
   45%, 55% { opacity: .7; transform: scale(1.07); }
 }
-.home-matchday #live-match[data-pulse='distant'] {
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='distant'] {
   --arena-animation: arena-breath; --arena-period: 12s;
 }
-.home-matchday #live-match[data-pulse='distant'] .arena-team::before {
-  background: radial-gradient(circle, #ffae4c75 0, #ff841b38 40%, transparent 72%);
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='distant'] .arena-team::before {
+  background: radial-gradient(circle, var(--arena-core-strong, #ffae4c75) 0, var(--arena-halo-strong, #ff841b38) 40%, transparent 72%);
 }
-.home-matchday #live-match[data-pulse='matchday'] { --arena-period: 8s; }
-.home-matchday #live-match[data-pulse='close'] { --arena-period: 5s; }
-.home-matchday #live-match[data-pulse='imminent'] { --arena-period: 3s; }
-.home-matchday #live-match[data-pulse='live'] { --arena-period: 5s; }
-.home-matchday #live-match[data-pulse] .live-heading i { animation: none; }
-.home-matchday #live-match[data-pulse='off']::after,
-.home-matchday #live-match[data-pulse='off'] .arena-team::before { display: none; }
-.home-matchday #live-match.pulse-paused::after,
-.home-matchday #live-match.pulse-paused .arena-team::before { animation-play-state: paused; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='matchday'] { --arena-period: 8s; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='close'] { --arena-period: 5s; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='imminent'] { --arena-period: 3s; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='live'] { --arena-period: 5s; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse] .live-heading i { animation: none; }
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='off']::after,
+.home-matchday :is(#live-match, .fcsg-matchday)[data-pulse='off'] .arena-team::before { display: none; }
+.home-matchday :is(#live-match, .fcsg-matchday).pulse-paused::after,
+.home-matchday :is(#live-match, .fcsg-matchday).pulse-paused .arena-team::before { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
-  .home-matchday #live-match[data-pulse]::after,
-  .home-matchday #live-match[data-pulse] .arena-team::before { animation: none; transform: none; opacity: .12; }
+  .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]::after,
+  .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse] .arena-team::before { animation: none; transform: none; opacity: .12; }
+}
+
+/* FCSG palette is scoped to its own card; Kadetten retains orange. */
+.home-matchday .fcsg-matchday {
+ --arena-border: #95e8b1; --arena-shadow: #47c77a30;
+ --arena-core: #72e69b50; --arena-halo: #36be7525;
+ --arena-core-strong: #72e69b75; --arena-halo-strong: #36be7538;
+}
+[data-club='fcsg'] .home-matchday .fcsg-matchday.is-matchday.match-preview {
+ background: linear-gradient(115deg,#125735,#0e3726); border-color: #95e8b1;
 }
