@@ -512,6 +512,13 @@ test('Glas-Torverlauf beginnt bei 0:0, wird geglättet und ordnet Farben auch au
   assert.ok(lines[0].classList.contains('chart-kadetten'));
   assert.ok(lines[1].classList.contains('chart-opponent'));
   assert.equal(doc.querySelectorAll('.chart-area').length,2);
+  for(const line of lines){
+   const gradientId=line.getAttribute('style').match(/url\(#([^)]*)\)/)[1];
+   const gradient=doc.getElementById(gradientId);
+   assert.equal(gradient.getAttribute('x2'),'1');
+   assert.equal(gradient.querySelectorAll('stop').length,2);
+  }
+  assert.equal(doc.getElementById('report-score-chart-test-0').querySelector('stop').getAttribute('stop-opacity'),'.38');
   assert.equal(doc.querySelectorAll('.chart-end').length,2);
   assert.match(doc.querySelector('svg').textContent,/30′ · Pause/);
   assert.equal(doc.querySelectorAll('.report-score-team')[1].textContent,'A & B2Tore');
