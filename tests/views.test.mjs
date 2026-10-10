@@ -489,3 +489,36 @@ test('FCSG arena pulse uses confirmed kickoff and lights its crest at home and a
   run('pulseFixture.live=true');assert.equal(run('fcsgPulsePhase(pulseFixture)'), 'live');
  } finally { context.savedPulseFixture=saved;run('fcsgFixture=savedPulseFixture');delete context.pulseFixture;delete context.savedPulseFixture; }
 });
+
+
+test('Glas-Torverlauf beginnt bei 0:0, bleibt exakt gestuft und ordnet Farben auch auswärts korrekt zu', () => {
+ context.chartGame={id:'chart-test',home:'Kadetten Schaffhausen',away:'A & B'};
+ context.chartReport={score:[3,2],teams:[{id:41473},{id:41571}],events:[
+  {id:4,seconds:3000,score:[3,2]}, {id:2,seconds:1200,score:[1,1]},
+  {id:1,seconds:600,score:[1,0]}, {id:3,seconds:1800,score:[2,1]}
+ ]};
+ try {
+  const doc=parseHTML(view('reportScoreChart(chartGame,chartReport)')).document;
+  const lines=doc.querySelectorAll('.chart-line');
+  assert.equal(lines.length,2);
+  assert.equal(lines[0].getAttribute('d'),'M36 182 H93.33 V166 H150.67 V166 H208 V150 H322.67 V134 H380');
+  assert.equal(lines[1].getAttribute('d'),'M36 182 H93.33 V182 H150.67 V166 H208 V166 H322.67 V150 H380');
+  assert.ok(lines[0].classList.contains('chart-kadetten'));
+  assert.ok(lines[1].classList.contains('chart-opponent'));
+  assert.equal(doc.querySelectorAll('.chart-area').length,2);
+  assert.equal(doc.querySelectorAll('.chart-end').length,2);
+  assert.match(doc.querySelector('svg').textContent,/30′ · Pause/);
+  assert.equal(doc.querySelectorAll('.report-score-team')[1].textContent,'A & B2Tore');
+  context.chartReport.teams.reverse();
+  const away=parseHTML(view('reportScoreChart(chartGame,chartReport)')).document;
+  assert.ok(away.querySelectorAll('.chart-line')[1].classList.contains('chart-kadetten'));
+  context.chartReport.events=[];
+  assert.equal(run('reportScoreChart(chartGame,chartReport)'), '');
+  context.chartReport.events=[{id:1,seconds:1200,score:[1,0]}];
+  const partial=parseHTML(view('reportScoreChart(chartGame,chartReport)')).document;
+  assert.match(partial.querySelector('.report-score-caption').textContent,/Torfolge unvollständig/);
+  assert.equal(partial.querySelector('.chart-line').getAttribute('d'),'M36 182 H150.67 V166');
+  context.chartReport.events=[{id:1,seconds:4500,score:[3,2]}];
+  assert.match(view('reportScoreChart(chartGame,chartReport)'),/75′/);
+ } finally {delete context.chartGame;delete context.chartReport;}
+});
