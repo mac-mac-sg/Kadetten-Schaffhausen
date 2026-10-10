@@ -472,3 +472,20 @@ test('European-League-Tabelle: Siege, Unentschieden und Niederlagen folgen aus S
     run(`tableLeague = 'QHL'`);
   }
 });
+
+test('FCSG arena pulse uses confirmed kickoff and lights its crest at home and away',()=>{
+ const saved=run('fcsgFixture');
+ try {
+  for(const away of [false,true]){
+   context.pulseFixture={id:'pulse-test',date:'2099-10-10',time:'18:00',confirmed:true,league:'Super League',home:away?'FC Zürich':'FC St. Gallen 1879',away:away?'FC St. Gallen 1879':'FC Zürich'};
+   run('fcsgFixture=()=>pulseFixture');
+   const markup=run('fcsgMatchday()');
+   assert.match(markup,/data-pulse="distant"/);
+   assert.equal((markup.match(/class="arena-team"/g)||[]).length,1);
+   assert.match(markup,/class="arena-team">[\s\S]*?St. Gallen/);
+  }
+  run('pulseFixture.confirmed=false');assert.equal(run('fcsgPulsePhase(pulseFixture)'), 'quiet');
+  run('pulseFixture.score=[2,1]');assert.equal(run('fcsgPulsePhase(pulseFixture)'), 'off');
+  run('pulseFixture.live=true');assert.equal(run('fcsgPulsePhase(pulseFixture)'), 'live');
+ } finally { context.savedPulseFixture=saved;run('fcsgFixture=savedPulseFixture');delete context.pulseFixture;delete context.savedPulseFixture; }
+});
