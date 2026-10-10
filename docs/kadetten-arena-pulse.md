@@ -12,3 +12,6 @@ Keine Änderung an Datenquellen, Datendienst, Zeitplänen oder anderen Ansichten
 Der FCSG-Startseitenblock nutzt dieselben Animationsphasen in Grün. Der Lichtschein folgt nur dem eigenen Wappen, auch auswärts. Bestätigte Anspielzeiten steuern die Phasen; unbestätigte Uhrzeiten bleiben ruhig. Am Spieltag wird der Vorschau-Block kräftiger grün. Aktualisierungen des Live-Blocks übernehmen den neuen Pulsstatus, eine sichtbare Sekundentakt-Prüfung aktualisiert Phasen ohne zusätzliche Datenabfragen. Verborgene App pausiert, reduzierte Bewegung bleibt statisch.
 
 Prüfung: neuer Test in `tests/views.test.mjs` für Heim/Auswärts-Wappen, bestätigte/offene Uhrzeit, Endresultat und Live-Status. Visuelle Browser-/axe-Prüfung weiterhin nicht verfügbar.
+
+## Schimmer statt Doppelrahmen (10.10.)
+Über 24h nur breite bewegte Hintergrund-Lichtfläche in Vereinsfarbe; Zusatzrahmen und Wappenpuls verborgen. Ab 24h Rahmen-Doppelimpuls alle8s, 2h/15min/Live unverändert. Randanimation verändert nur Deckkraft, bleibt am bestehenden Kartenrand und erzeugt keinen skalierten inneren Rahmen. Fehlende/überholte Uhrzeit ohne Rahmenimpuls; Endresultat ohne Schimmer. Hintergrundebene getrennt von Rand, reduziert/verborgen pausiert. Visuelle Browserprüfung weiterhin offen.
