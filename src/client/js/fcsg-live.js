@@ -9,7 +9,7 @@ function updateFcsgPanel(panel, signature, html) {
  if (!panel || panel.contains(document.activeElement) || fcsgPanelSignatures.get(panel) === signature) return false;
  panel.innerHTML=html();fcsgPanelSignatures.set(panel,signature);return true;
 }
-function fcsgGame(id) { return fcsgLiveGames.get(String(id)) || fcsgData.games.find(g=>g.id===String(id)); }
+function fcsgGame(id) { const base=fcsgData.games.find(g=>g.id===String(id)),live=fcsgLiveGames.get(String(id));return live?{...base,...live,report:base?.report}:base; }
 function fcsgDisplayScore(g) { return g.live ? (g.liveScore?.join(' : ') || '– : –') : g.score?.join(' : ') || 'VS'; }
 function fcsgLiveState(g) { return `${g.live?'JETZT LIVE · ':''}${g.phase || (g.score?'Beendet':'Vorschau')}${g.clock?' · '+g.clock:''}`; }
 function fcsgLiveNotice(g) {
@@ -30,12 +30,9 @@ function updateFcsgLiveView() {
   if(!document.querySelector('[data-fcsg-game]')){render();return;}
   document.querySelectorAll('[data-fcsg-score]').forEach(e=>{if(e.dataset.fcsgScore===id)e.textContent=fcsgDisplayScore(g)});
   document.querySelectorAll('[data-fcsg-phase]').forEach(e=>{if(e.dataset.fcsgPhase===id)e.textContent=fcsgLiveState(g)});
-  const panel=document.getElementById('fcsg-live-panel');if(panel&&!panel.contains(document.activeElement))panel.innerHTML=fcsgTicker(g);
-  const overview=document.getElementById('fcsg-overview');
-  if(overview){const signature=JSON.stringify(g.score||g.live?['events',g.events]:['preview',g.home,g.away,g.date,g.time,g.confirmed,g.venue,g.tickets]);
-   if(!fcsgPanelSignatures.has(overview))fcsgPanelSignatures.set(overview,overview.dataset.signature);
-   if(updateFcsgPanel(overview,signature,()=>fcsgOverview(g)))loadMatchPreview();}
-  const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([g.homeStats,g.awayStats,g.momentum,g.score]),()=>fcsgTeamStats(g));
+  const panel=document.getElementById('fcsg-live-panel');
+  if(panel){if(!fcsgPanelSignatures.has(panel))fcsgPanelSignatures.set(panel,panel.dataset.signature);const changed=updateFcsgPanel(panel,fcsgMatchTickerSignature(g),()=>fcsgMatchTicker(g));if(changed&&fcsgMatchStage(g)==='preview')loadMatchPreview();}
+  const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([fcsgMatchStage(g),g.homeStats,g.awayStats,g.momentum]),()=>fcsgTeamStats(g));
   const lineup=document.getElementById('fcsg-lineups');updateFcsgPanel(lineup,JSON.stringify([g.homeLineup,g.awayLineup,g.events,g.substitutions]),()=>fcsgLineups(g));
  }
  document.querySelectorAll('.games [data-fcsg-game]').forEach(card=>{const g=fcsgGame(card.dataset.fcsgGame);if(!g)return;const score=card.querySelector('[data-fcsg-score]');if(score)score.textContent=fcsgDisplayScore(g);const phase=card.querySelector('[data-fcsg-phase]');if(phase)phase.textContent=fcsgLiveState(g);const link=card.querySelector('.actions a');if(link)link.textContent=g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau';card.classList.toggle('fcsg-game-live',!!g.live);});
@@ -55,7 +52,7 @@ async function loadFcsgLive(force=false) {
   const r=await apiFetch(detail?'/api/fcsg/matches/'+id:'/api/fcsg/live',{cache:'no-store',signal:AbortSignal.timeout(20000)});
   if(!r.ok)throw Error();const d=await r.json();if(!d.ok||!d.checkedAt||(d.match&&(typeof d.match.id!=='string'||!d.match.home||!d.match.away))||(detail&&d.match?.id!==id))throw Error();
   fcsgLiveChecks.set(key,d.checkedAt);
-  if(d.match){fcsgLiveGames.set(d.match.id,d.match);fcsgLiveChecks.set(d.match.id,d.checkedAt);fcsgLiveErrors.delete(d.match.id);if(fcsgLiveGames.size>15){const first=fcsgLiveGames.keys().next().value;fcsgLiveGames.delete(first);fcsgLiveChecks.delete(first);}}
+  if(d.match){const previous=fcsgGame(d.match.id);if(previous)for(const field of ['homeStats','awayStats','homeLineup','awayLineup','momentum'])if(d.match[field]==null||(field==='momentum'&&!d.match[field].length))d.match[field]=previous[field];fcsgLiveGames.set(d.match.id,d.match);fcsgLiveChecks.set(d.match.id,d.checkedAt);fcsgLiveErrors.delete(d.match.id);if(fcsgLiveGames.size>15){const first=fcsgLiveGames.keys().next().value;fcsgLiveGames.delete(first);fcsgLiveChecks.delete(first);}}
   else for(const [gid,g] of fcsgLiveGames)if(g.live){fcsgLiveGames.delete(gid);}
   fcsgLiveErrors.delete(key);updateFcsgLiveView();
  }catch{fcsgLiveErrors.add(key);if(!detail){const g=fcsgFixture();if(g&&(g.live||g.date===swissToday()))fcsgLiveErrors.add(g.id);}updateFcsgLiveView();}

@@ -639,7 +639,24 @@ test('FCSG match dashboard presents source momentum, all statistic sections and 
 });
 test('FCSG lineup renders a switchable pitch, bench, coach and verified event badges with escaped names',()=>{
  context.__lineupGame={id:'458',home:'FC St.Gallen 1879',away:'FC Lausanne-Sport',homeLineup:{formation:'3142',coach:{name:'Enrico Maassen'},players:[{name:'Lawrence Zigi',shortName:'Zigi',number:1,position:'Goalkeeper',bench:false},{name:'Jozo <Stanic>',shortName:'<Stanic>',eventName:'J. Stanić',number:4,position:'Defender',side:'Centre',bench:false},{name:'Carlo Boukhalfa',eventName:'C. Boukhalfa',number:11,bench:true}]},awayLineup:null,events:[{type:'Gelb',minute:10,player:'J. Stanić',home:true}],substitutions:[{minute:46,on:'C. Boukhalfa',off:'J. Stanić',home:true}]};
+ context.__lineupGame.homeLineup.players.push(...Array.from({length:9},(_,i)=>({name:'Spieler '+i,number:20+i,position:i<3?'Defender':i<7?'Midfielder':'Striker',bench:false})));
  const doc=parseHTML(view('fcsgLineups(__lineupGame)')).document;
- assert.equal(doc.querySelectorAll('button').length,2);assert.equal(doc.querySelector('button').getAttribute('aria-pressed'),'true');assert.equal(doc.querySelectorAll('.fcsg-pitch-row').length,2);assert.equal(doc.querySelectorAll('.fcsg-bench li').length,1);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Enrico Maassen/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Gelb 10′/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/↑ 46′/);assert.equal(doc.querySelector('Stanic'),null);
+ assert.equal(doc.querySelectorAll('button').length,2);assert.equal(doc.querySelector('button').getAttribute('aria-pressed'),'true');assert.equal(doc.querySelectorAll('.fcsg-pitch-row').length,4);assert.equal(doc.querySelectorAll('.fcsg-bench li').length,1);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Enrico Maassen/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Gelb 10′/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/↑ 46′/);assert.equal(doc.querySelector('Stanic'),null);
  run("fcsgLineupChoices.set('458',false)");assert.match(view('fcsgLineups(__lineupGame)'),/Aufstellung noch nicht veröffentlicht/);run('fcsgLineupChoices.clear()');
+});
+
+test('FCSG uses three stable tabs and switches contents only on confirmed match status',()=>{
+ run("activeClub='fcsg';globalThis.__match={...fcsgData.games.find(g=>g.id==='458'),score:null,live:false};fcsgLiveGames.set('458',__match)");
+ try{
+  const preview=parseHTML(view("fcsgMatch('458','overview')")).document;
+  assert.deepEqual([...preview.querySelectorAll('.match-tabs a')].map(a=>a.textContent),['Liveticker','Aufstellung','Statistiken']);
+  assert.equal(preview.querySelectorAll('h1').length,1);assert.ok(preview.querySelector('[data-match-preview]'));assert.match(view("fcsgMatch('458','stats')"),/Formkurve & letzte Spiele/);assert.doesNotMatch(view("fcsgMatch('458','stats')"),/Hauptstatistiken/);
+  run("__match.live=true;__match.homeStats={totalScoringAtt:0};__match.awayStats={totalScoringAtt:3};__match.momentum=[{period:1,minute:1,value:.1},{period:1,minute:2,value:-.1}];__match.ticker=[{id:'a',minute:'20',title:'Im Spiel',html:'<p>Live-Meldung</p>'}]");
+  const live=view("fcsgMatch('458','ticker')");assert.match(live,/Live-Meldung/);assert.doesNotMatch(live,/data-match-preview|Match-Rückblick/);
+  const stats=view("fcsgMatch('458','stats')");assert.match(stats,/Torgefährlichkeit/);assert.match(stats,/Hauptstatistiken/);assert.match(stats,/Blockierte Schüsse/);assert.doesNotMatch(stats,/Formkurve & letzte Spiele/);assert.match(stats,/<strong>0<\/strong>/);assert.match(stats,/<strong>–<\/strong>/);
+  run("__match.live=false;__match.score=[1,0]");assert.match(view("fcsgMatch('458','ticker')"),/Match-Rückblick.*Live-Meldung/s);assert.doesNotMatch(view("fcsgMatch('458','stats')"),/Formkurve/);
+  run("__match.homeLineup={formation:'433',coach:{name:'Enrico Maassen'},players:Array.from({length:11},(_,i)=>({name:'Spieler '+i,lastName:'Name '+i,number:i+1,position:i===0?'Goalkeeper':i<5?'Defender':i<8?'Midfielder':'Striker',side:'Centre',place:i+1,bench:false}))}");
+  const lineup=parseHTML(view("fcsgMatch('458','squad')")).document;assert.equal(lineup.querySelectorAll('.fcsg-pitch .fcsg-formation-player').length,11);assert.match(lineup.querySelector('.fcsg-match-page').textContent,/Enrico Maassen/);assert.equal(lineup.querySelectorAll('[data-fcsg-lineup]').length,2);
+  run("__match.homeLineup.players[1].position=null");assert.doesNotMatch(view("fcsgMatch('458','squad')"),/class="fcsg-pitch"/);
+ }finally{run("fcsgLiveGames.clear();delete globalThis.__match;activeClub='kadetten'");}
 });

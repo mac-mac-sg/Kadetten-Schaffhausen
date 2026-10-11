@@ -9,6 +9,7 @@ import {pathToFileURL} from 'node:url';
 import seed from '../server/seed.json' with {type: 'json'};
 import fcsgSeed from '../server/fcsg-seed.json' with {type: 'json'};
 import {runRefresh} from '../server/refresh-run.mjs';
+import {syncFcsgReports} from './lib/fcsg-reports.mjs';
 import {refreshFcsg} from '../server/fcsg.mjs';
 import {kvRestStore} from './lib/kv-rest-store.mjs';
 import {syncProgrammes} from './lib/programmes-source.mjs';
@@ -101,6 +102,10 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     } catch (e) {
       write(`\nQHL-Matchberichte: Fehler (${String(e.message).slice(0, 120)}); bestehende bleiben.`);
     }
+    try {
+      const saved=await bucket.get('fcsg/current.json');
+      if(saved){const r=await syncFcsgReports(bucket,await saved.json(),{write:reportWriter});write(`\nFCSG-Rückblicke: ${r.written} geschrieben, ${r.ki} mit KI.`);}
+    } catch { write('\nFCSG-Rückblicke: bestehende Berichte bleiben erhalten.'); }
     write('\nDer KV-Speicher ist aktualisiert.');
   } else {
     const savedFcsg = await bucket.get('fcsg/current.json');

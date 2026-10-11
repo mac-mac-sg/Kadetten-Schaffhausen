@@ -1,0 +1,5 @@
+
+/* FCSG: ein Matchcenter für Vorschau, Live und Rückblick. */
+.fcsg-match-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%;margin:20px 0 26px}
+.fcsg-match-tabs a{min-width:0;padding:12px 5px;text-align:center;font-size:clamp(12px,3.3vw,15px)}
+.fcsg-recent-matches{list-style:none;padding:0}.fcsg-recent-matches a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}.fcsg-recent-matches small{display:block;color:var(--muted);margin-bottom:5px}.fcsg-recent-matches strong{white-space:nowrap;font-size:22px}.fcsg-recent-matches .win{color:var(--win)}.fcsg-recent-matches .loss{color:var(--loss)}.fcsg-recent-matches .draw{color:var(--draw)}

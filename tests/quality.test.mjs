@@ -28,16 +28,16 @@ test('PDF survives same-route render, while navigation closes it',()=>{
 });
 
 function liveApp(){
- const {document}=parseHTML('<html><body><section data-fcsg-game="42"></section><section id="fcsg-overview"><details open><summary>Quellen</summary><p>Vorschau</p></details></section></body></html>');
+ const {document}=parseHTML('<html><body><section data-fcsg-game="42"></section><section id="fcsg-live-panel"><details open><summary>Quellen</summary><p>Vorschau</p></details></section></body></html>');
  const game={id:'42',home:'FC St.Gallen 1879',away:'FC Sion',date:'2026-10-06',time:'18:00',confirmed:true,events:[],venue:'Stadion',tickets:''};
- document.getElementById('fcsg-overview').dataset.signature=JSON.stringify(['preview',game.home,game.away,game.date,game.time,game.confirmed,game.venue,game.tickets]);
+ document.getElementById('fcsg-live-panel').dataset.signature=JSON.stringify(['preview',game.home,game.away,game.date,game.time,game.confirmed,game.venue,game.tickets]);
  let now=1000000,calls=0,previewLoads=0;
  class Clock extends Date {static now(){return now;}}
- const c=vm.createContext({Date:Clock,document,activeClub:'fcsg',location:{hash:'#match/42/overview'},fcsgData:{games:[game]},fcsgFixture:()=>game,fcsgOverview:()=>'<h2>Geändert</h2>',loadMatchPreview(){previewLoads++;},AbortSignal,setInterval(){},apiFetch:async()=>{calls++;return {ok:true,json:async()=>({ok:true,checkedAt:new Date(now).toISOString(),match:{...game}})}}});load(c,'js/fcsg-live.js');
+ const c=vm.createContext({Date:Clock,document,activeClub:'fcsg',location:{hash:'#match/42/overview'},fcsgData:{games:[game]},fcsgFixture:()=>game,fcsgMatchTicker:()=>'<h2>Geändert</h2>',fcsgMatchStage:g=>g.live?'live':g.score?'finished':'preview',fcsgMatchTickerSignature:g=>JSON.stringify(['preview',g.home,g.away,g.date,g.time,g.confirmed,g.venue,g.tickets]),loadMatchPreview(){previewLoads++;},AbortSignal,setInterval(){},apiFetch:async()=>{calls++;return {ok:true,json:async()=>({ok:true,checkedAt:new Date(now).toISOString(),match:{...game}})}}});load(c,'js/fcsg-live.js');
  return {c,document,game,advance:n=>now+=n,counts:()=>[calls,previewLoads]};
 }
 test('Unchanged FCSG live check keeps preview DOM and expanded sources',async()=>{
- const a=liveApp(),panel=a.document.getElementById('fcsg-overview'),details=panel.firstElementChild;
+ const a=liveApp(),panel=a.document.getElementById('fcsg-live-panel'),details=panel.firstElementChild;
  await a.c.loadFcsgLive();a.c.updateFcsgLiveView();
  assert.equal(panel.firstElementChild,details);assert.equal(details.hasAttribute('open'),true);assert.equal(a.counts()[1],0);
  a.game.venue='Neues Stadion';a.advance(300000);await a.c.loadFcsgLive(true);
