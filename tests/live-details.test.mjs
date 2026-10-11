@@ -48,6 +48,12 @@ test('EHF-Teamwerte: Zahlen, fehlende Werte bleiben leer, ohne Teamblöcke wird 
 });
 
 import {parseEhfPlayers} from '../server/live.mjs';
+
+test('EHF: Torhüter mit isPlayer:false bleiben erhalten, Staff wird weiterhin ausgeschlossen',()=>{
+ const person={firstName:'Leon',lastName:'Bergmann'};
+ const list=parseEhfPlayers({matchDetails:{details:{homeTeam:{players:[{id:'gk',isPlayer:false,isGoalkeeper:true,playingPosition:'Goalkeeper',person,score:{goalkeeperSaves:12,goalkeeperRecievedShots:27}},{id:'staff',isPlayer:false,person}]},guestTeam:{players:[]}}}});
+ assert.equal(list.length,1);assert.equal(list[0].goalkeeper,true);assert.equal(list[0].saves,12);assert.equal(list[0].savesFaced,27);
+});
 test('EHF-Spielerwerte: Namen, Tore, Würfe, Strafen, Paraden; Staff-Einträge und fehlende Werte',()=>{
  const player=(id,first,last,score,extra={})=>({id,shirtNumber:'7',playingPosition:'Left Wing',isPlayer:true,isGoalkeeper:false,person:{firstName:first,lastName:last},score,...extra});
  const data={matchDetails:{details:{

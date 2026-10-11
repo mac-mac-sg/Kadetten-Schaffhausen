@@ -4,7 +4,7 @@
 // Ein Fehler lässt bestehende Einträge unberührt; ein Eintrag ohne Bericht wird im nächsten Lauf ergänzt.
 import {ehfLiveEndpoint, getEhfDetails, parseEhfFinishedMatch, reportId} from '../../server/live.mjs';
 import {qhlInputs} from '../../server/qhl-report.mjs';
-import {parseTicker, withSevenMeters, matchFacts, factLines, plainReport, goalFeed, clockText} from '../../server/ehf-ticker.mjs';
+import {parseTicker, shotStatistics, withSevenMeters, matchFacts, factLines, plainReport, goalFeed, clockText} from '../../server/ehf-ticker.mjs';
 import {reportMessages, toReport} from '../../server/report-ai.mjs';
 
 const TICKER_URL = 'https://ticker.ehf.eu/v3/TickerData';
@@ -38,7 +38,7 @@ async function fetchTicker(matchId, fetchFn, {retries = 3, pause = 3000} = {}) {
 export const KNOWN_MATCHES = {
   bukarest: {matchId: '202711020901026', url: 'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901026/KadettenSchaffhausen-CSMBucuresti/'}
 };
-export const RECORD_VERSION = 2;
+export const RECORD_VERSION = 3;
 
 // games: Spiele des Datenstands; write(messages) -> {ok, text} | {ok: false, error} oder null (ohne KI).
 // Betrachtet werden die Kadetten-Spiele der European League, die am Spieltag oder Folgetag laufen (Feed) oder schon ein Resultat haben
@@ -56,7 +56,7 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
       const saved = await bucket.get(archiveKey(g.id));
       const old = saved ? await saved.json() : null;
       // Ein sachlicher Rückfall wird bei laufender KI bis zu dreimal durch einen KI-Text ersetzt; sonst gilt der Eintrag als fertig.
-      const final = old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
+      const final = (old?.shotStats || old?.shotStatsAttempts >= 3) && old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
       if (old && old.v >= RECORD_VERSION && final) { out.kept++; continue; }
       // Woher kommt die Spiel-ID? Aus dem gesicherten Eintrag, aus der Liste bekannter Spiele oder (Spieltag) aus dem Feed.
       let match = null;
@@ -71,7 +71,7 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
         match = parseEhfFinishedMatch(feed, g.date);
         if (!match) { out.notes.push(`${g.id}: im Feed nicht als beendet gemeldet`); continue; }
       } else { out.notes.push(`${g.id}: kein Eintrag, nicht mehr im Feed und nicht in der Liste bekannter Spiele`); continue; }
-      const record = old?.v >= RECORD_VERSION && old?.ticker ? old : await buildRecord(g, match, fetchFn, old);
+      const record = old?.v >= RECORD_VERSION && old?.ticker && old?.shotStats ? old : await buildRecord(g, match, fetchFn, old);
       let result = {};
       if (!record.report || (record.report.generator !== 'ki' && write && record.ticker && (record.report.attempts || 1) < 3)) result = await addReport(record, write);
       if (record.report?.generator === 'ki') delete record.ticker;
@@ -109,6 +109,8 @@ async function buildRecord(g, match, fetchFn, old = null) {
     checkedAt: new Date().toISOString(),
     spectators: details.spectators ?? null,
     teamStats: details.teamStats,
+    shotStats: ticker ? shotStatistics(ticker, details.teamStats, details.players) : null,
+    shotStatsAttempts: (old?.shotStatsAttempts || 0) + 1,
     players: ticker ? withSevenMeters(details.players, ticker) : details.players,
     goals: ticker ? goalFeed(ticker) : null,
     timeouts: ticker ? ticker.timeouts.filter(t => t.side).map(t => ({side: t.side, sec: t.sec})) : null,
@@ -117,6 +119,12 @@ async function buildRecord(g, match, fetchFn, old = null) {
     ticker: ticker && {timeouts: ticker.timeouts, suspensions: ticker.suspensions, goals: ticker.goals, final: ticker.final, halftime: ticker.halftime, sevenMeters: ticker.sevenMeters},
     source: {label: 'EHF Live-Ticker und Spielstatistik', url: match.url}
   };
+  // A transient ticker failure must not discard an already verified distribution.
+  if (!record.shotStats && old?.shotStats && old.score?.every((n,i)=>n===match.score[i])) record.shotStats=old.shotStats;
+  if (!ticker && old?.score?.every((n,i)=>n===match.score[i])) {
+    for (const key of ['goals','half','timeouts','suspensions']) if(old[key])record[key]=old[key];
+    if(old.players)record.players=old.players;
+  }
   if (old?.report) { record.report = old.report; if (old.facts) record.facts = old.facts; }
   return record;
 }
