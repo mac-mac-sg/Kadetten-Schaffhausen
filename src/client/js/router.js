@@ -223,6 +223,8 @@ function render() {
             : page === 'news'
             ? 'Artikel'
             : 'News') + ' · ' + fanClubs[activeClub].name;
+  // Fill the handball card before header measurement commits the hidden-card layout.
+  if (activeClub !== 'fcsg') showLiveMatch();
   setupViews();
   updateClubHeader();
   measureAppChrome();
@@ -243,7 +245,6 @@ function render() {
   }
   setupClubPage();
   setupRecentGames();
-  showLiveMatch();
   if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
   setupEnhancements();
   loadGameReports();

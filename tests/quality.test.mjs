@@ -84,6 +84,17 @@ test('Install intro appears once, skips standalone and installs only on a delibe
  }
 });
 
+test('Handball-Startseite füllt die Spielkarte vor der ersten Layoutmessung',()=>{
+ for(const activeClub of ['kadetten','otmar']){
+  let filled=false,measurements=0;
+  const noop=()=>{},style={set scrollSnapType(v){},removeProperty:noop},classList={toggle:noop};
+  const c=vm.createContext({activeClub,programmeDialog:null,location:{hash:'#home'},mode:'list',fanClubs:{[activeClub]:{name:activeClub}},document:{documentElement:{style,classList},body:{classList},querySelectorAll:()=>[]},window:{scrollY:0,scrollTo:noop},requestAnimationFrame:noop,$:s=>s==='#app'?{set innerHTML(v){filled=false;}}:null,home:()=>'<a id="live-match" hidden></a>',showLiveMatch:()=>{filled=true;},updateClubHeader:noop,loadMatchPreview:noop,loadMatchProgramme:noop,setupClubPage:noop,setupRecentGames:noop,setupEnhancements:noop,loadGameReports:noop,loadPlayerReports:noop,loadEhfArchive:noop,loadFullArticle:noop});
+  load(c,'js/router.js');c.setupViews=noop;
+  c.measureAppChrome=()=>{measurements++;assert.equal(filled,true,'Layout darf nicht mit der ausgeblendeten Spielkarte gemessen werden');};
+  c.render();assert.equal(measurements,1);
+ }
+});
+
 test('Kopfzeilenhöhe behält Subpixel bei, auch nach einer Grössenänderung',()=>{
  let height=129.6875,resize;
  const rootValues={},bodyValues={},top={getBoundingClientRect:()=>({height})};
