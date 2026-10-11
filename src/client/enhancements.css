@@ -664,7 +664,8 @@ body.games-mode { --games-header-height: 82px; }
   z-index: 30;
   background: var(--surface);
 }
-.games-mode .season-header { top: var(--games-header-height); }
+/* Cover subpixel seams between the two independently composited sticky layers. */
+.games-mode .season-header { top: calc(var(--games-header-height) - 1px); }
 @media (max-width: 640px) {
   body.games-mode { --games-header-height: 72px; }
 }
