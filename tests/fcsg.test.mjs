@@ -61,3 +61,19 @@ test('FCSG player facts endpoint is read-only, strips source metadata and reject
  globalThis.fetch=async url=>{calls++;assert.ok(!url.includes('isLightVersion'));return new Response(JSON.stringify(playerSource()))};
  try{const response=await worker.fetch(new Request('https://app.test/api/fcsg/players'),env);assert.equal(response.status,200);assert.equal(response.headers.get('Access-Control-Allow-Origin'),'https://mac-mac-sg.github.io');const d=await response.json();assert.equal(d.players.length,20);assert.equal(d.players[0].crmTags,undefined);assert.equal(d.players[0].playerCareer,undefined);assert.equal((await worker.fetch(new Request('https://app.test/api/fcsg/players',{method:'POST'}),env)).status,405);assert.equal(calls,1);globalThis.fetch=async()=>{throw Error('offline')};assert.equal((await worker.fetch(new Request('https://app.test/api/fcsg/players'),env)).status,503)}finally{globalThis.fetch=original}
 });
+
+test('Opta dashboard retains extra match values and unknowns, coaches, positions and substitutions',async()=>{
+ const {parseFcsgGame}=await import('../server/fcsg.mjs');
+ const base={id:458,date:'2026-10-11 16:30:00',status:'FINISHED',homeClub:{id:12,name:'FC St.Gallen 1879'},guestClub:{id:13,name:'FC Lausanne-Sport'},soccerLeague:{name:'Liga'},regularTimeHome:1,regularTimeGuest:0,
+ optaMomentumSeries:[{periodId:2,timeMin:46,combined:-.0038},{periodId:1,timeMin:47,combined:.00285}],
+ soccerMatchDetail:{homeSoccerMatchStatistic:{shotOffTarget:7,blockedScoringAtt:2,hitWoodwork:null,totalCross:11,saves:4,totalPass:'298',possessionPercentage:'41.3'},guestSoccerMatchStatistic:{totalCross:25,hitWoodwork:0,secondYellow:'',totalRedCard:'invalid'},homeSoccerLineup:{formation:'3142',coach:{firstName:'Enrico',lastName:'Maassen',image:'https://example.org/coach.jpg'},lineupPlayers:[{firstName:'Jozo',lastName:'Stanic',matchName:'J. Stanić',position:'Defender',positionSide:'Centre',formationPlace:4,shirtNumber:4,isBenched:false,image:'https://example.org/player.jpg'}]},substitutionEvents:[{substitutionTimeMin:'46',playerOnName:'C. Boukhalfa',playerOffName:'M. Stevanović',isHomeClub:true},{isCancelled:true,playerOnName:'cancelled'}]}};
+ const g=parseFcsgGame(base);
+ assert.equal(g.homeStats.shotOffTarget,7);assert.equal(g.homeStats.blockedScoringAtt,2);assert.equal(g.homeStats.totalCross,11);assert.equal(g.homeStats.saves,4);assert.equal(g.homeStats.possessionPercentage,41.3);assert.equal(g.homeStats.hitWoodwork,null);assert.equal(g.awayStats.hitWoodwork,0);assert.equal(g.awayStats.secondYellow,null);assert.equal(g.awayStats.totalRedCard,null);
+ assert.equal(g.homeLineup.coach.name,'Enrico Maassen');assert.equal(g.homeLineup.players[0].place,4);assert.equal(g.homeLineup.players[0].eventName,'J. Stanić');assert.equal(g.homeLineup.players[0].side,'Centre');assert.equal(g.substitutions.length,1);
+ assert.deepEqual(g.momentum,[{period:1,minute:47,value:.00285},{period:2,minute:46,value:-.0038}]);
+});
+test('Opta momentum validates periods, minutes, finite values and duplicate samples without manufacturing a curve',async()=>{
+ const {parseFcsgMomentum}=await import('../server/fcsg.mjs');
+ assert.deepEqual(parseFcsgMomentum(null),[]);
+ assert.deepEqual(parseFcsgMomentum([{periodId:1,timeMin:1,combined:.1},{periodId:1,timeMin:1,combined:.2},{periodId:2,timeMin:46,combined:null},{periodId:2,timeMin:47,combined:Infinity},{periodId:0,timeMin:1,combined:.1},{periodId:2,timeMin:48,combined:2},{periodId:2,timeMin:49,combined:'0.1'},null]),[{period:1,minute:1,value:.1}]);
+});

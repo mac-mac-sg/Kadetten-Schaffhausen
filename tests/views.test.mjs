@@ -626,3 +626,20 @@ test('Spielerberichte laden nur letzte QHL-Spiele, bewahren gültige Berichte be
   await run('loadPlayerReports()');assert.equal(calls.length,1);
  } finally {context.__restoreLoader=saved;run('activeClub=__restoreLoader.club;games=__restoreLoader.games;gameReports=__restoreLoader.reports;playerReportAttempts.clear()');location.hash=saved.hash;context.apiFetch=saved.fetch;context.document.getElementById=saved.get;}
 });
+
+test('FCSG match dashboard presents source momentum, all statistic sections and null values without misleading bars',()=>{
+ context.__dashboard={id:'458',home:'FC St.Gallen 1879',away:'FC Lausanne-Sport',score:[1,0],homeStats:{possessionPercentage:41.3,totalScoringAtt:14,shotOffTarget:7,totalCross:11},awayStats:{possessionPercentage:58.7,totalScoringAtt:9,shotOffTarget:3,totalCross:25},momentum:[{period:1,minute:47,value:.02},{period:2,minute:46,value:-.01}]};
+ const doc=parseHTML(view('fcsgTeamStats(__dashboard)')).document;
+ assert.deepEqual([...doc.querySelectorAll('h2')].map(e=>e.textContent),['Torgefährlichkeit','Hauptstatistiken','Schüsse','Pässe','Strafen']);
+ assert.match(doc.querySelector('svg').getAttribute('aria-label'),/oberhalb.*unterhalb/);
+ assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/kein xG-Wert/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/41[,.]3%/);assert.equal(doc.querySelectorAll('.fcsg-stat-row').length,15);
+ assert.match(view("fcsgStatRow(__dashboard,'Pfostenschüsse','hitWoodwork')"),/is-empty/);
+ assert.match(view("fcsgMomentum({...__dashboard,momentum:[]})"),/noch kein Opta-Verlauf/);
+ assert.equal(doc.querySelectorAll('details tbody tr').length,2);
+});
+test('FCSG lineup renders a switchable pitch, bench, coach and verified event badges with escaped names',()=>{
+ context.__lineupGame={id:'458',home:'FC St.Gallen 1879',away:'FC Lausanne-Sport',homeLineup:{formation:'3142',coach:{name:'Enrico Maassen'},players:[{name:'Lawrence Zigi',shortName:'Zigi',number:1,position:'Goalkeeper',bench:false},{name:'Jozo <Stanic>',shortName:'<Stanic>',eventName:'J. Stanić',number:4,position:'Defender',side:'Centre',bench:false},{name:'Carlo Boukhalfa',eventName:'C. Boukhalfa',number:11,bench:true}]},awayLineup:null,events:[{type:'Gelb',minute:10,player:'J. Stanić',home:true}],substitutions:[{minute:46,on:'C. Boukhalfa',off:'J. Stanić',home:true}]};
+ const doc=parseHTML(view('fcsgLineups(__lineupGame)')).document;
+ assert.equal(doc.querySelectorAll('button').length,2);assert.equal(doc.querySelector('button').getAttribute('aria-pressed'),'true');assert.equal(doc.querySelectorAll('.fcsg-pitch-row').length,2);assert.equal(doc.querySelectorAll('.fcsg-bench li').length,1);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Enrico Maassen/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/Gelb 10′/);assert.match(doc.querySelector('.fcsg-match-dashboard, .fcsg-lineup-dashboard').textContent,/↑ 46′/);assert.equal(doc.querySelector('Stanic'),null);
+ run("fcsgLineupChoices.set('458',false)");assert.match(view('fcsgLineups(__lineupGame)'),/Aufstellung noch nicht veröffentlicht/);run('fcsgLineupChoices.clear()');
+});

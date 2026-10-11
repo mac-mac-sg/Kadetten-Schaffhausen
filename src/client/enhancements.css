@@ -2110,3 +2110,56 @@ footer .source-details summary { margin-inline: auto; }
 @media (prefers-reduced-motion: reduce) {
  .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]::before { animation: none; transform: none; opacity: .2; }
 }
+
+/* FCSG-Matchcenter: official Opta values, shared existing match tabs. */
+.fcsg-match-dashboard,.fcsg-lineup-dashboard { --match-green: #a9e877; --match-opponent: #b5c2c0; }
+.fcsg-match-dashboard { display: grid; gap: 20px; margin-top: 24px; }
+.fcsg-stat-card { padding: clamp(20px,4vw,32px); border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(150deg,rgba(20,106,70,.38),rgba(9,43,33,.68)); }
+.fcsg-stat-card h2 { margin: 0 0 20px; text-align: center; }
+.fcsg-stat-legend { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.fcsg-stat-legend span { max-width: 48%; }
+.fcsg-stat-legend span:last-child { text-align: right; }
+.fcsg-stat-row { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.fcsg-stat-row:last-child { border: 0; }
+.fcsg-stat-values { display: grid; grid-template-columns: minmax(48px,1fr) 3fr minmax(48px,1fr); align-items: center; gap: 8px; text-align: center; }
+.fcsg-stat-values strong { font-size: clamp(20px,4vw,28px); font-variant-numeric: tabular-nums; border-radius: 99px; padding: 3px 6px; }
+.fcsg-stat-values .is-leading { background: rgba(255,255,255,.09); }
+.fcsg-stat-values span { font-size: 14px; color: var(--text); }
+.fcsg-stat-bar { display: flex; gap: 3px; height: 4px; margin-top: 14px; overflow: hidden; border-radius: 4px; }
+.fcsg-stat-bar i { display: block; background: var(--match-opponent); }
+.fcsg-stat-bar.fcsg-home i:first-child,.fcsg-stat-bar.fcsg-away i:last-child { background: var(--match-green); }
+.fcsg-stat-bar.is-empty { background: var(--line); }
+.fcsg-stat-bar.is-empty i { visibility: hidden; }
+.fcsg-momentum svg { display: block; width: 100%; height: auto; color: var(--text); margin: 12px 0; overflow: visible; }
+.fcsg-momentum text { fill: currentColor; font-family: inherit; font-size: 14px; }
+.fcsg-momentum .muted { font-size: 12px; line-height: 1.6; }
+.fcsg-momentum caption { text-align: left; padding: 12px 0; }
+.fcsg-lineup-dashboard { margin-top: 24px; }
+.fcsg-lineup-switch { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; padding: 6px; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 16px; }
+.fcsg-lineup-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px; border: 0; border-radius: 12px; color: var(--text); background: transparent; font: inherit; font-size: 13px; cursor: pointer; }
+.fcsg-lineup-switch button[aria-pressed="true"] { background: rgba(111,213,146,.2); box-shadow: inset 0 0 0 1px rgba(111,213,146,.3); }
+.fcsg-lineup-switch button:active { opacity: .75; }
+.fcsg-lineup-switch img { object-fit: contain; flex-shrink: 0; }
+.fcsg-lineup-switch span { overflow-wrap: anywhere; }
+.fcsg-formation-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 24px 0 16px; }
+.fcsg-formation-heading span { color: var(--muted); font-size: 13px; }
+.fcsg-pitch { position: relative; isolation: isolate; display: grid; gap: 16px; padding: 28px 8px; border-radius: 24px; overflow: hidden; background: repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 70px,transparent 70px 140px),linear-gradient(150deg,#114e37,#082c22); border: 1px solid var(--line); }
+.fcsg-pitch::before { content: ""; position: absolute; z-index: -1; inset: 18px 10px; border: 1px solid rgba(255,255,255,.3); background: linear-gradient(transparent calc(50% - .5px),rgba(255,255,255,.3) calc(50% - .5px),rgba(255,255,255,.3) calc(50% + .5px),transparent calc(50% + .5px)); }
+.fcsg-pitch::after { content: ""; position: absolute; z-index: -1; top: 50%; left: 50%; width: 80px; height: 80px; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; transform: translate(-50%,-50%); }
+.fcsg-pitch-row { display: flex; justify-content: space-evenly; align-items: start; gap: 4px; list-style: none; padding: 0; margin: 0; }
+.fcsg-formation-player { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; flex: 1; text-align: center; color: var(--text); }
+.fcsg-formation-player img,.fcsg-player-initials { width: clamp(40px,12vw,64px); height: clamp(48px,14vw,72px); border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,.25); background: #1e5140; }
+.fcsg-player-initials { display: grid; place-items: center; color: #fff; font-weight: 700; }
+.fcsg-shirt { padding: 2px 8px; margin-top: -14px; z-index: 1; background: var(--match-green); color: #102a20; border-radius: 20px; font-size: 12px; }
+.fcsg-formation-name { max-width: 100%; overflow-wrap: anywhere; font-size: 12px; line-height: 1.4; }
+.fcsg-player-events { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.fcsg-player-event { padding: 2px 4px; background: #1e5140; color: #fff; font-size: 10px; border-radius: 5px; line-height: 1.5; }
+.fcsg-player-event.is-yellow { background: #efca4e; color: #211b00; }
+.fcsg-player-event.is-red { background: #a32336; color: #fff; }
+.fcsg-bench { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 0; list-style: none; }
+.fcsg-bench .fcsg-formation-player { padding: 16px 8px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.025); }
+.fcsg-coach { display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: rgba(37,140,89,.14); }
+.fcsg-coach img { object-fit: cover; border-radius: 10px; }
+.fcsg-coach span { display: block; color: var(--muted); margin-top: 8px; }
+@media (min-width: 800px) { .fcsg-bench { grid-template-columns: repeat(3,minmax(0,1fr)); } .fcsg-pitch { padding: 32px; gap: 24px; } }
+.fcsg-screen-title,.fcsg-pitch .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
