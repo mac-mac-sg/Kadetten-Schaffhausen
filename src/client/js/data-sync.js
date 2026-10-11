@@ -49,12 +49,7 @@ function syncUpdateLabels() {
   document
     .querySelectorAll('[data-update-key]')
     .forEach(el => (el.textContent = updateLabelText(el.dataset.updateKey)));
-  const badge = document.querySelector('[data-nav="games"]');
-  if (badge) {
-    const matchday = (typeof activeClub === 'undefined' || activeClub !== 'fcsg') && todayGames().length > 0;
-    badge.classList.toggle('is-matchday', matchday);
-    badge.setAttribute('aria-label', matchday ? 'Spiele · Matchday' : 'Spiele');
-  }
+  if(typeof syncMatchdayNavigation==='function')syncMatchdayNavigation();
   showLiveMatch();
 }
 

@@ -88,9 +88,7 @@ function setupEnhancements() {
     game = page === 'match' ? games.find(g => g.id === id) : null;
   const opponent = game ? (game.home.includes('Kadetten') ? game.away : game.home) : null;
   document.documentElement.style.setProperty('--rival-color', rivalColors[teamName(opponent || '')] || '#94683f');
-  const badgeTarget = document.querySelector('[data-nav="games"]');
-  badgeTarget.classList.toggle('is-matchday', todayGames().length > 0);
-  badgeTarget.setAttribute('aria-label', todayGames().length ? 'Spiele · Matchday' : 'Spiele');
+  if(typeof syncMatchdayNavigation==='function')syncMatchdayNavigation();
   syncOfflineNotice();
   document
     .querySelectorAll('.story-screen')
