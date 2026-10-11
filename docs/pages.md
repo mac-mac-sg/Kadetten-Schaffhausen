@@ -27,3 +27,12 @@ Das ist eine Migration von Codebasis, Oberfläche und Veröffentlichung nach Git
 ## Betrieb und Rückkehr
 
 Der ursprüngliche Sites-Link bleibt erreichbar. Zum Zurückschalten auf den bisherigen Datendienst genügt ein Revert der Umschalt-Änderung (`apiOrigin` in `scripts/build.mjs` und `connect-src` in `src/client/index.html`); solange der bisherige Dienst nicht abgeschaltet ist, liefert er seinen letzten Stand. Zum Rücknehmen einer fehlerhaften UI-Version den entsprechenden Merge auf main mit einem neuen Commit rückgängig machen; die Pages-Pipeline veröffentlicht diesen Stand. Bei einem Datendienst-Ausfall kennzeichnet die App den letzten gespeicherten Stand. Live-Antworten werden nie aus dem Offline-Cache angezeigt.
+
+
+### Arena-Hintergrund auf der News-Startseite
+Die drei Vereine verwenden lokal ausgelieferte Fotos hinter Kopfzeile und Spieltagsblock. Alle drei Fotos werden mit der Offline-Hülle vorgeladen und im Build-Hash berücksichtigt. Vereinsfarbene Lichtverläufe, leichte Unschärfe und dunkle Glasflächen erhalten die Lesbarkeit. Das bereits abgedunkelte Otmar-Banner wird nur per CSS aufgehellt.
+
+Bildquellen:
+- Kadetten: BBC Arena, bestehendes Foto `assets/bbc-arena-hall.webp`.
+- FCSG: FC St.Gallen 1879, Berit Sitterstadion, https://www.fcsg.ch/pages/beritklinik; Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/berit-sitterstadion.jpg?v=1782912949&width=1200; lokale Datei `assets/fcsg-stadium.jpg`.
+- St. Otmar: TSV St.Otmar, Kreuzbleiche-Tribüne, https://otmar.ch/; Bild https://data.otmar.ch/data/home/_headerSplashScreen/70186/Kreuzbleiche-Tribuene-Herobanner.webp; lokale Datei `assets/otmar-kreuzbleiche.webp`.
