@@ -3,34 +3,36 @@ const articleMemory = new Map(),
   articleRequests = new Map();
 // Restore the last valid public snapshot before building the first view.
 const SNAPSHOT_KEY = 'kadetten-public-data-v1';
+const kadettenPlayers=players, kadettenPlayerBios=playerBios;
+const handballSnapshots=new Map([['kadetten',{games,tables,teamRecords,stories,clubLogos}],['otmar',otmarFallback]]);
 function validSnapshot(d) {
   return !!d && Array.isArray(d.games) && Array.isArray(d.stories) && Array.isArray(d.tables?.QHL);
 }
-function setCurrentData(snapshot) {
-  const d = sanitiseSnapshot(snapshot);
-  games = d.games;
-  if (typeof applyFinishedMatch === 'function') applyFinishedMatch(liveState?.finished);
-  tables = d.tables;
-  teamRecords = d.teamRecords || {};
-  stories = d.stories;
-  clubLogos = d.clubLogos || {};
-  updateState = d;
+function activateHandballData(club) {
+  const d=handballSnapshots.get(club);if(!d)return;
+  games=d.games;tables=d.tables;teamRecords=d.teamRecords || {};stories=d.stories;clubLogos=d.clubLogos || {};updateState=d;
+  if(club==='otmar') {
+    players=(d.roster || []).map(p=>[p.number,p.name,p.position]);
+    playerBios=Object.fromEntries((d.roster || []).map(p=>[p.number,{facts:p.facts,url:p.url}]));
+    base='https://otmar.ch/';
+  } else {players=kadettenPlayers;playerBios=kadettenPlayerBios;base='https://kadettensh.ch/';}
+}
+function setCurrentData(snapshot, club=handballClub()) {
+  const d=sanitiseSnapshot(snapshot);
+  handballSnapshots.set(club,d);
+  if(activeClub===club || activeClub==='fcsg' && club==='kadetten') {
+    activateHandballData(club);
+    if(typeof applyFinishedMatch==='function')applyFinishedMatch(liveState?.finished);
+  }
 }
 function restoreCurrentData() {
-  try {
-    const raw = localStorage.getItem(SNAPSHOT_KEY);
-    if (!raw) return;
-    const d = JSON.parse(raw);
-    if (validSnapshot(d)) {
-      setCurrentData(d);
-      offlineData = !navigator.onLine;
-    }
-  } catch {}
+  for(const club of ['kadetten','otmar']) {
+    try {const raw=localStorage.getItem(club+'-public-data-v1');if(raw){const d=JSON.parse(raw);if(validSnapshot(d))handballSnapshots.set(club,sanitiseSnapshot(d));}} catch {}
+  }
+  activateHandballData(handballClub());offlineData=!navigator.onLine;
 }
-function saveCurrentData(d) {
-  try {
-    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(d));
-  } catch {}
+function saveCurrentData(d, club=handballClub()) {
+  try {localStorage.setItem(club+'-public-data-v1',JSON.stringify(d));} catch {}
 }
 function viewDataSignature() {
   if (activeClub === 'fcsg') return 'fcsg';
@@ -49,7 +51,7 @@ function syncUpdateLabels() {
     .forEach(el => (el.textContent = updateLabelText(el.dataset.updateKey)));
   const badge = document.querySelector('[data-nav="games"]');
   if (badge) {
-    const matchday = (typeof activeClub === 'undefined' || activeClub === 'kadetten') && todayGames().length > 0;
+    const matchday = (typeof activeClub === 'undefined' || activeClub !== 'fcsg') && todayGames().length > 0;
     badge.classList.toggle('is-matchday', matchday);
     badge.setAttribute('aria-label', matchday ? 'Spiele · Matchday' : 'Spiele');
   }
@@ -66,19 +68,21 @@ function updateLabelText(key) {
   const stale = snapshotDelayed(stamp);
   return `${state?.ok === false || stale ? 'Letzter gültiger Stand' : 'Aktualisiert'}: ${new Date(stamp).toLocaleString('de-CH', {timeZone: 'Europe/Zurich', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'})} Uhr${stale ? ' · Aktualisierung verzögert' : ''}`;
 }
-async function loadCurrentData() {
+async function loadCurrentData(club=handballClub()) {
+  const selectedAtStart=activeClub;
   try {
-    const r = await apiFetch('/api/data', {cache: 'no-store', signal: AbortSignal.timeout(25000)});
+    const r = await apiFetch(handballApiPath('/api/data',club), {cache: 'no-store', signal: AbortSignal.timeout(25000)});
     if (!r.ok) {
       if (r.status === 401 || r.status === 403) {
         try {
-          localStorage.removeItem(SNAPSHOT_KEY);
+          localStorage.removeItem(club+'-public-data-v1');
         } catch {}
       }
       throw Error("Data unavailable");
     }
     const d = await r.json();
     if (!validSnapshot(d)) throw Error("Invalid data");
+    if(activeClub!==selectedAtStart || activeClub!==club) {handballSnapshots.set(club,sanitiseSnapshot(d));saveCurrentData(d,club);updateClubDot();return;}
     dataLoadFailed = r.headers.get('X-Kadetten-Offline') === '1';
     offlineData = !navigator.onLine;
     const previous = viewDataSignature(),
@@ -86,8 +90,8 @@ async function loadCurrentData() {
       storyId = anchor ? stories[Number(anchor.id.replace('story-', ''))]?.id : null,
       offset = anchor?.getBoundingClientRect().top,
       y = window.scrollY;
-    setCurrentData(d);
-    saveCurrentData(d);
+    setCurrentData(d,club);
+    saveCurrentData(d,club);
     if (previous !== viewDataSignature()) {
       render();
       if (storyId) {
@@ -103,6 +107,7 @@ async function loadCurrentData() {
     } else syncUpdateLabels();
     syncOfflineNotice();
   } catch {
+    if(activeClub!==selectedAtStart || activeClub!==club)return;
     offlineData = !navigator.onLine;
     dataLoadFailed = true;
     syncOfflineNotice();

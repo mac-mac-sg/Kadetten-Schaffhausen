@@ -61,6 +61,8 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
   if (schreiben) await bucket.put('kadetten/current.json', JSON.stringify(result.next));
 
   if (schreiben) {
+    write(table('St. Otmar',result.otmar.status));
+    write(`\nSt. Otmar: ${result.otmar.games} Spiele, ${result.otmar.news} Meldungen, ${result.otmar.players} Spieler.`);
     write(table('FCSG', result.fcsg.status));
     write(`\nFCSG: ${result.fcsg.games} Spiele, ${result.fcsg.news} Meldungen, ${result.fcsg.players} Spieler.`);
     write(`\nSpielberichte: ${result.reports.ok ? 'ok' : 'mit Fehlern'}, ${result.reports.reports.length} geprüft.`);
@@ -74,7 +76,8 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     // Match-Vorschauen ohne KI aus den bestätigten Daten (Weg B, docs/vorschauen.md). Fehler lassen alles Übrige unberührt.
     try {
       const savedFcsg = await bucket.get('fcsg/current.json');
-      const v = await syncPreviews(bucket, {snapshot: result.next, fcsgData: savedFcsg ? await savedFcsg.json() : fcsgSeed}, {headToHead: previewDuels, recentGames: previewRecent, rewrite});
+      const savedOtmar = await bucket.get('otmar/current.json');
+      const v = await syncPreviews(bucket, {snapshot: result.next, fcsgData: savedFcsg ? await savedFcsg.json() : fcsgSeed,otmarData:savedOtmar?await savedOtmar.json():null}, {headToHead: previewDuels, recentGames: previewRecent, rewrite});
       write(`\nVorschauen: ${v.written} geschrieben, ${v.unchanged} unverändert, ${v.kept} bestehende bleiben, ${v.skipped} ohne genug Daten${v.errors ? `, ${v.errors} Fehler` : ''}. KI: ${rewrite ? `${v.ki} Texte, ${v.fallback} Rückfälle auf den sachlichen Text` : 'aus'}.`);
       for (const r of v.rejected.slice(0, 4)) write(`- KI-Text für ${r.id} nicht verwendet: ${r.problems.join('; ').slice(0, 200)}`);
     } catch (e) {
@@ -91,6 +94,8 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     // KI-Matchbericht zu abgeschlossenen QHL-Spielen (aus dem gesicherten SHV-Spielbericht).
     try {
       const q = await syncQhlReports(bucket, {games: result.next.games, write: reportWriter});
+      const savedOtmar=await bucket.get('otmar/current.json');
+      if(savedOtmar) {const o=await syncQhlReports(bucket,{games:(await savedOtmar.json()).games,write:reportWriter,club:'otmar'});write(`\nSt. Otmar QHL-Matchberichte: ${o.written} geschrieben.`);}
       write(`\nQHL-Matchberichte: ${q.checked} abgeschlossene Spiele, ${q.written} geschrieben, ${q.kept} fertig vorhanden, ${q.reports} Berichte (${q.ki} mit KI).`);
       for (const note of q.notes) write(`- ${note}`);
     } catch (e) {

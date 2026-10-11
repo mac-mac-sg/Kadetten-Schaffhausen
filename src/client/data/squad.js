@@ -1,5 +1,5 @@
 /* Kader, Spielerprofile und Torstatistik. Reine Daten, keine Logik. */
-const playerBios = {
+let playerBios = {
   18: {
     facts: [
       ['Geburtsdatum', '21.10.1999'],
@@ -190,7 +190,7 @@ const playerBios = {
     url: 'https://kadettensh.ch/spieler/zoran-markovic/'
   }
 };
-const players = [
+let players = [
   [1, 'Leon Bergmann', 'Tor'],
   [2, 'Lucas Meister', 'Kreis'],
   [3, 'Yari Prince', 'Flügel links'],

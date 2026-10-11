@@ -29,15 +29,15 @@ function streakStats(list) {
   let run = 0,
     best = 0;
   for (const g of list) {
-    run = teamResult(g, 'Kadetten Schaffhausen').state === 'win' ? run + 1 : 0;
+    run = teamResult(g, handballTeamName()).state === 'win' ? run + 1 : 0;
     best = Math.max(best, run);
   }
   return {current: run, best};
 }
 function goalDifferenceChart(list) {
   const rows = list.map(g => {
-      const result = teamResult(g, 'Kadetten Schaffhausen'),
-        home = g.home.includes('Kadetten');
+      const result = teamResult(g, handballTeamName()),
+        home = isOwnHandballTeam(g.home);
       return {g, result, home, opponent: home ? g.away : g.home, diff: result.for - result.against};
     }),
     limit = Math.max(1, ...rows.map(r => Math.abs(r.diff))),
@@ -46,7 +46,7 @@ function goalDifferenceChart(list) {
     items
       .map(
         ({g, result, home, opponent, diff}) =>
-          `<li><a class="difference-game ${result.state}" href="#match/${liveEscape(g.id)}/overview" aria-label="${liveEscape(date(g) + ' · ' + (home ? 'Heimspiel' : 'Auswärtsspiel') + ' gegen ' + opponent + ', Resultat ' + g.score.join(':') + ', Tordifferenz ' + signed(diff))}"><span class="difference-fixture"><strong>${liveEscape(teamName(opponent))}</strong><small>${liveEscape(date(g))} · ${home ? 'Heim' : 'Auswärts'}</small></span><span class="difference-track" aria-hidden="true"><span class="difference-bar" style="--difference-width:${(Math.abs(diff) / limit) * 50}%"></span></span><strong class="difference-value">${signed(diff)}</strong></a></li>`
+          `<li><a class="difference-game ${result.state}" href="#match/${liveEscape(g.id)}/overview" title="${liveEscape(date(g) + ' · ' + (home ? 'Heimspiel' : 'Auswärtsspiel') + ' gegen ' + opponent + ', Resultat ' + g.score.join(':') + ', Tordifferenz ' + signed(diff))}"><span class="difference-fixture"><strong>${liveEscape(teamName(opponent))}</strong><small>${liveEscape(date(g))} · ${home ? 'Heim' : 'Auswärts'}</small></span><span class="difference-track" aria-hidden="true"><span class="difference-bar" style="--difference-width:${(Math.abs(diff) / limit) * 50}%"></span></span><strong class="difference-value">${signed(diff)}</strong></a></li>`
       )
       .join('');
   return `<section class="journey-chart goal-difference-chart" aria-labelledby="goal-difference-title"><h4 id="goal-difference-title">Tordifferenz pro Spiel</h4><div class="difference-heading" aria-hidden="true"><span>Spiel</span><span class="difference-axis"><span>−${limit}</span><span>0</span><span>+${limit}</span></span><span>Tore</span></div>${rows.length > 5 ? `<details class="difference-history"><summary><span class="history-show">Alle ${rows.length} Spiele anzeigen</span><span class="history-hide">Ältere Spiele ausblenden</span></summary><ol class="difference-games">${markup(rows.slice(0, -5))}</ol></details>` : ''}<ol class="difference-games">${markup(rows.slice(-5))}</ol><p class="muted">Erzielte minus erhaltene Tore je Spiel · ältestes Spiel zuerst. Ein Spiel antippen für Details.</p></section>`;
@@ -59,8 +59,8 @@ function seasonJourney(input) {
   if (!recent.length) return '';
   return `<div class="season-form-overview"><h4>${recent.length === 1 ? 'Letztes Spiel' : 'Letzte ' + recent.length + ' Spiele'}</h4><p class="muted">Ältestes Spiel links · neuestes rechts</p><div class="season-form" aria-label="Form der letzten ${recent.length} Spiele, ältestes Spiel zuerst">${recent
     .map(g => {
-      const r = teamResult(g, 'Kadetten Schaffhausen');
-      return `<a class="${r.state}" href="#match/${liveEscape(g.id)}/overview" aria-label="${liveEscape(date(g) + ': ' + g.home + ' gegen ' + g.away + ', ' + r.label)}" title="${liveEscape(date(g) + ' · ' + r.label)}">${r.short}</a>`;
+      const r = teamResult(g, handballTeamName());
+      return `<a class="${r.state}" href="#match/${liveEscape(g.id)}/overview" title="${liveEscape(date(g) + ': ' + g.home + ' gegen ' + g.away + ', ' + r.label)}" title="${liveEscape(date(g) + ' · ' + r.label)}">${r.short}</a>`;
     })
     .join('')}</div></div>`;
 }
@@ -83,7 +83,7 @@ function syncOfflineNotice() {
   document.body.classList.toggle('is-offline', !el.hidden);
 }
 function setupEnhancements() {
-  if (typeof activeClub !== 'undefined' && activeClub !== 'kadetten') return;
+  if (typeof activeClub !== 'undefined' && activeClub === 'fcsg') return;
   const [page, id] = location.hash.slice(1).split('/'),
     game = page === 'match' ? games.find(g => g.id === id) : null;
   const opponent = game ? (game.home.includes('Kadetten') ? game.away : game.home) : null;
@@ -188,7 +188,7 @@ async function loadGameReports() {
   }).catch(() => {gameReportsRequest = null;});
   await gameReportsRequest;
   try {
-    const response = await apiFetch('/api/reports/' + encodeURIComponent(id));
+    const response = await apiFetch(handballApiPath('/api/reports/') + encodeURIComponent(id));
     if (!response.ok) throw Error();
     const {report:r} = await response.json();
     const normalized=n=>String(n).replace(/^TSV /,'');
@@ -264,7 +264,7 @@ function reportComparison(g,r) {
  const markup=rows.map(([label,x,y,l=value(x),rr=value(y)])=>{
   if(x===undefined&&y===undefined)return '';
   const valid=Number.isFinite(x)&&Number.isFinite(y), scale=valid?Math.max(x,y,1):1;
-  return `<div class="report-comparison-row"><div><strong>${liveEscape(l)}</strong><span>${label}</span><strong>${liveEscape(rr)}</strong></div><div class="report-bars" aria-hidden="true"><span class="${h.id===41473?'is-kadetten':''}"><i style="width:${valid?x/scale*100:0}%"></i></span><span class="${a.id===41473?'is-kadetten':''}"><i style="width:${valid?y/scale*100:0}%"></i></span></div></div>`;
+  return `<div class="report-comparison-row"><div><strong>${liveEscape(l)}</strong><span>${label}</span><strong>${liveEscape(rr)}</strong></div><div class="report-bars" aria-hidden="true"><span class="${h.id===handballTeamId()?'is-kadetten':''}"><i style="width:${valid?x/scale*100:0}%"></i></span><span class="${a.id===handballTeamId()?'is-kadetten':''}"><i style="width:${valid?y/scale*100:0}%"></i></span></div></div>`;
  }).join('');
  return `<section class="report-comparison" aria-label="Teamvergleich">${statTeams(g)}${markup}</section>`;
 }
@@ -300,7 +300,7 @@ function reportScoreChart(g, r) {
   return reportScoreCurve(points);
  };
  const finalX=complete?right:x(last.seconds), id='report-score-'+String(g.id).replace(/[^a-zA-Z0-9_-]/g,'');
- const colour=side=>r.teams[side].id===41473?'kadetten':'opponent';
+ const colour=side=>r.teams[side].id===handballTeamId()?'kadetten':'opponent';
  const grid=[0,maximum/2,maximum].map(v=>`<path class="chart-grid" d="M${left} ${y(v)}H${right}"/><text x="26" y="${y(v)+4}" text-anchor="end">${v}</text>`).join('');
  const times=[...Array.from({length:Math.floor(end/600)+1},(_,i)=>i*600),end].filter((v,i,list)=>v<=end&&list.indexOf(v)===i).map(sec=>`<text x="${x(sec)}" y="${sec===1800?210:204}" text-anchor="${sec===0?'start':sec===end?'end':'middle'}">${sec===1800?'30′ · Pause':Math.round(sec/60)+'′'}</text>`).join('');
  return `<figure class="report-score-card"><figcaption><div><p class="eyebrow">Das Spiel im Verlauf</p><h2>Torverlauf</h2></div><span class="report-score-status">Beendet</span></figcaption><div class="report-score-legend">${[g.home,g.away].map((name,side)=>`<div class="report-score-team is-${colour(side)}"><span><i aria-hidden="true"></i>${liveEscape(name)}</span><strong>${r.score[side]}<small>Tore</small></strong></div>`).join('')}</div><svg class="report-score-chart" viewBox="0 0 400 224" role="img" aria-label="Torverlauf: ${liveEscape(g.home)} ${r.score[0]}, ${liveEscape(g.away)} ${r.score[1]}. Geglättete Darstellung zwischen gesicherten Torständen. Zeit in Spielminuten, Anzahl Tore. Einzelereignisse folgen unter der Grafik."><defs>${[0,1].map(side=>{const kadetten=colour(side)==='kadetten',base=kadetten?'#ff7a24':'#a78bfa',light=kadetten?'#ffb15b':'#d0baff';return `<linearGradient id="${id}-${side}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${base}" stop-opacity=".38"/><stop offset="55%" stop-color="${base}" stop-opacity=".14"/><stop offset="100%" stop-color="${base}" stop-opacity="0"/></linearGradient><linearGradient id="${id}-line-${side}" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="${base}"/><stop offset="100%" stop-color="${light}"/></linearGradient>`;}).join('')}</defs>${grid}<path class="chart-half" d="M${x(1800)} ${top}V${bottom}"/>${[0,1].map(side=>`<path class="chart-area" fill="url(#${id}-${side})" d="${path(side)} V${bottom} H${left}Z"/>`).join('')}${[0,1].map(side=>`<path class="chart-line chart-${colour(side)}" style="stroke:url(#${id}-line-${side})" d="${path(side)}"/><circle class="chart-end chart-${colour(side)}" cx="${finalX}" cy="${y(last.score[side])}" r="4"/>`).join('')}${times}</svg><p class="report-score-caption">Spielminuten · Geglätteter Verlauf${complete?'':' · Torfolge unvollständig'}</p></figure>`;

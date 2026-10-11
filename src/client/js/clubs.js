@@ -1,17 +1,55 @@
 /* Vereinswahl bleibt getrennt von den Kadetten-Snapshots und Live-Daten.
    Etappe 1: gemeinsamer Einstieg; FCSG-Daten werden separat angebunden. */
 const fanClubs = {
-  kadetten: {name: 'Kadetten Schaffhausen', title: 'KADETTEN', subtitle: 'SCHAFFHAUSEN', logo: 'assets/logo.png'},
-  fcsg: {name: 'FC St. Gallen', title: 'FC ST. GALLEN', subtitle: '1879', logo: 'assets/fcsg-logo.svg'}
+  kadetten: {name: 'Kadetten Schaffhausen', title: 'KADETTEN', subtitle: 'SCHAFFHAUSEN', logo: 'assets/logo.png', short: 'Kadetten'},
+  fcsg: {name: 'FC St. Gallen', title: 'FC ST. GALLEN', subtitle: '1879', logo: 'assets/fcsg-logo.svg', short: 'FCSG'},
+  otmar: {name:'TSV St. Otmar St. Gallen',title:'ST. OTMAR',subtitle:'ST. GALLEN',logo:'assets/club-140684.webp',short:'St. Otmar'}
 };
 const CLUB_CHOICE_KEY = 'fan-app-active-club-v1';
 let activeClub = 'kadetten';
+const CLUB_SELECTION_KEY = 'fan-app-selected-clubs-v1';
+let selectedClubs = Object.keys(fanClubs);
 function restoreActiveClub() {
   let choice;
   try {
-    choice = new URL(location.href).searchParams.get('club');
+    const saved=JSON.parse(localStorage.getItem(CLUB_SELECTION_KEY));
+    if(Array.isArray(saved)) {const valid=Object.keys(fanClubs).filter(id=>saved.includes(id));if(valid.length)selectedClubs=valid;}
   } catch {}
-  activeClub = Object.hasOwn(fanClubs, choice) ? choice : 'kadetten';
+  try { choice = new URL(location.href).searchParams.get('club'); } catch {}
+  if(Object.hasOwn(fanClubs,choice) && !selectedClubs.includes(choice))selectedClubs.push(choice);
+  activeClub = Object.hasOwn(fanClubs,choice) ? choice : selectedClubs.includes('kadetten') ? 'kadetten' : selectedClubs[0];
+}
+function setClubSelected(id, checked) {
+  if(!Object.hasOwn(fanClubs,id))return;
+  const next=Object.keys(fanClubs).filter(key=>key===id?checked:selectedClubs.includes(key));
+  if(!next.length)return;
+  selectedClubs=next;
+  try {localStorage.setItem(CLUB_SELECTION_KEY,JSON.stringify(next));} catch {}
+  if(!next.includes(activeClub))applyClubChange(next[0]);
+  updateClubHeader();
+  syncClubSettings();
+}
+let clubSettingsDialog=null;
+function syncClubSettings() {
+  clubSettingsDialog?.querySelectorAll('[data-club-choice]').forEach(input=>{
+    input.checked=selectedClubs.includes(input.dataset.clubChoice);
+    input.disabled=input.checked && selectedClubs.length===1;
+  });
+}
+function openClubSettings() {
+  if(!clubSettingsDialog) {
+    clubSettingsDialog=document.createElement('dialog');
+    clubSettingsDialog.className='club-settings-dialog';
+    clubSettingsDialog.setAttribute('aria-labelledby','club-settings-title');
+    clubSettingsDialog.innerHTML=`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('')}</div><p class="club-settings-note">Mindestens ein Verein bleibt ausgewählt. Deine Auswahl wird auf diesem Gerät gespeichert.</p><form method="dialog"><button class="button" type="submit">Fertig</button></form>`;
+    document.body.append(clubSettingsDialog);
+    clubSettingsDialog.querySelector('[data-close-clubs]').onclick=()=>clubSettingsDialog.close();
+    clubSettingsDialog.addEventListener('change',e=>{if(e.target.matches('[data-club-choice]'))setClubSelected(e.target.dataset.clubChoice,e.target.checked);});
+    clubSettingsDialog.addEventListener('close',()=>{document.getElementById('club-settings')?.setAttribute('aria-expanded','false');document.getElementById('club-settings')?.focus();});
+    clubSettingsDialog.addEventListener('click',e=>{if(e.target===clubSettingsDialog){const r=clubSettingsDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)clubSettingsDialog.close();}});
+  }
+  syncClubSettings();clubSettingsDialog.showModal();
+  document.getElementById('club-settings')?.setAttribute('aria-expanded','true');
 }
 function clubSwitchRoute(hash) {
   const [page, id] = (hash.slice(1) || 'home').split('/');
@@ -23,20 +61,23 @@ function clubSwitchRoute(hash) {
   return '#home';
 }
 function updateClubHeader() {
-  const club = fanClubs[activeClub], other = activeClub === 'kadetten' ? 'fcsg' : 'kadetten';
-  document.documentElement.dataset.club = activeClub;
-  const brand = document.querySelector('.brand');
-  if (brand) {
-    brand.innerHTML = `<img src="${club.logo}" alt="${club.name}" width="38" height="54"><span>${club.title} <small>${club.subtitle}</small></span>`;
-    brand.setAttribute('aria-label', club.name + ' ' + club.subtitle + ' · Startseite');
+  const club=fanClubs[activeClub];
+  document.documentElement.dataset.club=activeClub;
+  const brand=document.querySelector('.brand');
+  if(brand) {
+    brand.innerHTML=`<img src="${club.logo}" alt="" width="38" height="54"><span>${club.title} <small>${club.subtitle}</small></span>`;
+    brand.setAttribute('aria-label',club.title+' '+club.subtitle+' · Startseite');
   }
-  const button = document.getElementById('club-switch');
-  if (button) {
-    button.querySelector('span').textContent = other === 'fcsg' ? 'FCSG' : 'Kadetten';
-    button.dataset.base = fanClubs[other].name;
-    button.setAttribute('aria-label', 'Aktueller Verein: ' + club.name + '. Zu ' + fanClubs[other].name + ' wechseln');
-    button.title = 'Zu ' + fanClubs[other].name + ' wechseln';
+  const picker=document.getElementById('club-switch');
+  if(picker) {
+    picker.hidden=selectedClubs.length===1;
+    const markup=selectedClubs.map(id=>`<button type="button" data-select-club="${id}" aria-pressed="${id===activeClub}" aria-label="${id===activeClub?'Aktueller Verein: ':'Wechseln zu: '}${fanClubs[id].short} · ${fanClubs[id].name}"><img src="${fanClubs[id].logo}" alt="" width="24" height="28"><span>${fanClubs[id].short}</span></button>`).join('');
+    if(picker.innerHTML!==markup)picker.innerHTML=markup;
   }
+  const hash=location.hash || '#home';
+  const settings=document.getElementById('club-settings');if(settings)settings.hidden=hash!=='#home';
+  const entry=document.querySelector('.club-entry');
+  if(entry){entry.hidden=hash!=='#season/squad';entry.innerHTML=`<img src="${club.logo}" alt="" width="24" height="28"><span>Verein</span>`;entry.setAttribute('aria-label','Verein · '+club.name+': Geschichte und Erfolge');}
   updateClubDot();
 }
 /* Punkt am Vereinsknopf: der andere Verein hat heute ein Spiel.
@@ -63,30 +104,28 @@ function otherClubResultState(game) {
   return diff > 0 ? 'win' : diff < 0 ? 'loss' : 'draw';
 }
 function updateClubDot() {
-  const button = document.getElementById('club-switch');
-  if (!button) return;
-  let dot = button.querySelector('.club-dot');
-  const today = swissToday(), game = otherClubTodayGame(today);
-  const parts = new Intl.DateTimeFormat('en-GB', {timeZone: 'Europe/Zurich', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).formatToParts(new Date());
-  const nowMinutes = Number(parts.find(p => p.type === 'hour').value) * 60 + Number(parts.find(p => p.type === 'minute').value);
-  const info = game ? clubMatchDot(game, nowMinutes, otherClubResultState(game)) : null;
-  if (!info) { dot?.remove(); delete button.dataset.dot; return; }
-  if (!dot) { dot = document.createElement('i'); dot.className = 'club-dot'; dot.setAttribute('aria-hidden', 'true'); button.append(dot); }
-  button.dataset.dot = info.state;
-  const other = button.dataset.base || '';
-  const note = {soon: 'spielt heute', live: 'spielt gerade', pending: 'hat heute gespielt', win: 'hat heute gewonnen', draw: 'hat heute unentschieden gespielt', loss: 'hat heute verloren'}[info.state];
-  button.setAttribute('aria-label', button.getAttribute('aria-label').replace(/ · .*$/, '') + ' · ' + other + ' ' + note);
-  button.title = 'Zu ' + other + ' wechseln · ' + note;
-  if (info.state === 'pending' && navigator.onLine && !document.hidden && Date.now() - clubDotRefreshedAt > CLUB_DOT_RETRY_MS) {
-    clubDotRefreshedAt = Date.now();
-    (activeClub === 'kadetten' ? loadFcsgData() : loadCurrentData())?.finally?.(updateClubDot);
-  }
+  const today=swissToday();
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+  const minutes=Number(parts.find(p=>p.type==='hour').value)*60+Number(parts.find(p=>p.type==='minute').value);
+  document.querySelectorAll('[data-select-club]').forEach(button=>{
+    const id=button.dataset.selectClub;
+    const list=id==='fcsg'?(typeof fcsgData!=='undefined'?fcsgData.games:[]):typeof handballSnapshots!=='undefined'?handballSnapshots.get(id)?.games || []:[];
+    const game=list.filter(g=>g.date===today).sort((a,b)=>String(a.time).localeCompare(String(b.time)))[0];
+    const own=id==='kadetten'?'Kadetten Schaffhausen':id==='otmar'?'TSV St. Otmar St. Gallen':'FC St.Gallen 1879';
+    const info=id!==activeClub && game?clubMatchDot(game,minutes,game.score?teamResult(game,own).state:null):null;
+    let dot=button.querySelector('.club-dot');
+    if(!info){dot?.remove();delete button.dataset.dot;return;}
+    if(!dot){dot=document.createElement('i');dot.className='club-dot';dot.setAttribute('aria-hidden','true');button.append(dot);}
+    button.dataset.dot=info.state;
+    const note={soon:'spielt heute',live:'spielt gerade',pending:'hat heute gespielt',win:'hat heute gewonnen',draw:'hat heute unentschieden gespielt',loss:'hat heute verloren'}[info.state];
+    button.setAttribute('aria-label','Wechseln zu: '+fanClubs[id].short+' · '+fanClubs[id].name+' · '+note);
+  });
 }
 setInterval(updateClubDot, 30000);
 let clubTransitionBusy = false;
 function switchClub(id) {
   if (clubTransitionBusy || !Object.hasOwn(fanClubs, id) || id === activeClub) return;
-  const root = document.documentElement, button = document.getElementById('club-switch');
+  const root = document.documentElement, button = document.querySelector('[data-select-club="'+id+'"]') || document.getElementById('club-switch');
   const bounds = button?.getBoundingClientRect?.();
   const x = bounds ? bounds.left + bounds.width / 2 : window.innerWidth / 2;
   const y = bounds ? bounds.top + bounds.height / 2 : 0;
@@ -140,6 +179,9 @@ function switchClub(id) {
 function applyClubChange(id) {
   if (!Object.hasOwn(fanClubs, id) || id === activeClub) return;
   activeClub = id;
+  if(typeof activateHandballData==='function' && id!=='fcsg')activateHandballData(id);
+  if(typeof resetHandballLive==='function')resetHandballLive();
+  if(id==='otmar')tableLeague='QHL';
   try { localStorage.setItem(CLUB_CHOICE_KEY, id); } catch {}
   clearTimeout(liveTimer);
   clearInterval(dayTimer);
@@ -152,7 +194,7 @@ function applyClubChange(id) {
   render();
   window.scrollTo({top: 0, behavior: 'instant'});
   document.getElementById('app')?.focus({preventScroll: true});
-  if (id === 'kadetten') checkLiveMatch();
+  if (id !== 'fcsg') {loadCurrentData();checkLiveMatch();}
   else {loadFcsgData();loadFcsgLive(true);}
 }
 const fcsgArticles = new Map();

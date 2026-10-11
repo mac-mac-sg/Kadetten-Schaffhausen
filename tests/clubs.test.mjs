@@ -31,7 +31,7 @@ function app(url, saved, storageFails = false) {
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
     liveTimer: 0, dayTimer: 0, highlightObserver: null, clearTimeout() {}, clearInterval() {}, competition: 'QHL', render() {renders++;}, window: {innerWidth: 375, innerHeight: 812, scrollTo() {}},
-    syncOfflineNotice() {}, appFeedback() {}, checkLiveMatch() {polls++;}, ext: (url, label) => `<a href="${url}">${label}</a>`
+    loadCurrentData() {}, syncOfflineNotice() {}, appFeedback() {}, checkLiveMatch() {polls++;}, ext: (url, label) => `<a href="${url}">${label}</a>`
   });
   document.getElementById('app').focus = () => {};
   vm.runInContext(fs.readFileSync("src/client/data/fcsg-fallback.js", "utf8"), context);
@@ -77,7 +77,8 @@ test('Header, Titel und FCSG-Seiten enthalten keine fremden Vereinsdaten', () =>
   a.run('restoreActiveClub(); updateClubHeader()');
   assert.equal(a.document.documentElement.dataset.club, 'fcsg');
   assert.match(a.document.querySelector('.brand').textContent, /FC ST. GALLEN/);
-  assert.match(a.document.getElementById('club-switch').getAttribute('aria-label'), /Kadetten/);
+  assert.equal(a.document.querySelectorAll('[data-select-club]').length,3);
+  assert.equal(a.document.querySelector('[data-select-club=fcsg]').getAttribute('aria-pressed'),'true');
   for (const [page, id] of [['home',''], ['season','games'], ['season','table'], ['season','squad'], ['club','']]) {
     const html = a.run(`fcsgView('${page}', '${id}')`);
     assert.match(html, /FC St.Gallen 1879|Vereinsgeschichte/);
@@ -166,4 +167,18 @@ test('Punkt am Vereinsknopf: ruhig vor Anspielzeit, 2 Stunden pulsierend, danach
   assert.equal(dot('18:00', 21 * 60, 'loss'), 'loss');
   assert.equal(dot('18:00', 20 * 60, null), 'pending');
   assert.equal(dot('', 20 * 60, null), 'soon', 'ohne Anspielzeit nur «heute»');
+});
+
+test('Drei Vereine: Auswahl speichern, letzten Verein behalten, aktiven ausgeschalteten Verein ersetzen',()=>{
+ const a=app('https://example.test/#season/squad');a.run('restoreActiveClub();updateClubHeader()');
+ assert.equal(a.document.querySelector('.club-entry').hidden,false);
+ a.run("switchClub('otmar');updateClubHeader()");assert.equal(a.run('activeClub'),'otmar');assert.equal(a.location.hash,'#season/squad');
+ assert.match(a.document.querySelector('.brand').textContent,/ST. OTMAR/);
+ a.run("setClubSelected('kadetten',false);setClubSelected('fcsg',false)");
+ assert.equal(a.document.getElementById('club-switch').hidden,true);
+ assert.deepEqual(JSON.parse(a.store.get('fan-app-selected-clubs-v1')),['otmar']);
+ a.run("setClubSelected('otmar',false)");assert.equal(a.run('activeClub'),'otmar');
+ a.run("setClubSelected('fcsg',true);setClubSelected('otmar',false)");assert.equal(a.run('activeClub'),'fcsg');assert.equal(a.location.hash,'#season/squad');
+ a.location.href='https://example.test/';a.run('restoreActiveClub()');assert.equal(a.run('activeClub'),'fcsg');
+ a.location.hash='#home';a.run('updateClubHeader()');assert.equal(a.document.querySelector('.club-entry').hidden,true);
 });

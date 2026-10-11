@@ -1,10 +1,12 @@
+import {getOtmarArticle} from './otmar.mjs';
+import otmarSeed from './otmar-seed.json' with {type:'json'};
 import {programmes} from './programmes.mjs';
 import {previews} from './previews.mjs';
 import {publicFcsgData, getFcsgLive, getFcsgPlayers} from './fcsg.mjs';
 import fcsgSeed from './fcsg-seed.json' with {type: 'json'};
 import {publicReadCors} from './cors.mjs';
 import {isOwner, mayUpdate} from './auth.mjs';
-import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
+import {getLiveMatch, getNationalLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
 import seed from './seed.json' with {type: 'json'};
 import {runRefresh} from './refresh-run.mjs';
 import {kvStore} from './kv-store.mjs';
@@ -200,7 +202,25 @@ async function freshAsset(request, env, u) {
 
 const isPath = path => u => u.pathname === path;
 const isUnder = prefix => u => u.pathname.startsWith(prefix);
+async function otmarData(request,env,u) {
+  if(request.method!=='GET')return getRequired();
+  const saved=await env.BUCKET.get('otmar/current.json'),snapshot=saved?await saved.json():otmarSeed;
+  if(u.pathname==='/api/otmar/data')return json(snapshot);
+  if(u.pathname==='/api/otmar/live') {
+    try {const match=await getNationalLiveMatch(40900);return json({ok:true,checkedAt:new Date().toISOString(),sources:{SHV:{ok:true}},match:match?.status==='finished'?null:match,finished:match?.status==='finished'?match:null});} catch {return json({ok:false,sources:{SHV:{ok:false}}},503);}
+  }
+  const id=u.pathname.split('/').at(-1);
+  if(/^\/api\/otmar\/match-reports\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {const stored=await env.BUCKET.get('otmar/matchreports/'+id+'.json');return stored?json({ok:true,report:await stored.json()}):json({error:'Report not stored yet'},404);}
+  if(/^\/api\/otmar\/reports\/[1-9][0-9]{0,8}$/.test(u.pathname))return json(await getArchivedReport(id,env.BUCKET,'otmar'));
+  if(/^\/api\/otmar\/articles\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {
+    const story=snapshot.stories.find(n=>n.id===id);if(!story)return json({error:'Not found'},404);
+    return json(await getOtmarArticle(story));
+  }
+  if(u.pathname==='/api/otmar/head-to-head')return json(await getHeadToHead(u.searchParams.get('home'),u.searchParams.get('away')));
+  return json({error:'Not found'},404);
+}
 const routes = [
+  [isUnder('/api/otmar/'),otmarData],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],
   [isPath('/admin/login'), adminLogin],

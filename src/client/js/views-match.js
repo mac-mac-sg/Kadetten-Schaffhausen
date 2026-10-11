@@ -27,10 +27,10 @@ function match(g, tab) {
   const detail = verifiedReport(g);
   if (detail) g = {...g, half: detail.half};
   if (!g.score && tab === 'squad') tab = 'overview';
-  return `<section class="match"><div class="match-top">${backLink('#season/games', 'Zurück zu den Spielen', 'back')}<div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${(ehfDone ? [['stats', 'Statistik'], ['report', 'Rückblick']] : [['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistik']]).map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' || tab === 'report' ? matchOverview(g) : `<div class="content narrow">${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
+  return `<section class="match">${!['overview','report'].includes(tab)?`<h1 class="live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</h1>`:''}<div class="match-top">${backLink('#season/games', 'Zurück zu den Spielen', 'back')}<div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${(ehfDone ? [['stats', 'Statistik'], ['report', 'Rückblick']] : [['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistik']]).map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' || tab === 'report' ? matchOverview(g) : `<div class="content narrow">${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
 }
 function matchOverview(g) {
-  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft der Kadetten'}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : 'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' && !g.score ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p>${ehfReportSlot(g)}${!g.score?matchPreviewSlot(g,'kadetten'):''}${g.home==='Kadetten Schaffhausen'&&!g.score?`<div data-match-programme="${liveEscape(g.id)}"></div>`:''}<div class="facts ${!g.score || blueprintGame(g) ? 'match-preview-facts' : ''}">${!g.score || blueprintGame(g) ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score && !blueprintGame(g) ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? (blueprintGame(g) ? (g.time ? g.time + ' Uhr · ' : '') + 'Beendet' : 'Beendet') : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div>${(blueprintGame(g) && g.score) || (!g.score && ['QHL', 'EHL'].includes(g.league)) ? '' : `<div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div>`}${g.score?reportHistory(g):''}</div>`;
+  return `<div class="match-hero"><img src="${photoUrl(g.image)}" alt="${g.id === 'bukarest' ? 'Jubel bei den Kadetten' : g.id === 'stgallen' ? 'Frederik Tilsted im Spiel' : 'Die Mannschaft von '+handballTeamName()}" fetchpriority="high"><div><p class="eyebrow">${league(g)} · ${g.score ? date(g) : matchDay(g)}</p><h1>${g.id === 'bukarest' ? 'EIN START<br>NACH MASS.' : g.id === 'stgallen' ? 'PUNKTE AUS<br>ST. GALLEN.' : handballClub()==='otmar'?'ZÄMÄSTOH.<br>FÜR GELBSCHWARZ.':'ZUSAMMEN.<br>FÜR ORANGE.'}</h1></div></div><div class="content narrow">${matchdayDetail(g)}<h2>${g.score ? 'Der Rückblick' : g.home + ' gegen ' + g.away}</h2><p class="lead">${g.id === 'bukarest' ? 'Nach dem 16:16 zur Pause entscheiden die Kadetten die Partie gegen CSM Bucuresti mit 39:32 für sich. Odinn Rikhardsson erzielt 14 Tore.' : g.id === 'stgallen' ? 'Die Kadetten gewinnen auswärts bei St. Otmar mit 31:25 und nehmen zwei Punkte aus der Kreuzbleiche mit.' : g.id === 'staefa' && !g.score ? 'Nach dem erfolgreichen Europacup-Auftakt geht es in der QHL gegen Handball Stäfa weiter. Die Kadetten empfangen das Team in der BBC Arena.' : g.score ? `${g.home} – ${g.away}: ${g.score.join(':')}.` : `${g.home} trifft am ${date(g)} auf ${g.away}. Anspielzeit: ${g.time || 'noch offen'} Uhr.`}</p>${ehfReportSlot(g)}${!g.score?matchPreviewSlot(g,handballClub()):''}${g.home==='Kadetten Schaffhausen'&&!g.score?`<div data-match-programme="${liveEscape(g.id)}"></div>`:''}<div class="facts ${!g.score || blueprintGame(g) ? 'match-preview-facts' : ''}">${!g.score || blueprintGame(g) ? `<div><span>Spieldatum</span><strong>${matchDay(g)}</strong></div>` : ''}<div><span>${g.score && !blueprintGame(g) ? 'Status' : 'Anspielzeit'}</span><strong>${g.score ? (blueprintGame(g) ? (g.time ? g.time + ' Uhr · ' : '') + 'Beendet' : 'Beendet') : g.time ? g.time + ' Uhr' : 'Noch nicht hinterlegt'}</strong></div>${venueFact(g)}${reportFacts(g)}${g.id === 'bukarest' ? '<div><span>Zuschauer</span><strong>1’083</strong></div><div><span>Kadetten-Toptorschütze</span><strong>Rikhardsson · 14 Tore</strong></div>' : ''}</div>${(blueprintGame(g) && g.score) || (!g.score && ['QHL', 'EHL'].includes(g.league)) ? '' : `<div class="actions">${ext(g.url, g.url.includes('matchcenter') ? 'Offizieller Spielplan' : g.score ? 'Originalbericht lesen' : 'Offizielle Spielinformationen')}</div>`}${g.score?reportHistory(g):''}</div>`;
 }
 function matchSquad(g) {
   if (verifiedReport(g)) return reportRoster(g);
@@ -65,7 +65,7 @@ function recentData(g, team) {
   return g.league === 'QHL' ? recentCache.get(team) : g.league === 'EHL' ? updateState?.ehlRecentGames?.[team] : null;
 }
 function recentSelector(g) {
-  const team = recentSelection?.match === g.id ? recentSelection.team : g.home.includes('Kadetten') ? g.home : g.away;
+  const team = recentSelection?.match === g.id ? recentSelection.team : isOwnHandballTeam(g.home) ? g.home : g.away;
   recentSelection = {match: g.id, team};
   return `<div id="form-comparison">${formComparison(g)}</div><h3 class="history-heading">Letzte Spiele im Detail</h3><div class="team-switch" role="group" aria-label="Team für letzte Spiele" style="--selected:${team === g.home ? 0 : 1}"><span class="team-switch-slider" aria-hidden="true"></span>${[g.home, g.away].map(t => `<button data-recent-team="${liveEscape(t)}" aria-pressed="${t === team}">${badge(t)}<span>${t}</span></button>`).join('')}</div><div id="recent-results" aria-live="polite">${recentGamesMarkup(g, team)}</div><h3 class="history-heading">Direkte Duelle</h3><div id="head-to-head" aria-live="polite">${headToHeadMarkup(g)}</div>`;
 }
@@ -138,11 +138,11 @@ function headToHeadMarkup(g) {
         )
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, 5);
-  const team = g.home.includes('Kadetten') ? g.home : g.away;
+  const team = isOwnHandballTeam(g.home) ? g.home : g.away;
   const outcomes = list.map(x => teamResult(x, team));
   return `${
     list.length
-      ? `<p class="duel-summary"><strong>${outcomes.filter(r => r.state === 'win').length}</strong> Kadetten-Siege · <strong>${outcomes.filter(r => r.state === 'draw').length}</strong> Unentschieden · <strong>${outcomes.filter(r => r.state === 'loss').length}</strong> Niederlagen</p><div class="recent">${list
+      ? `<p class="duel-summary"><strong>${outcomes.filter(r => r.state === 'win').length}</strong> ${handballClub()==='otmar'?'St. Otmar':'Kadetten'}-Siege · <strong>${outcomes.filter(r => r.state === 'draw').length}</strong> Unentschieden · <strong>${outcomes.filter(r => r.state === 'loss').length}</strong> Niederlagen</p><div class="recent">${list
           .map(x => {
             const r = teamResult(x, team);
             return `<a class="recent-game ${r.state}" href="${liveEscape(x.externalUrl ? safeUrl(x.externalUrl) : '#match/' + x.id + '/overview')}" ${x.externalUrl ? 'target="_blank" rel="noopener noreferrer"' : ''}><span><small>${date(x)}</small>${liveEscape(x.home)} – ${liveEscape(x.away)}</span><span class="recent-score"><b>${x.score.join(':')}</b><small class="result-label">${r.label}</small></span></a>`;
@@ -215,7 +215,7 @@ async function loadDuels(g) {
     if (!pending) {
       pending = (async () => {
         const r = await apiFetch(
-          '/api/head-to-head?home=' + encodeURIComponent(g.home) + '&away=' + encodeURIComponent(g.away),
+          handballApiPath('/api/head-to-head?home=') + encodeURIComponent(g.home) + '&away=' + encodeURIComponent(g.away),
           {signal: AbortSignal.timeout(40000)}
         );
         if (!r.ok) throw Error();
@@ -251,7 +251,7 @@ function setupRecentGames() {
   loadDuels(g);
 }
 function seasonSummary(list) {
-  const results = list.map(g => teamResult(g, 'Kadetten Schaffhausen'));
+  const results = list.map(g => teamResult(g, handballTeamName()));
   const n = results.length;
   return {
     games: n,
@@ -265,7 +265,7 @@ function seasonSummary(list) {
 function seasonPlayerLeaders() {
   const season = updateState?.playerSeason,
     valid = tableLeague === 'QHL' && season?.competition === 'QHL' && season?.season === '2026/27',
-    source = season?.source || 'https://www.handball.ch/de/matchcenter/teams/41473';
+    source = season?.source || 'https://www.handball.ch/de/matchcenter/teams/'+handballTeamId();
   if (!valid)
     return `<section class="season-player-stats stats-block" aria-labelledby="season-players-title"><h3 id="season-players-title">Spielerstatistiken</h3><p class="muted">${tableLeague === 'EHL' ? 'Für die European League sind noch keine vollständigen Saisonwerte zu Toren und Strafminuten verfügbar.' : 'Die QHL-Saisonwerte der Spieler sind momentan nicht verfügbar.'}</p></section>`;
   const entries = players.map(([id, name]) => ({id, name, stats: season.players?.[id]})).filter(p => p.stats),
@@ -295,14 +295,14 @@ function seasonSplit(label, played, wins, draws, losses) {
 }
 function seasonNumbers() {
   const list = games
-    .filter(g => g.score && g.league === tableLeague && (g.home.includes('Kadetten') || g.away.includes('Kadetten')))
+    .filter(g => g.score && g.league === tableLeague && (isOwnHandballTeam(g.home) || isOwnHandballTeam(g.away)))
     .sort((a, b) => (a.date + (a.time || '00:00')).localeCompare(b.date + (b.time || '00:00')));
   if (!list.length) return '';
   const stats = seasonSummary(list),
-    home = seasonSummary(list.filter(g => g.home.includes('Kadetten'))),
-    away = seasonSummary(list.filter(g => g.away.includes('Kadetten'))),
+    home = seasonSummary(list.filter(g => isOwnHandballTeam(g.home))),
+    away = seasonSummary(list.filter(g => isOwnHandballTeam(g.away))),
     avg = v => goalAverage(v, stats.games);
-  return `<section class="season-numbers"><h2>Kadetten – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3>${seasonBalance(stats.wins,stats.draws,stats.losses)}<div class="season-splits">${seasonSplit('Zu Hause',home.games,home.wins,home.draws,home.losses)}${seasonSplit('Auswärts',away.games,away.wins,away.draws,away.losses)}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
+  return `<section class="season-numbers"><h2>${handballClub()==='otmar'?'St. Otmar':'Kadetten'} – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3>${seasonBalance(stats.wins,stats.draws,stats.losses)}<div class="season-splits">${seasonSplit('Zu Hause',home.games,home.wins,home.draws,home.losses)}${seasonSplit('Auswärts',away.games,away.wins,away.draws,away.losses)}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
 }
 
 function metric(label, a, b) {

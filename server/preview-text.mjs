@@ -70,8 +70,8 @@ export function buildPreview({club, game: g, table = null, duel = null, duels = 
   if (paragraphs.length < 2) return null;
   const sources = [];
   const add = (label, url) => { if (typeof url === 'string' && /^https:\/\//.test(url) && !sources.some(s => s.url === url)) sources.push({label, url}); };
-  if (club === 'kadetten') {
-    add('Kadetten Schaffhausen: Matchcenter', 'https://kadettensh.ch/matchcenter/');
+  if (club !== 'fcsg') {
+    add(club==='otmar'?'St. Otmar: Saison':'Kadetten Schaffhausen: Matchcenter',club==='otmar'?'https://otmar.ch/1-mannschaft/saison':'https://kadettensh.ch/matchcenter/');
     for (const d of duelList) add(duelList.length === 1 ? 'handball.ch: Direktduell' : `handball.ch: Direktduell vom ${fullDate(d.date)}`, d.externalUrl);
     if (recent.some(r => r.shv)) add('handball.ch: Matchcenter', 'https://www.handball.ch/de/matchcenter/');
   } else {
@@ -86,6 +86,6 @@ export function buildPreview({club, game: g, table = null, duel = null, duels = 
 
 // Die Meisterschaftstabelle, die zum Wettbewerb des Spiels gehört (sonst null, damit keine fremde Tabelle verglichen wird).
 export function tableFor(club, g, snapshot, fcsgData) {
-  if (club === 'kadetten') return snapshot?.tables?.[g.league] || null;
+  if (club !== 'fcsg') return snapshot?.tables?.[g.league] || null;
   return /super league/i.test(g.league || '') ? fcsgData?.table || null : null;
 }

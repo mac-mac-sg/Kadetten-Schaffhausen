@@ -1,3 +1,9 @@
+function handballClub() { return typeof activeClub !== 'undefined' && activeClub === 'otmar' ? 'otmar' : 'kadetten'; }
+function handballTeamName() { return handballClub() === 'otmar' ? 'TSV St. Otmar St. Gallen' : 'Kadetten Schaffhausen'; }
+function handballTeamId() { return handballClub() === 'otmar' ? 40900 : 41473; }
+function isOwnHandballTeam(name) { return teamName(String(name)) === teamName(handballTeamName()); }
+function handballApiPath(path, club=handballClub()) { return club==='otmar' ? path.replace('/api/','/api/otmar/') : path; }
+function handballPlayerImage(id) { return handballClub()==='otmar' ? updateState?.roster?.find(p=>p.number===Number(id))?.image || 'assets/club-140684.webp' : 'assets/player-'+id+'.webp'; }
 /* Reine Spiel- und Spieltagslogik ohne Zugriff auf die Seite. Wird in tests/logic.test.mjs geprüft. */
 function teamName(n) {
   return n.replace(/^TSV /, '');
@@ -174,6 +180,7 @@ function sanitiseSnapshot(d) {
     out.clubLogos = Object.fromEntries(
       Object.entries(d.clubLogos).filter(([, logo]) => typeof logo === 'string' && SNAPSHOT_LOGO.test(logo))
     );
+  if(Array.isArray(d.roster))out.roster=d.roster.filter(p=>Number.isInteger(p.number)&&p.number>0).map(p=>({...snapshotFields(p,['name','position']),facts:(p.facts || []).map(row=>row.map(snapshotText))}));
   return out;
 }
 

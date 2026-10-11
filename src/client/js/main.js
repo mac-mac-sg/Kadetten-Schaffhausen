@@ -13,7 +13,8 @@ document.querySelector('.dock [data-nav="games"]').addEventListener('click', eve
 });
 restoreActiveClub();
 restoreFcsgData();
-document.getElementById('club-switch').addEventListener('click', () => switchClub(activeClub === 'kadetten' ? 'fcsg' : 'kadetten'));
+document.getElementById('club-switch').addEventListener('click', e=>{const button=e.target.closest('[data-select-club]');if(button)switchClub(button.dataset.selectClub);});
+document.getElementById('club-settings').addEventListener('click',openClubSettings);
 restoreCurrentData();
 window.addEventListener('hashchange', () => {
   render();
@@ -22,13 +23,13 @@ window.addEventListener('hashchange', () => {
 });
 render();
 if (!location.hash || location.hash === '#home') window.scrollTo({top: 0, behavior: 'instant'});
-loadCurrentData().finally(updateClubDot);
+Promise.all(['kadetten','otmar'].map(club=>loadCurrentData(club))).finally(updateClubDot);
 loadFcsgData().finally(updateClubDot);
 window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {
-    if (activeClub === 'kadetten') setupEnhancements();
+    if (activeClub !== 'fcsg') {setupEnhancements();loadCurrentData();}
     else {loadFcsgData();loadFcsgLive(true);}
     showLiveMatch();
     checkLiveMatch();

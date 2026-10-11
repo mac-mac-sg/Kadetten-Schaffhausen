@@ -53,7 +53,7 @@ test('FCSG polls live matches fast and future/finished matches less often',async
 test('HTTP and network errors preserve data and distinguish connectivity',async()=>{
  let notice=0;
  const old={checkedAt:'2026-10-05T10:27:00Z'};
- const c=vm.createContext({navigator:{onLine:true},offlineData:false,dataLoadFailed:false,updateState:old,AbortSignal,localStorage:{removeItem(){}},syncOfflineNotice(){notice++;},apiFetch:async()=>({ok:false,status:503})});load(c,'js/data-sync.js');
+ const c=vm.createContext({activeClub:'kadetten',handballClub:()=> 'kadetten',handballApiPath:p=>p,players:[],playerBios:{},games:[],tables:{QHL:[]},teamRecords:{},stories:[],clubLogos:{},otmarFallback:{},navigator:{onLine:true},offlineData:false,dataLoadFailed:false,updateState:old,AbortSignal,localStorage:{removeItem(){}},syncOfflineNotice(){notice++;},apiFetch:async()=>({ok:false,status:503})});load(c,'js/data-sync.js');
  await c.loadCurrentData();assert.equal(c.offlineData,false);assert.equal(c.dataLoadFailed,true);assert.equal(c.updateState,old);assert.equal(notice,1);
  c.navigator.onLine=false;c.apiFetch=async()=>{throw Error('offline')};await c.loadCurrentData();assert.equal(c.offlineData,true);assert.equal(c.updateState,old);
 });
