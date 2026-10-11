@@ -1734,12 +1734,22 @@ html.snap-news {
     linear-gradient(180deg, #080b09b8, #080b0999 60%, var(--surface));
 }
 [data-club='fcsg'] .home-title-zone::before {
-  background: radial-gradient(ellipse at 50% 0, #23774b, #102b1d 65%, var(--surface));
-  filter: none;
-  transform: none;
+  background-image: url('assets/fcsg-stadium.jpg');
+  background-position: center 40%;
 }
 [data-club='fcsg'] .home-title-zone::after {
-  background: linear-gradient(180deg, #07150e33, var(--surface));
+  background: radial-gradient(ellipse at 85% 5%, #66d99b33, transparent 65%),
+    linear-gradient(180deg, #07150eb8, #07150e99 60%, var(--surface));
+}
+[data-club='otmar'] .home-title-zone::before {
+  background-image: url('assets/otmar-kreuzbleiche.webp');
+  background-position: center 45%;
+  /* The official banner already includes a dark treatment. */
+  filter: blur(3px) brightness(2.3);
+}
+[data-club='otmar'] .home-title-zone::after {
+  background: radial-gradient(ellipse at 85% 5%, #efcc3233, transparent 65%),
+    linear-gradient(180deg, #080b0980, #080b0959 60%, var(--surface));
 }
 [data-club='fcsg'] .home-matchday .live-heading > span {
   background: #66d99b1a;

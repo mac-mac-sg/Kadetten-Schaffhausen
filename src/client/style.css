@@ -3172,8 +3172,6 @@ html[data-club='fcsg'].snap-profile {
 .club-settings-dialog form .button { width:100%; }
 .snap-news .home-matchday { padding-top:var(--app-header-height,148px); }
 .home-front-page:has(.live-match[hidden]) .home-news-heading { padding-top:var(--app-header-height,148px); }
-[data-club='otmar'] .home-title-zone::before { background-image:url('https://data.otmar.ch/data/home/_headerSplashScreen/70186/Kreuzbleiche-Tribuene-Herobanner.webp'); }
-[data-club='otmar'] .home-title-zone::after { background:radial-gradient(ellipse at 85% 5%,#efcc3233,transparent 65%),linear-gradient(180deg,#080b09b8,#080b0999 60%,var(--surface)); }
 [data-club='otmar'] .our-team td,[data-club='otmar'] .our-team th { background:#514715; }
 @media(max-width:380px) { .club-picker button { gap:5px; padding:6px 4px; font-size:12px; } .top .brand { font-size:15px; } }
 @media(display-mode:standalone) { .top { height:auto; padding-top:calc(14px + env(safe-area-inset-top)); } }
