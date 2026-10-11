@@ -2188,3 +2188,29 @@ footer .source-details summary { margin-inline: auto; }
 .fcsg-coach span { display: block; color: var(--muted); margin-top: 8px; }
 @media (min-width: 800px) { .fcsg-bench { grid-template-columns: repeat(3,minmax(0,1fr)); } .fcsg-pitch { padding: 32px; gap: 24px; } }
 .fcsg-screen-title,.fcsg-pitch .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Kurze Einführung; auch in der installierten App erneut aufrufbar. */
+.app-introduction { box-sizing:border-box; width:calc(100% - 32px); max-width:460px; max-height:calc(100dvh - 32px); overflow:auto; padding:28px; border:1px solid var(--line); border-radius:24px; background:var(--surface-2); color:var(--text); box-shadow:0 24px 80px #0008; }
+.app-introduction::backdrop { background:#080b09c9; backdrop-filter:blur(6px); }
+.app-introduction header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.app-introduction .eyebrow { font-size:10px; line-height:1.5; max-width:145px; }
+.guide-skip { padding:12px 0 12px 12px; min-height:44px; border:0; background:transparent; color:var(--muted); font:inherit; font-size:13px; cursor:pointer; }
+.guide-progress { margin:30px 0 10px; color:var(--muted); font-size:13px; }
+.guide-dots { display:flex; gap:6px; margin-bottom:24px; }
+.guide-dots i { height:4px; flex:1; border-radius:4px; background:var(--line); }
+.guide-dots .is-current { background:var(--accent); }
+.app-introduction h2 { margin:0; font-size:30px; line-height:1.15; letter-spacing:-.5px; }
+.app-introduction h2:focus { outline:none; }
+.guide-text { font-size:16px; line-height:1.65; margin:16px 0 24px; }
+.guide-tip { padding:16px; border:1px solid var(--line); border-radius:14px; }
+.guide-tip > span { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:1px; }
+.guide-tip p { color:var(--muted); font-size:14px; line-height:1.6; margin:6px 0 0; }
+.app-introduction footer { display:flex; justify-content:space-between; gap:12px; margin-top:28px; }
+.app-introduction .button { min-height:48px; cursor:pointer; }
+.app-introduction [data-next] { margin-left:auto; }
+.app-introduction button:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+.club-settings-help { margin:20px 0; padding-top:16px; border-top:1px solid var(--line); }
+.club-settings-help .button { width:100%; min-height:48px; cursor:pointer; }
+.club-settings-help p { color:var(--muted); font-size:12px; text-align:center; margin:8px 0 0; }
+.club-settings-dialog { box-sizing:border-box; max-height:calc(100dvh - 32px); overflow:auto; }
+.app-introduction [hidden] { display:none; }

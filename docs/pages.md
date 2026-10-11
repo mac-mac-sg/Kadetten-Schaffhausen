@@ -36,3 +36,6 @@ Bildquellen:
 - Kadetten: BBC Arena, bestehendes Foto `assets/bbc-arena-hall.webp`.
 - FCSG: FC St.Gallen 1879, Berit Sitterstadion, https://www.fcsg.ch/pages/beritklinik; Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/berit-sitterstadion.jpg?v=1782912949&width=1200; lokale Datei `assets/fcsg-stadium.jpg`.
 - St. Otmar: TSV St.Otmar, Kreuzbleiche-Tribüne, https://otmar.ch/; Bild https://data.otmar.ch/data/home/_headerSplashScreen/70186/Kreuzbleiche-Tribuene-Herobanner.webp; lokale Datei `assets/otmar-kreuzbleiche.webp`.
+
+### Einführung & Tipps
+Beim ersten Öffnen auf einem Gerät erscheint eine überspringbare Einführung in vier Schritten: Vereinswahl, News, Spiele und Kader. Abschluss, Überspringen und Escape speichern `fan-app-onboarding-v1` lokal. Auf der Startseite unter Einstellungen → Einführung & Tipps lässt sich die Einführung jederzeit erneut öffnen, auch in der installierten App. Nach dem ersten vollständigen Durchlauf kann der bestehende Installationshinweis folgen; eine Installation erfolgt weiterhin nur nach ausdrücklichem Klick. Die erneut geöffnete Einführung zeigt keinen Installationshinweis.
