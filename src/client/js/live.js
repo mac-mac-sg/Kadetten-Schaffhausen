@@ -2,11 +2,11 @@
 let matchdayIntroDay = null;
 let liveRequestFailed = false, lastLiveMatch = null, lastLiveAt = null, lastLiveDate = null;
 function playMatchdayIntro(slot, day) {
-  if (matchdayIntroDay === day) return;
-  matchdayIntroDay = day;
+  if (matchdayIntroDay === handballClub()+day) return;
+  matchdayIntroDay = handballClub()+day;
   try {
-    if (localStorage.getItem('kadetten-matchday-intro') === day) return;
-    localStorage.setItem('kadetten-matchday-intro', day);
+    if (localStorage.getItem(handballClub()+'-matchday-intro') === day) return;
+    localStorage.setItem(handballClub()+'-matchday-intro', day);
   } catch { /* Ohne Speicher höchstens einmal pro geöffneter App. */ }
   if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   slot.classList.add('is-matchday-intro');
@@ -39,18 +39,12 @@ function showLiveMatch() {
         day: '2-digit',
         month: '2-digit'
       });
-  const result = ended ? teamResult(g, 'Kadetten Schaffhausen') : null;
-  const html = `<div class="live-heading"><span>${live ? '<i aria-hidden="true"></i>JETZT LIVE' : ended ? 'HEUTE GESPIELT' : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL'}</span><small>${liveEscape(g.league)}${live && g.phase ? ' · ' + liveEscape(g.phase) : ''}${live && g.clock ? ' · ' + liveEscape(g.clock) : ''}</small></div><div class="live-score"><span class="${teamName(g.home).includes('Kadetten') ? 'arena-team' : ''}">${badge(g.home)}<b>${liveEscape(g.home)}</b></span><strong>${live || ended ? (g.score ? g.score.join(' : ') : '– : –') : 'VS'}</strong><span class="${teamName(g.away).includes('Kadetten') ? 'arena-team' : ''}">${badge(g.away)}<b>${liveEscape(g.away)}</b></span></div>${live ? '<span class="live-link">Spiel live verfolgen</span>' : ended ? `<p class="match-preview-time">${result.label} · Zum Resultat und Rückblick</p>` : `<p class="match-preview-time">${relativeDay(g.date) ? relativeDay(g.date) + ' · ' : ''}${matchDate}${g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen'}</p>${today ? `<p class="home-countdown${countdownSoon(g) ? ' is-soon' : ''}" data-countdown="${g.id}">${countdownText(g)}</p>` : ''}`}`;
+  const result = ended ? teamResult(g, handballTeamName()) : null;
+  const html = `<div class="live-heading"><span>${live ? '<i aria-hidden="true"></i>JETZT LIVE' : ended ? 'HEUTE GESPIELT' : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL'}</span><small>${liveEscape(g.league)}${live && g.phase ? ' · ' + liveEscape(g.phase) : ''}${live && g.clock ? ' · ' + liveEscape(g.clock) : ''}</small></div><div class="live-score"><span class="${isOwnHandballTeam(teamName(g.home)) ? 'arena-team' : ''}">${badge(g.home)}<b>${liveEscape(g.home)}</b></span><strong>${live || ended ? (g.score ? g.score.join(' : ') : '– : –') : 'VS'}</strong><span class="${isOwnHandballTeam(teamName(g.away)) ? 'arena-team' : ''}">${badge(g.away)}<b>${liveEscape(g.away)}</b></span></div>${live ? '<span class="live-link">Spiel live verfolgen</span>' : ended ? `<p class="match-preview-time">${result.label} · Zum Resultat und Rückblick</p>` : `<p class="match-preview-time">${relativeDay(g.date) ? relativeDay(g.date) + ' · ' : ''}${matchDate}${g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen'}</p>${today ? `<p class="home-countdown${countdownSoon(g) ? ' is-soon' : ''}" data-countdown="${g.id}">${countdownText(g)}</p>` : ''}`}`;
   slot.href = live ? liveMatchHref(live) : '#match/' + encodeURIComponent(g.id) + '/overview';
   slot.removeAttribute('target');
   slot.removeAttribute('rel');
-  slot.setAttribute(
-    'aria-label',
-    (live ? 'Zum Live-Spiel: ' : ended ? 'Zum Rückblick: ' : 'Zur Spielvorschau: ') +
-      g.home +
-      ' gegen ' +
-      g.away
-  );
+  slot.removeAttribute('aria-label');
   slot.classList.toggle('match-preview', !live);
   slot.classList.toggle('is-matchday', today || !!live);
   slot.classList.toggle('matchday-win', result?.state === 'win');
@@ -67,7 +61,7 @@ function showLiveMatch() {
 
 async function checkLiveMatch() {
   clearTimeout(liveTimer);
-  if ((typeof activeClub !== 'undefined' && activeClub !== 'kadetten') || document.hidden || !(['', '#home'].includes(location.hash) || location.hash.startsWith('#match/') || location.hash === '#season/games')) return;
+  if ((typeof activeClub !== 'undefined' && activeClub === 'fcsg') || document.hidden || !(['', '#home'].includes(location.hash) || location.hash.startsWith('#match/') || location.hash === '#season/games')) return;
   if (!navigator.onLine) {
     liveRequestFailed = true;
     showLiveMatch();
@@ -76,23 +70,26 @@ async function checkLiveMatch() {
   }
   if (liveBusy) return;
   liveBusy = true;
+  const requestClub=handballClub();
   try {
-    const r = await apiFetch('/api/live', {cache: 'no-store', signal: AbortSignal.timeout(30000)});
+    const r = await apiFetch(handballApiPath('/api/live',requestClub), {cache: 'no-store', signal: AbortSignal.timeout(30000)});
     const d = await r.json();
     if (!r.ok || !d.ok) throw Error('Live source unavailable');
     if (!d.match && lastLiveMatch && d.sources?.[lastLiveMatch.league === 'QHL' ? 'SHV' : 'EHF']?.ok === false) throw Error('Live source unavailable');
+    if(activeClub!==requestClub)return;
     applyFinishedMatch(d.finished);
     liveState = d;
     liveRequestFailed = false;
     if (d.match || d.finished) { lastLiveMatch = d.match || d.finished; lastLiveAt = d.checkedAt; lastLiveDate = swissToday(); }
   } catch {
+    if(activeClub!==requestClub)return;
     liveRequestFailed = true;
   } finally {
     liveBusy = false;
     showLiveMatch();
     refreshMatchdayDetail();
     refreshLiveViews();
-    if (typeof activeClub === 'undefined' || activeClub === 'kadetten') liveTimer = setTimeout(checkLiveMatch, (liveState?.match || lastLiveMatch) ? 30000 : 60000);
+    if (typeof activeClub === 'undefined' || activeClub !== 'fcsg') liveTimer = setTimeout(checkLiveMatch, (liveState?.match || lastLiveMatch) ? 30000 : 60000);
   }
 }
 
@@ -113,9 +110,9 @@ function liveMatchContent(g, tab) {
  const active=!!freshLive()&&sameFixture(live,freshLive()), details=live?.details, archive=ehfArchiveFor(g);
  const status=liveRequestFailed||!navigator.onLine?'Verbindung unterbrochen · letzter bestätigter Stand':live?.status==='finished'?'Beendet · Endresultat':active?'Jetzt live':'Spiel wird derzeit nicht als live gemeldet';
  if(!live)return `<div class="content narrow"><h1>Live-Spiel</h1><p role="status">${navigator.onLine?'Live-Daten werden geladen …':'Live-Daten sind offline nicht verfügbar.'}</p></div>`;
- const resultClass=live.status==='finished'&&live.score?' result-'+teamResult(live,'Kadetten Schaffhausen').state:'';
+ const resultClass=live.status==='finished'&&live.score?' result-'+teamResult(live,handballTeamName()).state:'';
  const updated=lastLiveAt?new Date(lastLiveAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',second:'2-digit'}):null;
- return `<header class="live-match-header${resultClass}"><p class="eyebrow">${liveEscape(live.league)} · ${live.status==='finished'?'Spiel beendet':'Live-Spiel'}</p><p class="live-status ${active?'is-current':''}" role="status" aria-atomic="true">${status}<span class="live-sr-context"> · ${liveEscape(live.home)} ${live.score?live.score.join(' : '):'– : –'}</span></p><div class="matchup"><div class="matchup-team">${badge(live.home)}<span>${liveEscape(live.home)}</span></div><strong>${live.score?live.score.join(' : '):'– : –'}</strong><div class="matchup-team">${badge(live.away)}<span>${liveEscape(live.away)}</span></div></div><p>${[live.phase,live.clock].filter(Boolean).map(liveEscape).join(' · ')}</p>${live.half&&(live.status==='finished'||/2\.|zweite|2nd/i.test(live.phase||''))?`<small>Halbzeit ${live.half.join(' : ')}</small>`:''}<small class="live-checked">${updated?'Stand '+updated+' Uhr · ':''}Aktualisierung alle 30 Sekunden</small></header><nav class="segments match-tabs" aria-label="Live-Spielbereich">${[['stats','Statistiken'],['report','Spielverlauf']].map(([id,label])=>`<a href="#match/${encodeURIComponent(g.id)}/${id}" class="${tab===id?'selected':''}">${label}</a>`).join('')}</nav><div class="content narrow live-match-body">${details?.ok===false?`<p class="notice">${details.updatedAt?'Statistiken momentan nicht aktualisierbar · Stand '+new Date(details.updatedAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich'})+' Uhr.':'Weitere Live-Statistiken sind momentan nicht verfügbar.'}</p>`:''}${tab==='stats'?(verifiedReport(g)?reportStats(g):livePlayerStats(live,archive)):liveEventFeed(live,archive)}<div class="actions">${ext(live.url,'Offiziellen Liveticker öffnen','text-link')}</div></div>`;
+ return `<h1 class="live-sr-context">${liveEscape(live.home)} gegen ${liveEscape(live.away)}</h1><header class="live-match-header${resultClass}"><p class="eyebrow">${liveEscape(live.league)} · ${live.status==='finished'?'Spiel beendet':'Live-Spiel'}</p><p class="live-status ${active?'is-current':''}" role="status" aria-atomic="true">${status}<span class="live-sr-context"> · ${liveEscape(live.home)} ${live.score?live.score.join(' : '):'– : –'}</span></p><div class="matchup"><div class="matchup-team">${badge(live.home)}<span>${liveEscape(live.home)}</span></div><strong>${live.score?live.score.join(' : '):'– : –'}</strong><div class="matchup-team">${badge(live.away)}<span>${liveEscape(live.away)}</span></div></div><p>${[live.phase,live.clock].filter(Boolean).map(liveEscape).join(' · ')}</p>${live.half&&(live.status==='finished'||/2\.|zweite|2nd/i.test(live.phase||''))?`<small>Halbzeit ${live.half.join(' : ')}</small>`:''}<small class="live-checked">${updated?'Stand '+updated+' Uhr · ':''}Aktualisierung alle 30 Sekunden</small></header><nav class="segments match-tabs" aria-label="Live-Spielbereich">${[['stats','Statistiken'],['report','Spielverlauf']].map(([id,label])=>`<a href="#match/${encodeURIComponent(g.id)}/${id}" class="${tab===id?'selected':''}">${label}</a>`).join('')}</nav><div class="content narrow live-match-body">${details?.ok===false?`<p class="notice">${details.updatedAt?'Statistiken momentan nicht aktualisierbar · Stand '+new Date(details.updatedAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich'})+' Uhr.':'Weitere Live-Statistiken sind momentan nicht verfügbar.'}</p>`:''}${tab==='stats'?(verifiedReport(g)?reportStats(g):livePlayerStats(live,archive)):liveEventFeed(live,archive)}<div class="actions">${ext(live.url,'Offiziellen Liveticker öffnen','text-link')}</div></div>`;
 }
 function liveEventFeed(live,archive,compact=false) {
  const events=live.details?.events;
@@ -142,7 +139,7 @@ async function loadEhfArchive() {
  if(page!=='match'||!g?.score||!['EHL','QHL'].includes(g.league)||ehfArchive[id]||Date.now()-(ehfArchiveAttempts.get(id)||0)<120000)return;
  ehfArchiveAttempts.set(id,Date.now());
  try{
-  const response=await apiFetch((g.league==='QHL'?'/api/match-reports/':'/api/ehf-reports/')+encodeURIComponent(id));if(!response.ok)return;
+  const response=await apiFetch((g.league==='QHL'?handballApiPath('/api/match-reports/'):'/api/ehf-reports/')+encodeURIComponent(id));if(!response.ok)return;
   const {report}=await response.json();
   if(!report||!Array.isArray(report.score)||report.score.length!==2||!Array.isArray(report.players||[]))return;
   ehfArchive[id]=report;
@@ -168,7 +165,7 @@ function ehfAsReport(a) {
   const name=home?a.home:a.away, ts=a.teamStats[home?'home':'guest'];
   const own=a.players.filter(p=>p.home===home&&!(p.goalkeeper&&p.savesFaced===0));
   const keepers=own.filter(p=>p.goalkeeper), faced=keepers.reduce((n,p)=>n+(p.savesFaced||0),0), saves=keepers.length?keepers.reduce((n,p)=>n+(p.saves||0),0):null;
-  return {id:/Kadetten/.test(name)?41473:(home?-1:-2),name,
+  return {id:isOwnHandballTeam(name)?handballTeamId():(home?-1:-2),name,
    players:own.map(p=>({id:p.id,name:p.name,keeper:!!p.goalkeeper,goals:p.goals,shots:p.shots,seven:p.seven,sevenShots:p.sevenShots,warnings:p.yellow,twoMinutes:p.twoMinutes,redCards:p.red,saves:p.goalkeeper?p.saves:null,keeperShots:p.goalkeeper?p.savesFaced:null,ehf:true})),
    shots:ts.shots,saves,turnovers:ts.technicalFaults,throwPercentage:ts.efficiency,savePercentage:faced>0&&saves!==null?Math.round(saves/faced*1000)/10:null,
    seven:ts.sevenGoals,sevenShots:ts.sevenShots,twoMinutes:ts.twoMinutes,warnings:ts.warnings,
@@ -216,7 +213,7 @@ function statsView(src) {
 }
 // Mannschaftsumschalter mit je einem Bereich pro Mannschaft; beide Bereiche stehen im Dokument, das Umschalten braucht keine Abfrage.
 function teamSwitchMarkup(id,home,away,panel) {
- const side=liveStatsTeam?.id===id?liveStatsTeam.side:(/Kadetten/.test(home)||!/Kadetten/.test(away)?'home':'away');
+ const side=liveStatsTeam?.id===id?liveStatsTeam.side:(isOwnHandballTeam(home)||!isOwnHandballTeam(away)?'home':'away');
  const teams=[['home',home],['away',away]];
  return `<div class="team-switch" role="group" aria-label="Mannschaft wählen" data-stats-switch="${liveEscape(id)}" style="--selected:${side==='home'?0:1}"><span class="team-switch-slider" aria-hidden="true"></span>${teams.map(([k,name])=>`<button type="button" data-stats-team="${k}" aria-pressed="${k===side}">${badge(name)}<span>${liveEscape(name)}</span></button>`).join('')}</div>${teams.map(([k,name])=>`<section class="live-team-stats" data-stats-panel="${k}" ${k===side?'':'hidden'}><h2 class="live-sr-context">${liveEscape(name)}</h2>${panel(k,name)}</section>`).join('')}`;
 }
@@ -268,3 +265,7 @@ function applyFinishedMatch(finished) {
 }
 
 document.addEventListener('visibilitychange', updateMatchPulse);
+
+function resetHandballLive() {
+  clearTimeout(liveTimer);liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;liveRequestFailed=false;liveStatsTeam=null;
+}

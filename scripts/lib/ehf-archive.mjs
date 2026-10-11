@@ -147,22 +147,22 @@ async function addReport(record, write, league = 'European League') {
 // --- QHL: KI-Matchbericht zu abgeschlossenen Spielen aus dem gesicherten SHV-Spielbericht ---------------------------------------
 // Alle abgeschlossenen QHL-Spiele der Kadetten ohne Bericht (neueste zuerst, höchstens `limit` KI-Aufrufe je Lauf). Eingabe ist der
 // Spielbericht unter kadetten/reports/<SHV-ID>.json (archiveCompletedReports); Ergebnis unter kadetten/matchreports/<Spiel-ID>.json.
-export const qhlKey = id => 'kadetten/matchreports/' + id + '.json';
-export async function syncQhlReports(bucket, {games, write = null, limit = 3}) {
+export const qhlKey = (id,club='kadetten') => club+'/matchreports/' + id + '.json';
+export async function syncQhlReports(bucket, {games, write = null, limit = 3, club='kadetten'}) {
   const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
-  const done = (games || []).filter(g => g.league === 'QHL' && Array.isArray(g.score) && /Kadetten/.test(g.home + ' ' + g.away) && /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))).sort((a, b) => b.date.localeCompare(a.date));
+  const done = (games || []).filter(g => g.league === 'QHL' && Array.isArray(g.score) && (club==='otmar'?/Otmar/:/Kadetten/).test(g.home + ' ' + g.away) && /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))).sort((a, b) => b.date.localeCompare(a.date));
   let used = 0;
   for (const g of done) {
     out.checked++;
     try {
-      const saved = await bucket.get(qhlKey(g.id));
+      const saved = await bucket.get(qhlKey(g.id,club));
       const old = saved ? await saved.json() : null;
       if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) { out.kept++; continue; }
       if (used >= limit) continue;
       let record = old?.ticker ? old : null;
       if (!record) {
         const gameId = reportId(g.id);
-        const stored = gameId ? await bucket.get('kadetten/reports/' + gameId + '.json') : null;
+        const stored = gameId ? await bucket.get(club+'/reports/' + gameId + '.json') : null;
         if (!stored) { out.notes.push(`${g.id}: kein gesicherter Spielbericht`); continue; }
         const report = await stored.json();
         if (!Array.isArray(report.score) || report.score.some((v, i) => v !== g.score[i])) { out.notes.push(`${g.id}: Spielbericht passt nicht zum Endstand`); continue; }
@@ -174,7 +174,7 @@ export async function syncQhlReports(bucket, {games, write = null, limit = 3}) {
       const result = await addReport(record, write, 'Quickline Handball League (QHL)');
       if (!record.ticker) { delete record.players; delete record.teamStats; }
       if (result.report) { out.reports++; if (result.report.generator === 'ki') out.ki++; }
-      await bucket.put(qhlKey(g.id), JSON.stringify(record));
+      await bucket.put(qhlKey(g.id,club), JSON.stringify(record));
       out.written++;
       out.notes.push(`${g.id}: Bericht (${record.report?.generator || 'keiner'})${result.reason ? ', ' + String(result.reason).slice(0, 80) : ''}`);
     } catch (e) {

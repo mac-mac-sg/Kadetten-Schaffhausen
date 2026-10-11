@@ -5,7 +5,7 @@ function season(tab) {
   return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
 }
 function gameControls() {
-  return `<div class="controls"><label>Wettbewerb <select id="competition">${['Alle', 'QHL', 'EHL', 'Testspiel', 'Falkencup'].map(c => `<option ${c === competition ? 'selected' : ''}>${c}</option>`).join('')}</select></label><div class="toggle"><button data-mode="list" aria-pressed="${mode === 'list'}">Liste</button><button data-mode="calendar" aria-pressed="${mode === 'calendar'}">Kalender</button></div></div>`;
+  return `<div class="controls"><label>Wettbewerb <select id="competition">${(handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle', 'QHL', 'EHL', 'Testspiel', 'Falkencup']).map(c => `<option ${c === competition ? 'selected' : ''}>${c}</option>`).join('')}</select></label><div class="toggle"><button data-mode="list" aria-pressed="${mode === 'list'}">Liste</button><button data-mode="calendar" aria-pressed="${mode === 'calendar'}">Kalender</button></div></div>`;
 }
 function gameList() {
   if (mode === 'calendar') return `<section class="home-matchday games-matchday"><a id="live-match" class="live-match" data-live-only="true" aria-label="Laufendes Kadetten-Spiel" aria-live="polite" hidden></a></section><div class="calendar-panel">${calendar()}</div>`;
@@ -15,7 +15,7 @@ function gameList() {
     .sort((a, b) => (a.date + (a.time || '00:00')).localeCompare(b.date + (b.time || '00:00')));
   const today = new Date().toLocaleDateString('sv-SE', {timeZone: 'Europe/Zurich'});
   const next = ordered.find(g => !g.score && g.date >= today);
-  return `<p class="muted">Saison 2026/27 · ${games.length} im Vereins-Matchcenter veröffentlichte Partien</p>${mode === 'calendar' ? calendar() : `<div class="games game-timeline">${ordered.map(g => card(g, g === next)).join('')}</div><aside class="notice"><strong>Weiterer Saisonverlauf</strong><p>Für die Zeit nach Dezember sind im Vereins-Matchcenter noch keine weiteren konkreten Paarungen veröffentlicht. Weitere Liga-, Cup- und Europacuppartien werden ergänzt, sobald Gegner und Termine feststehen. Datenstand: 02.10.2026.</p></aside>`}`;
+  return `<p class="muted">Saison 2026/27 · ${games.length} im Vereins-Matchcenter veröffentlichte Partien</p>${mode === 'calendar' ? calendar() : `<div class="games game-timeline">${ordered.map(g => card(g, g === next)).join('')}</div>${handballClub()==='otmar'?'':`<aside class="notice"><strong>Weiterer Saisonverlauf</strong><p>Für die Zeit nach Dezember sind im Vereins-Matchcenter noch keine weiteren konkreten Paarungen veröffentlicht. Weitere Liga-, Cup- und Europacuppartien werden ergänzt, sobald Gegner und Termine feststehen. Datenstand: 02.10.2026.</p></aside>`}`}`;
 }
 function calendarNavigation() {
   return `<div class="calendar-head"><button id="prev-month" aria-label="Vorheriger Monat">‹</button><h2>${new Date(calendarYear, month, 1).toLocaleDateString('de-CH', {month: 'long', year: 'numeric'})}</h2><button id="next-month" aria-label="Nächster Monat">›</button></div>`;
@@ -33,7 +33,7 @@ function calendar() {
         found.length
           ? `<span class="fixture-date">${i + 1}</span>${found
               .map(g => {
-                const home = g.home.includes('Kadetten'),
+                const home = isOwnHandballTeam(g.home),
                   opponent = home ? g.away : g.home,
                   label = `${date(g)} · ${home ? 'Heimspiel' : 'Auswärtsspiel'} gegen ${opponent}${g.time ? ' · ' + g.time + ' Uhr' : ''}${g.score ? ' · Endstand ' + g.score.join(':') : ''}`;
                 return `<a class="calendar-fixture ${home ? 'fixture-home' : 'fixture-away'}" href="#match/${liveEscape(g.id)}/overview" aria-label="${liveEscape(label)}" title="${liveEscape(label)}"><span class="calendar-crest">${badge(opponent)}</span><span class="fixture-location" aria-hidden="true"></span></a>`;
@@ -62,11 +62,11 @@ function recordBar(name, total) {
   return `<div class="record-bar" role="img" aria-label="${label}" title="${label}">${r.map((n, i) => `<span class="record-${i}" style="width:${(n / total) * 100}%"></span>`).join('')}</div><small class="record-text">${r[0]} S · ${r[1]} U · ${r[2]} N</small>`;
 }
 function standing() {
-  return `<div class="toggle league-toggle">${['QHL', 'EHL'].map(l => `<button data-league="${l}" aria-pressed="${l === tableLeague}">${l === 'QHL' ? 'QHL' : 'European League'}</button>`).join('')}</div><p class="muted">${tableLeague === 'QHL' ? 'Hauptrunde' : 'Gruppenphase · Gruppe C'} · ${updateLabel('table')}</p><p class="record-legend"><span>Siege</span><span>Unentschieden</span><span>Niederlagen</span></p><div class="table-wrap"><table class="standings-table"><colgroup><col class="rank-col"><col class="team-col"><col class="games-col"><col class="goals-col"><col class="diff-col"><col class="points-col"></colgroup><thead><tr><th aria-label="Rang">#</th><th>Team</th><th>Sp.</th><th>Tore</th><th>+/−</th><th>Pkt.</th></tr></thead><tbody>${tables[tableLeague].map((r, i) => `<tr class="${r[0].includes('Kadetten') ? 'our-team' : ''}"><td>${i + 1}</td><th scope="row"><div class="table-team">${badge(r[0])}<div><span class="standing-name">${r[0]}</span>${recordBar(r[0], r[1])}<small class="standing-meta">${r[1]} Spiele · ${r[2] - r[3] > 0 ? '+' : ''}${r[2] - r[3]} Tore</small></div></div></th><td>${r[1]}</td><td>${r[2]}:${r[3]}</td><td>${r[2] - r[3] > 0 ? '+' : ''}${r[2] - r[3]}</td><td><strong>${r[4]}</strong></td></tr>`).join('')}</tbody></table></div>${seasonNumbers()}`;
+  return `<div class="toggle league-toggle">${(handballClub()==='otmar'?['QHL']:['QHL', 'EHL']).map(l => `<button data-league="${l}" aria-pressed="${l === tableLeague}">${l === 'QHL' ? 'QHL' : 'European League'}</button>`).join('')}</div><p class="muted">${tableLeague === 'QHL' ? 'Hauptrunde' : 'Gruppenphase · Gruppe C'} · ${updateLabel('table')}</p><p class="record-legend"><span>Siege</span><span>Unentschieden</span><span>Niederlagen</span></p><div class="table-wrap"><table class="standings-table"><colgroup><col class="rank-col"><col class="team-col"><col class="games-col"><col class="goals-col"><col class="diff-col"><col class="points-col"></colgroup><thead><tr><th aria-label="Rang">#</th><th>Team</th><th>Sp.</th><th>Tore</th><th>+/−</th><th>Pkt.</th></tr></thead><tbody>${tables[tableLeague].map((r, i) => `<tr class="${isOwnHandballTeam(r[0]) ? 'our-team' : ''}"><td>${i + 1}</td><th scope="row"><div class="table-team">${badge(r[0])}<div><span class="standing-name">${r[0]}</span>${recordBar(r[0], r[1])}<small class="standing-meta">${r[1]} Spiele · ${r[2] - r[3] > 0 ? '+' : ''}${r[2] - r[3]} Tore</small></div></div></th><td>${r[1]}</td><td>${r[2]}:${r[3]}</td><td>${r[2] - r[3] > 0 ? '+' : ''}${r[2] - r[3]}</td><td><strong>${r[4]}</strong></td></tr>`).join('')}</tbody></table></div>${seasonNumbers()}`;
 }
 
 function playerCard(p) {
-  return `<a class="player-card" href="#player/${p[0]}"><img src="assets/player-${p[0]}.webp" alt="${p[1]}" width="600" height="400" loading="lazy" decoding="async"><div><span>${p[1].split(' ').slice(0, -1).join(' ')}</span><strong>${p[1].split(' ').at(-1)}</strong><b>${p[0]}</b></div></a>`;
+  return `<a class="player-card" href="#player/${p[0]}"><img src="${liveEscape(handballPlayerImage(p[0]))}" alt="${p[1]}" width="600" height="400" loading="lazy" decoding="async"><div><span>${p[1].split(' ').slice(0, -1).join(' ')}</span><strong>${p[1].split(' ').at(-1)}</strong><b>${p[0]}</b></div></a>`;
 }
 function squad() {
   return ['Tor', 'Flügel', 'Rückraum', 'Kreis']

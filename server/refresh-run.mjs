@@ -1,3 +1,5 @@
+import {storeOtmarUpdate} from './otmar.mjs';
+import otmarSeed from './otmar-seed.json' with {type:'json'};
 import {refresh} from './update.mjs';
 import {archiveCompletedReports} from './live.mjs';
 import {storeFcsgUpdate} from './fcsg.mjs';
@@ -18,5 +20,7 @@ export async function runRefresh(bucket, {previous, hadPrevious, supplied = {}, 
   await bucket.put('kadetten/current.json', JSON.stringify(next));
   const reports = await archiveCompletedReports(bucket);
   const fcsg = await storeFcsgUpdate(bucket, fcsgSeed);
-  return {ok: true, next, reports, fcsg, written: true};
+  const otmarReports = await archiveCompletedReports(bucket,'otmar');
+  const otmar = await storeOtmarUpdate(bucket,otmarSeed,next);
+  return {ok: true, next, reports, fcsg, otmar, otmarReports, written: true};
 }

@@ -10,23 +10,24 @@ const lastGames = (games, team, before, n = 3) =>
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, n).map(({date, home, away, score, externalUrl}) => ({date, home, away, score, externalUrl}));
 
 // deps.headToHead(home, away) -> {games}; deps.recentGames(team) -> {games}; beide dürfen wirft/fehlen.
-export async function collectFacts(club, g, {snapshot, fcsgData}, {headToHead = null, recentGames = null} = {}) {
+export async function collectFacts(club, g, {snapshot, fcsgData, otmarData}, {headToHead = null, recentGames = null} = {}) {
+  if(club==='otmar')snapshot=otmarData;
   const table = tableFor(club, g, snapshot, fcsgData);
-  const data = club === 'kadetten' ? snapshot : fcsgData;
-  const own = club === 'kadetten' ? 'Kadetten Schaffhausen' : [g.home, g.away].find(t => /gallen/i.test(t));
+  const data = club !== 'fcsg' ? snapshot : fcsgData;
+  const own = club === 'kadetten' ? 'Kadetten Schaffhausen' : club==='otmar'?'TSV St. Otmar St. Gallen': [g.home, g.away].find(t => /gallen/i.test(t));
   const recent = [];
   let duels = [];
   for (const team of [g.home, g.away]) {
     if (team === own) {
       recent.push({team, games: lastGames(data?.games, team, g.date)});
-    } else if (club === 'kadetten' && g.league === 'QHL' && recentGames) {
+    } else if (club !== 'fcsg' && g.league === 'QHL' && recentGames) {
       try {
         const games = lastGames((await recentGames(team)).games, team, g.date);
         recent.push({team, games, shv: games.length > 0});
       } catch { recent.push({team, games: []}); }
     }
   }
-  if (club === 'kadetten' && g.league === 'QHL' && headToHead) {
+  if (club !== 'fcsg' && g.league === 'QHL' && headToHead) {
     try { duels = ((await headToHead(g.home, g.away)).games || []).slice(0, 3); } catch {}
   }
   return {table, duels, recent};

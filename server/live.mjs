@@ -1,17 +1,17 @@
 const liveEndpoint='https://www.handball.ch/Umbraco/Api/MatchCenter/Query';
 const liveGamesQuery='query($teamId:Int){games(teamId:$teamId){objectId isLive gameStatusId seasonId gameDateTime homeTeamId homeTeamName homeTeamScore awayTeamId awayTeamName awayTeamScore leagueShortName}}';
 const liveDetailQuery='query($gameId:Int,$isLive:Boolean){game(gameId:$gameId,isLive:$isLive){gameId isLive gameStatusId ltGameStatusId seasonId gameDateTime homeTeamId homeTeamName homeTeamScore awayTeamId awayTeamName awayTeamScore leagueShortName homeTeamScoreInterval awayTeamScoreInterval ltGameTime ltCurrentGamePhaseText}}';
-async function liveQuery(query,variables){const r=await fetch(liveEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept-Language':'de'},body:JSON.stringify({query,variables}),signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Live source unavailable');const d=await r.json();if(d.errors?.length||!d.data)throw Error('Live source schema changed');return d.data}
-export function selectLiveGame(data){if(!Array.isArray(data?.games))throw Error('Missing games');return data.games.find(g=>g.isLive===true&&g.seasonId===2026&&(g.homeTeamId===41473||g.awayTeamId===41473))||null}
-export function parseLiveMatch(g){if(!g||g.isLive!==true||g.seasonId!==2026||(g.homeTeamId!==41473&&g.awayTeamId!==41473))return null;const id=g.gameId;if(!Number.isInteger(id)||!g.homeTeamName||!g.awayTeamName)throw Error('Invalid live match');const validScore=v=>Number.isInteger(v)&&v>=0;return {id,home:g.homeTeamName,away:g.awayTeamName,score:validScore(g.homeTeamScore)&&validScore(g.awayTeamScore)?[g.homeTeamScore,g.awayTeamScore]:null,league:g.leagueShortName||'Handball',clock:g.ltGameTime||null,phase:g.ltCurrentGamePhaseText||null,url:'https://www.handball.ch/de/matchcenter/spiele/'+id,half:validScore(g.homeTeamScoreInterval)&&validScore(g.awayTeamScoreInterval)?[g.homeTeamScoreInterval,g.awayTeamScoreInterval]:null}}
-export function selectFinishedGame(data, today=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Zurich'})) {
+export async function liveQuery(query,variables){const r=await fetch(liveEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept-Language':'de'},body:JSON.stringify({query,variables}),signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Live source unavailable');const d=await r.json();if(d.errors?.length||!d.data)throw Error('Live source schema changed');return d.data}
+export function selectLiveGame(data, teamId=41473){if(!Array.isArray(data?.games))throw Error('Missing games');return data.games.find(g=>g.isLive===true&&g.seasonId===2026&&(g.homeTeamId===teamId||g.awayTeamId===teamId))||null}
+export function parseLiveMatch(g, teamId=41473){if(!g||g.isLive!==true||g.seasonId!==2026||(g.homeTeamId!==teamId&&g.awayTeamId!==teamId))return null;const id=g.gameId;if(!Number.isInteger(id)||!g.homeTeamName||!g.awayTeamName)throw Error('Invalid live match');const validScore=v=>Number.isInteger(v)&&v>=0;return {id,home:g.homeTeamName,away:g.awayTeamName,score:validScore(g.homeTeamScore)&&validScore(g.awayTeamScore)?[g.homeTeamScore,g.awayTeamScore]:null,league:g.leagueShortName||'Handball',clock:g.ltGameTime||null,phase:g.ltCurrentGamePhaseText||null,url:'https://www.handball.ch/de/matchcenter/spiele/'+id,half:validScore(g.homeTeamScoreInterval)&&validScore(g.awayTeamScoreInterval)?[g.homeTeamScoreInterval,g.awayTeamScoreInterval]:null}}
+export function selectFinishedGame(data, today=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Zurich'}), teamId=41473) {
  if(!Array.isArray(data?.games))throw Error('Missing games');
- return data.games.filter(g=>g.isLive===false&&g.gameStatusId===2&&g.seasonId===2026&&(g.homeTeamId===41473||g.awayTeamId===41473)&&String(g.gameDateTime).slice(0,10)===today).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)))[0]||null;
+ return data.games.filter(g=>g.isLive===false&&g.gameStatusId===2&&g.seasonId===2026&&(g.homeTeamId===teamId||g.awayTeamId===teamId)&&String(g.gameDateTime).slice(0,10)===today).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)))[0]||null;
 }
-export function parseFinishedMatch(g) {
- if(!g||g.isLive!==false||g.seasonId!==2026||!(g.gameStatusId===2||g.ltGameStatusId===4)||(g.homeTeamId!==41473&&g.awayTeamId!==41473))return null;
+export function parseFinishedMatch(g, teamId=41473) {
+ if(!g||g.isLive!==false||g.seasonId!==2026||!(g.gameStatusId===2||g.ltGameStatusId===4)||(g.homeTeamId!==teamId&&g.awayTeamId!==teamId))return null;
  // Completion is explicit; neither 60:00 nor a half-time whistle proves a final result.
- const match=parseLiveMatch({...g,isLive:true});
+ const match=parseLiveMatch({...g,isLive:true},teamId);
  if(!match?.score)throw Error('Missing final score');
  return {...match,status:'finished',date:String(g.gameDateTime).slice(0,10)};
 }
@@ -111,7 +111,7 @@ async function getEhfLiveMatch(){
  if(match)match.details=await getEhfDetails(match.id);
  return match;
 }
-async function getNationalLiveMatch(){const games=await liveQuery(liveGamesQuery,{teamId:41473});const selected=selectLiveGame(games)||selectFinishedGame(games);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0])||parseLiveMatch(detail.game[0]);if(match)match.details=statistics;return match}
+export async function getNationalLiveMatch(teamId=41473){const games=await liveQuery(liveGamesQuery,{teamId});const selected=selectLiveGame(games,teamId)||selectFinishedGame(games,undefined,teamId);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0],teamId)||parseLiveMatch(detail.game[0],teamId);if(match)match.details=statistics;return match}
 let liveCache,livePending;
 export async function getLiveMatch(){
  if(liveCache&&Date.now()-liveCache.at<20000)return liveCache.value;if(livePending)return livePending;
@@ -131,7 +131,7 @@ export async function getRecentGames(team){
  const cached=recentServerCache.get(key);if(cached&&Date.now()-cached.at<300000)return cached.value;
  const own=await liveQuery(liveGamesQuery,{teamId:41473});
  if(!Array.isArray(own.games))throw Error('Missing season games');
- const norm=n=>n.replace(/^TSV /,'');let teamId=key==='Kadetten Schaffhausen'?41473:null;
+ const norm=n=>n.replace(/^TSV /,'');let teamId=key==='Kadetten Schaffhausen'?41473:/^(TSV )?St\. Otmar St\. Gallen$/.test(key)?40900:null;
  for(const g of own.games.filter(g=>g.seasonId===2026)){if(norm(g.homeTeamName||'')===norm(key))teamId=g.homeTeamId;if(norm(g.awayTeamName||'')===norm(key))teamId=g.awayTeamId;}
  if(!Number.isInteger(teamId)||teamId<=0)throw Error('Team not found');
  const data=teamId===41473?own:await liveQuery(liveGamesQuery,{teamId});
@@ -148,11 +148,12 @@ export function parseDirectDuels(batches,home,away,now=Date.now()){
  return [...found.values()].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
 }
 export async function getHeadToHead(home,away){
- if(typeof home!=='string'||typeof away!=='string'||home.length>100||away.length>100||![home,away].includes('Kadetten Schaffhausen')||home===away)throw Error('Invalid teams');
+ if(typeof home!=='string'||typeof away!=='string'||home.length>100||away.length>100||![home,away].some(n=>['Kadetten Schaffhausen','TSV St. Otmar St. Gallen','St. Otmar St. Gallen'].includes(n))||home===away)throw Error('Invalid teams');
  const key=[home,away].sort().join('|'),cached=duelServerCache.get(key);if(cached&&Date.now()-cached.at<300000)return cached.value;
- const current=await liveQuery(liveGamesQuery,{teamId:41473});if(!Array.isArray(current.games))throw Error('Missing current teams');const opponent=home==='Kadetten Schaffhausen'?away:home,norm=n=>String(n||'').replace(/^TSV /,'');
+ const teamId=[home,away].includes('Kadetten Schaffhausen')?41473:40900;
+ const current=await liveQuery(liveGamesQuery,{teamId});if(!Array.isArray(current.games))throw Error('Missing current teams');const opponent=(teamId===41473?home==='Kadetten Schaffhausen':/Otmar/.test(home))?away:home,norm=n=>String(n||'').replace(/^TSV /,'');
  if(!current.games.some(g=>g.seasonId===2026&&g.leagueShortName==='QHL'&&[g.homeTeamName,g.awayTeamName].some(n=>norm(n)===norm(opponent))))throw Error('Opponent not in QHL schedule');
- const old=await Promise.all([2025,2024].map(async season=>({season,data:await liveQuery(duelQuery,{clubId:140561,seasonId:season})})));
+ const old=await Promise.all([2025,2024].map(async season=>({season,data:await liveQuery(duelQuery,{clubId:teamId===41473?140561:140684,seasonId:season})})));
  const games=parseDirectDuels([{season:2026,data:current},...old],home,away);const value={ok:true,checkedAt:new Date().toISOString(),games};duelServerCache.set(key,{at:Date.now(),value});return value;
 }
 
@@ -191,8 +192,8 @@ const reportQuery = liveStatsQuery.replace('totalSuspension useReducedResultDisp
 const reportTeamQuery = 'query($gameId:Int){gameTeamStats(gameId:$gameId){gameId teamId turnovers totalShots totalScore totalSaves throwPercentage savePercentage isHome}}';
 export const reportId = id => ({staefa:508373,stgallen:508367})[id] || (/^[1-9][0-9]{0,8}$/.test(String(id)) ? Number(id) : null);
 const reportNumber = v => typeof v === 'string' && /^\d+$/.test(v) ? nonnegative(Number(v)) : nonnegative(v);
-export function parseArchivedReport(data, game) {
- const match = parseFinishedMatch(game);
+export function parseArchivedReport(data, game, teamId=41473) {
+ const match = parseFinishedMatch(game,teamId);
  if (!match || game.leagueShortName !== 'QHL') throw Error('Not a completed Kadetten QHL game');
  const details = parseLiveDetails(data, game);
  if (!Array.isArray(data.gameTeamStats) || data.gameTeamStats.length !== 2) throw Error('Missing team statistics');
@@ -211,32 +212,33 @@ export function parseArchivedReport(data, game) {
  });
  return {gameId:game.gameId,score:match.score,half:match.half||[null,null],date:match.date,teams,events:details.events,spectators:null,referees:[],source:match.url,checkedAt:new Date().toISOString()};
 }
-async function fetchArchivedReport(id) {
+async function fetchArchivedReport(id, teamId=41473) {
  const d=await liveQuery(liveDetailQuery,{gameId:id,isLive:false});
  const game=Array.isArray(d.game)&&d.game.length===1&&d.game[0].gameId===id?d.game[0]:null;
- if (!parseFinishedMatch(game) || game.leagueShortName!=='QHL') throw Error('Report outside completed Kadetten QHL schedule');
+ if (!parseFinishedMatch(game,teamId) || game.leagueShortName!=='QHL') throw Error('Report outside completed Kadetten QHL schedule');
  const [details,teams]=await Promise.all([liveQuery(reportQuery,{gameId:id,isLive:false}),liveQuery(reportTeamQuery,{gameId:id})]);
- return parseArchivedReport({...details,...teams},game);
+ return parseArchivedReport({...details,...teams},game,teamId);
 }
-export async function getArchivedReport(id,bucket) {
+export async function getArchivedReport(id,bucket,club='kadetten') {
  const gameId=reportId(id);if (!gameId) throw Error('Invalid report ID');
- const stored=await bucket.get('kadetten/reports/'+gameId+'.json');
+ const stored=await bucket.get(club+'/reports/'+gameId+'.json');
  if (stored) return {ok:true,stored:true,report:await stored.json()};
  // Public reads are read-only. Only the authorized refresh stores reports.
- return {ok:true,stored:false,report:await fetchArchivedReport(gameId)};
+ return {ok:true,stored:false,report:await fetchArchivedReport(gameId,club==='otmar'?40900:41473)};
 }
-export async function archiveCompletedReports(bucket) {
+export async function archiveCompletedReports(bucket,club='kadetten') {
  try {
-  const data=await liveQuery(liveGamesQuery,{teamId:41473});
+  const teamId=club==='otmar'?40900:41473;
+  const data=await liveQuery(liveGamesQuery,{teamId});
   if (!Array.isArray(data.games)) throw Error('Missing report schedule');
-  const completed=data.games.filter(g=>g.leagueShortName==='QHL'&&parseFinishedMatch({...g,gameId:g.objectId})).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)));
+  const completed=data.games.filter(g=>g.leagueShortName==='QHL'&&parseFinishedMatch({...g,gameId:g.objectId},teamId)).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)));
   const results=await Promise.all(completed.map(async(g,i)=>{
-   const key='kadetten/reports/'+g.objectId+'.json';
+   const key=club+'/reports/'+g.objectId+'.json';
    try {
     const prior=await bucket.get(key);
     // Refresh the latest final report for corrections; older archives remain durable.
     if(prior&&i>0)return {id:g.objectId,ok:true,stored:true};
-    const report=await fetchArchivedReport(g.objectId);
+    const report=await fetchArchivedReport(g.objectId,teamId);
     await bucket.put(key,JSON.stringify(report));return {id:g.objectId,ok:true,stored:true};
    } catch { return {id:g.objectId,ok:false}; }
   }));

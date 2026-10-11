@@ -1,10 +1,13 @@
 name: Cloudflare-Datendienst bereitstellen
-# Manuell auszulösen. Prüft den Code, stellt den Datendienst (cloudflare/api, Worker «kadetten-api», Speicher Workers KV)
+# Bei Änderungen am Datendienst und manuell. Prüft den Code, stellt den Datendienst (cloudflare/api, Worker «kadetten-api», Speicher Workers KV)
 # bei Cloudflare bereit, setzt den Automationsschlüssel und prüft die Antwort.
 # Der Pages-Workflow veröffentlicht nur die Oberfläche; die App liest weiterhin vom bisherigen Dienst, bis das Umschalten
 # ausdrücklich beauftragt ist (docs/cloudflare-umzug.md, Phase 3).
 # Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID; optional KADETTEN_UPDATE_KEY (freier, langer Zufallswert).
 on:
+  push:
+    branches: [main]
+    paths: ['server/**', '.github/workflows/cloudflare-deploy.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -94,3 +97,8 @@ jobs:
             echo "- POST /api/data: HTTP $post (erwartet 405)"
           } >> "$GITHUB_STEP_SUMMARY"
           [ "$post" = 405 ]
+
+      - name: Vereinsdaten und Vorschauen initialisieren
+        env:
+          KI_VORSCHAU: ${{ vars.KI_VORSCHAU || 'an' }}
+        run: node scripts/cloudflare-update.mjs --schreiben

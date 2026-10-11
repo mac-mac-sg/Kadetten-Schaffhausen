@@ -20,7 +20,7 @@ function liveEscape(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
-const base = 'https://kadettensh.ch/',
+let base = 'https://kadettensh.ch/',
   report = base + 'perfekter-start-in-der-european-league/';
 let calendarYear = 2026;
 let competition = 'Alle',
@@ -54,7 +54,7 @@ function footer() {
         : base);
   const hasDirectSource = page === 'news' || (page === 'match' && (tab === 'overview' || verifiedReport(game)));
   const historySource = page === 'match' && tab === 'stats' && game?.league === 'QHL' && !verifiedReport(game);
-  return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p>${hasDirectSource ? '' : `<p>${ext(url, 'Kadetten Schaffhausen', '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger</p></details></footer>`;
+  return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p>${hasDirectSource ? '' : `<p>${ext(handballClub()==='otmar'?'https://otmar.ch/':url, handballTeamName(), '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: ${handballClub()==='otmar'?'TSV St. Otmar St. Gallen und jeweilige Urheber':'Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger'}</p></details></footer>`;
 }
 function badge(name) {
   const logo = clubLogos[name];
@@ -69,8 +69,8 @@ function badge(name) {
 function card(g, current = false) {
   const live = g.date === swissToday() && sameFixture(g, freshLive()) ? freshLive() : null;
   if (live) return `<article class="game-card current-game live-game-card" data-game-card="${liveEscape(g.id)}"><section class="home-matchday games-matchday" aria-label="Laufendes Kadetten-Spiel"><a id="live-match" class="live-match is-matchday is-live" href="${liveMatchHref(live)}" aria-label="Spiel live verfolgen" aria-live="polite"></a></section></article>`;
-  const result = g.score ? teamResult(g, 'Kadetten Schaffhausen') : null;
-  const derby = /Pfadi/.test(g.home.includes('Kadetten') ? g.away : g.home);
+  const result = g.score ? teamResult(g, handballTeamName()) : null;
+  const derby = handballClub()==='kadetten' && /Pfadi/.test(isOwnHandballTeam(g.home) ? g.away : g.home);
   return `<article data-game-card="${liveEscape(g.id)}" class="game-card ${g.score ? 'finished result-' + result.state : ''} ${current ? 'current-game' : ''}" ${current ? 'aria-label="Nächstes Spiel"' : ''}>${current ? '<p class="current-label">Nächstes Spiel' + (relativeDay(g.date) ? ' · ' + relativeDay(g.date) : '') + '</p>' : ''}<p class="meta">${g.score ? `<span class="game-result-label">${result.label}</span> · ` : ''}${league(g)} · ${date(g)}${g.time ? ' · ' + g.time : ''}${derby ? ' <span class="game-derby">Derby</span>' : ''}</p><div class="scoreline"><div>${badge(g.home)}<span>${g.home}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}<small>${g.half ? '(' + g.half.join(':') + ')' : g.score ? 'Endstand' : 'Vorschau'}</small></strong><div>${badge(g.away)}<span>${g.away}</span></div></div><p class="venue">${g.venue}</p><div class="actions"><a class="button ${g.score ? 'subtle' : ''}" href="#match/${liveEscape(g.id)}/overview">${g.score ? 'Rückblick' : 'Vorschau'}</a></div></article>`;
 }
 // Fotos und Wappen liegen als WebP vor. Namen aus den Daten (z. B. "news-34317.jpg" oder "assets/club-1.png") werden hier umgestellt;

@@ -22,11 +22,11 @@ export async function factsHash(baseline) {
 
 // deps.headToHead(home, away) und deps.recentGames(team) -> {games: [...]} | wirft; nur für Kadetten-Spiele der QHL.
 // deps.rewrite(baseline) -> {ok, text} | {ok: false, error}; ohne rewrite entstehen nur die sachlichen Texte.
-export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = null, recentGames = null, rewrite = null, now = new Date()} = {}) {
+export async function syncPreviews(bucket, {snapshot, fcsgData, otmarData}, {headToHead = null, recentGames = null, rewrite = null, now = new Date()} = {}) {
   const today = now.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
   const out = {written: 0, unchanged: 0, kept: 0, skipped: 0, errors: 0, ki: 0, fallback: 0, rejected: []};
   let aiDown = false;
-  for (const [club, data] of [['kadetten', snapshot], ['fcsg', fcsgData]]) {
+  for (const [club, data] of [['kadetten', snapshot], ['fcsg', fcsgData], ['otmar',otmarData]]) {
     const games = (data?.games || []).filter(g => upcoming(g, today)).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || ''))).slice(0, PER_CLUB);
     for (const g of games) {
       try {
@@ -35,7 +35,7 @@ export async function syncPreviews(bucket, {snapshot, fcsgData}, {headToHead = n
         const old = saved ? await saved.json() : null;
         const fresh = old && old.fixtureKey === fixtureKey(g) && Date.parse(old.generatedAt) > now.getTime() - 72 * HOURS;
         if (fresh && !old.generator) { out.kept++; continue; }
-        const facts = await collectFacts(club, g, {snapshot, fcsgData}, {headToHead, recentGames});
+        const facts = await collectFacts(club, g, {snapshot, fcsgData, otmarData}, {headToHead, recentGames});
         const baseline = buildPreview({club, game: g, ...facts, now});
         if (!baseline || !validPreview(baseline)) { out.skipped++; continue; }
         const hash = await factsHash(baseline);
