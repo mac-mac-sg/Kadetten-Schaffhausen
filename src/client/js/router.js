@@ -231,8 +231,6 @@ function render() {
   if (activeClub === 'fcsg') {
     document.body.classList.toggle('player-mode', false);
     scrollRoot.classList.toggle('snap-profile', page === 'player');
-    document.querySelector('[data-nav="games"]')?.classList.remove('is-matchday');
-    document.querySelector('[data-nav="games"]')?.setAttribute('aria-label', 'Spiele');
     if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
     syncOfflineNotice();
     loadFcsgArticle();
@@ -260,9 +258,15 @@ function centerNextGame() {
   cancelAnimationFrame(gameCenterFrame);
   gameCenterFrame = requestAnimationFrame(() => {
     if (location.hash !== '#season/games' || mode !== 'list') return;
-    document
-      .querySelector('.game-timeline .current-game')
-      ?.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'instant'});
+    const card=document.querySelector('.game-timeline .current-game');
+    if(!card)return;
+    const headerBottom=Math.max(0,...['body > .top','.season-header'].map(selector=>document.querySelector(selector)?.getBoundingClientRect().bottom || 0));
+    const viewportHeight=window.visualViewport?.height || window.innerHeight;
+    const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
+    const rect=card.getBoundingClientRect(), top=headerBottom+12, bottom=dockTop-12;
+    // Centre inside the unobscured area; tall cards start below the filters.
+    const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
+    window.scrollTo({top:Math.max(0,window.scrollY+rect.top-targetTop),behavior:'instant'});
   });
 }
 

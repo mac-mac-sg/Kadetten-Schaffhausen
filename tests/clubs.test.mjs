@@ -182,3 +182,17 @@ test('Drei Vereine: Auswahl speichern, letzten Verein behalten, aktiven ausgesch
  a.location.href='https://example.test/';a.run('restoreActiveClub()');assert.equal(a.run('activeClub'),'fcsg');
  a.location.hash='#home';a.run('updateClubHeader()');assert.equal(a.document.querySelector('.club-entry').hidden,true);
 });
+
+test('Heute-Hinweis im Spiele-Menü gilt für alle Vereine, auch vor Anpfiff und nach Spielende',()=>{
+ const a=app('https://example.test/');
+ a.run("globalThis.games=[{date:swissToday(),league:'Cup',score:[23,20]}];fcsgData.games=[{date:swissToday(),time:'23:00'}]");
+ for(const club of ['kadetten','otmar','fcsg']){
+  a.run(`activeClub='${club}';syncMatchdayNavigation()`);
+  const link=a.document.querySelector('[data-nav=games]');assert.equal(link.classList.contains('is-matchday'),true,club);assert.match(link.getAttribute('aria-label'),/Heute/);
+ }
+ a.run("games=[];fcsgData.games=[{date:'2027-01-01'}]");
+ for(const club of ['kadetten','otmar','fcsg']){
+  a.run(`activeClub='${club}';syncMatchdayNavigation()`);
+  assert.equal(a.document.querySelector('[data-nav=games]').classList.contains('is-matchday'),false,club);
+ }
+});

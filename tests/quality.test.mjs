@@ -83,3 +83,18 @@ test('Install intro appears once, skips standalone and installs only on a delibe
   events.load();assert.equal(document.querySelector('dialog'),null);
  }
 });
+
+test('Aktuelles Spiel liegt zwischen fixierter Kopfzeile und Dock; hohe Karten beginnen unter den Filtern',()=>{
+ for(const [headerBottom,height] of [[350,320],[350,600],[240,320]]){
+  let scrolled;
+  const card={top:700,height},selectors={'.game-timeline .current-game':{getBoundingClientRect:()=>card},'body > .top':{getBoundingClientRect:()=>({bottom:140})},'.season-header':{getBoundingClientRect:()=>({bottom:headerBottom})},'.dock':{getBoundingClientRect:()=>({top:750})}};
+  const c=vm.createContext({location:{hash:'#season/games'},mode:'list',cancelAnimationFrame(){},requestAnimationFrame:f=>{f();return 1;},document:{querySelector:s=>selectors[s]},window:{innerHeight:844,visualViewport:{height:820},scrollY:200,scrollTo:options=>scrolled=options}});
+  load(c,'js/router.js');c.centerNextGame();
+  const positionedTop=card.top+200-scrolled.top;
+  assert.ok(positionedTop>=headerBottom+12);
+  if(height<=750-12-headerBottom-12)assert.ok(positionedTop+height<=738);
+  else assert.equal(positionedTop,headerBottom+12);
+  assert.equal(scrolled.behavior,'instant');
+  scrolled=null;c.location.hash='#season/table';c.centerNextGame();assert.equal(scrolled,null);
+ }
+});

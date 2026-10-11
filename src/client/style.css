@@ -3147,11 +3147,11 @@ html[data-club='fcsg'].snap-profile {
 .club-picker button[aria-pressed='true'] { background:var(--accent); color:#111310; }
 .club-picker button:hover:not([aria-pressed='true']) { background:var(--surface-2); }
 .club-picker button:focus-visible { outline:3px solid var(--accent-soft); outline-offset:2px; }
-.club-picker button .club-dot { right:5px; top:4px; }
-.club-picker button[data-dot='win'] .club-dot { background:var(--win); }
-.club-picker button[data-dot='loss'] .club-dot { background:var(--loss); }
-.club-picker button[data-dot='draw'] .club-dot { background:#6fa8dc; }
-.club-picker button[data-dot='pending'] .club-dot { background:#8a918c; }
+/* The marker belongs to the indicated club, regardless of the open club or result. */
+.club-picker [data-select-club='kadetten'] { --club-dot-color:#ff7900; }
+.club-picker [data-select-club='fcsg'] { --club-dot-color:#66d99b; }
+.club-picker [data-select-club='otmar'] { --club-dot-color:#efcc32; }
+.club-picker button .club-dot { right:5px; top:4px; background:var(--club-dot-color); }
 .club-picker button[data-dot='live'] .club-dot { animation:club-dot-pulse 1.4s ease-in-out infinite; }
 .club-settings-dialog { color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:24px; width:calc(100% - 28px); max-width:480px; padding:24px; box-shadow:0 24px 80px #0008; }
 .club-settings-dialog::backdrop { background:#0009; backdrop-filter:blur(6px); }

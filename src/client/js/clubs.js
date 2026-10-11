@@ -103,7 +103,16 @@ function otherClubResultState(game) {
   const home = game.home === 'Kadetten Schaffhausen', diff = game.score[home ? 0 : 1] - game.score[home ? 1 : 0];
   return diff > 0 ? 'win' : diff < 0 ? 'loss' : 'draw';
 }
+function syncMatchdayNavigation() {
+  const badge=document.querySelector('[data-nav="games"]');
+  if(!badge)return;
+  const list=activeClub==='fcsg'?fcsgData.games:typeof games!=='undefined'?games:[];
+  const matchday=list.some(g=>g.date===swissToday());
+  badge.classList.toggle('is-matchday',matchday);
+  badge.setAttribute('aria-label',matchday?'Spiele · Heute · Matchday':'Spiele');
+}
 function updateClubDot() {
+  syncMatchdayNavigation();
   const today=swissToday();
   const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
   const minutes=Number(parts.find(p=>p.type==='hour').value)*60+Number(parts.find(p=>p.type==='minute').value);
