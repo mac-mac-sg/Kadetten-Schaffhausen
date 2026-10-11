@@ -36,7 +36,7 @@ export function parseTicker(data) {
     const id = data?.playerstats?.[key]?.team?.id;
     if (id) codeSide.set(id, side);
   }
-  const goals = [], sevenMeters = [], timeouts = [], suspensions = [];
+  const goals = [], sevenMeters = [], timeouts = [], suspensions = [], shots = [];
   let prev = [0, 0], halftime = null;
   for (const a of actions) {
     const sec = clockSeconds(a.when);
@@ -44,6 +44,8 @@ export function parseTicker(data) {
       const s = scorerOf(a.competitor);
       if (!s) continue;
       const seven = a.loc === 'PTY';
+      const keeper = (a.competitor || []).flatMap(c => (c.composition?.athlete || []).filter(p => p.role === 'GK').map(p => ({code:c.code,id:p.code || null,name:person(p),bib:p.bib ?? null})))[0];
+      shots.push({sec,half:a.period || null,code:s.code,bib:s.bib,zone:a.loc || null,result:a.result || null,keeper:keeper || null});
       if (a.result === 'GOAL') {
         if (!Number.isInteger(a.scoreH) || !Number.isInteger(a.scoreA) || sec === null) throw Error('Invalid ticker goal');
         const side = a.scoreH > prev[0] ? 'home' : a.scoreA > prev[1] ? 'away' : null;
@@ -68,12 +70,38 @@ export function parseTicker(data) {
   const final = Number.isInteger(phaseEnd?.scoreA) && Number.isInteger(phaseEnd?.scoreB) ? [phaseEnd.scoreA, phaseEnd.scoreB] : last || null;
   return {
     goals,
+    shots: shots.map(s => ({...s,side:sideOf(s.code)})),
     sevenMeters: sevenMeters.map(s => ({side: sideOf(s.code), bib: s.bib, goal: s.goal})),
     timeouts: timeouts.map(t => ({...t, side: sideOf(t.code)})),
     suspensions: suspensions.map(s => ({...s, side: sideOf(s.code)})),
     halftime,
     final
   };
+}
+
+// Only complete shot lists are used: score agreement alone does not prove that missed shots were captured.
+export function shotStatistics(ticker, teamStats, players = []) {
+  if (!Array.isArray(ticker?.shots) || !ticker.shots.length || !teamStats) return null;
+  const valid = ['GOAL','SAVE','POST','MISS','BLC'];
+  if (ticker.shots.some(s => !s.side || !valid.includes(s.result) || !Number.isInteger(s.sec) || s.sec < 0)) return null;
+  const counts = list => ({shots:list.length,goals:list.filter(s=>s.result==='GOAL').length,saved:list.filter(s=>s.result==='SAVE').length,post:list.filter(s=>s.result==='POST').length,missed:list.filter(s=>s.result==='MISS').length,blocked:list.filter(s=>s.result==='BLC').length});
+  const zones = list => [...new Set(list.map(s=>s.zone || 'UNKNOWN'))].sort().map(zone=>({zone,...counts(list.filter(s=>(s.zone || 'UNKNOWN')===zone))}));
+  const teams = {};
+  for (const side of ['home','away']) {
+    const list=ticker.shots.filter(s=>s.side===side), c=counts(list), official=teamStats[side==='home'?'home':'guest'];
+    if (c.shots!==official?.shots || c.goals!==official?.goals) return null;
+    const incoming=ticker.shots.filter(s=>s.side!==side && ['GOAL','SAVE'].includes(s.result));
+    const keepers=players.filter(p=>p.home===(side==='home') && p.goalkeeper).flatMap(p=>{
+      const faced=incoming.filter(s=>s.keeper && (s.keeper.id ? s.keeper.id===p.id : String(s.keeper.bib)===String(p.number)));
+      const saves=faced.filter(s=>s.result==='SAVE').length;
+      // Do not turn missing goalkeeper attribution into zero saves or an incorrect percentage.
+      if (!faced.length || faced.length!==p.savesFaced || saves!==p.saves) return [];
+      const seven=faced.filter(s=>s.zone==='PTY');
+      return [{id:p.id,name:p.name,shots:faced.length,saves,sevenShots:seven.length,sevenSaves:seven.filter(s=>s.result==='SAVE').length,zones:zones(faced)}];
+    });
+    teams[side]={...c,zones:zones(list),halves:list.every(s=>['H1','H2'].includes(s.half))?['H1','H2'].map(half=>({half,...counts(list.filter(s=>s.half===half))})):null,keepers};
+  }
+  return {v:1,...teams};
 }
 
 // Siebenmeter je Spieler (Tore/Würfe) aus der Torfolge; nur wenn die Ereignisliste zum Endstand passt (sonst bleibt null).

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseTicker, withSevenMeters, matchFacts, factLines, plainReport, goalFeed} from '../server/ehf-ticker.mjs';
+import {parseTicker, shotStatistics, withSevenMeters, matchFacts, factLines, plainReport, goalFeed} from '../server/ehf-ticker.mjs';
 import {reportMessages, toReport, validReport} from '../server/report-ai.mjs';
 
 const KAD = 'uyEpUicNjwv8hCX9B7A3sg', IZV = '2zXEaNBPEzJP81Ffhy6t9g';
@@ -27,6 +27,24 @@ const actions = [
   {order: 100, period: 'H2', action: 'ENDP', when: '60:0', scoreH: 5, scoreA: 2}
 ];
 const data = {playerstats: {homeTeam: {team: {id: KAD}}, guestTeam: {team: {id: IZV}}}, events: [{actions: {action: actions}, phaseScores: [{name: 'Match ended', scoreA: 5, scoreB: 2}]}]};
+
+test('Wurfdetails prüfen auch Fehlwürfe und Torhüter-Zuordnung gegen offizielle Summen', () => {
+  const t=structuredClone(parseTicker(data)), official={home:{goals:5,shots:6},guest:{goals:2,shots:2}};
+  for(const s of t.shots.filter(s=>s.side==='home'))s.keeper={id:'g',bib:1,name:'Gasttorhüter'};
+  const players=[{id:'g',number:'1',name:'Gasttorhüter',home:false,goalkeeper:true,saves:1,savesFaced:6}];
+  const stats=shotStatistics(t,official,players);
+  assert.equal(stats.home.saved,1);assert.equal(stats.home.post,0);
+  assert.deepEqual(stats.home.halves.map(h=>h.shots),[6,0]);
+  assert.equal(stats.home.zones.find(z=>z.zone==='PTY').shots,2);
+  assert.deepEqual([stats.away.keepers[0].sevenSaves,stats.away.keepers[0].sevenShots],[1,2]);
+  // A complete score with an omitted saved shot is still incomplete.
+  const incomplete={...t,shots:t.shots.filter(s=>s.result!=='SAVE')};
+  assert.equal(shotStatistics(incomplete,official,players),null);
+  assert.equal(shotStatistics({...t,shots:[...t.shots,{...t.shots[0],result:'OTHER'}]},official,players),null);
+  t.shots.find(s=>s.side==='home').keeper=null;
+  assert.equal(shotStatistics(t,official,players).away.keepers.length,0);
+  assert.equal(shotStatistics(null,official),null);
+});
 
 test('Ticker: Tore, Seite aus dem Spielstand, Siebenmeter, Auszeit und Strafe', () => {
   const t = parseTicker(data);

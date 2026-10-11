@@ -176,7 +176,24 @@ function ehfAsReport(a) {
  for(const s of a.suspensions||[])events.push({id:++id,seconds:s.sec,time:clock(s.sec),score:null,action:'Zeitstrafe',homePlayer:s.side==='home'?s.name:null,awayPlayer:s.side==='away'?s.name:null});
  for(const t of a.timeouts||[])events.push({id:++id,seconds:t.sec,time:clock(t.sec),score:null,action:'Time-out',homePlayer:null,awayPlayer:null});
  events.sort((x,y)=>y.seconds-x.seconds||y.id-x.id);
- return {gameId:a.matchId,score:a.score,half:Array.isArray(a.half)?a.half:[null,null],spectators:a.spectators??null,referees:[],teams:[team(true),team(false)],events:events.length?events:undefined,source:a.source?.url||null,checkedAt:a.checkedAt,ehf:true};
+ return {gameId:a.matchId,score:a.score,half:Array.isArray(a.half)?a.half:[null,null],spectators:a.spectators??null,referees:[],teams:[team(true),team(false)],events:events.length?events:undefined,source:a.source?.url||null,checkedAt:a.checkedAt,ehf:true,shotStats:a.shotStats || null};
+}
+
+const ehfZones=[['LLD','Links · Distanz'],['CLD','Mitte · Distanz'],['RLD','Rechts · Distanz'],['LSD','Links · nah'],['CSD','Mitte · nah'],['RSD','Rechts · nah'],['PTY','Siebenmeter']];
+const ehfZoneName=zone=>ehfZones.find(z=>z[0]===zone)?.[1] || 'Weitere Wurfzone';
+const ehfShotQuote=(goals,shots)=>Number.isInteger(goals)&&shots>0?Math.round(goals/shots*100)+' %':'–';
+function ehfShotComparison(stats) {
+ if(!stats?.home || !stats?.away)return '';
+ return `<section class="ehf-shot-results panel" aria-label="Wurfergebnisse"><p class="eyebrow">EHF · Wurfdetails</p><h2>Wie die Würfe endeten</h2>${[['Tore','goals'],['Vom Torhüter gehalten','saved'],['Pfosten / Latte','post'],['Daneben','missed'],['Geblockt','blocked']].map(([label,key])=>metric(label,stats.home[key],stats.away[key])).join('')}<p class="muted">Heimteam links · Auswärtsteam rechts</p></section>`;
+}
+function ehfShotTeam(stats,side) {
+ const t=stats?.[side];if(!t || !Array.isArray(t.zones))return '';
+ const tile=(code,label)=>{
+  const z=t.zones.find(z=>z.zone===code), shots=z?.shots || 0, goals=z?.goals || 0;
+  return `<div class="ehf-zone${code==='PTY'?' ehf-zone-seven':''}"><span>${label}</span><strong>${goals}<small> / ${shots}</small></strong><b>${ehfShotQuote(goals,shots)}</b></div>`;
+ };
+ const other=t.zones.filter(z=>!ehfZones.some(([code])=>code===z.zone));
+ return `<section class="ehf-shot-map" aria-label="Wurfverteilung"><p class="eyebrow">Angriff · Tore / Würfe</p><h3>Woher die Würfe kamen</h3><div class="ehf-zone-grid">${ehfZones.map(([code,label])=>tile(code,label)).join('')}${other.map(z=>tile(z.zone,'Weitere Wurfzone')).join('')}</div><p class="muted">Wurfzonen gemäss EHF · Quote je Zone</p>${t.halves?.length===2?`<div class="ehf-half-quotes">${t.halves.map((h,i)=>`<div><span>${i+1}. Halbzeit</span><strong>${ehfShotQuote(h.goals,h.shots)}</strong><small>${h.goals} Tore / ${h.shots} Würfe</small></div>`).join('')}</div>`:''}</section>${(t.keepers || []).map(k=>`<details class="ehf-keeper-zones"><summary><span>${liveEscape(k.name)}<small>Paraden nach Wurfzone</small></span><strong>${ehfShotQuote(k.saves,k.shots)}</strong></summary><div class="ehf-seven-saves"><span>Siebenmeter gehalten</span><strong>${k.sevenSaves} / ${k.sevenShots}</strong></div><div class="report-table-wrap" tabindex="0" role="region" aria-label="Paraden nach Wurfzone ${liveEscape(k.name)}"><table class="report-table"><thead><tr><th scope="col">Wurfzone</th><th scope="col">Paraden / Würfe</th><th scope="col">Quote</th></tr></thead><tbody>${k.zones.map(z=>`<tr><th scope="row">${ehfZoneName(z.zone)}</th><td>${z.saved} / ${z.shots}</td><td>${ehfShotQuote(z.saved,z.shots)}</td></tr>`).join('')}</tbody></table></div></details>`).join('')}`;
 }
 function ehfReportBlock(a) {
  const r=a?.report;if(!r||!Array.isArray(r.paragraphs))return '';
@@ -209,7 +226,7 @@ function playerTables(list,team,seven) {
 function statsView(src) {
  const teamPart=src.teamStats?liveTeamStats(src):'';
  if(!src.players?.length)return teamPart||'<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
- return teamPart+statsPlayers(src);
+ return teamPart+ehfShotComparison(src.shotStats)+statsPlayers(src);
 }
 // Mannschaftsumschalter mit je einem Bereich pro Mannschaft; beide Bereiche stehen im Dokument, das Umschalten braucht keine Abfrage.
 function teamSwitchMarkup(id,home,away,panel) {
@@ -219,10 +236,10 @@ function teamSwitchMarkup(id,home,away,panel) {
 }
 function statsPlayers(src) {
  const seven=src.players.some(p=>p.seven!==null&&p.seven!==undefined);
- return `<h2>Spielerstatistiken</h2>${teamSwitchMarkup(src.id,src.home,src.away,(k,name)=>playerTables(src.players.filter(p=>p.home===(k==='home')),name,seven))}<p class="muted">YC: Gelbe Karte · 2M: 2-Minuten-Strafe · RC: Rote Karte · S: Würfe · G: Tore · SV: Paraden · SH: erhaltene Würfe · SV%: Fangquote${seven?' · 7 m: Siebenmeter-Tore/Würfe':''} · –: Wert nicht verfügbar</p>`;
+ return `<h2>Spielerstatistiken</h2>${teamSwitchMarkup(src.id,src.home,src.away,(k,name)=>ehfShotTeam(src.shotStats,k)+playerTables(src.players.filter(p=>p.home===(k==='home')),name,seven))}<p class="muted">YC: Gelbe Karte · 2M: 2-Minuten-Strafe · RC: Rote Karte · S: Würfe · G: Tore · SV: Paraden · SH: erhaltene Würfe · SV%: Fangquote${seven?' · 7 m: Siebenmeter-Tore/Würfe':''} · –: Wert nicht verfügbar</p>`;
 }
 function livePlayerStats(live,archive) {
- const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home,away:archive.away,teamStats:archive.teamStats,players:archive.players}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};
+ const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home,away:archive.away,teamStats:archive.teamStats,players:archive.players,shotStats:archive.shotStats}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};
  return statsView(src);
 }
 // Umschalten der Mannschaft: Die Tabellen beider Mannschaften sind schon im Dokument; es wird nur gewechselt.

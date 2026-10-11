@@ -35,7 +35,7 @@ export function parseEhfPlayers(data){
  const details=data?.matchDetails?.details;
  if(!details||!Array.isArray(details.homeTeam?.players)||!Array.isArray(details.guestTeam?.players))throw Error('Missing EHF players');
  const count=v=>Number.isInteger(v)&&v>=0?v:null;
- const side=(list,home)=>list.filter(p=>p&&p.isPlayer!==false&&p.person?.lastName).map(p=>{
+ const side=(list,home)=>list.filter(p=>p&&(p.isPlayer!==false||p.isGoalkeeper===true||p.playingPosition==='Goalkeeper')&&p.person?.lastName).map(p=>{
   const sc=p.score||{};
   return {id:String(p.id||p.shirtNumber||p.person.lastName),number:p.shirtNumber?String(p.shirtNumber):null,name:[p.person.firstName,p.person.lastName].filter(Boolean).join(' '),home,goalkeeper:p.isGoalkeeper===true||p.playingPosition==='Goalkeeper',goals:count(sc.goals),shots:count(sc.shots),seven:null,sevenShots:null,twoMinutes:count(sc.twoMinPenaltiesCount),yellow:count(sc.warningsCount),red:count(sc.redCardsCount),saves:count(sc.goalkeeperSaves),savesFaced:count(sc.goalkeeperRecievedShots)};
  });

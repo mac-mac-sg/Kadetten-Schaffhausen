@@ -242,7 +242,8 @@ function reportStats(g) {
       .map(p => `<div><span>${link(p, reportPlayer(p))}</span><strong>${p.saves ?? '–'} Paraden</strong><p class="muted nowrap">${p.saves !== null && p.keeperShots > 0 ? percent((p.saves / p.keeperShots) * 100) : '–'} Fangquote</p></div>`)
       .join('')}</div>` : ''}`;
   };
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div>` : ''}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => team(r.teams[k === 'home' ? 0 : 1]))}`;
+  const shots=g.league==='EHL' && r.ehf ? r.shotStats : null;
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div>` : ''}${ehfShotComparison(shots)}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => ehfShotTeam(shots,k)+team(r.teams[k === 'home' ? 0 : 1]))}`;
 }
 
 function reportComparison(g,r) {

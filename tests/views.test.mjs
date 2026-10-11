@@ -429,6 +429,27 @@ test('European League: gesicherter Endstand erscheint wie ein abgeschlossenes QH
  }finally{run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;delete gameReports.izvidac;ehfArchive={};liveStatsTeam=null');}
 });
 
+test('EHF-Wurfdetails sind umschaltbar, maskieren Namen und verändern QHL-Statistiken nicht',()=>{
+ const team={goals:1,shots:2,saved:1,post:0,missed:0,blocked:0,zones:[{zone:'CSD',goals:1,shots:2,saved:1}],halves:[{goals:1,shots:2},{goals:0,shots:0}],keepers:[{name:'A & B <img>',saves:1,shots:2,sevenSaves:0,sevenShots:0,zones:[{zone:'CSD',saved:1,shots:2}]}]};
+ context.__shotStats={home:team,away:team};
+ const fixture={id:'ehf-details-test',league:'EHL',home:'Kadetten Schaffhausen',away:'HC Izvidac',score:[1,1]};
+ context.__shotFixture=fixture;
+ run(`gameReports['ehf-details-test']={score:[1,1],half:[1,1],ehf:true,teams:[{id:41473,name:'Kadetten Schaffhausen',players:[]},{id:-2,name:'HC Izvidac',players:[]}],shotStats:__shotStats}`);
+ try{
+  const html=view('reportStats(__shotFixture)'),doc=parseHTML(html).document;
+  assert.equal(doc.querySelectorAll('.ehf-zone').length,14);
+  assert.match(html,/Wie die Würfe endeten/);assert.match(html,/Woher die Würfe kamen/);assert.match(html,/Siebenmeter gehalten/);
+  assert.match(html,/A &amp; B &lt;img&gt;/);assert.doesNotMatch(html,/A & B <img>/);
+  assert.equal(doc.querySelector('[data-stats-panel="away"]').hasAttribute('hidden'),true);
+  // For a QHL fixture even an accidentally attached EHF payload is ignored.
+  run(`__shotFixture.league='QHL'`);
+  const withPayload=view('reportStats(__shotFixture)');
+  run(`delete gameReports['ehf-details-test'].shotStats`);
+  assert.equal(view('reportStats(__shotFixture)'),withPayload);
+  assert.doesNotMatch(withPayload,/ehf-shot-map|Wie die Würfe endeten/);
+ }finally{run(`delete gameReports['ehf-details-test'];liveStatsTeam=null`);}
+});
+
 test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
  run(`globalThis.__q={id:'qhl-test',league:'QHL',home:'Kadetten Schaffhausen',away:'Handball Stäfa',date:'2026-10-03',time:'18:00',venue:'BBC Arena',url:'https://kadettensh.ch/matchcenter/',score:[45,34],half:[21,14]}`);
  const open=run('match(__q,"overview")');
