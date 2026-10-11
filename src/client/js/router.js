@@ -273,7 +273,7 @@ function centerNextGame() {
 let appChromeObserver;
 function measureAppChrome() {
   const top=document.querySelector('body > .top');if(!top)return;
-  const measure=()=>{const height=Math.ceil(top.getBoundingClientRect().height);document.documentElement.style.setProperty('--app-header-height',height+'px');document.body.style.setProperty('--games-header-height',height+'px');};
+  const measure=()=>{const height=top.getBoundingClientRect().height;document.documentElement.style.setProperty('--app-header-height',height+'px');document.body.style.setProperty('--games-header-height',height+'px');};
   measure();
   if(typeof ResizeObserver!=='undefined' && !appChromeObserver) {appChromeObserver=new ResizeObserver(measure);appChromeObserver.observe(top);}
 }

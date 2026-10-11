@@ -84,6 +84,18 @@ test('Install intro appears once, skips standalone and installs only on a delibe
  }
 });
 
+test('Kopfzeilenhöhe behält Subpixel bei, auch nach einer Grössenänderung',()=>{
+ let height=129.6875,resize;
+ const rootValues={},bodyValues={},top={getBoundingClientRect:()=>({height})};
+ const c=vm.createContext({document:{querySelector:()=>top,documentElement:{style:{setProperty:(k,v)=>rootValues[k]=v}},body:{style:{setProperty:(k,v)=>bodyValues[k]=v}}},ResizeObserver:class{constructor(callback){resize=callback;}observe(element){assert.equal(element,top);}}});
+ load(c,'js/router.js');c.measureAppChrome();
+ assert.equal(rootValues['--app-header-height'],'129.6875px');
+ assert.equal(bodyValues['--games-header-height'],'129.6875px');
+ height=152.3125;resize();
+ assert.equal(rootValues['--app-header-height'],'152.3125px');
+ assert.equal(bodyValues['--games-header-height'],'152.3125px');
+});
+
 test('Aktuelles Spiel liegt zwischen fixierter Kopfzeile und Dock; hohe Karten beginnen unter den Filtern',()=>{
  for(const [headerBottom,height] of [[350,320],[350,600],[240,320]]){
   let scrolled;
