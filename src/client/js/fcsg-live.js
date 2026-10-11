@@ -35,8 +35,8 @@ function updateFcsgLiveView() {
   if(overview){const signature=JSON.stringify(g.score||g.live?['events',g.events]:['preview',g.home,g.away,g.date,g.time,g.confirmed,g.venue,g.tickets]);
    if(!fcsgPanelSignatures.has(overview))fcsgPanelSignatures.set(overview,overview.dataset.signature);
    if(updateFcsgPanel(overview,signature,()=>fcsgOverview(g)))loadMatchPreview();}
-  const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([g.homeStats,g.awayStats]),()=>fcsgTeamStats(g));
-  const lineup=document.getElementById('fcsg-lineups');updateFcsgPanel(lineup,JSON.stringify([g.homeLineup,g.awayLineup]),()=>fcsgLineups(g));
+  const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([g.homeStats,g.awayStats,g.momentum,g.score]),()=>fcsgTeamStats(g));
+  const lineup=document.getElementById('fcsg-lineups');updateFcsgPanel(lineup,JSON.stringify([g.homeLineup,g.awayLineup,g.events,g.substitutions]),()=>fcsgLineups(g));
  }
  document.querySelectorAll('.games [data-fcsg-game]').forEach(card=>{const g=fcsgGame(card.dataset.fcsgGame);if(!g)return;const score=card.querySelector('[data-fcsg-score]');if(score)score.textContent=fcsgDisplayScore(g);const phase=card.querySelector('[data-fcsg-phase]');if(phase)phase.textContent=fcsgLiveState(g);const link=card.querySelector('.actions a');if(link)link.textContent=g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau';card.classList.toggle('fcsg-game-live',!!g.live);});
 }
