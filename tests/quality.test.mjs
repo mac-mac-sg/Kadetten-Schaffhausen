@@ -72,7 +72,7 @@ test('PWA prompts only for different versions and reloads only on user action',(
 test('Install intro appears once, skips standalone and installs only on a deliberate click',async()=>{
  for(const standalone of [false,true]){
   const {document}=parseHTML('<html><body><header class="top"></header><button id="install-app"></button></body></html>');
-  const events={},store=new Map();let prompts=0;
+  const events={},store=new Map([['fan-app-onboarding-v1','seen']]);let prompts=0;
   document.createElement=(original=>function(tag){const el=original.call(this,tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;})(document.createElement);
   const c=vm.createContext({document,URL,Date,setInterval(){},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},navigator:{userAgent:'Chrome',platform:'Linux'},window:{matchMedia:()=>({matches:standalone,addEventListener(){}}),addEventListener:(k,f)=>events[k]=f}});
   load(c,'pwa.js');events.load();
@@ -119,5 +119,49 @@ test('Aktuelles Spiel liegt zwischen fixierter Kopfzeile und Dock; hohe Karten b
   else assert.equal(positionedTop,headerBottom+12);
   assert.equal(scrolled.behavior,'instant');
   scrolled=null;c.location.hash='#season/table';c.centerNextGame();assert.equal(scrolled,null);
+ }
+});
+
+test('Introduction guides first-time users, remembers dismissal and can be reopened in standalone',()=>{
+ for(const standalone of [false,true]){
+  const {document}=parseHTML('<html><body><button id="install-app"></button><button id="club-settings"></button></body></html>');
+  const events={},store=new Map();
+  document.createElement=(original=>function(tag){const el=original.call(this,tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;})(document.createElement);
+  const window={matchMedia:()=>({matches:standalone,addEventListener(){}}),addEventListener:(k,f)=>events[k]=f};
+  const c=vm.createContext({document,URL,Date,setInterval(){},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},navigator:{userAgent:'Chrome',platform:'Linux'},window});
+  load(c,'pwa.js');events.load();
+  assert.equal(document.querySelector('.guide-progress').textContent,'1 von 4 · Deine Vereine');
+  assert.equal(document.querySelector('[data-back]').hidden,true);
+  assert.equal(document.querySelector('.install-intro'),null);
+  document.querySelector('[data-next]').onclick();
+  assert.equal(document.querySelector('.guide-progress').textContent,'2 von 4 · News');
+  document.querySelector('[data-back]').onclick();
+  assert.match(document.querySelector('h2').textContent,/Deine Vereine/);
+  document.querySelector('[data-skip]').onclick();
+  assert.equal(store.get('fan-app-onboarding-v1'),'seen');
+  assert.equal(document.querySelector('dialog'),null);
+  store.set('fan-app-install-intro-v1','seen');events.load();
+  assert.equal(document.querySelector('dialog'),null);
+  window.showAppIntroduction();
+  for(let i=0;i<3;i++)document.querySelector('[data-next]').onclick();
+  assert.equal(document.querySelector('[data-next]').textContent,'Los geht’s');
+  document.querySelector('[data-next]').onclick();
+  assert.equal(document.querySelector('dialog'),null);
+  window.showAppIntroduction();
+  document.querySelector('dialog').dispatchEvent(new document.defaultView.Event('cancel',{cancelable:true}));
+  assert.equal(document.querySelector('dialog'),null);
+ }
+});
+
+test('Completing the first introduction offers installation only outside standalone',()=>{
+ for(const standalone of [false,true]){
+  const {document}=parseHTML('<html><body><button id="install-app"></button></body></html>');
+  const events={},store=new Map();
+  document.createElement=(original=>function(tag){const el=original.call(this,tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;})(document.createElement);
+  const c=vm.createContext({document,URL,Date,setInterval(){},localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},navigator:{userAgent:'Chrome',platform:'Linux'},window:{matchMedia:()=>({matches:standalone,addEventListener(){}}),addEventListener:(k,f)=>events[k]=f}});
+  load(c,'pwa.js');events.load();
+  for(let i=0;i<4;i++)document.querySelector('[data-next]').onclick();
+  assert.equal(document.querySelector('.app-introduction'),null);
+  assert.equal(Boolean(document.querySelector('.install-intro')),!standalone);
  }
 });

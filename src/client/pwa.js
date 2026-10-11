@@ -21,7 +21,45 @@
   intro.querySelector('[data-install]').onclick=install;intro.querySelector('[data-later]').onclick=dismissIntro;
   intro.addEventListener('cancel',event=>{event.preventDefault();dismissIntro();});
  };
- window.addEventListener('load',showIntro);
+ const GUIDE_KEY='fan-app-onboarding-v1';let guide;
+ const steps=[
+  {label:'Deine Vereine',title:'Eine App. Deine Vereine.',text:'Wechsle oben zwischen Kadetten, FCSG und St. Otmar. In den Einstellungen wählst du, welche Vereine du sehen möchtest.',tip:'Deine Vereinsauswahl wird auf diesem Gerät gespeichert.'},
+  {label:'News',title:'Bleib am Ball.',text:'Auf der Startseite findest du die aktuellen News deines Vereins. Öffne einen Artikel, um den ganzen Bericht zu lesen.',tip:'Wische durch die News, um weitere Artikel zu entdecken.'},
+  {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:'Wechsle beim Spielplan zwischen Liste und Kalender. Die Tabelle findest du über die Navigation.'},
+  {label:'Kader & Tipps',title:'Lerne dein Team kennen.',text:'Im Kader entdeckst du die Spieler deines Vereins. Öffne ein Spielerprofil für weitere Informationen und die verfügbaren Saisonstatistiken.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
+ ];
+ window.showAppIntroduction=(firstVisit=false)=>{
+  if(guide)return;
+  dismissIntro();
+  const previousFocus=document.activeElement;let step=0;
+  guide=document.createElement('dialog');guide.className='app-introduction';guide.setAttribute('aria-labelledby','app-introduction-title');
+  guide.innerHTML='<header><span class="eyebrow">WILLKOMMEN IN DEINER FAN-APP</span><button type="button" class="guide-skip" data-skip>Überspringen</button></header><p class="guide-progress" aria-live="polite" aria-atomic="true"></p><div class="guide-dots" aria-hidden="true"></div><h2 id="app-introduction-title" tabindex="-1"></h2><p class="guide-text"></p><aside class="guide-tip"><span>TIPP</span><p></p></aside><footer><button type="button" class="button subtle" data-back>Zurück</button><button type="button" class="button" data-next>Weiter</button></footer>';
+  const finish=(offerInstall)=>{
+   try{localStorage.setItem(GUIDE_KEY,'seen');}catch{}
+   const current=guide;guide=null;current.close();current.remove();previousFocus?.focus();
+   if(firstVisit&&offerInstall)showIntro();
+  };
+  const render=()=>{
+   const item=steps[step];
+   guide.querySelector('.guide-progress').textContent=`${step+1} von ${steps.length} · ${item.label}`;
+   guide.querySelector('.guide-dots').innerHTML=steps.map((_,index)=>`<i class="${index===step?'is-current':''}"></i>`).join('');
+   guide.querySelector('h2').textContent=item.title;
+   guide.querySelector('.guide-text').textContent=item.text;
+   guide.querySelector('.guide-tip p').textContent=item.tip;
+   guide.querySelector('[data-back]').hidden=step===0;
+   guide.querySelector('[data-next]').textContent=step===steps.length-1?'Los geht’s':'Weiter';
+   guide.querySelector('h2').focus();
+  };
+  document.body.append(guide);render();guide.showModal();guide.querySelector('h2').focus();
+  guide.querySelector('[data-next]').onclick=()=>{if(step===steps.length-1)finish(true);else{step++;render();}};
+  guide.querySelector('[data-back]').onclick=()=>{if(step>0){step--;render();}};
+  guide.querySelector('[data-skip]').onclick=()=>finish(false);
+  guide.addEventListener('cancel',event=>{event.preventDefault();finish(false);});
+ };
+ window.addEventListener('load',()=>{
+  let seen=false;try{seen=Boolean(localStorage.getItem(GUIDE_KEY));}catch{}
+  if(seen)showIntro();else window.showAppIntroduction(true);
+ });
 
  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();promptEvent=event;sync()});
  window.addEventListener('appinstalled',()=>{promptEvent=null;installed=true;button.hidden=true;appFeedback('Meine Vereine wurde installiert.')});
