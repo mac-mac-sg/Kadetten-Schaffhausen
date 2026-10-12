@@ -636,6 +636,8 @@
 
 /* Keep the club switch above the sticky filters after centering the next game. */
 body.games-mode { --games-header-height: 82px; }
+.games-mode .season.content { padding-top:0; }
+.games-mode .season-header { padding:16px 0 12px; }
 .games-mode > .top {
   position: sticky;
   top: 0;
@@ -643,15 +645,12 @@ body.games-mode { --games-header-height: 82px; }
   background: var(--surface);
 }
 /* Cover subpixel seams between the two independently composited sticky layers. */
-.games-mode .season-header { top: calc(var(--games-header-height) - 1px); }
+.games-mode .season-header { top:var(--games-header-height); transform:translateY(-1px); }
 @media (max-width: 640px) {
   body.games-mode { --games-header-height: 72px; }
 }
 @media (display-mode: standalone) {
   body.games-mode { --games-header-height: calc(82px + env(safe-area-inset-top)); }
-}
-@media (max-height: 700px) {
-  body.games-mode.calendar-mode { --games-header-height: calc(60px + env(safe-area-inset-top)); }
 }
 
 /* The month fills the available viewport, including months with six weeks. */
@@ -688,24 +687,15 @@ body.calendar-mode {
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  padding: 0 20px 8px;
+  padding: 0 30px 8px;
 }
-.calendar-season .season-header {
-  position: static;
-  padding: 8px 0;
-}
-.calendar-season .season-header h1 {
-  font-size: 30px;
-  margin-bottom: 8px;
-}
-.calendar-season .season-header .eyebrow {
-  margin-bottom: 4px;
-}
-.calendar-season .season-header .controls {
-  margin: 8px 0 0;
+/* The shared transform also covers the seam when the calendar header is static. */
+.calendar-season .season-header { position:static; }
+@media(max-width:640px) {
+  .calendar-season.content { padding-inline:20px; }
 }
 .calendar-season .season-header .calendar-head {
-  margin: 8px 0 0;
+  margin: 14px 0 0;
 }
 .calendar-panel {
   min-height: 0;
@@ -769,24 +759,13 @@ body.calendar-mode {
   line-height: 1.35;
   text-align: center;
 }
+/* Compact screens use the same chrome in every games view. */
 @media (max-height: 700px) {
-  .calendar-mode > .top {
-    height: calc(60px + env(safe-area-inset-top));
-  }
-  .calendar-season .season-header .eyebrow {
-    display: none;
-  }
-  .calendar-season .season-header {
-    padding: 4px 0;
-  }
-  .calendar-season .season-header .controls,
-  .calendar-season .season-header .calendar-head {
-    margin-top: 4px;
-  }
-  .calendar-season .season-header h1 {
-    font-size: 26px;
-    margin-bottom: 4px;
-  }
+  .games-mode .season-header { padding:8px 0; }
+  .games-mode .season-header .eyebrow { margin:0 0 4px; }
+  .games-mode .season-header h1 { font-size:26px; line-height:1.2; margin:0 0 4px; }
+  .games-mode .season-header .controls,
+  .games-mode .season-header .calendar-head { margin-top:4px; }
   .calendar-panel {
     gap: 4px;
   }
@@ -796,15 +775,21 @@ body.calendar-mode {
 }
 @media (max-height: 480px) and (min-width: 600px) {
   .calendar-season.content {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 320px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     gap: 16px;
   }
-  .calendar-season .season-header .controls {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+  .games-mode .season-header .controls {
+    width:300px;
+    max-width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:4px;
   }
+  .games-mode .season-header .controls label { display:flex; align-items:center; gap:8px; }
+  .games-mode .game-view-toggle { display:grid; grid-template-columns:1fr 1fr 1.35fr; }
+  .games-mode .season-header .toggle button { font-size:14px; padding:9px 6px; }
   .calendar-season .season-header .calendar-head h2 {
     font-size: 18px;
   }
