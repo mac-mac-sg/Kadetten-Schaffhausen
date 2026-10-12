@@ -65,6 +65,7 @@ function seasonJourney(input) {
     .join('')}</div></div>`;
 }
 function syncOfflineNotice() {
+  if(typeof syncSourceNotices==='function')syncSourceNotices();
   let el = document.getElementById('offline-notice');
   if (!el) {
     el = document.createElement('p');

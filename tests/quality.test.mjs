@@ -165,3 +165,9 @@ test('Completing the first introduction offers installation only outside standal
   assert.equal(Boolean(document.querySelector('.install-intro')),!standalone);
  }
 });
+
+test('Calendar opens in the current Zurich month rather than a fixed October',()=>{
+ class NovemberDate extends Date {constructor(...args){super(...(args.length?args:['2026-11-17T10:00:00Z']));}}
+ const c=vm.createContext({Date:NovemberDate,document:{querySelector:()=>null}});load(c,'js/core.js');
+ assert.equal(vm.runInContext('calendarYear',c),2026);assert.equal(vm.runInContext('month',c),10);
+});

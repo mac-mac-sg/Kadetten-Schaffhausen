@@ -65,7 +65,7 @@ async function fcsgData(request, env, u) {
   const data = saved ? await saved.json() : fcsgSeed;
   if (u.pathname === '/api/fcsg/data') return json(publicFcsgData(data));
   const story = data.stories.find(n => n.id === u.pathname.split('/').at(-1));
-  return story ? json({id: story.id, html: story.html, url: story.url}) : json({error: 'Article not found'}, 404);
+  return story ? json({id: story.id, html: story.html, url: story.url, version:story.articleVersion || null}) : json({error: 'Article not found'}, 404);
 }
 
 async function access(request, env) {

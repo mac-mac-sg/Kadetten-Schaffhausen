@@ -1,6 +1,6 @@
 # Kadetten Widget für Android
 
-Separate Begleitapp ab Android 8.0 (API 26). Kein WebView und keine Kopie der Web-App. Vorschau, Matchday und bestätigte Endresultate erscheinen als 4×2-Widget; Antippen öffnet die vorhandene Pages-Spielseite. Der öffentliche Sites-Datendienst wird ausschliesslich per GET gelesen, ohne Login, Tokens oder Schreibzugriffe.
+Separate Begleitapp ab Android 8.0 (API 26). Kein WebView und keine Kopie der Web-App. Vorschau, Matchday und bestätigte Endresultate erscheinen als 4×2-Widget; Antippen öffnet die vorhandene Pages-Spielseite. Der öffentliche Cloudflare-Datendienst wird ausschliesslich per GET gelesen, ohne Login, Tokens oder Schreibzugriffe.
 
 ## Installation
 

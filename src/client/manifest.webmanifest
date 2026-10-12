@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Kadetten & FCSG",
+  "name": "Meine Vereine",
   "short_name": "Meine Vereine",
-  "description": "News, Spiele, Tabelle und Kader von Kadetten Schaffhausen und FC St. Gallen.",
+  "description": "News, Spiele, Tabelle und Kader von Kadetten Schaffhausen, FC St. Gallen und TSV St. Otmar.",
   "lang": "de-CH",
   "start_url": "./",
   "scope": "./",

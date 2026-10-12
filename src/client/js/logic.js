@@ -197,3 +197,13 @@ function matchPulsePhase(g, live = false, now = new Date()) {
   if (left <= 2 * 3600000) return 'close';
   return g.date === swissToday(now) ? 'matchday' : 'anticipation';
 }
+
+// Gesundheit je sichtbarem Bereich, unabhängig vom allgemeinen Snapshot-Abruf.
+function sourceHealth(state, snapshotStamp, key) {
+ const stamp=state?.updatedAt || snapshotStamp;
+ if(!stamp || state?.ok!==false && !snapshotDelayed(stamp))return '';
+ const name={news:'News',games:'Spieldaten',table:'Tabellendaten',players:'Spielerdaten'}[key] || 'Daten';
+ const valid=Number.isFinite(Date.parse(stamp));
+ const time=valid?new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr':'';
+ return name+(state?.ok===false?' momentan nicht aktualisierbar.':' werden momentan verzögert aktualisiert.')+(time?' Letzter gültiger Stand: '+time+'.':'');
+}

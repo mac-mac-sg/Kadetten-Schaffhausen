@@ -3,3 +3,19 @@
 .fcsg-match-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%;margin:20px 0 26px}
 .fcsg-match-tabs a{min-width:0;padding:12px 5px;text-align:center;font-size:clamp(12px,3.3vw,15px)}
 .fcsg-recent-matches{list-style:none;padding:0}.fcsg-recent-matches a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}.fcsg-recent-matches small{display:block;color:var(--muted);margin-bottom:5px}.fcsg-recent-matches strong{white-space:nowrap;font-size:22px}.fcsg-recent-matches .win{color:var(--win)}.fcsg-recent-matches .loss{color:var(--loss)}.fcsg-recent-matches .draw{color:var(--draw)}
+
+.fcsg-match-header { margin:16px 0; padding:20px 16px; background:var(--surface-2); border:1px solid var(--line); border-radius:20px; }
+.fcsg-match-header .eyebrow { font-size:11px; letter-spacing:.05em; text-align:center; line-height:1.5; }
+.fcsg-match-header .matchup { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:12px; margin:16px 0; text-align:center; }
+.fcsg-match-header .matchup-team { min-width:0; font-size:13px; line-height:1.4; }
+.fcsg-match-header .matchup > strong { font-size:clamp(28px,7vw,44px); white-space:nowrap; }
+.fcsg-match-header .fcsg-live-summary { margin:12px 0 0; text-align:center; font-size:13px; }
+.fcsg-match-venue { margin:8px 0 0; text-align:center; color:var(--muted); font-size:12px; }
+.source-health { margin:12px 0; padding:10px 12px; border-left:2px solid var(--accent); background:var(--surface-2); border-radius:0 8px 8px 0; color:var(--text); font-size:12px; line-height:1.5; font-weight:400; letter-spacing:normal; }
+.source-health[hidden] { display:none; }
+.home-title-zone .source-health { margin:0 24px 12px; }
+.standings-table .our-team .record-text { color:var(--text); }
+
+.fcsg-match-header.result-win { border-top:3px solid var(--win); }
+.fcsg-match-header.result-loss { border-top:3px solid var(--loss); }
+.fcsg-match-header.result-draw { border-top:3px solid var(--draw); }

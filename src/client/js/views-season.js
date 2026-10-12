@@ -2,7 +2,7 @@
 function season(tab) {
   const calendarView = tab === 'games' && mode === 'calendar';
   const title = {games: 'Spiele', table: 'Tabelle', squad: 'Kader'}[tab];
-  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
+  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
 }
 function gameControls() {
   return `<div class="controls"><label>Wettbewerb <select id="competition">${(handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle', 'QHL', 'EHL', 'Testspiel', 'Falkencup']).map(c => `<option ${c === competition ? 'selected' : ''}>${c}</option>`).join('')}</select></label><div class="toggle"><button data-mode="list" aria-pressed="${mode === 'list'}">Liste</button><button data-mode="calendar" aria-pressed="${mode === 'calendar'}">Kalender</button></div></div>`;
@@ -47,16 +47,16 @@ function calendar() {
   )}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">Gegnerlogo antippen für Spielinfos und Resultat.</p>`;
 }
 function recordBar(name, total) {
-  // EHL: Siege/Unentschieden/Niederlagen aus Spielen und Punkten (2 pro Sieg, 1 pro Unentschieden), möglichst wenige Unentschieden
-  const row = tables.EHL.find(t => t[0] === name),
-    derived = () => {
-      const points = Number(row[4]),
-        d = points % 2,
-        w = (points - d) / 2,
-        l = total - w - d;
-      return l >= 0 ? [w, d, l] : null;
-    };
-  const r = tableLeague === 'QHL' ? teamRecords[name] : row ? derived() : null;
+  const row=tables.EHL.find(t=>t[0]===name);
+  const norm=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/chambery.*$/,'chambery').replace(/[^a-z0-9]/g,'');
+  const entry=Object.entries(updateState?.ehlRecentGames || {}).find(([team])=>norm(team)===norm(name))?.[1];
+  const fixtures=(entry?.games || []).filter(g=>g.score&&[g.home,g.away].some(team=>norm(team)===norm(name)));
+  let r=tableLeague==='QHL'?teamRecords[name]:null;
+  if(tableLeague==='EHL'&&row&&fixtures.length===total) {
+   const results=fixtures.map(g=>g.score[norm(g.home)===norm(name)?0:1]-g.score[norm(g.home)===norm(name)?1:0]);
+   const confirmed=[results.filter(n=>n>0).length,results.filter(n=>n===0).length,results.filter(n=>n<0).length];
+   if(2*confirmed[0]+confirmed[1]===Number(row[4]))r=confirmed;
+  }
   if (!r || !total) return '';
   const label = `${r[0]} Siege, ${r[1]} Unentschieden, ${r[2]} Niederlagen`;
   return `<div class="record-bar" role="img" aria-label="${label}" title="${label}">${r.map((n, i) => `<span class="record-${i}" style="width:${(n / total) * 100}%"></span>`).join('')}</div><small class="record-text">${r[0]} S · ${r[1]} U · ${r[2]} N</small>`;

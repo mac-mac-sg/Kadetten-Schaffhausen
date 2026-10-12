@@ -14,7 +14,7 @@ import java.util.List;
 
 final class WidgetRepository {
     static final String WEB="https://mac-mac-sg.github.io/Kadetten-Schaffhausen/";
-    static final String API="https://kadetten.ma-ra10.chatgpt.site/api/data";
+    static final String API="https://kadetten-api.mac-mac-sg.workers.dev/api/data";
     static SharedPreferences prefs(Context c) { return c.getSharedPreferences("widget_data",Context.MODE_PRIVATE); }
     static synchronized boolean refresh(Context c) {
         SharedPreferences p=prefs(c);
