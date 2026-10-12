@@ -788,7 +788,7 @@ body.calendar-mode {
     gap:4px;
   }
   .games-mode .season-header .controls label { display:flex; align-items:center; gap:8px; }
-  .games-mode .game-view-toggle { display:grid; grid-template-columns:1fr 1fr 1.35fr; }
+  .games-mode .game-view-toggle { display:grid; width:300px; max-width:100%; grid-template-columns:1fr 1fr 1.35fr; }
   .games-mode .season-header .toggle button { font-size:14px; padding:9px 6px; }
   .calendar-season .season-header .calendar-head h2 {
     font-size: 18px;
@@ -2179,8 +2179,8 @@ footer .source-details summary { margin-inline: auto; }
 .app-introduction [hidden] { display:none; }
 
 /* Three familiar views; the week belongs to every selected club. */
-.game-view-toggle { display:flex; flex-wrap:wrap; }
-.week-season .controls { justify-content:flex-start; }
+.game-view-toggle { display:inline-flex; width:fit-content; flex-wrap:wrap; }
+.season-header > .game-view-toggle { margin-top:14px; }
 .week-navigation { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:center; gap:8px; margin-top:16px; }
 .week-navigation button { width:44px; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--text); font-size:28px; cursor:pointer; }
 .week-navigation h2 { margin:0; text-align:center; font:600 16px/1.4 var(--font-text); }

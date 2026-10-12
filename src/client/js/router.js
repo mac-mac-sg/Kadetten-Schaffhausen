@@ -181,6 +181,7 @@ function render() {
   document.querySelectorAll('[data-mode]').forEach(
     b =>
       (b.onclick = () => {
+        window.scrollTo({top:0,behavior:'instant'});
         mode = b.dataset.mode;
         render();
       })
