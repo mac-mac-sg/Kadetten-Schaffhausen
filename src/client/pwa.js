@@ -26,7 +26,7 @@
   {label:'Deine Vereine',title:'Eine App. Deine Vereine.',text:'Wechsle oben zwischen Kadetten, FCSG und St. Otmar. In den Einstellungen wählst du, welche Vereine du sehen möchtest.',tip:'Deine Vereinsauswahl wird auf diesem Gerät gespeichert.'},
   {label:'News',title:'Bleib am Ball.',text:'Auf der Startseite findest du die aktuellen News deines Vereins. Öffne einen Artikel, um den ganzen Bericht zu lesen.',tip:'Wische durch die News, um weitere Artikel zu entdecken.'},
   {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:'Wechsle beim Spielplan zwischen Liste und Kalender. Die Tabelle findest du über die Navigation.'},
-  {label:'Kader & Tipps',title:'Lerne dein Team kennen.',text:'Im Kader entdeckst du die Spieler deines Vereins. Öffne ein Spielerprofil für weitere Informationen und die verfügbaren Saisonstatistiken.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
+  {label:'Kader & Verein',title:'Lerne dein Team und deinen Verein kennen.',text:'Im Kader entdeckst du die Spieler und ihre Saisonstatistiken. Über das Vereinswappen oben rechts öffnest du auch die Vereinsgeschichte und die Erfolge deines Vereins.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
  ];
  window.showAppIntroduction=(firstVisit=false)=>{
   if(guide)return;
