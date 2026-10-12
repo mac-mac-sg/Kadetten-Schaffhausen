@@ -328,8 +328,8 @@ function fcsgView(page,id,tab='overview'){
  if(page==='match')return fcsgMatch(id,tab);
  if(page==='club')return fcsgClubPage();
  const section=['games','table','squad'].includes(id)?id:'games',calendarView=section==='games'&&mode==='calendar';
- const controls=`<div class="controls"><label>Wettbewerb <select id="competition">${['Alle',...new Set(fcsgData.games.map(g=>g.league))].map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label>${gameViewToggle()}</div>`;
- return `<section class="content season ${section==='table'?'standings-season':''} ${calendarView?'calendar-season':''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${{games:'Spiele',table:'Tabelle',squad:'Kader'}[section]}</h1>${sourceNotice(section==='squad'?'players':section==='table'?'table':'games')}${section==='games'?controls+(calendarView?calendarNavigation():''):''}</div>${section==='table'?fcsgStanding():section==='squad'?fcsgSquad():fcsgGames()}</section>${fcsgFooter(section==='squad'?'players':section)}`;
+
+ return `<section class="content season ${section==='table'?'standings-season':''} ${calendarView?'calendar-season':''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${{games:'Spiele',table:'Tabelle',squad:'Kader'}[section]}</h1>${section==='games'?gameControls()+(calendarView?calendarNavigation():''):''}${sourceNotice(section==='squad'?'players':section==='table'?'table':'games')}</div>${section==='table'?fcsgStanding():section==='squad'?fcsgSquad():fcsgGames()}</section>${fcsgFooter(section==='squad'?'players':section)}`;
 }
 function restoreFcsgData(){try{const d=JSON.parse(localStorage.getItem('fcsg-public-data-v1'));if(validFcsgData(d))fcsgData=d}catch{}}
 function validFcsgData(d){return d?.club==='fcsg'&&Array.isArray(d.stories)&&Array.isArray(d.games)&&Array.isArray(d.players)&&Array.isArray(d.table)&&d.table.length===12;}

@@ -1,12 +1,13 @@
 /* Saison: Spielplan, Kalender, Tabelle und Kader. */
 function season(tab) {
-  if(tab==='games'&&mode==='week')return `<section class="content season week-season"><div class="season-header"><p class="eyebrow">DEINE AUSGEWÄHLTEN VEREINE</p><h1>Meine Woche</h1>${gameControls()}${weekNavigation()}</div>${sharedWeekView()}</section>`;
+  if(tab==='games'&&mode==='week')return `<section class="content season week-season"><div class="season-header"><p class="eyebrow">DEINE AUSGEWÄHLTEN VEREINE</p><h1>Spiele</h1>${gameControls()}${weekNavigation()}</div>${sharedWeekView()}</section>`;
   const calendarView = tab === 'games' && mode === 'calendar';
   const title = {games: 'Spiele', table: 'Tabelle', squad: 'Kader'}[tab];
-  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
+  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
 }
 function gameControls() {
-  return `<div class="controls">${mode==='week'?'':`<label>Wettbewerb <select id="competition">${(handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle', 'QHL', 'EHL', 'Testspiel', 'Falkencup']).map(c => `<option ${c === competition ? 'selected' : ''}>${c}</option>`).join('')}</select></label>`}${gameViewToggle()}</div>`;
+  const choices=activeClub==='fcsg' ? ['Alle',...new Set(fcsgData.games.map(g=>g.league))] : handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle','QHL','EHL','Testspiel','Falkencup'];
+  return `${gameViewToggle()}${mode==='week'?'':`<div class="controls"><label>Wettbewerb <select id="competition">${choices.map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label></div>`}`;
 }
 function gameList() {
   if (mode === 'calendar') return `<section class="home-matchday games-matchday"><a id="live-match" class="live-match" data-live-only="true" aria-label="Laufendes Kadetten-Spiel" aria-live="polite" hidden></a></section><div class="calendar-panel">${calendar()}</div>`;

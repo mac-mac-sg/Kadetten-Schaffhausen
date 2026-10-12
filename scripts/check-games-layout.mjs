@@ -62,8 +62,11 @@ try {
     const before=await measure();
     await page.locator('[data-mode="calendar"]').click();const calendar=await measure();stable(before,calendar,club+' calendar');
     assert.ok(calendar.calendarBottom<=calendar.dockTop,club+': calendar fits above dock');assert.equal(calendar.scrollY,0);
+    await page.locator('[data-mode="week"]').click();stable(before,await measure(),club+' week');
+    await page.locator('[data-mode="calendar"]').click();stable(before,await measure(),club+' calendar after week');
+    await page.locator('[data-mode="week"]').click();stable(before,await measure(),club+' week after calendar');
     await page.locator('[data-mode="list"]').click();stable(before,await measure(),club+' list');
     cases++;console.log(JSON.stringify({club,...viewport,empty,stable:true}));
   }
-  assert.deepEqual(errors,[]);console.log(`${cases} List → Calendar → List cases passed.`);
+  assert.deepEqual(errors,[]);console.log(`${cases} List → Calendar → Week → List cases passed.`);
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
