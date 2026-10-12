@@ -1,8 +1,8 @@
 name: Cloudflare-Datendienst bereitstellen
 # Bei Änderungen am Datendienst und manuell. Prüft den Code, stellt den Datendienst (cloudflare/api, Worker «kadetten-api», Speicher Workers KV)
 # bei Cloudflare bereit, setzt den Automationsschlüssel und prüft die Antwort.
-# Der Pages-Workflow veröffentlicht nur die Oberfläche; die App liest weiterhin vom bisherigen Dienst, bis das Umschalten
-# ausdrücklich beauftragt ist (docs/cloudflare-umzug.md, Phase 3).
+# Der Pages-Workflow veröffentlicht nur die Oberfläche. Die App liest seit Phase 3 vom Cloudflare-Datendienst.
+# Der abschliessende Schreiblauf aktualisiert Vereinsdaten und gespeicherte Berichte.
 # Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID; optional KADETTEN_UPDATE_KEY (freier, langer Zufallswert).
 on:
   push:
