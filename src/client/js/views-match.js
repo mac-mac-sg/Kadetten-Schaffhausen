@@ -398,7 +398,7 @@ async function openMatchProgramme(p,trigger){
  const resize=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{for(const s of states)if(s.visible)draw(s)},180)};
  dialog.querySelectorAll('[data-pdf-zoom]').forEach(button=>button.onclick=()=>{zoom=Math.max(1,Math.min(2,zoom+Number(button.dataset.pdfZoom)*.25));updateZoom();for(const s of states)if(s.visible)draw(s)});updateZoom();
  try{
-  const pdfjs=await import('../vendor/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=new URL('../vendor/pdf.worker.mjs',document.querySelector('script[src^="js/views-match.js"]').src).href;
+  const pdfjs=await import('../vendor/pdf.mjs');pdfjs.GlobalWorkerOptions.workerSrc=new URL('vendor/pdf.worker.mjs',document.baseURI).href;
   const response=await apiFetch(p.pdfPath,{signal:controller.signal});if(!response.ok)throw Error('PDF unavailable');
   const data=new Uint8Array(await response.arrayBuffer());if(disposed)return;
   task=pdfjs.getDocument({data,isEvalSupported:false,enableXfa:false,useWasm:false});doc=await task.promise;if(disposed)return;

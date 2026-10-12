@@ -12,4 +12,16 @@ assert.equal(m.scope,'./');assert.equal(m.start_url,'./');
 for(const icon of m.icons)assert.ok(fs.existsSync(root+icon.src));
 assert.match(fs.readFileSync(root+'platform-config.js','utf8'),/https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev/);
 assert.ok(!fs.existsSync(root+'server'),'Server source must never be published as static assets');
+// Prüft die veröffentlichte Hülle, nicht die ungebündelten Entwicklungsdateien.
+const scripts=[...html.matchAll(/<script([^>]*)src="([^"?]+)(?:\?v=([^" ]+))?"([^>]*)>/g)];
+assert.deepEqual(scripts.map(m=>m[2]),['platform-config.js','js/app.js']);
+assert.ok(scripts.every(m=>/\bdefer\b/.test(m[1]+m[4])),'Client scripts must defer execution');
+const styles=[...html.matchAll(/<link rel="stylesheet" href="([^"?]+)(?:\?v=([^" ]+))?"/g)];
+assert.deepEqual(styles.map(m=>m[1]),['app.css']);
+const sw=fs.readFileSync(root+'sw.js','utf8');
+const shell=JSON.parse(sw.match(/const SHELL=(\[[^\]]*\])/)[1]);
+const version=sw.match(/const CACHE='kadetten-offline-([a-f0-9]+)'/)[1];
+for(const script of scripts){assert.equal(script[3],version);assert.ok(shell.includes(script[2]+'?v='+version));}
+for(const style of styles){assert.equal(style[2],version);assert.ok(shell.includes(style[1]+'?v='+version));}
+assert.ok(fs.existsSync(root+'vendor/pdf.mjs')&&fs.existsSync(root+'vendor/pdf.worker.mjs'),'Lazy PDF renderer must remain available');
 console.log('Pages build: project paths, PWA, icons and API configuration verified.');

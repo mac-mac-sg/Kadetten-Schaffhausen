@@ -108,10 +108,8 @@ button,
   background: #30392f;
 }
 .top {
-  height: 82px;
   display: flex;
   align-items: center;
-  gap: 30px;
   max-width: 1400px;
   margin: auto;
   padding: 0 5%;
@@ -148,7 +146,6 @@ button,
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  padding: 6px;
   background: #263026d9;
   border: 1px solid #ffffff26;
   backdrop-filter: blur(22px);
@@ -164,14 +161,12 @@ button,
   align-items: center;
   justify-content: center;
   min-width: 85px;
-  padding: 8px 17px;
   border-radius: 18px;
   font-size: 13px;
   line-height: 1.3;
 }
 .dock a span {
   font: 26px/1 var(--font-text);
-  margin-bottom: 4px;
 }
 .dock a.active {
   background: var(--accent);
@@ -277,7 +272,6 @@ button,
 .crest {
   width: 58px;
   height: 76px;
-  object-fit: contain;
 }
 .clubmark {
   display: flex;
@@ -410,10 +404,6 @@ footer {
   color: #b9c6ad;
   font-weight: 700;
 }
-.segments a.selected {
-  background: #b5c5a335;
-  color: #fff;
-}
 .controls {
   display: flex;
   justify-content: space-between;
@@ -456,7 +446,6 @@ select {
   color: #111;
 }
 .muted {
-  color: #aab5a0;
   font-size: 14px;
 }
 .muted a {
@@ -519,9 +508,6 @@ select {
   right: 0;
   bottom: 0;
   font-size: 32px;
-}
-.table-wrap {
-  overflow: auto;
 }
 table {
   border-collapse: separate;
@@ -917,8 +903,6 @@ thead th:not(:nth-child(2)) {
   .dock a {
     min-width: 0;
     flex: 1;
-    padding: 9px 10px;
-    font-size: 12px;
   }
   .home-hero {
     height: calc(100svh - 72px);
@@ -1048,20 +1032,11 @@ thead th:not(:nth-child(2)) {
     right: 12px;
     bottom: 14px;
   }
-  .player-card span {
-    font-size: 13px;
-  }
-  .player-card strong {
-    font-size: 17px;
-  }
   .player-card b {
     font-size: 29px;
   }
   .subhead {
     font-size: 24px;
-  }
-  .table-wrap {
-    margin: 0 -5px;
   }
   table {
     font-size: 12px;
@@ -1070,12 +1045,6 @@ thead th:not(:nth-child(2)) {
   th,
   td {
     padding: 14px 6px;
-  }
-  thead th {
-    font-size: 10px;
-  }
-  tbody th {
-    max-width: 135px;
   }
   tbody td:last-child {
     font-size: 21px;
@@ -1172,18 +1141,11 @@ thead th:not(:nth-child(2)) {
   .profile-info {
     padding-top: 15px;
   }
-  .source,
-  footer {
-    font-size: 11px;
-  }
   .lineup strong {
     font-size: 15px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   * {
     transition: none !important;
   }
@@ -1712,9 +1674,6 @@ html.snap-profile {
 html.snap-news {
   scroll-padding-top: 0;
 }
-html.snap-profile {
-  scroll-padding-top: 70px;
-}
 .snap-news .story-screen {
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -1736,7 +1695,6 @@ html.snap-profile {
   position: absolute;
   inset: 0 0 auto;
   z-index: 10;
-  background: linear-gradient(#0009, transparent);
 }
 .snap-news .story-copy {
   position: relative;
@@ -1994,13 +1952,6 @@ html.snap-profile {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-.header-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-.header-button[aria-busy='true'] svg {
-  animation: refresh-spin 1.3s linear infinite;
-}
 .app-feedback {
   position: fixed;
   z-index: 100;
@@ -2014,22 +1965,9 @@ html.snap-profile {
   box-shadow: 0 8px 30px #0008;
   font-size: 14px;
 }
-.top {
-  gap: 16px;
-}
 .immersive .header-button {
   position: relative;
   z-index: 30;
-}
-@keyframes refresh-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .header-button[aria-busy='true'] svg {
-    animation: none;
-  }
 }
 @media (max-width: 600px) {
   .top .edition {
@@ -2168,12 +2106,8 @@ html.snap-profile {
   font-size: 14px;
   color: #e1e8db;
 }
-.match-preview .live-heading > span {
-  color: #e1e8db;
-}
 .match-preview .live-score > strong {
   font-size: 25px;
-  color: #bfcab9;
 }
 
 .match-preview .match-preview-time {
@@ -2542,7 +2476,6 @@ html.snap-profile {
 }
 .season-split p {
   font-size: 16px;
-  margin: 10px 0;
 }
 .season-split small {
   color: #b4beaa;
@@ -2795,23 +2728,6 @@ html.snap-profile {
 }
 
 /* Gemeinsamer Vereinswechsel: eine Touch-Fläche, immer im Titelbereich. */
-.club-switch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  flex-shrink: 0;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #ffffff0c;
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 700;
-}
-.club-switch svg { width: 20px; height: 20px; color: var(--accent); }
-.club-switch { position: relative; }
 .club-dot {
   position: absolute;
   top: 6px;
@@ -2822,21 +2738,10 @@ html.snap-profile {
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg, #121614);
 }
-.club-switch[data-dot='pending'] .club-dot { background: #8a918c; }
-.club-switch[data-dot='win'] .club-dot { background: var(--win); }
-.club-switch[data-dot='draw'] .club-dot { background: #6fa8dc; }
-.club-switch[data-dot='loss'] .club-dot { background: var(--loss); }
-.club-switch[data-dot='live'] .club-dot { animation: club-dot-pulse 1.4s ease-in-out infinite; }
 @keyframes club-dot-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.5); opacity: 0.55; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .club-switch[data-dot='live'] .club-dot { animation: none; }
-}
-.club-switch:hover { background: #ffffff20; }
-.club-switch:active { background: #ffffff30; }
-.club-switch:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 3px; }
 /* Der neue Verein wird vom Umschaltknopf aus sichtbar. */
 :root.club-transition::view-transition-group(root) { animation: none; }
 :root.club-transition::view-transition-old(root) { animation: none; }
@@ -2867,12 +2772,9 @@ html.snap-profile {
 .top .brand img { flex-shrink: 0; }
 @media (max-width: 600px) {
   .top { gap: 8px; }
-  .club-switch { margin-left: auto; }
   .top .club-entry { margin-left: 0; }
 }
 @media (max-width: 380px) {
-  .club-switch span { display: none; }
-  .club-switch { min-width: 44px; padding: 8px; }
   .top .brand { font-size: 15px; gap: 8px; }
 }
 :root[data-club='fcsg'] {
@@ -2897,8 +2799,6 @@ html.snap-profile {
 .fcsg-pending { padding: 28px; margin: 24px 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface-2); }
 .fcsg-pending p { color: var(--muted); max-width: 620px; }
 .fcsg-status { display: inline-block; color: var(--accent-soft); font-size: 12px; font-weight: 700; margin-bottom: 16px; }
-[data-club='fcsg'] .home-news-heading { margin-top: 32px; }
-@media (prefers-reduced-motion: reduce) { .club-switch { transition: none; } }
 /* FCSG-Inhalte verwenden dieselben Karten, News-Screens und Tabellen. */
 .fcsg-matchday { position: relative; inset: auto; display: block; width: 100%; }
 [data-club='fcsg'] .home-news-heading { margin-top: 0; }
@@ -2993,8 +2893,6 @@ html.snap-profile {
 .player-season-screen .bento-primary > strong { color: var(--surface); }
 .player-season-screen .bento-wide { grid-column: 1 / -1; }
 .player-season-screen .bento-average { flex-direction: row; align-items: center; background: var(--cream); }
-.player-season-screen .bento-average > span,
-.player-season-screen .bento-average > strong { color: var(--surface); }
 .player-season-screen .bento-average > strong { font-size: 36px; }
 .player-season-screen .bento-panel h3 { margin: 0 0 16px; font: 600 15px/1.3 var(--font-text); color: var(--text); }
 .player-season-screen .bento-scoring { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -3138,8 +3036,7 @@ html[data-club='fcsg'].snap-profile {
 .top { height:auto; min-height:82px; flex-wrap:wrap; gap:12px; padding-block:14px; }
 .top .brand { margin-right:auto; }
 .top .edition { margin-left:0; }
-.top .club-entry { display:inline-flex; align-items:center; gap:8px; width:auto; min-height:44px; padding:8px 12px; border-radius:13px; background:color-mix(in srgb,var(--accent) 15%,var(--surface)); border:1px solid color-mix(in srgb,var(--accent) 45%,transparent); color:var(--text); font-size:14px; font-weight:650; }
-.top .club-entry img { object-fit:contain; }
+.top .club-entry { color:var(--text); }
 .top .club-entry[hidden], .club-picker[hidden] { display:none; }
 .club-picker { display:flex; flex:0 0 100%; order:99; gap:6px; max-width:520px; margin-inline:auto; padding:4px; background:color-mix(in srgb,var(--surface) 85%,transparent); border:1px solid var(--line); border-radius:14px; }
 .club-picker button { position:relative; flex:1; display:flex; align-items:center; justify-content:center; gap:7px; min-width:0; min-height:44px; padding:7px 9px; border:0; border-radius:10px; background:transparent; color:var(--text); font-size:13px; font-weight:650; white-space:nowrap; transition:background 160ms ease,color 160ms ease; }
@@ -3171,7 +3068,6 @@ html[data-club='fcsg'].snap-profile {
 .club-settings-dialog .club-settings-note { font-size:12px; line-height:1.5; }
 .club-settings-dialog form .button { width:100%; }
 .snap-news .home-matchday { padding-top:var(--app-header-height,148px); }
-.home-front-page:has(.live-match[hidden]) .home-news-heading { padding-top:var(--app-header-height,148px); }
 [data-club='otmar'] .our-team td,[data-club='otmar'] .our-team th { background:#514715; }
 @media(max-width:380px) { .club-picker button { gap:5px; padding:6px 4px; font-size:12px; } .top .brand { font-size:15px; } }
 @media(display-mode:standalone) { .top { height:auto; padding-top:calc(14px + env(safe-area-inset-top)); } }
