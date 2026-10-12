@@ -3,11 +3,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
-  margin-left: auto;
-  border-radius: 50%;
 }
 .club-entry svg {
   width: 24px;
