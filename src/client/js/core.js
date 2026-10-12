@@ -22,10 +22,11 @@ function liveEscape(value) {
 }
 let base = 'https://kadettensh.ch/',
   report = base + 'perfekter-start-in-der-european-league/';
-let calendarYear = 2026;
+const initialCalendarDate=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Zurich'}).split('-').map(Number);
+let calendarYear = initialCalendarDate[0];
 let competition = 'Alle',
   mode = 'list',
-  month = 9,
+  month = initialCalendarDate[1]-1,
   tableLeague = 'QHL';
 const $ = s => document.querySelector(s),
   ext = (u, t, c = 'button') =>
@@ -84,4 +85,16 @@ function photoUrl(name) {
 /* Gemeinsame Navigation für Detailseiten. */
 function backLink(href, label, placement = '') {
   return `<a href="${liveEscape(href)}" class="back-link ${placement}"><span aria-hidden="true">←</span>${liveEscape(label)}</a>`;
+}
+
+function sourceNoticeText(key) {
+ const snapshot=typeof activeClub!=='undefined'&&activeClub==='fcsg'?fcsgData:updateState;
+ return sourceHealth(snapshot?.status?.[key],snapshot?.checkedAt,key);
+}
+function sourceNotice(key) {
+ const text=sourceNoticeText(key);
+ return `<p class="source-health" data-source-key="${key}" role="status" ${text?'':'hidden'}>${liveEscape(text)}</p>`;
+}
+function syncSourceNotices() {
+ document.querySelectorAll('[data-source-key]').forEach(el=>{const text=sourceNoticeText(el.dataset.sourceKey);el.textContent=text;el.hidden=!text;});
 }

@@ -28,6 +28,8 @@ function updateFcsgLiveView() {
  if(page==='match'){
   const g=fcsgGame(id);if(!g)return;
   if(!document.querySelector('[data-fcsg-game]')){render();return;}
+  const header=document.querySelector('.fcsg-match-header');
+  if(header){const template=document.createElement('template');template.innerHTML=fcsgMatchHeader(g);const next=template.content.firstElementChild;header.innerHTML=next.innerHTML;header.className=next.className;}
   document.querySelectorAll('[data-fcsg-score]').forEach(e=>{if(e.dataset.fcsgScore===id)e.textContent=fcsgDisplayScore(g)});
   document.querySelectorAll('[data-fcsg-phase]').forEach(e=>{if(e.dataset.fcsgPhase===id)e.textContent=fcsgLiveState(g)});
   const panel=document.getElementById('fcsg-live-panel');

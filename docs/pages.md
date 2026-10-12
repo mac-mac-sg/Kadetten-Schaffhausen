@@ -2,7 +2,7 @@
 
 > Stand 06.10.2026: Die App liest seit dem Umschalten vom Cloudflare-Datendienst, siehe [Umzug auf Cloudflare](cloudflare-umzug.md) und [Betrieb](betrieb.md). Der bisherige Sites-Dienst läuft unverändert weiter, wird aber nicht mehr gelesen.
 
-Entscheid vom 03.10.2026: keine separate Testumgebung; GitHub Actions und GitHub Pages wie bei Essens-Check. Kein eigenes Cloudflare-Konto erforderlich.
+Entscheid vom 03.10.2026: keine separate Testumgebung; GitHub Actions und GitHub Pages wie bei Essens-Check. Für den Datendienst wird das bereits eingerichtete Cloudflare-Konto verwendet.
 
 ## Ablauf
 
@@ -20,7 +20,7 @@ GitHub Pages führt kein Worker-Backend aus. Für die bestehenden Funktionen ist
 - Spielplan, Tabellen und Spielerwerte, aktualisiert durch den Workflow «Cloudflare-Datenaktualisierung» (GitHub Actions, Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20)
 - bestätigte Live-Werte, Formkurven und Direktvergleiche (beim Aufruf aus den externen Quellen geholt)
 
-Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Die GitHub-App besitzt keinen manuellen Aktualisieren-Button und keinen Freigabeablauf. Sie liest den zuletzt automatisch aktualisierten Datenstand; Live-Abfragen bleiben unabhängig davon erhalten. Neue Matchprogramme und KI-Vorschauen entstehen auf dem neuen Dienst noch nicht (Phase 2b in docs/cloudflare-umzug.md); vorhandene werden ausgeliefert.
+Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Die GitHub-App besitzt keinen manuellen Aktualisieren-Button und keinen Freigabeablauf. Sie liest den zuletzt automatisch aktualisierten Datenstand; Live-Abfragen bleiben unabhängig davon erhalten. Matchprogramme, Vorschauen und Rückblicke entstehen im autorisierten Actions-Schreiblauf und werden vom Datendienst ausgeliefert.
 
 Das ist eine Migration von Codebasis, Oberfläche und Veröffentlichung nach GitHub. Der Datendienst bleibt eine ausdrücklich dokumentierte Abhängigkeit. Vollständige Artikel und laufende Statistiken werden nicht in Git-Commits kopiert. Es gibt keine separate Testumgebung.
 
@@ -39,3 +39,10 @@ Bildquellen:
 
 ### Einführung & Tipps
 Beim ersten Öffnen auf einem Gerät erscheint eine überspringbare Einführung in vier Schritten: Vereinswahl, News, Spiele und Kader. Abschluss, Überspringen und Escape speichern `fan-app-onboarding-v1` lokal. Auf der Startseite unter Einstellungen → Einführung & Tipps lässt sich die Einführung jederzeit erneut öffnen, auch in der installierten App. Nach dem ersten vollständigen Durchlauf kann der bestehende Installationshinweis folgen; eine Installation erfolgt weiterhin nur nach ausdrücklichem Klick. Die erneut geöffnete Einführung zeigt keinen Installationshinweis.
+
+### Einheitliche Bedienung und Offline-Nutzung
+Spielbereiche verwenden «Statistiken» und für laufende Ereignisse «Liveticker». Handball-Rückblicke bleiben als eigene Berichte bezeichnet. Spielerprofile haben bei allen Vereinen die Abschnitte Steckbrief und Statistik sowie einen klaren Rückweg zum Kader. Der Handball-Steckbrief bleibt bewusst bildfüllend; FCSG behält den Vereinskontext in der Kopfzeile.
+
+Die FCSG-Spielseite nutzt einen kompakten Detailkopf ohne erneuten Link auf dieselbe Seite. Der Spielplan markiert das nächste Spiel innerhalb des gewählten Wettbewerbs. Der Kalender startet im aktuellen Schweizer Monat. Bereichsspezifische Quellenfehler und verzögerte Datenstände erscheinen bei den jeweiligen Inhalten.
+
+Alle drei Vereins-Snapshots sowie bereits gelesene Artikel werden offline gesichert. Versionierte Artikel werden nur mit passender Version gespeichert; nicht versionierte Otmar-Artikel werden online zuerst neu gelesen. Der Bildcache berücksichtigt die offiziellen Bildhosts aller drei Vereine. Live- und Verlaufsabfragen bleiben ausschliesslich im Netz. EHF-Bilanzbalken entstehen nur aus einer vollständigen, mit Tabellenpunkten übereinstimmenden Resultatliste; Punkte allein erlauben keine eindeutige Bilanz.

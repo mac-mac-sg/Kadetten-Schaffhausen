@@ -7,11 +7,11 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 | Teil | Wo es läuft | Wie es aktualisiert wird |
 | --- | --- | --- |
 | Oberfläche (`src/client/`) | GitHub Pages: https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ | Automatisch nach Merge auf `main` (`.github/workflows/deploy.yml`) |
-| Datendienst (`server/`) | Cloudflare Worker `kadetten-api`: https://kadetten-api.mac-mac-sg.workers.dev (Konfiguration `cloudflare/api/wrangler.toml`; Adresse in der App durch `scripts/build.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung per Workflow «Cloudflare-Datendienst bereitstellen» (manuell) |
+| Datendienst (`server/`) | Cloudflare Worker `kadetten-api`: https://kadetten-api.mac-mac-sg.workers.dev (Konfiguration `cloudflare/api/wrangler.toml`; Adresse in der App durch `scripts/build.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung automatisch bei Änderungen unter `server/` sowie manuell per Workflow «Cloudflare-Datendienst bereitstellen» |
 | Speicher | Workers KV `kadetten-data`, Bindung `DATA`; Schlüssel siehe docs/architecture.md | Schreibt nur der Aktualisierungslauf (REST-Schnittstelle von Cloudflare) |
-| Datenaktualisierung | GitHub Actions: Workflow «Cloudflare-Datenaktualisierung» (`cloudflare-update.yml`), Zeitplan Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20 (ausgelöst vom Cron-Trigger des Workers, zusätzlich vom GitHub-Zeitplan), jederzeit auch manuell | Holt Quellen, rechnet, schreibt Datenstand, Artikel, Berichte, FCSG, Matchprogramm des nächsten Heimspiels und die Match-Vorschauen |
+| Datenaktualisierung | GitHub Actions: Workflow «Cloudflare-Datenaktualisierung» (`cloudflare-update.yml`), Zeitplan Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20 (ausgelöst ausschliesslich vom Cron-Trigger des Workers), jederzeit auch manuell | Holt Quellen, rechnet, schreibt Datenstand, Artikel, Berichte, FCSG, Matchprogramm des nächsten Heimspiels und die Match-Vorschauen |
 | Match-Vorschauen | im selben Lauf; KI von Cloudflare Workers AI (Mistral Small 3.1) mit sachlichem Text als Rückfall, Details [vorschauen.md](vorschauen.md) | Abschaltbar mit der Repository-Variable `KI_VORSCHAU` = `aus` |
-| Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/`. **Liest noch vom bisherigen Sites-Dienst** (`WidgetRepository.java`), zeigt daher veraltete Daten, bis eine neue Widget-Version erscheint |
+| Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/`. Liest vom Cloudflare-Datendienst (`WidgetRepository.java`), wie die App. Bereits installierte ältere APKs benötigen die neue Widget-Version. |
 | Bisheriger Sites-Dienst | ChatGPT Sites, https://kadetten.ma-ra10.chatgpt.site | Läuft unverändert weiter, wird von der App nicht mehr gelesen. Abschalten nur auf ausdrücklichen Auftrag des Eigentümers (Phase 4) |
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
@@ -26,7 +26,7 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 ## Regelbetrieb und Störungen
 - **Läuft die Aktualisierung?** Actions → «Cloudflare-Datenaktualisierung»: Läufe mit Auslöser «workflow_dispatch» (Akteur: Inhaber des Tokens) zu den Schweizer Zeiten 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20. Der GitHub-eigene Zeitplan wurde entfernt (er löste nicht zuverlässig aus); der Cron-Trigger des Workers ist der einzige automatische Auslöser. Fehlen Läufe: Worker-Protokoll in Cloudflare (Workers → kadetten-api → Logs) auf «Zeitplan: Aktualisierung nicht ausgelöst» prüfen (401/403: Token abgelaufen oder ohne Recht), sonst genügt «Run workflow» mit `schreiben`.
 - **Wie frisch sind die Daten?** `checkedAt` in `GET /api/data` des Datendienstes. Die App kennzeichnet veraltete Stände.
-- **KI-Vorschau fehlerhaft?** Variable `KI_VORSCHAU` auf `aus`; beim nächsten Schreiblauf entstehen wieder sachliche Texte. Die KI-Texte werden ohne inhaltliche Prüfung übernommen (Entscheid vom 6. Oktober 2026).
+- **KI-Vorschau fehlerhaft?** Variable `KI_VORSCHAU` auf `aus`; beim nächsten Schreiblauf entstehen wieder sachliche Texte. FCSG-Rückblicke verwenden ausschliesslich bestätigte Formulierungen; die KI wählt deren Fakten-IDs. Andere KI-Texte verwenden weiterhin den dokumentierten Vorschau-/Handball-Berichtsablauf.
 - **Die App zeigt keine Daten?** Rückweg auf den bisherigen Dienst: die Umschalt-Änderung (PR «Phase 3», Commit `af01a06`) per Revert-Commit auf `main` zurücknehmen; er liefert dann seinen letzten Stand (Aktualisierung steht dort still).
 - **Grenzen (Cloudflare Free, laut Dokumentation, nicht über längere Zeit gemessen):** 100'000 Worker-Anfragen und 100'000 KV-Lesezugriffe pro Tag, 1'000 KV-Schreibvorgänge pro Tag, 10'000 Workers-AI-Neurons pro Tag. Bei Überschreiten schlagen Aufrufe fehl; die KI fällt dann auf den sachlichen Text zurück.
 - **Token ersetzen:** neuen Cloudflare-Token anlegen (Berechtigungen siehe oben), in Settings → Secrets and variables → Actions das Secret `CLOUDFLARE_API_TOKEN` überschreiben, danach einen manuellen Schreiblauf starten und prüfen. Tokens nie in Chats, Issues, PRs oder Commits.
@@ -37,10 +37,10 @@ Der Schreiblauf von `cloudflare-update.yml` sichert am Spieltag und am Folgetag 
 ## Vom Eigentümer zu ergänzen
 - [x] Wo läuft die Datenautomation genau? Seit 6. Oktober 2026 in GitHub Actions (Tabelle oben). Die frühere ChatGPT-Automation schreibt nur noch in den bisherigen Sites-Dienst.
 - [x] Wo liegt der Automationsschlüssel? Im Regelbetrieb gibt es keinen; Zugangsdaten liegen als GitHub-Secrets (Namen oben).
-- [x] Wie wird der Datendienst neu bereitgestellt? Workflow «Cloudflare-Datendienst bereitstellen» (manuell, Eigentümer oder Agent mit Actions-Zugriff).
+- [x] Wie wird der Datendienst neu bereitgestellt? Workflow «Cloudflare-Datendienst bereitstellen» (automatisch bei Serveränderungen, zusätzlich manuell).
 - [ ] Ist Branchschutz auf `main` eingerichtet (README sagt: noch nicht)?
 - [ ] Wer ist Ansprechperson bei den Vereinen für Bild- und Textrechte?
-- [ ] Wann wird der bisherige Sites-Dienst abgeschaltet (Phase 4) und das Widget umgestellt?
+- [ ] Wann wird der bisherige Sites-Dienst abgeschaltet (Phase 4)? Das Widget ist auf Cloudflare umgestellt.
 
 ## Verfügbarkeit und Rückfall
 Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand. Quellenfehler beim Aktualisieren behalten den letzten gültigen Stand je Quelle.

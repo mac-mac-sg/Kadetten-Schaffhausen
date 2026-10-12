@@ -482,17 +482,15 @@ test('Router kennt den Tab «report»',()=>{
  assert.match(fs.readFileSync('src/client/js/router.js','utf8'),/\['overview', 'report', 'squad', 'stats'\]\.includes\(tab\)/);
 });
 
-test('European-League-Tabelle: Siege, Unentschieden und Niederlagen folgen aus Spielen und Punkten', () => {
-  run(`tableLeague = 'EHL'; tables.EHL = [['Kadetten Schaffhausen',2,81,62,4],['Chambery Savoie Mont Blanc HB',2,66,59,2],['HC Izvidac',2,64,75,2],['CSM Bucuresti',2,57,72,0]]`);
-  try {
-    const bars = name => run(`recordBar(${JSON.stringify(name)}, 2)`).match(/\d+ S · \d+ U · \d+ N/)[0];
-    assert.equal(bars('Kadetten Schaffhausen'), '2 S · 0 U · 0 N');
-    assert.equal(bars('Chambery Savoie Mont Blanc HB'), '1 S · 0 U · 1 N');
-    assert.equal(bars('HC Izvidac'), '1 S · 0 U · 1 N');
-    assert.equal(bars('CSM Bucuresti'), '0 S · 0 U · 2 N');
-  } finally {
-    run(`tableLeague = 'QHL'`);
-  }
+test('European-League-Bilanzen verwenden vollständige bestätigte Resultate statt uneindeutiger Punkte',()=>{
+ const saved=run('updateState'),savedTables=run('tables.EHL');
+ context.__records={ehlRecentGames:{'Chambéry':{games:[{home:'Chambéry',away:'A',score:[30,30]},{home:'B',away:'Chambéry',score:[25,25]}]}}};
+ try{
+  run("tableLeague='EHL';tables.EHL=[['Chambéry',2,55,55,2]];updateState=__records");
+  assert.match(view("recordBar('Chambéry',2)"),/0 S · 2 U · 0 N/);
+  run("updateState={ehlRecentGames:{}}");assert.equal(view("recordBar('Chambéry',2)"),'');
+  run("updateState=__records;tables.EHL=[['Chambéry',2,55,55,4]]");assert.equal(view("recordBar('Chambéry',2)"),'');
+ }finally{context.__restoreRecords=saved;context.__restoreTable=savedTables;run("updateState=__restoreRecords;tables.EHL=__restoreTable;tableLeague='QHL'");}
 });
 
 test('FCSG arena pulse uses confirmed kickoff and lights its crest at home and away',()=>{
@@ -680,4 +678,24 @@ test('FCSG uses three stable tabs and switches contents only on confirmed match 
   const lineup=parseHTML(view("fcsgMatch('458','squad')")).document;assert.equal(lineup.querySelectorAll('.fcsg-pitch .fcsg-formation-player').length,11);assert.match(lineup.querySelector('.fcsg-match-page').textContent,/Enrico Maassen/);assert.equal(lineup.querySelectorAll('[data-fcsg-lineup]').length,2);
   run("__match.homeLineup.players[1].position=null");assert.doesNotMatch(view("fcsgMatch('458','squad')"),/class="fcsg-pitch"/);
  }finally{run("fcsgLiveGames.clear();delete globalThis.__match;activeClub='kadetten'");}
+});
+
+test('FCSG highlights the next game inside the selected competition and detail header has no self-link',()=>{
+ const saved=run('fcsgData'),club=run('activeClub'),selected=run('competition');
+ const fixture=(id,date,league)=>({id,date,time:'18:00',confirmed:true,league,home:'FC St.Gallen 1879',away:'Gast',venue:'Stadion',url:'https://www.fcsg.ch/',score:null});
+ context.__filteredGames={...saved,games:[fixture('991','2099-10-01','Cup'),fixture('992','2099-10-02','Liga')]};
+ try{
+  run("fcsgData=__filteredGames;activeClub='fcsg';competition='Liga'");
+  const html=view('fcsgGames()');assert.match(html,/current-game[^>]*data-fcsg-game="992"/);assert.doesNotMatch(html,/data-fcsg-game="991"/);
+  const header=view("fcsgMatchHeader(fcsgData.games[1])");assert.doesNotMatch(header,/class="actions"|href="#match/);assert.match(header,/data-fcsg-score="992"/);assert.equal((header.match(/data-fcsg-phase=/g)||[]).length,1);
+ }finally{context.__restoreFilteredData=saved;context.__restoreFilteredClub=club;context.__restoreFilteredCompetition=selected;run('fcsgData=__restoreFilteredData;activeClub=__restoreFilteredClub;competition=__restoreFilteredCompetition');}
+});
+test('Visible source warnings identify the failing area without marking fresh data stale',()=>{
+ const saved=run('updateState'),club=run('activeClub');
+ context.__sourceData={checkedAt:new Date().toISOString(),status:{news:{ok:false,updatedAt:'2026-10-01T10:00:00Z'},games:{ok:true,updatedAt:new Date().toISOString()}}};
+ try{
+  run("activeClub='kadetten';updateState=__sourceData");
+  const news=parseHTML(view("sourceNotice('news')")).document.querySelector('p');assert.equal(news.hidden,false);assert.match(news.textContent,/News momentan nicht aktualisierbar/);
+  assert.equal(parseHTML(view("sourceNotice('games')")).document.querySelector('p').hidden,true);
+ }finally{context.__restoreSourceData=saved;context.__restoreSourceClub=club;run('updateState=__restoreSourceData;activeClub=__restoreSourceClub');}
 });

@@ -46,6 +46,7 @@ function viewDataSignature() {
   );
 }
 function syncUpdateLabels() {
+  syncSourceNotices();
   document
     .querySelectorAll('[data-update-key]')
     .forEach(el => (el.textContent = updateLabelText(el.dataset.updateKey)));
