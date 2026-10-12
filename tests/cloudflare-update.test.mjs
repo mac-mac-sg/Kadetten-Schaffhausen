@@ -98,3 +98,27 @@ test('Zeitplan: kein GitHub-Zeitplan mehr, Auslösung nur per workflow_dispatch 
   assert.match(wf, /workflow_dispatch:/);
   assert.match(wf, /MODUS: \$\{\{ inputs\.modus \|\| 'schreiben' \}\}/, 'Lauf ohne Eingabe schreibt');
 });
+
+test('KV writes remain readable in the same run even if the remote read still returns an old snapshot',async()=>{
+ let remoteGets=0,fail=false;
+ const store=kvRestStore({accountId:'a',namespaceId:NS,token:'T',fetchFn:async(url,init={})=>{
+  if(init.method==='PUT')return new Response(JSON.stringify({success:!fail}),{status:fail?503:200});
+  remoteGets++;return new Response('{"checkedAt":"old","news":["old"]}');
+ }});
+ assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt,'old');
+ await store.put('fcsg/current.json',JSON.stringify({checkedAt:'new',news:['fresh']}));
+ const current=await (await store.get('fcsg/current.json')).json();assert.deepEqual(current,{checkedAt:'new',news:['fresh']});assert.equal(remoteGets,1);
+ fail=true;await assert.rejects(store.put('fcsg/current.json','{"checkedAt":"failed"}'));
+ assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt,'new');
+ const binary=new Uint8Array([37,80,68,70]);fail=false;await store.put('p.pdf',binary);binary[0]=0;
+ assert.deepEqual([...new Uint8Array(await (await store.get('p.pdf')).arrayBuffer())],[37,80,68,70]);
+});
+test('Workflow chooses exactly one read-only or writing update step',()=>{
+ const wf=fs.readFileSync('.github/workflows/cloudflare-update.yml','utf8');
+ const steps=[...wf.matchAll(/- name: (Trockenlauf|In den KV-Speicher schreiben)\n\s+if: env.MODUS == '(pruefen|schreiben)'\n\s+run: (.+)/g)];
+ assert.equal(steps.length,2);
+ for(const mode of ['pruefen','schreiben']){
+  const chosen=steps.filter(s=>s[2]===mode);assert.equal(chosen.length,1);
+  assert.equal(chosen[0][3].includes('--schreiben'),mode==='schreiben');
+ }
+});

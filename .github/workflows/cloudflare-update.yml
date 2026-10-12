@@ -46,7 +46,9 @@ jobs:
           [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || { echo "::error::Die Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen."; exit 1; }
       - name: Abhängigkeiten installieren
         run: npm ci
-      - name: Trockenlauf && env.MODUS == 'pruefen'
+      - name: Trockenlauf
+        if: env.MODUS == 'pruefen'
         run: node scripts/cloudflare-update.mjs
-      - name: In den KV-Speicher schreiben && env.MODUS == 'schreiben'
+      - name: In den KV-Speicher schreiben
+        if: env.MODUS == 'schreiben'
         run: node scripts/cloudflare-update.mjs --schreiben
