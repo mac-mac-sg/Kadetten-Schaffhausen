@@ -1,5 +1,5 @@
 /* Hash-Routing, Seitenaufbau und Ansichten-Setup. */
-let viewObserver, newsRegionObserver;
+let viewObserver, newsRegionObserver, renderedRouteURL;
 function newsDotWindow(index, total) {
   const count = Math.min(5, total),
     start = Math.max(0, Math.min(index - (count - 2), total - count));
@@ -125,6 +125,7 @@ function notFound() {
   return '<section class="content"><h1>Hier geht’s zurück aufs Feld.</h1><a class="button" href="#home">Zur Startseite</a></section>';
 }
 function render() {
+  renderedRouteURL=location.href;
   if (programmeDialog && programmeDialog.dataset.route !== activeClub + location.hash) closeMatchProgramme();
   const scrollRoot = document.documentElement,
     scrollTop = window.scrollY;
@@ -225,6 +226,7 @@ function render() {
             : 'News') + ' · ' + fanClubs[activeClub].name;
   // Fill the handball card before header measurement commits the hidden-card layout.
   if (activeClub !== 'fcsg') showLiveMatch();
+  setupWeekView();
   setupViews();
   updateClubHeader();
   measureAppChrome();

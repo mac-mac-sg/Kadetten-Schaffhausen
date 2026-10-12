@@ -61,6 +61,7 @@ function showLiveMatch() {
 
 async function checkLiveMatch() {
   clearTimeout(liveTimer);
+  if (typeof weekVisible==='function'&&weekVisible())return;
   if ((typeof activeClub !== 'undefined' && activeClub === 'fcsg') || document.hidden || !(['', '#home'].includes(location.hash) || location.hash.startsWith('#match/') || location.hash === '#season/games')) return;
   if (!navigator.onLine) {
     liveRequestFailed = true;

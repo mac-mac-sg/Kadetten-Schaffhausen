@@ -78,7 +78,8 @@ async function loadCurrentData(club=handballClub()) {
     }
     const d = await r.json();
     if (!validSnapshot(d)) throw Error("Invalid data");
-    if(activeClub!==selectedAtStart || activeClub!==club) {handballSnapshots.set(club,sanitiseSnapshot(d));saveCurrentData(d,club);updateClubDot();return;}
+    if(r.headers.get('X-Kadetten-Offline')==='1')weekDataFailures.add(club);else weekDataFailures.delete(club);
+    if(activeClub!==selectedAtStart || activeClub!==club) {handballSnapshots.set(club,sanitiseSnapshot(d));saveCurrentData(d,club);updateClubDot();refreshWeekView();return;}
     dataLoadFailed = r.headers.get('X-Kadetten-Offline') === '1';
     offlineData = !navigator.onLine;
     const previous = viewDataSignature(),
@@ -101,8 +102,10 @@ async function loadCurrentData(club=handballClub()) {
         }
       } else if (!location.hash.startsWith('#season/games')) window.scrollTo({top: y, behavior: 'instant'});
     } else syncUpdateLabels();
+    refreshWeekView();
     syncOfflineNotice();
   } catch {
+    weekDataFailures.add(club);refreshWeekView();
     if(activeClub!==selectedAtStart || activeClub!==club)return;
     offlineData = !navigator.onLine;
     dataLoadFailed = true;

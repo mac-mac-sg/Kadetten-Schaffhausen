@@ -186,7 +186,7 @@ function switchClub(id) {
     transition.finished.catch(() => {}).finally(() => { change(); finish(); });
   } catch { fallback(); }
 }
-function applyClubChange(id) {
+function applyClubChange(id, targetRoute=null, push=false) {
   if (!Object.hasOwn(fanClubs, id) || id === activeClub) return;
   activeClub = id;
   if(typeof activateHandballData==='function' && id!=='fcsg')activateHandballData(id);
@@ -199,8 +199,9 @@ function applyClubChange(id) {
   competition = 'Alle';
   const url = new URL(location.href);
   url.searchParams.set('club', id);
-  url.hash = clubSwitchRoute(location.hash);
-  history.replaceState(null, '', url.href);
+  url.hash = targetRoute || clubSwitchRoute(location.hash);
+  history[push?'pushState':'replaceState'](null, '', url.href);
+  if(targetRoute?.startsWith('#match/'))adoptWeekLive(id);
   render();
   window.scrollTo({top: 0, behavior: 'instant'});
   document.getElementById('app')?.focus({preventScroll: true});
@@ -320,13 +321,14 @@ async function loadFcsgPlayerDetails(){
 }
 
 function fcsgView(page,id,tab='overview'){
+ if(page==='season'&&id==='games'&&mode==='week')return season('games');
  if(page==='home')return fcsgHome();
  if(page==='news')return fcsgArticle(id);
  if(page==='player')return fcsgPlayer(id);
  if(page==='match')return fcsgMatch(id,tab);
  if(page==='club')return fcsgClubPage();
  const section=['games','table','squad'].includes(id)?id:'games',calendarView=section==='games'&&mode==='calendar';
- const controls=`<div class="controls"><label>Wettbewerb <select id="competition">${['Alle',...new Set(fcsgData.games.map(g=>g.league))].map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label><div class="toggle"><button data-mode="list" aria-pressed="${mode==='list'}">Liste</button><button data-mode="calendar" aria-pressed="${mode==='calendar'}">Kalender</button></div></div>`;
+ const controls=`<div class="controls"><label>Wettbewerb <select id="competition">${['Alle',...new Set(fcsgData.games.map(g=>g.league))].map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label>${gameViewToggle()}</div>`;
  return `<section class="content season ${section==='table'?'standings-season':''} ${calendarView?'calendar-season':''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${{games:'Spiele',table:'Tabelle',squad:'Kader'}[section]}</h1>${sourceNotice(section==='squad'?'players':section==='table'?'table':'games')}${section==='games'?controls+(calendarView?calendarNavigation():''):''}</div>${section==='table'?fcsgStanding():section==='squad'?fcsgSquad():fcsgGames()}</section>${fcsgFooter(section==='squad'?'players':section)}`;
 }
 function restoreFcsgData(){try{const d=JSON.parse(localStorage.getItem('fcsg-public-data-v1'));if(validFcsgData(d))fcsgData=d}catch{}}
@@ -339,6 +341,6 @@ function syncFcsgLabels(){document.querySelectorAll('[data-fcsg-update-key]').fo
 async function loadFcsgData(){if(fcsgBusy)return;fcsgBusy=true;
  try{const r=await apiFetch('/api/fcsg/data',{cache:'no-store',signal:AbortSignal.timeout(25000)});if(!r.ok)throw Error();const d=await r.json();if(!validFcsgData(d))throw Error();const changed=fcsgViewSignature(fcsgData)!==fcsgViewSignature(d);for(const story of d.stories)if(story.articleVersion!==fcsgData.stories.find(n=>n.id===story.id)?.articleVersion)fcsgArticles.delete(story.id);for(const g of d.games){const old=fcsgData.games.find(x=>x.id===g.id);if(JSON.stringify(old)!==JSON.stringify(g)&&!fcsgLiveGames.get(g.id)?.live)fcsgLiveGames.delete(g.id);}fcsgData=d;fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=r.headers.get('X-Kadetten-Offline')==='1';try{localStorage.setItem('fcsg-public-data-v1',JSON.stringify(d))}catch{}if(activeClub==='fcsg'){if(changed){if(location.hash.startsWith('#match/'))updateFcsgLiveView();else render();}syncFcsgLabels();}}
  catch{fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=true;}
- finally{fcsgBusy=false;syncOfflineNotice();}
+ finally{fcsgBusy=false;syncOfflineNotice();if(fcsgDataLoadFailed)weekDataFailures.add('fcsg');else weekDataFailures.delete('fcsg');refreshWeekView();}
 }
 setInterval(()=>{if(activeClub==='fcsg'&&!document.hidden&&navigator.onLine)loadFcsgData()},120000);

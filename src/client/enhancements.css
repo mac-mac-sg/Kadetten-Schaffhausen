@@ -2182,8 +2182,9 @@ footer .source-details summary { margin-inline: auto; }
 .guide-tip { padding:16px; border:1px solid var(--line); border-radius:14px; }
 .guide-tip > span { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:1px; }
 .guide-tip p { color:var(--muted); font-size:14px; line-height:1.6; margin:6px 0 0; }
-.app-introduction footer { display:flex; justify-content:space-between; gap:12px; margin-top:28px; }
-.app-introduction .button { min-height:48px; cursor:pointer; }
+.app-introduction footer { display:flex; justify-content:space-between; gap:12px; margin-top:24px; padding:0; }
+.app-introduction .button { min-height:48px; cursor:pointer; white-space:nowrap; }
+.app-introduction .button:hover { transform:none; }
 .app-introduction [data-next] { margin-left:auto; }
 .app-introduction button:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
 .club-settings-help { margin:20px 0; padding-top:16px; border-top:1px solid var(--line); }
@@ -2191,3 +2192,76 @@ footer .source-details summary { margin-inline: auto; }
 .club-settings-help p { color:var(--muted); font-size:12px; text-align:center; margin:8px 0 0; }
 .club-settings-dialog { box-sizing:border-box; max-height:calc(100dvh - 32px); overflow:auto; }
 .app-introduction [hidden] { display:none; }
+
+/* Three familiar views; the week belongs to every selected club. */
+.game-view-toggle { display:flex; flex-wrap:wrap; }
+.week-season .controls { justify-content:flex-start; }
+.week-navigation { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; align-items:center; gap:8px; margin-top:16px; }
+.week-navigation button { width:44px; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--text); font-size:28px; cursor:pointer; }
+.week-navigation h2 { margin:0; text-align:center; font:600 16px/1.4 var(--font-text); }
+.week-today { display:block; margin:4px auto 0; min-height:44px; padding:8px 16px; border:0; border-radius:10px; background:transparent; color:var(--text); font:inherit; cursor:pointer; }
+.week-today:disabled { color:var(--muted); cursor:default; }
+.week-summary { color:var(--muted); margin:20px 0 24px; }
+.week-day { margin-bottom:32px; }
+.week-day > h2 { font:600 18px/1.5 var(--font-text); display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.week-day > h2 > span { font-size:12px; color:var(--accent); }
+.week-card { display:block; border:1px solid var(--line); border-radius:16px; padding:18px; margin-top:12px; color:var(--text); background:var(--surface-2); text-decoration:none; scroll-margin-top:320px; }
+.week-card:hover { border-color:var(--accent); }
+.week-card:active { opacity:.8; }
+.week-clubs { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.week-club { display:flex; gap:8px; align-items:center; font-size:13px; font-weight:650; }
+.week-club img { object-fit:contain; }
+.week-club-kadetten { border-bottom:2px solid #ff790e; }
+.week-club-fcsg { border-bottom:2px solid #53b881; }
+.week-club-otmar { border-bottom:2px solid #ffd72e; }
+.week-match { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; align-items:center; }
+.week-match p { margin:0 0 6px; color:var(--muted); font-size:12px; }
+.week-match h3 { margin:0; font:650 17px/1.45 var(--font-text); overflow-wrap:anywhere; }
+.week-match h3 span { font-weight:400; color:var(--muted); }
+.week-match small { color:var(--muted); font-size:12px; }
+.week-result { display:grid; justify-items:end; gap:4px; max-width:140px; text-align:right; }
+.week-result strong { font:400 30px/1.2 Anton, sans-serif; white-space:nowrap; }
+.week-result span { font-size:13px; }
+.week-card-live .week-result span { color:var(--accent); font-weight:700; }
+.week-sources { border-top:1px solid var(--line); margin-top:32px; padding:16px 0; color:var(--muted); font-size:13px; }
+.week-sources summary { min-height:44px; cursor:pointer; }
+.week-sources ul { padding-left:20px; }
+.week-sources p { margin-bottom:0; }
+.week-empty h2 { font-size:24px; }
+@media(max-width:640px) {
+ .season-header .game-view-toggle { width:100%; display:grid; grid-template-columns:1fr 1fr 1.35fr; }
+ .season-header .game-view-toggle button { padding:9px 6px; }
+ .week-navigation h2 { font-size:13px; }
+ .week-card { padding:16px; }
+ .week-match { gap:12px; }
+ .week-match h3 { font-size:15px; }
+ .week-result { max-width:104px; }
+}
+
+/* Decorative examples explain the actual controls without adding fake focus targets. */
+.guide-visual { padding:16px; border:1px solid var(--line); border-radius:16px; background:var(--surface-2); margin-bottom:20px; }
+.guide-preview-picker,.guide-preview-week { display:flex; justify-content:space-between; gap:8px; }
+.guide-preview-picker > span,.guide-preview-week > span { display:grid; justify-items:center; gap:6px; font-size:12px; }
+.guide-visual img { width:28px; height:34px; object-fit:contain; }
+.guide-preview-picker > span:first-child { border-bottom:2px solid var(--accent); padding-bottom:8px; }
+.guide-preview-note { font-size:11px; text-align:center; margin-top:14px; color:var(--muted); }
+.guide-preview-news { display:grid; gap:12px; border-left:3px solid var(--accent); padding-left:14px; }
+.guide-preview-news > span { font-size:10px; color:var(--muted); letter-spacing:1px; }
+.guide-preview-news strong { font:400 24px/1.2 Anton,sans-serif; }
+.guide-preview-news i { font-size:12px; color:var(--accent); font-style:normal; }
+.guide-preview-tabs { display:flex; gap:4px; justify-content:space-between; font-size:11px; margin-bottom:16px; }
+.guide-preview-tabs > * { padding:5px 8px; border-radius:8px; }
+.guide-preview-tabs b { background:var(--accent); color:var(--surface); }
+.guide-preview-roster { display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; }
+.guide-preview-history { display:flex; align-items:center; gap:5px; padding:5px 8px; border:2px solid var(--accent); border-radius:12px; }
+.guide-preview-history img { width:20px; height:26px; }
+.guide-preview-players { display:flex; gap:10px; margin-top:10px; }
+.guide-preview-players > span { display:grid; flex:1; gap:6px; text-align:center; font-size:11px; color:var(--muted); }
+.guide-preview-players i { height:34px; border-radius:8px; background:var(--line); }
+.app-introduction .guide-progress { margin-top:18px; }
+.app-introduction .guide-dots { margin-bottom:16px; }
+@media(max-height:720px) { .app-introduction { padding:20px; } .app-introduction .guide-visual { padding:12px; } .app-introduction .guide-text { margin:12px 0 16px; } }
+@media(max-height:550px) {
+ .week-season .season-header { position:static; }
+ .week-card { scroll-margin-top:calc(var(--app-header-height,82px) + 16px); scroll-margin-bottom:100px; }
+}

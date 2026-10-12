@@ -25,15 +25,22 @@
  const steps=[
   {label:'Deine Vereine',title:'Eine App. Deine Vereine.',text:'Wechsle oben zwischen Kadetten, FCSG und St. Otmar. In den Einstellungen wählst du, welche Vereine du sehen möchtest.',tip:'Deine Vereinsauswahl wird auf diesem Gerät gespeichert.'},
   {label:'News',title:'Bleib am Ball.',text:'Auf der Startseite findest du die aktuellen News deines Vereins. Öffne einen Artikel, um den ganzen Bericht zu lesen.',tip:'Wische durch die News, um weitere Artikel zu entdecken.'},
-  {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:'Wechsle beim Spielplan zwischen Liste und Kalender. Die Tabelle findest du über die Navigation.'},
+  {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:'Liste und Kalender zeigen den aktiven Verein. «Meine Woche» vereint die Spiele aller ausgewählten Vereine. Die Tabelle findest du über die Navigation.'},
   {label:'Kader & Verein',title:'Lerne dein Team und deinen Verein kennen.',text:'Im Kader entdeckst du die Spieler und ihre Saisonstatistiken. Über das Vereinswappen oben rechts öffnest du auch die Vereinsgeschichte und die Erfolge deines Vereins.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
+ ];
+ const crests='<span><img src="assets/logo.png" alt="">Kadetten</span><span><img src="assets/fcsg-logo.svg" alt="">FCSG</span><span><img src="assets/club-140684.webp" alt="">St. Otmar</span>';
+ const visuals=[
+  '<div class="guide-preview-picker">'+crests+'</div><div class="guide-preview-note">Oben wechseln · In den Einstellungen auswählen</div>',
+  '<div class="guide-preview-news"><span>NEWS AUS DEINEM VEREIN</span><strong>Alles rund um dein Team.</strong><i>Zum Artikel →</i></div>',
+  '<div class="guide-preview-tabs"><span>Liste</span><span>Kalender</span><b>Meine Woche</b></div><div class="guide-preview-week">'+crests+'</div><div class="guide-preview-note">Eine Woche. Alle deine Vereine.</div>',
+  '<div class="guide-preview-roster"><span>KADER</span><div class="guide-preview-history"><img src="assets/logo.png" alt=""><b>Verein</b></div></div><div class="guide-preview-players"><span><i></i>Spieler</span><span><i></i>Spieler</span><span><i></i>Spieler</span></div><div class="guide-preview-note">Wappen antippen → Geschichte &amp; Erfolge</div>'
  ];
  window.showAppIntroduction=(firstVisit=false)=>{
   if(guide)return;
   dismissIntro();
   const previousFocus=document.activeElement;let step=0;
   guide=document.createElement('dialog');guide.className='app-introduction';guide.setAttribute('aria-labelledby','app-introduction-title');
-  guide.innerHTML='<header><span class="eyebrow">WILLKOMMEN IN DEINER FAN-APP</span><button type="button" class="guide-skip" data-skip>Überspringen</button></header><p class="guide-progress" aria-live="polite" aria-atomic="true"></p><div class="guide-dots" aria-hidden="true"></div><h2 id="app-introduction-title" tabindex="-1"></h2><p class="guide-text"></p><aside class="guide-tip"><span>TIPP</span><p></p></aside><footer><button type="button" class="button subtle" data-back>Zurück</button><button type="button" class="button" data-next>Weiter</button></footer>';
+  guide.innerHTML='<header><span class="eyebrow">WILLKOMMEN IN DEINER FAN-APP</span><button type="button" class="guide-skip" data-skip>Überspringen</button></header><p class="guide-progress" aria-live="polite" aria-atomic="true"></p><div class="guide-dots" aria-hidden="true"></div><div class="guide-visual" aria-hidden="true"></div><h2 id="app-introduction-title" tabindex="-1"></h2><p class="guide-text"></p><aside class="guide-tip"><span>TIPP</span><p></p></aside><footer><button type="button" class="button subtle" data-back>Zurück</button><button type="button" class="button" data-next>Weiter</button></footer>';
   const finish=(offerInstall)=>{
    try{localStorage.setItem(GUIDE_KEY,'seen');}catch{}
    const current=guide;guide=null;current.close();current.remove();previousFocus?.focus();
@@ -43,14 +50,16 @@
    const item=steps[step];
    guide.querySelector('.guide-progress').textContent=`${step+1} von ${steps.length} · ${item.label}`;
    guide.querySelector('.guide-dots').innerHTML=steps.map((_,index)=>`<i class="${index===step?'is-current':''}"></i>`).join('');
+   guide.querySelector('.guide-visual').innerHTML=visuals[step];
+   if(step===3)guide.querySelector('.guide-preview-history img').setAttribute('src',document.querySelector('.brand img')?.getAttribute('src') || 'assets/logo.png');
    guide.querySelector('h2').textContent=item.title;
    guide.querySelector('.guide-text').textContent=item.text;
    guide.querySelector('.guide-tip p').textContent=item.tip;
    guide.querySelector('[data-back]').hidden=step===0;
    guide.querySelector('[data-next]').textContent=step===steps.length-1?'Los geht’s':'Weiter';
-   guide.querySelector('h2').focus();
+   guide.querySelector('h2').focus({preventScroll:true});guide.scrollTop=0;
   };
-  document.body.append(guide);render();guide.showModal();guide.querySelector('h2').focus();
+  document.body.append(guide);render();guide.showModal();guide.querySelector('h2').focus({preventScroll:true});
   guide.querySelector('[data-next]').onclick=()=>{if(step===steps.length-1)finish(true);else{step++;render();}};
   guide.querySelector('[data-back]').onclick=()=>{if(step>0){step--;render();}};
   guide.querySelector('[data-skip]').onclick=()=>finish(false);

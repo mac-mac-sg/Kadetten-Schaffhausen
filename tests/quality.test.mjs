@@ -53,7 +53,7 @@ test('FCSG polls live matches fast and future/finished matches less often',async
 test('HTTP and network errors preserve data and distinguish connectivity',async()=>{
  let notice=0;
  const old={checkedAt:'2026-10-05T10:27:00Z'};
- const c=vm.createContext({activeClub:'kadetten',handballClub:()=> 'kadetten',handballApiPath:p=>p,players:[],playerBios:{},games:[],tables:{QHL:[]},teamRecords:{},stories:[],clubLogos:{},otmarFallback:{},navigator:{onLine:true},offlineData:false,dataLoadFailed:false,updateState:old,AbortSignal,localStorage:{removeItem(){}},syncOfflineNotice(){notice++;},apiFetch:async()=>({ok:false,status:503})});load(c,'js/data-sync.js');
+ const c=vm.createContext({activeClub:'kadetten',handballClub:()=> 'kadetten',handballApiPath:p=>p,players:[],playerBios:{},games:[],tables:{QHL:[]},teamRecords:{},stories:[],clubLogos:{},otmarFallback:{},navigator:{onLine:true},offlineData:false,dataLoadFailed:false,updateState:old,weekDataFailures:new Set(),refreshWeekView(){},AbortSignal,localStorage:{removeItem(){}},syncOfflineNotice(){notice++;},apiFetch:async()=>({ok:false,status:503})});load(c,'js/data-sync.js');
  await c.loadCurrentData();assert.equal(c.offlineData,false);assert.equal(c.dataLoadFailed,true);assert.equal(c.updateState,old);assert.equal(notice,1);
  c.navigator.onLine=false;c.apiFetch=async()=>{throw Error('offline')};await c.loadCurrentData();assert.equal(c.offlineData,true);assert.equal(c.updateState,old);
 });
@@ -89,7 +89,7 @@ test('Handball-Startseite füllt die Spielkarte vor der ersten Layoutmessung',()
   let filled=false,measurements=0;
   const noop=()=>{},style={set scrollSnapType(v){},removeProperty:noop},classList={toggle:noop};
   const c=vm.createContext({activeClub,programmeDialog:null,location:{hash:'#home'},mode:'list',fanClubs:{[activeClub]:{name:activeClub}},document:{documentElement:{style,classList},body:{classList},querySelectorAll:()=>[]},window:{scrollY:0,scrollTo:noop},requestAnimationFrame:noop,$:s=>s==='#app'?{set innerHTML(v){filled=false;}}:null,home:()=>'<a id="live-match" hidden></a>',showLiveMatch:()=>{filled=true;},updateClubHeader:noop,loadMatchPreview:noop,loadMatchProgramme:noop,setupClubPage:noop,setupRecentGames:noop,setupEnhancements:noop,loadGameReports:noop,loadPlayerReports:noop,loadEhfArchive:noop,loadFullArticle:noop});
-  load(c,'js/router.js');c.setupViews=noop;
+  load(c,'js/router.js');c.setupViews=noop;c.setupWeekView=noop;
   c.measureAppChrome=()=>{measurements++;assert.equal(filled,true,'Layout darf nicht mit der ausgeblendeten Spielkarte gemessen werden');};
   c.render();assert.equal(measurements,1);
  }
@@ -133,6 +133,8 @@ test('Introduction guides first-time users, remembers dismissal and can be reope
   assert.equal(document.querySelector('.guide-progress').textContent,'1 von 4 · Deine Vereine');
   assert.equal(document.querySelector('[data-back]').hidden,true);
   assert.equal(document.querySelector('.install-intro'),null);
+  assert.equal(document.querySelector('.guide-visual').getAttribute('aria-hidden'),'true');
+  assert.equal(document.querySelector('.guide-visual').querySelectorAll('button,a,input').length,0);
   document.querySelector('[data-next]').onclick();
   assert.equal(document.querySelector('.guide-progress').textContent,'2 von 4 · News');
   document.querySelector('[data-back]').onclick();
@@ -144,6 +146,7 @@ test('Introduction guides first-time users, remembers dismissal and can be reope
   assert.equal(document.querySelector('dialog'),null);
   window.showAppIntroduction();
   for(let i=0;i<3;i++)document.querySelector('[data-next]').onclick();
+  assert.match(document.querySelector('.guide-visual').textContent,/Wappen antippen.*Geschichte/);
   assert.equal(document.querySelector('[data-next]').textContent,'Los geht’s');
   document.querySelector('[data-next]').onclick();
   assert.equal(document.querySelector('dialog'),null);
