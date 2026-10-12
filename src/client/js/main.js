@@ -16,16 +16,21 @@ restoreFcsgData();
 document.getElementById('club-switch').addEventListener('click', e=>{const button=e.target.closest('[data-select-club]');if(button)switchClub(button.dataset.selectClub);});
 document.getElementById('club-settings').addEventListener('click',openClubSettings);
 restoreCurrentData();
-window.addEventListener('hashchange', () => {
+function handleRouteChange() {
+  if(renderedRouteURL===location.href)return;
+  const club=new URL(location.href).searchParams.get('club') || (selectedClubs.includes('kadetten')?'kadetten':selectedClubs[0]);
+  if(Object.hasOwn(fanClubs,club)&&club!==activeClub){applyClubChange(club,location.hash);return;}
   render();
   window.scrollTo({top: 0, behavior: 'instant'});
   $('#app').focus({preventScroll: true});
-});
+  checkLiveMatch();
+}
+window.addEventListener('hashchange',handleRouteChange);
+window.addEventListener('popstate',handleRouteChange);
 render();
 if (!location.hash || location.hash === '#home') window.scrollTo({top: 0, behavior: 'instant'});
 Promise.all(['kadetten','otmar'].map(club=>loadCurrentData(club))).finally(updateClubDot);
 loadFcsgData().finally(updateClubDot);
-window.addEventListener('hashchange', checkLiveMatch);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) clearTimeout(liveTimer);
   else {

@@ -40,6 +40,7 @@ function updateFcsgLiveView() {
  document.querySelectorAll('.games [data-fcsg-game]').forEach(card=>{const g=fcsgGame(card.dataset.fcsgGame);if(!g)return;const score=card.querySelector('[data-fcsg-score]');if(score)score.textContent=fcsgDisplayScore(g);const phase=card.querySelector('[data-fcsg-phase]');if(phase)phase.textContent=fcsgLiveState(g);const link=card.querySelector('.actions a');if(link)link.textContent=g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau';card.classList.toggle('fcsg-game-live',!!g.live);});
 }
 async function loadFcsgLive(force=false) {
+ if(typeof weekVisible==='function'&&weekVisible())return;
  if(activeClub!=='fcsg'||document.hidden||fcsgLiveBusy)return;
  const [page,id]=location.hash.slice(1).split('/'),detail=page==='match';
  if(!detail&&!['home','season',''].includes(page))return;
