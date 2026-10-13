@@ -62,12 +62,12 @@ try {
   }
   for(const width of [360,390,430]) {
     await page.setViewportSize({width,height:740});
-    await page.goto(origin+'/v2/?club=kadetten#home');
+    await page.goto(origin+'/v2/?club=kadetten#club');
     await page.evaluate(()=>window.scrollTo({top:350,behavior:'instant'}));
     await page.waitForTimeout(100);
     await page.locator('.v2-scrollbar').waitFor({state:'visible'});
     assert.equal(await page.locator('.v2-scrollbar').getAttribute('data-surface'),'photo');
-    await page.evaluate(()=>window.scrollTo({top:800,behavior:'instant'}));
+    await page.evaluate(()=>window.scrollTo({top:document.querySelector('.club-intro')?.getBoundingClientRect().bottom+scrollY+120||800,behavior:'instant'}));
     await page.waitForTimeout(100);
     assert.equal(await page.locator('.v2-scrollbar').getAttribute('data-surface'),'content');
     await page.locator('[data-v2-menu]').tap();
@@ -82,9 +82,8 @@ try {
       assert.ok(await page.locator('[data-mode="'+mode+'"]').evaluate(el=>getComputedStyle(el).backgroundColor!==getComputedStyle(el.parentElement).backgroundColor),'selected game mode stays visible');
     }
     await page.locator('.dock a[data-nav="news"]').tap();
-    await page.evaluate(()=>window.scrollTo({top:800,behavior:'instant'}));
-    await page.waitForTimeout(100);
-    await page.locator('[data-v2-settings]').tap();
+    assert.equal(await page.locator('.v2-story-compact,.v2-scrollbar').count(),0);
+    await page.locator('#club-settings').tap();
     assert.ok(await page.locator('dialog[open]').count());
   }
   assert.deepEqual(errors,[]);
