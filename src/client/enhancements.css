@@ -634,7 +634,7 @@
   }
 }
 
-/* Games list and week share normal document scrolling; calendar stays viewport-sized. */
+/* Club chrome scrolls away; the section below the season eyebrow stays in reach. */
 body.games-mode { --games-header-height: 82px; }
 .games-mode .season.content { padding-top:0; }
 .games-mode .season-header { padding:16px 0 12px; }
@@ -644,7 +644,7 @@ body.games-mode { --games-header-height: 82px; }
   z-index: 30;
   background: var(--surface);
 }
-.games-mode .season-header { position:static; top:auto; transform:none; }
+.games-mode .season-header { position:sticky; top:calc(0px - var(--games-sticky-offset,40px)); transform:none; }
 @media (max-width: 640px) {
   body.games-mode { --games-header-height: 72px; }
 }
@@ -2267,7 +2267,7 @@ footer .source-details summary { margin-inline: auto; }
 .app-introduction .guide-dots { margin-bottom:16px; }
 @media(max-height:720px) { .app-introduction { padding:20px; } .app-introduction .guide-visual { padding:12px; } .app-introduction .guide-text { margin:12px 0 16px; } }
 @media(max-height:550px) {
- .week-season .season-header { position:static; }
+
  .week-card { scroll-margin-top:calc(var(--app-header-height,82px) + 16px); scroll-margin-bottom:100px; }
 }
 
