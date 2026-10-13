@@ -39,31 +39,35 @@ test('Original source shell does not load experimental design',()=>{
  assert.doesNotMatch(html,/v2\/design/);
 });
 
-test('V2 news rhythm preserves every article once and places discovery after three short news',()=>{
+test('Classic V2 home restores large news and discovery after the complete feed',()=>{
  const run=app();
- const html=run("v2Home()");const {document}=parseHTML(html);
- const count=run('stories.length');
- assert.equal(document.querySelectorAll('.v2-story').length,count);
- for(let index=0;index<count;index++)assert.equal(document.querySelectorAll('#story-'+index).length,1);
- assert.ok(document.querySelector('.v2-news-briefs .v2-story-compact'));
- assert.ok(document.querySelector('.v2-discover'));
- const feed=document.querySelector('.story-feed');
- const children=[...feed.children];
- assert.ok(children.findIndex(x=>x.classList.contains('v2-news-briefs'))<children.findIndex(x=>x.classList.contains('v2-discover')));
- assert.equal(document.querySelectorAll('h1').length,1);
+ for(const club of ['kadetten','fcsg','otmar']) {
+  const html=run(`activeClub='${club}';v2Home()`);const {document}=parseHTML(html);
+  const count=run("activeClub==='fcsg'?fcsgData.stories.length:stories.length");
+  assert.ok(document.querySelector('.v2-home-classic'));
+  assert.equal(document.querySelectorAll('.v2-story').length,count);
+  for(let index=0;index<count;index++)assert.equal(document.querySelectorAll('#story-'+index).length,1);
+  assert.equal(document.querySelector('.v2-story-compact'),null);
+  assert.equal(document.querySelector('.v2-news-briefs'),null);
+  assert.equal(document.querySelectorAll('[data-v2-reveal]').length,0);
+  assert.equal(document.querySelector('.story-feed .v2-discover'),null);
+  assert.ok(document.querySelector('.v2-news-grid'));
+  assert.ok(document.querySelector('.home-news > .v2-discover'));
+ }
 });
 test('Compact chrome appears only beyond the original header and changes surface after the hero',()=>{
  const run=app(), observers=[];
  run.context.IntersectionObserver=class {constructor(fn,options){this.fn=fn;this.options=options;observers.push(this);}observe(){}disconnect(){}};
  const doc=run.context.document;
- doc.body.innerHTML='<header class="top"><a class="brand" href="#home">Verein</a></header><main><div class="home-title-zone"></div></main>';
+ run("location.hash='#club'");
+ doc.body.innerHTML='<header class="top"><a class="brand" href="#home">Verein</a></header><main><div class="club-intro"></div></main>';
  run('v2SetupScrollChrome()');
  const bar=doc.querySelector('.v2-scrollbar');assert.ok(bar.hidden);
  observers[0].fn([{isIntersecting:false}]);assert.equal(bar.hidden,false);
  observers[1].fn([{boundingClientRect:{bottom:10}}]);assert.equal(bar.dataset.surface,'content');
  observers[1].fn([{boundingClientRect:{bottom:300}}]);assert.equal(bar.dataset.surface,'photo');
  observers[0].fn([{isIntersecting:true}]);assert.equal(bar.hidden,true);
- run("location.hash='#season/games';v2SetupScrollChrome()");assert.equal(doc.querySelector('.v2-scrollbar'),null);
+ for(const route of ['#home','#season/games']){run(`location.hash='${route}';v2SetupScrollChrome()`);assert.equal(doc.querySelector('.v2-scrollbar'),null);}
 });
 test('Editorial reveal skips reduced motion and never observes match or statistic elements',()=>{
  const run=app(), observed=[];

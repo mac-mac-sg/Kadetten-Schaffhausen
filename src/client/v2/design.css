@@ -213,3 +213,13 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] :is(.season-number-grid strong,.history-show,.player-leader strong) { color:var(--text); }
 [data-design='v2'] .table-wrap .standings-table tbody tr td { color:var(--text); }
 [data-design='v2'] .game-card .meta .game-result-label { color:var(--text); }
+
+/* Restore the first V2 home composition; other routes keep their newer styling. */
+[data-design='v2'] .v2-home-classic .v2-discover { display:block; margin:36px auto 60px; }
+.v2-home-classic .v2-discover-main { height:270px; box-shadow:none; }
+.v2-home-classic .v2-discover-link { min-height:88px; box-shadow:none; }
+[data-design='v2'] .v2-home-classic .v2-discover-link:nth-child(2) { background:#62725e; color:#fff; }
+[data-design='v2'][data-club='fcsg'] .v2-home-classic .v2-discover-link:nth-child(2) { background:#35674e; }
+[data-design='v2'] .v2-home-classic .v2-discover-link:nth-child(3) { background:#e1d6be; color:#263025; }
+[data-design='v2'][data-club='otmar'] .v2-home-classic .v2-discover-link:nth-child(3) { background:#e5d386; }
+[data-design='v2'] .v2-home-classic .v2-discover-link:nth-child(4) { background:#805a3b; color:#fff; }

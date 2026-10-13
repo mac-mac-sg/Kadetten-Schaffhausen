@@ -15,20 +15,12 @@ function v2Discover() {
   const name=liveEscape(fanClubs[activeClub].name);
   return `<section class="v2-discover" data-v2-reveal="discover" aria-labelledby="v2-discover-title"><p class="eyebrow">Mehr als ein Spiel</p><h2 id="v2-discover-title">Dein Verein.<br>Deine Geschichten.</h2><div class="v2-discover-stack"><a class="v2-discover-main" href="#season/squad"><img src="${v2ClubImages[activeClub]}" alt="" loading="lazy"><span><small>${name}</small><strong>Unsere Mannschaft</strong><i aria-hidden="true">↗</i></span></a><a class="v2-discover-link" href="#club"><span>Unsere Geschichte</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="club-cabinet"><span>Unsere Erfolge</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="v2-club-venue"><span>Unsere Heimstätte</span><i aria-hidden="true">+</i></a></div></section>`;
 }
-function v2Story(n,index,compact=false) {
-  return `<article class="story-screen v2-story ${compact?'v2-story-compact':'v2-story-feature'}" id="story-${index}" data-v2-reveal="news-${liveEscape(n.id)}"><a class="v2-story-image" href="#news/${liveEscape(n.id)}" tabindex="-1" aria-hidden="true"><img src="${liveEscape(activeClub==='fcsg'?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image))}" alt="" decoding="async" ${index?'loading="lazy"':'fetchpriority="high"'}></a><div class="story-copy"><p>${liveEscape(n.date)} · Vereinsnews</p><h2><a href="#news/${liveEscape(n.id)}">${n.title}</a></h2><a class="v2-text-link" href="#news/${liveEscape(n.id)}">${compact?'Lesen':'Geschichte lesen'} <span aria-hidden="true">↗</span></a></div></article>`;
-}
-function v2NewsRhythm(news) {
-  const compact=(start,end)=>`<div class="v2-news-briefs">${news.slice(start,end).map((n,i)=>v2Story(n,start+i,true)).join('')}</div>`;
-  let out=compact(1,4)+v2Discover();
-  for(let i=4;i<news.length;i+=4)out+=v2Story(news[i],i)+compact(i+1,i+4);
-  return out;
-}
 function v2Home() {
   const news=activeClub==='fcsg'?fcsgData.stories:stories;
   const name=liveEscape(fanClubs[activeClub].name);
   const fixture=activeClub==='fcsg'?fcsgMatchday():`<section class="home-matchday" aria-label="Aktuelles ${name}-Spiel"><a id="live-match" class="live-match" aria-label="${name}-Spiel" aria-live="polite" hidden></a></section>`;
-  return `<section class="home-news" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><div class="v2-hero-copy"><p class="eyebrow">Dein Verein. Dein Spiel.</p><h1 id="home-news-title">${activeClub==='kadetten'?'Zusammen.<br>Für Orange.':activeClub==='fcsg'?'Hier schlägt<br>Grünweiss.':'Zämästoh.<br>Für Gelbschwarz.'}</h1><p>${name} · Saison 2026/27</p></div>${fixture}</div><header class="v2-news-heading" data-v2-reveal="news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h2>Neues aus dem Verein</h2>${sourceNotice('news')}</header>${news[0]?v2Story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div>${v2NewsRhythm(news)}</div></section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
+  const story=(n,i)=>`<article class="story-screen v2-story" id="story-${i}"><a class="v2-story-image" href="#news/${liveEscape(n.id)}" tabindex="-1" aria-hidden="true"><img src="${liveEscape(activeClub==='fcsg'?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image))}" alt="" decoding="async" ${i?'loading="lazy"':'fetchpriority="high"'}></a><div class="story-copy"><p>${liveEscape(n.date)} · Vereinsnews</p><h2><a href="#news/${liveEscape(n.id)}">${n.title}</a></h2><a class="v2-text-link" href="#news/${liveEscape(n.id)}">Geschichte lesen <span aria-hidden="true">↗</span></a></div></article>`;
+  return `<section class="home-news v2-home-classic" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><div class="v2-hero-copy"><p class="eyebrow">Dein Verein. Dein Spiel.</p><h1 id="home-news-title">${activeClub==='kadetten'?'Zusammen.<br>Für Orange.':activeClub==='fcsg'?'Hier schlägt<br>Grünweiss.':'Zämästoh.<br>Für Gelbschwarz.'}</h1><p>${name} · Saison 2026/27</p></div>${fixture}</div><header class="v2-news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h2>Neues aus dem Verein</h2>${sourceNotice('news')}</header>${news[0]?story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div><div class="v2-news-grid">${news.slice(1).map((n,i)=>story(n,i+1)).join('')}</div></div>${v2Discover().replace(' data-v2-reveal="discover"','')}</section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
 }
 home=v2Home;
 fcsgHome=v2Home;
@@ -102,7 +94,7 @@ function v2SetupScrollChrome() {
   v2TopObserver?.disconnect();v2HeroObserver?.disconnect();
   document.querySelector('.v2-scrollbar')?.remove();
   const home=!location.hash||location.hash==='#home', club=location.hash==='#club';
-  if(!home&&!club)return;
+  if(!club)return;
   const top=document.querySelector('body > .top');if(!top)return;
   const nav=document.createElement('nav');nav.className='v2-scrollbar';nav.hidden=true;nav.dataset.surface='photo';
   nav.setAttribute('aria-label','Kompakte Vereinsnavigation');nav.innerHTML=v2ScrollMarkup();document.body.append(nav);
