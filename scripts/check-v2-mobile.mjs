@@ -86,6 +86,26 @@ try {
     await page.locator('#club-settings').tap();
     assert.ok(await page.locator('dialog[open]').count());
   }
+  // Matchday colours belong to the dark card, independently of the page theme.
+  for(const club of ['kadetten','fcsg','otmar']) {
+    await page.goto(origin+'/v2/?club='+club+'#home');
+    await page.locator('.home-matchday .live-match').waitFor();
+    const states=['match-preview','match-preview is-matchday matchday-upcoming','is-matchday is-live','match-preview matchday-win','match-preview matchday-draw','match-preview matchday-loss'];
+    for(const state of states) {
+      const styles=[];
+      for(const theme of ['dark','light']) {
+        styles.push(await page.evaluate(({theme,state})=>{
+          document.documentElement.dataset.theme=theme;
+          const card=document.querySelector('.home-matchday .live-match');card.className='live-match '+(card.classList.contains('fcsg-matchday')?'fcsg-matchday ':'')+state;
+          return [card,...card.querySelectorAll('*')].map(el=>{
+            const css=getComputedStyle(el);
+            return Object.fromEntries(['color','backgroundColor','backgroundImage','borderColor','boxShadow','fill','stroke'].map(key=>[key,css[key]]));
+          });
+        },{theme,state}));
+      }
+      assert.deepEqual(styles[1],styles[0],club+' '+state+': same dark matchday card in both themes');
+    }
+  }
   assert.deepEqual(errors,[]);
-  console.log(`${results.length} V2 mobile view/theme cases and 3 touch flows passed.`);
+  console.log(`${results.length} V2 mobile view/theme cases and 3 touch flows plus 18 matchday theme comparisons passed.`);
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}

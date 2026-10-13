@@ -223,3 +223,5 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .v2-home-classic .v2-discover-link:nth-child(3) { background:#e1d6be; color:#263025; }
 [data-design='v2'][data-club='otmar'] .v2-home-classic .v2-discover-link:nth-child(3) { background:#e5d386; }
 [data-design='v2'] .v2-home-classic .v2-discover-link:nth-child(4) { background:#805a3b; color:#fff; }
+/* The matchday card owns its dark palette in both page themes. */
+[data-design='v2'] .home-matchday { --surface:#141b16; --surface-2:#243027; --text:#f4f1e9; --muted:#b9c5b9; --line:#ffffff26; --win:#a2cf75; --draw:#d5c778; --loss:#f07d6c; --glass:#1f2a23d9; }
