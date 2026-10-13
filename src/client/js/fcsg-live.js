@@ -23,7 +23,7 @@ function fcsgTicker(g) {
 function updateFcsgLiveView() {
  if(activeClub!=='fcsg')return;
  const slot=document.querySelector('.fcsg-matchday');
- if(slot){const template=document.createElement('template');template.innerHTML=fcsgMatchday();const next=template.content.querySelector('.fcsg-matchday');if(next){slot.innerHTML=next.innerHTML;slot.className=next.className;slot.href=next.href;slot.dataset.pulse=next.dataset.pulse;updateFcsgPulse();}}
+ if(slot){const template=document.createElement('template');template.innerHTML=fcsgMatchday();const next=template.content.querySelector('.fcsg-matchday');if(next){setMatchdayContent(slot,next.innerHTML);slot.className=next.className;slot.href=next.href;slot.dataset.pulse=next.dataset.pulse;updateFcsgPulse();}}
  const [page,id]=location.hash.slice(1).split('/');
  if(page==='match'){
   const g=fcsgGame(id);if(!g)return;
@@ -73,6 +73,7 @@ function updateFcsgPulse() {
  const phase=fcsgPulsePhase(g);
  if(slot.dataset.pulse!==phase)slot.dataset.pulse=phase;
  slot.classList.toggle('pulse-paused',document.hidden);
+ syncMatchdayOrbit(slot,g,!!g.live);
  slot.classList.toggle('is-matchday',!!g.live||(!g.score&&g.date===swissToday()));
 }
 setInterval(()=>{if(!document.hidden)updateFcsgPulse();},1000);

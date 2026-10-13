@@ -171,3 +171,27 @@ test('Arena-Puls beschleunigt zum Zürcher Anpfiff und erfindet keinen Live-Stat
   assert.equal(l.matchPulsePhase({...g, score: [30, 20]}), 'off');
   assert.equal(l.matchPulsePhase(g, true), 'live');
 });
+
+test('Matchday rim uses 8/5/3 seconds, Zurich day boundaries and only confirmed live status',()=>{
+ const g=game('2026-10-13','18:45'),l=logic('2026-10-13T04:52:00Z');
+ assert.equal(l.matchdayOrbitState(g).active,true);assert.equal(l.matchdayOrbitState(g).seconds,8);
+ assert.equal(logic('2026-10-13T15:45:00Z').matchdayOrbitState(g).seconds,5);
+ assert.equal(logic('2026-10-13T16:30:00Z').matchdayOrbitState(g).seconds,5);
+ assert.equal(logic('2026-10-13T16:46:00Z').matchdayOrbitState(g).seconds,8,'kickoff alone is not a live signal');
+ assert.equal(l.matchdayOrbitState(g,true).seconds,3);
+ assert.equal(logic('2026-10-12T21:59:00Z').matchdayOrbitState(g).active,false);
+ assert.equal(logic('2026-10-12T22:00:00Z').matchdayOrbitState(g).active,true);
+ assert.equal(l.matchdayOrbitState({...g,score:[25,23]}).active,false);
+ assert.equal(l.matchdayOrbitState({...g,score:[null,null]}).active,true);
+ assert.equal(logic('2026-10-13T16:30:00Z').matchdayOrbitState({...g,confirmed:false}).seconds,8);
+ assert.equal(l.matchdayOrbitState({...g,time:''}).active,true);
+ assert.equal(l.matchdayOrbitState(null).active,false);
+});
+test('Rim contour preserves unequal corners, handles zero/oversized radii and never draws outside its box',()=>{
+ const l=logic('2026-10-13T04:52:00Z');
+ const path=l.matchdayOrbitPath(350,180,[{x:8,y:8},{x:32,y:32},{x:8,y:8},{x:32,y:32}],1);
+ assert.match(path,/A31 31/);assert.match(path,/A7 7/);assert.ok(path.endsWith('Z'));assert.doesNotMatch(path,/NaN|Infinity/);
+ const square=l.matchdayOrbitPath(350,180,Array(4).fill({x:0,y:0}),1);assert.doesNotMatch(square,/A/);
+ const oversized=l.matchdayOrbitPath(40,20,Array(4).fill({x:100,y:100}),1);assert.doesNotMatch(oversized,/NaN|Infinity/);assert.match(oversized,/A9 9/);
+ assert.equal(l.matchdayOrbitPath(0,20,Array(4).fill({x:8,y:8})), '');
+});

@@ -174,3 +174,16 @@ test('Calendar opens in the current Zurich month rather than a fixed October',()
  const c=vm.createContext({Date:NovemberDate,document:{querySelector:()=>null}});load(c,'js/core.js');
  assert.equal(vm.runInContext('calendarYear',c),2026);assert.equal(vm.runInContext('month',c),10);
 });
+
+test('Live content updates preserve the orbit node; confirmed completion hides it and restart creates only one contour',()=>{
+ const {document}=parseHTML('<html><body><a id="card"></a></body></html>');
+ const c=vm.createContext({document,URL,location:{href:'https://app.test/'},navigator:{onLine:true},window:{},Date});
+ load(c,'js/logic.js');load(c,'js/core.js');
+ const slot=document.getElementById('card'),g={date:c.swissToday(),time:'18:00'};
+ c.setMatchdayContent(slot,'<b>Vorschau</b>');c.syncMatchdayOrbit(slot,g);
+ const orbit=slot.querySelector('.matchday-orbit');assert.ok(orbit);assert.equal(orbit.getAttribute('aria-hidden'),'true');assert.equal(orbit.getAttribute('focusable'),'false');
+ c.setMatchdayContent(slot,'<b>Live-Spiel · 13:11</b>');c.syncMatchdayOrbit(slot,g,true);
+ assert.equal(slot.querySelector('.matchday-orbit'),orbit);assert.match(slot.textContent,/13:11/);assert.equal(slot.style.getPropertyValue('--orbit-period'),'3s');
+ c.syncMatchdayOrbit(slot,{...g,score:[25,23]});assert.equal(orbit.hasAttribute('hidden'),true);
+ c.syncMatchdayOrbit(slot,g);assert.equal(orbit.hasAttribute('hidden'),false);assert.equal(slot.querySelectorAll('.matchday-orbit').length,1);
+});

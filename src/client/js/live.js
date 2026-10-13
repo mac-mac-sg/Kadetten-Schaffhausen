@@ -19,12 +19,15 @@ function updateMatchPulse() {
   const phase = matchPulsePhase(game, !!live);
   if (slot.dataset.pulse !== phase) slot.dataset.pulse = phase;
   slot.classList.toggle('pulse-paused', document.hidden);
+  syncMatchdayOrbit(slot,game,!!live);
 }
 function showLiveMatch() {
   const slot = document.getElementById('live-match');
   if (!slot) return;
   const {game: g, live} = homeFixture();
   if (!g || (slot.dataset.liveOnly === 'true' && !live)) {
+    syncMatchdayOrbit(slot,null);
+    matchdayContentHTML.delete(slot);
     slot.hidden = true;
     slot.innerHTML = '';
     return;
@@ -53,10 +56,10 @@ function showLiveMatch() {
   slot.classList.toggle('matchday-upcoming', today && !live && !ended);
   slot.classList.toggle('is-live', !!live);
   slot.classList.toggle('matchday-over', ended && result?.state !== 'win');
-  if (slot.innerHTML !== html) slot.innerHTML = html;
+  setMatchdayContent(slot,html);
   slot.hidden = false;
   updateMatchPulse();
-  if (today) playMatchdayIntro(slot, g.date);
+  if (today && !ended) playMatchdayIntro(slot, g.date);
 }
 
 async function checkLiveMatch() {

@@ -2098,6 +2098,27 @@ footer .source-details summary { margin-inline: auto; }
  .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]::before { animation: none; transform: none; opacity: .2; }
 }
 
+/* One light follows the existing rim; pulse brightness never moves the card. */
+@keyframes matchday-orbit { from { stroke-dashoffset:var(--orbit-offset,0); } to { stroke-dashoffset:calc(var(--orbit-offset,0) - 1000); } }
+@keyframes matchday-orbit-heartbeat { 0%,30%,100% { opacity:.62; } 8% { opacity:1; } 16% { opacity:.68; } 23% { opacity:.88; } }
+.home-matchday .matchday-orbit { position:absolute; z-index:2; pointer-events:none; overflow:visible; fill:none; }
+.home-matchday .matchday-orbit[hidden] { display:none; }
+.home-matchday .matchday-orbit-pulse { animation:matchday-orbit-heartbeat var(--arena-period,8s) ease-in-out infinite; }
+.home-matchday .matchday-orbit path { stroke-linecap:round; animation:matchday-orbit var(--orbit-period,8s) linear infinite; }
+.home-matchday .matchday-orbit-trail { stroke:var(--arena-border,#ffd6a7); stroke-width:2.5; stroke-dasharray:150 850; opacity:.18; }
+.home-matchday .matchday-orbit-middle { --orbit-offset:-60; stroke:var(--arena-border,#ffd6a7); stroke-width:2; stroke-dasharray:90 910; opacity:.45; }
+.home-matchday .matchday-orbit-head { --orbit-offset:-115; stroke:var(--cream); stroke-width:1.6; stroke-dasharray:35 965; }
+.home-matchday :is(#live-match,.fcsg-matchday)[data-orbit='true']::after { display:none; }
+.home-matchday :is(#live-match,.fcsg-matchday).pulse-paused .matchday-orbit-pulse,
+.home-matchday :is(#live-match,.fcsg-matchday).pulse-paused .matchday-orbit path { animation-play-state:paused; }
+[data-club='otmar'] .home-matchday #live-match { --arena-border:#ffe994; --arena-core:#ffe36d50; --arena-halo:#ffcf2625; --arena-core-strong:#ffe36d75; }
+[data-club='otmar'] .home-matchday #live-match[data-orbit='true'] { border-color:var(--arena-border); }
+.home-matchday :is(#live-match,.fcsg-matchday)[data-pulse='off']:is(.matchday-win,.matchday-loss,.matchday-draw) { border-color:var(--match-result); }
+@media(prefers-reduced-motion:reduce) {
+ .home-matchday .matchday-orbit-pulse { animation:none; opacity:.72; }
+ .home-matchday .matchday-orbit path { animation:none; stroke-dashoffset:var(--orbit-offset,0); }
+}
+
 /* FCSG-Matchcenter: official Opta values, shared existing match tabs. */
 .fcsg-match-dashboard,.fcsg-lineup-dashboard { --match-green: #a9e877; --match-opponent: #b5c2c0; }
 .fcsg-match-dashboard { display: grid; gap: 20px; margin-top: 24px; }

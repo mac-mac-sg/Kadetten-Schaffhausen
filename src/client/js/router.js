@@ -46,6 +46,7 @@ function measureFcsgProfileViewport() {
   if (document.body.classList.contains('fcsg-profile-mode')) setupFcsgProfileViewport();
 }
 function setupViews() {
+  setupMatchdayOrbit();
   viewObserver?.disconnect();
   newsRegionObserver?.disconnect();
   document.body.classList.toggle('player-mode', activeClub !== 'fcsg' && location.hash.startsWith('#player/'));

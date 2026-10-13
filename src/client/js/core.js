@@ -98,3 +98,55 @@ function sourceNotice(key) {
 function syncSourceNotices() {
  document.querySelectorAll('[data-source-key]').forEach(el=>{const text=sourceNoticeText(el.dataset.sourceKey);el.textContent=text;el.hidden=!text;});
 }
+
+/* Decorative rim: one contour, with coincident fading trail/head strokes. */
+const matchdayOrbitMarkup='<svg class="matchday-orbit" aria-hidden="true" focusable="false"><g class="matchday-orbit-pulse"><path class="matchday-orbit-trail" pathLength="1000"/><path class="matchday-orbit-middle" pathLength="1000"/><path class="matchday-orbit-head" pathLength="1000"/></g></svg>';
+const matchdayContentHTML=new WeakMap();
+let matchdayOrbitObserver, matchdayOrbitCard;
+function setMatchdayContent(slot,html) {
+  if(matchdayContentHTML.get(slot)===html)return;
+  const orbit=slot.querySelector('.matchday-orbit');
+  if(!orbit)slot.innerHTML=html;
+  else {
+    const template=document.createElement('template');template.innerHTML=html;
+    for(const child of [...slot.childNodes])if(child!==orbit)child.remove();
+    slot.append(template.content);
+  }
+  matchdayContentHTML.set(slot,html);
+}
+function updateMatchdayOrbitGeometry(slot) {
+  const svg=slot.querySelector('.matchday-orbit');if(!svg||typeof getComputedStyle!=='function')return;
+  const css=getComputedStyle(slot),width=parseFloat(css.width),height=parseFloat(css.height);
+  if(!width||!height)return;
+  const borderX=parseFloat(css.borderLeftWidth)||0,borderY=parseFloat(css.borderTopWidth)||0;
+  const corners=['borderTopLeftRadius','borderTopRightRadius','borderBottomRightRadius','borderBottomLeftRadius'].map(key=>{
+    const values=css[key].split(/\s+/),read=(value,total)=>(parseFloat(value)||0)*(value.endsWith('%')?total/100:1);
+    return {x:read(values[0],width),y:read(values[1]||values[0],height)};
+  });
+  const d=matchdayOrbitPath(width,height,corners,Math.max(.5,borderX/2));
+  svg.style.width=width+'px';svg.style.height=height+'px';svg.style.left=-borderX+'px';svg.style.top=-borderY+'px';
+  svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  svg.querySelectorAll('path').forEach(path=>{if(path.getAttribute('d')!==d)path.setAttribute('d',d);});
+}
+function syncMatchdayOrbit(slot,g,live=false) {
+  const state=matchdayOrbitState(g,live),old=slot.querySelector('.matchday-orbit');
+  slot.dataset.orbit=String(state.active);slot.style.setProperty('--orbit-period',state.seconds+'s');
+  if(state.active&&!old)slot.insertAdjacentHTML('beforeend',matchdayOrbitMarkup);
+  const orbit=slot.querySelector('.matchday-orbit');if(orbit)orbit.toggleAttribute('hidden',!state.active);
+  if(state.active){
+    if(!old)updateMatchdayOrbitGeometry(slot);
+    if(matchdayOrbitCard!==slot){
+      matchdayOrbitObserver?.disconnect();matchdayOrbitCard=slot;
+      if(typeof ResizeObserver!=='undefined'){
+        matchdayOrbitObserver ||= new ResizeObserver(()=>{if(matchdayOrbitCard?.isConnected&&!matchdayOrbitCard.hidden)updateMatchdayOrbitGeometry(matchdayOrbitCard);});
+        matchdayOrbitObserver.observe(slot);
+      }
+      updateMatchdayOrbitGeometry(slot);
+    }
+  } else if(matchdayOrbitCard===slot){matchdayOrbitObserver?.disconnect();matchdayOrbitCard=null;}
+}
+function setupMatchdayOrbit() {
+  const slot=document.querySelector('.home-matchday .live-match:not([hidden])');
+  if(matchdayOrbitCard!==slot){matchdayOrbitObserver?.disconnect();matchdayOrbitCard=null;}
+  if(activeClub==='fcsg')updateFcsgPulse();else updateMatchPulse();
+}
