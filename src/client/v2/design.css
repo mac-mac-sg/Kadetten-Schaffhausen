@@ -126,3 +126,8 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 }
 @media(max-width:380px) { .v2-test-tools { gap:6px; } [data-design='v2'] .brand span { font-size:11px; } .v2-layer summary { font-size:19px; padding:18px; } }
 @media(prefers-reduced-motion:reduce) { [data-design='v2'] * { scroll-behavior:auto!important; } }
+/* The immersive glass bar stays pale in both themes; its controls must follow that surface. */
+[data-design='v2'] .immersive > .top .club-picker { background:transparent; }
+[data-design='v2'] .immersive > .top .club-picker button { background:transparent; color:#222b25; }
+[data-design='v2'] .immersive > .top .club-picker [aria-pressed='true'] { background:#25372a; color:#fff; }
+[data-design='v2'] .app-introduction .eyebrow { color:var(--muted); }
