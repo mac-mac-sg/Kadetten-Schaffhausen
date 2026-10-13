@@ -265,11 +265,10 @@ function centerNextGame() {
     if (location.hash !== '#season/games' || mode !== 'list') return;
     const card=document.querySelector('.game-timeline .current-game');
     if(!card)return;
-    const headerBottom=Math.max(0,...['body > .top','.season-header'].map(selector=>document.querySelector(selector)?.getBoundingClientRect().bottom || 0));
     const viewportHeight=window.visualViewport?.height || window.innerHeight;
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
-    const rect=card.getBoundingClientRect(), top=headerBottom+12, bottom=dockTop-12;
-    // Centre inside the unobscured area; tall cards start below the filters.
+    const rect=card.getBoundingClientRect(), top=12, bottom=dockTop-12;
+    // Headers scroll away with the list; only the bottom dock occludes content.
     const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
     window.scrollTo({top:Math.max(0,window.scrollY+rect.top-targetTop),behavior:'instant'});
   });

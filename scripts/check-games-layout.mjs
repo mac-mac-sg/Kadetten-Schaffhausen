@@ -19,7 +19,7 @@ const server=http.createServer((request,response)=>{
   try {
     const file=path.resolve(directory,'.'+new URL(request.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));
     if(!file.startsWith(directory+path.sep))throw Error('Outside preview');
-    response.writeHead(200,{'Content-Type':types[path.extname(file)] || 'application/octet-stream'});response.end(fs.readFileSync(file));
+    const content=fs.readFileSync(file);response.writeHead(200,{'Content-Type':types[path.extname(file)] || 'application/octet-stream'});response.end(content);
   } catch {response.writeHead(404);response.end();}
 });
 let browser;
@@ -27,7 +27,7 @@ try {
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin='http://127.0.0.1:'+server.address().port;
   browser=await chromium.launch({headless:true,...(process.env.GAMES_CHROMIUM_EXECUTABLE?{executablePath:process.env.GAMES_CHROMIUM_EXECUTABLE}:{}),args:['--no-sandbox','--disable-dev-shm-usage']});
-  const page=await browser.newPage({serviceWorkers:'block',reducedMotion:'reduce'}),errors=[];
+  const page=await browser.newPage({serviceWorkers:'block',reducedMotion:'reduce',bypassCSP:true}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.clock.install({time:new Date(checkedAt)});
   let empty=false;
@@ -41,9 +41,13 @@ try {
     localStorage.setItem('fan-app-onboarding-v1','seen');localStorage.setItem('fan-app-install-intro-v1','seen');
     for(let i=0;i<data.length;i++)localStorage.setItem(['kadetten','fcsg','otmar'][i]+'-public-data-v1',JSON.stringify({...data[i],checkedAt,...(new URL(location.href).searchParams.has('test-empty')?{games:[]}: {})}));
   },{data:snapshots,checkedAt});
+  const axe=process.env.GAMES_AXE_SCRIPT ? fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8') : null;
   const selectors=['body > .top','.season-header .eyebrow','.season-header h1','.game-view-toggle'];
   async function measure() {
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(200);
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.waitForTimeout(50);
+    if(axe)assert.deepEqual(await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)),[]);
     return page.evaluate(selectors=>({boxes:Object.fromEntries(selectors.map(selector=>{
       const element=document.querySelector(selector),rect=element.getBoundingClientRect();
       return [selector,{x:rect.x,y:rect.y,height:rect.height,font:getComputedStyle(element).fontSize}];
@@ -58,6 +62,7 @@ try {
   for(const viewport of [{width:390,height:844},{width:1280,height:844},{width:375,height:667},{width:844,height:390}])for(const club of ['kadetten','fcsg','otmar'])for(const noFixtures of [false,true]) {
     empty=noFixtures;await page.setViewportSize(viewport);
     await page.goto(origin+'/?club='+club+(empty?'&test-empty=1':'')+'#season/games',{waitUntil:'domcontentloaded'});
+    if(axe)await page.addScriptTag({content:axe});
     if(empty)await page.waitForFunction(()=>document.querySelectorAll('.game-timeline .game-card').length===0);
     const before=await measure();
     await page.locator('[data-mode="calendar"]').click();const calendar=await measure();stable(before,calendar,club+' calendar');
@@ -66,6 +71,14 @@ try {
     await page.locator('[data-mode="calendar"]').click();stable(before,await measure(),club+' calendar after week');
     await page.locator('[data-mode="week"]').click();stable(before,await measure(),club+' week after calendar');
     await page.locator('[data-mode="list"]').click();stable(before,await measure(),club+' list');
+    if(!empty && viewport.height>550) {
+      const start=await measure();
+      await page.evaluate(()=>window.scrollTo({top:180,behavior:'instant'}));
+      const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,title:document.querySelector('.season-header h1').getBoundingClientRect().y}));
+      assert.ok(moved.scrollY>100,club+': list scrolls');
+      assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top-moved.scrollY)<1,club+': app header scrolls');
+      assert.ok(Math.abs(start.boxes['.season-header h1'].y-moved.title-moved.scrollY)<1,club+': title scrolls');
+    }
     cases++;console.log(JSON.stringify({club,...viewport,empty,stable:true}));
   }
   assert.deepEqual(errors,[]);console.log(`${cases} List → Calendar → Week → List cases passed.`);
