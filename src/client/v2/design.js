@@ -13,14 +13,22 @@ function v2Layer(title, content, index=0, open=false) {
 }
 function v2Discover() {
   const name=liveEscape(fanClubs[activeClub].name);
-  return `<section class="v2-discover" aria-labelledby="v2-discover-title"><p class="eyebrow">Mehr als ein Spiel</p><h2 id="v2-discover-title">Dein Verein.<br>Deine Geschichten.</h2><div class="v2-discover-stack"><a class="v2-discover-main" href="#season/squad"><img src="${v2ClubImages[activeClub]}" alt="" loading="lazy"><span><small>${name}</small><strong>Unsere Mannschaft</strong><i aria-hidden="true">↗</i></span></a><a class="v2-discover-link" href="#club"><span>Unsere Geschichte</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="club-cabinet"><span>Unsere Erfolge</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="v2-club-venue"><span>Unsere Heimstätte</span><i aria-hidden="true">+</i></a></div></section>`;
+  return `<section class="v2-discover" data-v2-reveal="discover" aria-labelledby="v2-discover-title"><p class="eyebrow">Mehr als ein Spiel</p><h2 id="v2-discover-title">Dein Verein.<br>Deine Geschichten.</h2><div class="v2-discover-stack"><a class="v2-discover-main" href="#season/squad"><img src="${v2ClubImages[activeClub]}" alt="" loading="lazy"><span><small>${name}</small><strong>Unsere Mannschaft</strong><i aria-hidden="true">↗</i></span></a><a class="v2-discover-link" href="#club"><span>Unsere Geschichte</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="club-cabinet"><span>Unsere Erfolge</span><i aria-hidden="true">+</i></a><a class="v2-discover-link" href="#club" data-v2-club-target="v2-club-venue"><span>Unsere Heimstätte</span><i aria-hidden="true">+</i></a></div></section>`;
+}
+function v2Story(n,index,compact=false) {
+  return `<article class="story-screen v2-story ${compact?'v2-story-compact':'v2-story-feature'}" id="story-${index}" data-v2-reveal="news-${liveEscape(n.id)}"><a class="v2-story-image" href="#news/${liveEscape(n.id)}" tabindex="-1" aria-hidden="true"><img src="${liveEscape(activeClub==='fcsg'?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image))}" alt="" decoding="async" ${index?'loading="lazy"':'fetchpriority="high"'}></a><div class="story-copy"><p>${liveEscape(n.date)} · Vereinsnews</p><h2><a href="#news/${liveEscape(n.id)}">${n.title}</a></h2><a class="v2-text-link" href="#news/${liveEscape(n.id)}">${compact?'Lesen':'Geschichte lesen'} <span aria-hidden="true">↗</span></a></div></article>`;
+}
+function v2NewsRhythm(news) {
+  const compact=(start,end)=>`<div class="v2-news-briefs">${news.slice(start,end).map((n,i)=>v2Story(n,start+i,true)).join('')}</div>`;
+  let out=compact(1,4)+v2Discover();
+  for(let i=4;i<news.length;i+=4)out+=v2Story(news[i],i)+compact(i+1,i+4);
+  return out;
 }
 function v2Home() {
   const news=activeClub==='fcsg'?fcsgData.stories:stories;
   const name=liveEscape(fanClubs[activeClub].name);
   const fixture=activeClub==='fcsg'?fcsgMatchday():`<section class="home-matchday" aria-label="Aktuelles ${name}-Spiel"><a id="live-match" class="live-match" aria-label="${name}-Spiel" aria-live="polite" hidden></a></section>`;
-  const story=(n,i)=>`<article class="story-screen v2-story" id="story-${i}"><a class="v2-story-image" href="#news/${liveEscape(n.id)}" tabindex="-1" aria-hidden="true"><img src="${liveEscape(activeClub==='fcsg'?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image))}" alt="" decoding="async" ${i?'loading="lazy"':'fetchpriority="high"'}></a><div class="story-copy"><p>${liveEscape(n.date)} · Vereinsnews</p><h2><a href="#news/${liveEscape(n.id)}">${n.title}</a></h2><a class="v2-text-link" href="#news/${liveEscape(n.id)}">Geschichte lesen <span aria-hidden="true">↗</span></a></div></article>`;
-  return `<section class="home-news" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><div class="v2-hero-copy"><p class="eyebrow">Dein Verein. Dein Spiel.</p><h1 id="home-news-title">${activeClub==='kadetten'?'Zusammen.<br>Für Orange.':activeClub==='fcsg'?'Hier schlägt<br>Grünweiss.':'Zämästoh.<br>Für Gelbschwarz.'}</h1><p>${name} · Saison 2026/27</p></div>${fixture}</div><header class="v2-news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h2>Neues aus dem Verein</h2>${sourceNotice('news')}</header>${news[0]?story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div><div class="v2-news-grid">${news.slice(1).map((n,i)=>story(n,i+1)).join('')}</div></div>${v2Discover()}</section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
+  return `<section class="home-news" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><div class="v2-hero-copy"><p class="eyebrow">Dein Verein. Dein Spiel.</p><h1 id="home-news-title">${activeClub==='kadetten'?'Zusammen.<br>Für Orange.':activeClub==='fcsg'?'Hier schlägt<br>Grünweiss.':'Zämästoh.<br>Für Gelbschwarz.'}</h1><p>${name} · Saison 2026/27</p></div>${fixture}</div><header class="v2-news-heading" data-v2-reveal="news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h2>Neues aus dem Verein</h2>${sourceNotice('news')}</header>${news[0]?v2Story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div>${v2NewsRhythm(news)}</div></section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
 }
 home=v2Home;
 fcsgHome=v2Home;
@@ -40,7 +48,7 @@ setupViews=function() {
   document.documentElement.classList.remove('snap-news');
   const season=document.querySelector('.season');
   if(season&&location.hash==='#season/squad') {
-    const intro=document.createElement('section');intro.className='v2-roster-intro';
+    const intro=document.createElement('section');intro.className='v2-roster-intro';intro.dataset.v2Reveal='roster-intro';
     intro.innerHTML=`<img src="${v2ClubImages[activeClub]}" alt="Heimstätte von ${liveEscape(fanClubs[activeClub].name)}"><div><p class="eyebrow">Menschen hinter dem Wappen</p><h2>Unsere Mannschaft.</h2><a class="button subtle" href="#club">Geschichte & Erfolge ↗</a></div>`;
     season.querySelector('.season-header')?.after(intro);
     season.insertAdjacentHTML('beforeend',v2Discover());
@@ -57,6 +65,9 @@ setupViews=function() {
     bar.prepend(tools);
   }
   v2SetTheme(document.documentElement.dataset.theme);
+  document.querySelectorAll('.club-chapter,.club-cabinet').forEach((element,index)=>element.dataset.v2Reveal='club-'+(element.id||index));
+  v2SetupScrollChrome();
+  v2SetupReveals();
   document.title+=' · V2 Test';
 };
 document.addEventListener('click',e=>{
@@ -79,3 +90,69 @@ function v2ShowDemo() {
   dialog.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>draw(Number(b.dataset.state)));
   dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
 }
+
+/* Scroll chrome is independent of the document flow: neither images nor fixtures change height. */
+let v2TopObserver, v2HeroObserver, v2RevealObserver;
+const v2Revealed=new Set();
+function v2ScrollMarkup() {
+  const club=fanClubs[activeClub];
+  return `<a class="v2-scroll-home" href="#home" aria-label="${liveEscape(club.name)} · Startseite"><img src="${club.logo}" alt="" width="24" height="28"><span>${liveEscape(club.short)}</span></a><button type="button" data-v2-menu aria-controls="v2-scroll-clubs" aria-expanded="false" aria-label="Verein wechseln">Verein <span aria-hidden="true">⌄</span></button><button type="button" data-v2-settings aria-label="Meine Vereine einstellen">Einstellungen</button><div class="v2-scroll-clubs" id="v2-scroll-clubs" hidden>${selectedClubs.map(id=>`<button type="button" data-v2-select="${id}" aria-pressed="${id===activeClub}"><img src="${fanClubs[id].logo}" alt="" width="24" height="28"><span>${liveEscape(fanClubs[id].name)}</span></button>`).join('')}</div>`;
+}
+function v2SetupScrollChrome() {
+  v2TopObserver?.disconnect();v2HeroObserver?.disconnect();
+  document.querySelector('.v2-scrollbar')?.remove();
+  const home=!location.hash||location.hash==='#home', club=location.hash==='#club';
+  if(!home&&!club)return;
+  const top=document.querySelector('body > .top');if(!top)return;
+  const nav=document.createElement('nav');nav.className='v2-scrollbar';nav.hidden=true;nav.dataset.surface='photo';
+  nav.setAttribute('aria-label','Kompakte Vereinsnavigation');nav.innerHTML=v2ScrollMarkup();document.body.append(nav);
+  if(typeof IntersectionObserver==='undefined')return;
+  v2TopObserver=new IntersectionObserver(entries=>{
+    const visible=entries[0].isIntersecting;
+    if(visible&&nav.contains(document.activeElement))top.querySelector('.brand')?.focus({preventScroll:true});
+    nav.hidden=visible;
+    if(visible)v2CloseClubMenu();
+  },{threshold:0});
+  v2TopObserver.observe(top);
+  const hero=document.querySelector(home?'.home-title-zone':'.club-intro');
+  if(hero){
+    v2HeroObserver=new IntersectionObserver(entries=>{
+      nav.dataset.surface=entries[0].boundingClientRect.bottom<=68?'content':'photo';
+    },{rootMargin:'-68px 0px 0px 0px',threshold:0});
+    v2HeroObserver.observe(hero);
+  }else nav.dataset.surface='content';
+}
+function v2CloseClubMenu() {
+  const menu=document.getElementById('v2-scroll-clubs');if(menu)menu.hidden=true;
+  document.querySelector('[data-v2-menu]')?.setAttribute('aria-expanded','false');
+}
+function v2SetupReveals() {
+  v2RevealObserver?.disconnect();
+  const targets=[...document.querySelectorAll('[data-v2-reveal]')];
+  const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced||typeof IntersectionObserver==='undefined')return;
+  v2RevealObserver=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting){
+      entry.target.classList.remove('v2-reveal-pending');
+      v2Revealed.add(activeClub+':'+entry.target.dataset.v2Reveal);v2RevealObserver.unobserve(entry.target);
+    }
+  },{rootMargin:'0px 0px -20px 0px',threshold:.08});
+  for(const target of targets){
+    if(v2Revealed.has(activeClub+':'+target.dataset.v2Reveal)||target.getBoundingClientRect().top<window.innerHeight-20)continue;
+    target.classList.add('v2-reveal-pending');v2RevealObserver.observe(target);
+  }
+}
+document.addEventListener('click',event=>{
+  if(event.target.closest('.v2-scroll-home')&&location.hash==='#home'){event.preventDefault();window.scrollTo({top:0,behavior:typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return;}
+  const toggle=event.target.closest('[data-v2-menu]');
+  if(toggle){const menu=document.getElementById('v2-scroll-clubs');menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));return;}
+  const selected=event.target.closest('[data-v2-select]');
+  if(selected){v2CloseClubMenu();applyClubChange(selected.dataset.v2Select,'#home',true);return;}
+  if(event.target.closest('[data-v2-settings]')){
+    document.getElementById('club-settings')?.click();return;
+  }
+  if(!event.target.closest('.v2-scrollbar'))v2CloseClubMenu();
+});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&document.getElementById('v2-scroll-clubs')?.hidden===false){v2CloseClubMenu();document.querySelector('[data-v2-menu]')?.focus();}
+});
