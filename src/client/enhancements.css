@@ -634,18 +634,17 @@
   }
 }
 
-/* Keep the club switch above the sticky filters after centering the next game. */
+/* Games list and week share normal document scrolling; calendar stays viewport-sized. */
 body.games-mode { --games-header-height: 82px; }
 .games-mode .season.content { padding-top:0; }
 .games-mode .season-header { padding:16px 0 12px; }
 .games-mode > .top {
-  position: sticky;
-  top: 0;
+  position: relative;
+  top: auto;
   z-index: 30;
   background: var(--surface);
 }
-/* Cover subpixel seams between the two independently composited sticky layers. */
-.games-mode .season-header { top:var(--games-header-height); transform:translateY(-1px); }
+.games-mode .season-header { position:static; top:auto; transform:none; }
 @media (max-width: 640px) {
   body.games-mode { --games-header-height: 72px; }
 }
@@ -2271,3 +2270,19 @@ footer .source-details summary { margin-inline: auto; }
  .week-season .season-header { position:static; }
  .week-card { scroll-margin-top:calc(var(--app-header-height,82px) + 16px); scroll-margin-bottom:100px; }
 }
+
+/* Reserve the same four rows for every club and fixture phase, including countdown. */
+.home-matchday .live-match:not([hidden]) {
+  display: grid;
+  grid-template-rows: 1.75rem 4.125rem 2.25rem 1.5rem;
+  gap: .25rem;
+  padding-block: .625rem;
+  box-sizing: border-box;
+}
+.home-matchday .live-heading { grid-row:1; min-width:0; }
+.home-matchday .live-heading small { line-height:1.15; }
+.home-matchday .live-score { grid-row:2; margin:0; }
+.home-matchday .live-score b { min-height:2.5em; display:flex; align-items:center; justify-content:center; }
+.home-matchday .live-score > strong { font-size:28px; }
+.home-matchday :is(.match-preview-time,.live-link) { grid-row:3; margin:0; align-self:center; line-height:1.3; }
+.home-matchday .home-countdown { grid-row:4; margin:0; align-self:center; line-height:1.3; }
