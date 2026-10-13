@@ -98,7 +98,7 @@ test('Handball-Startseite füllt die Spielkarte vor der ersten Layoutmessung',()
 test('Kopfzeilenhöhe behält Subpixel bei, auch nach einer Grössenänderung',()=>{
  let height=129.6875,resize;
  const rootValues={},bodyValues={},top={getBoundingClientRect:()=>({height})};
- const c=vm.createContext({document:{querySelector:()=>top,documentElement:{style:{setProperty:(k,v)=>rootValues[k]=v}},body:{style:{setProperty:(k,v)=>bodyValues[k]=v}}},ResizeObserver:class{constructor(callback){resize=callback;}observe(element){assert.equal(element,top);}}});
+ const c=vm.createContext({document:{querySelector:()=>top,documentElement:{style:{setProperty:(k,v)=>rootValues[k]=v}},body:{style:{setProperty:(k,v)=>bodyValues[k]=v}}},ResizeObserver:class{constructor(callback){resize=callback;}disconnect(){}observe(element){assert.equal(element,top);}}});
  load(c,'js/router.js');c.measureAppChrome();
  assert.equal(rootValues['--app-header-height'],'129.6875px');
  assert.equal(bodyValues['--games-header-height'],'129.6875px');
@@ -107,16 +107,17 @@ test('Kopfzeilenhöhe behält Subpixel bei, auch nach einer Grössenänderung',(
  assert.equal(bodyValues['--games-header-height'],'152.3125px');
 });
 
-test('Aktuelles Spiel nutzt den Bildschirm oberhalb des Docks; die Kopfzeilen scrollen aus dem Bild',()=>{
+test('Aktuelles Spiel liegt unter den eingerasteten Laschen; der Vereinskopf belegt keinen Platz',()=>{
  for(const [headerBottom,height] of [[350,320],[350,600],[240,320],[350,900]]){
   let scrolled;
-  const card={top:700,height},selectors={'.game-timeline .current-game':{getBoundingClientRect:()=>card},'body > .top':{getBoundingClientRect:()=>({bottom:140})},'.season-header':{getBoundingClientRect:()=>({bottom:headerBottom})},'.dock':{getBoundingClientRect:()=>({top:750})}};
+  const card={top:700,height},selectors={'.game-timeline .current-game':{getBoundingClientRect:()=>card},'body > .top':{getBoundingClientRect:()=>({bottom:140})},'.season-header':{getBoundingClientRect:()=>({top:140,height:headerBottom-140}),querySelector:()=>({getBoundingClientRect:()=>({top:180})})},'.dock':{getBoundingClientRect:()=>({top:750})}};
   const c=vm.createContext({location:{hash:'#season/games'},mode:'list',cancelAnimationFrame(){},requestAnimationFrame:f=>{f();return 1;},document:{querySelector:s=>selectors[s]},window:{innerHeight:844,visualViewport:{height:820},scrollY:200,scrollTo:options=>scrolled=options}});
   load(c,'js/router.js');c.centerNextGame();
   const positionedTop=card.top+200-scrolled.top;
-  assert.ok(positionedTop>=12);
-  if(height<=750-24)assert.ok(positionedTop+height<=738);
-  else assert.equal(positionedTop,12);
+  const pinnedHeight=headerBottom-180;
+  assert.ok(positionedTop>=pinnedHeight+12);
+  if(height<=750-24-pinnedHeight)assert.ok(positionedTop+height<=738);
+  else assert.equal(positionedTop,pinnedHeight+12);
   assert.equal(scrolled.behavior,'instant');
   scrolled=null;c.location.hash='#season/table';c.centerNextGame();assert.equal(scrolled,null);
  }

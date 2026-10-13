@@ -74,10 +74,14 @@ try {
     if(!empty && viewport.height>550) {
       const start=await measure();
       await page.evaluate(()=>window.scrollTo({top:180,behavior:'instant'}));
-      const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,title:document.querySelector('.season-header h1').getBoundingClientRect().y}));
+      const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,title:document.querySelector('.season-header h1').getBoundingClientRect().y,tabs:document.querySelector('.game-view-toggle').getBoundingClientRect().y,eyebrow:document.querySelector('.season-header .eyebrow').getBoundingClientRect().bottom}));
       assert.ok(moved.scrollY>100,club+': list scrolls');
       assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top-moved.scrollY)<1,club+': app header scrolls');
-      assert.ok(Math.abs(start.boxes['.season-header h1'].y-moved.title-moved.scrollY)<1,club+': title scrolls');
+      assert.ok(Math.abs(moved.title)<1,club+': section title locks at top');
+      assert.ok(moved.eyebrow<=0,club+': season eyebrow scrolls away');
+      await page.evaluate(()=>window.scrollTo({top:300,behavior:'instant'}));
+      assert.ok(Math.abs(await page.locator('.game-view-toggle').evaluate(el=>el.getBoundingClientRect().y)-moved.tabs)<1,club+': tabs stay pinned');
+      if(viewport.width===390)await page.screenshot({path:'/tmp/sticky-'+club+'.png'});
     }
     cases++;console.log(JSON.stringify({club,...viewport,empty,stable:true}));
   }

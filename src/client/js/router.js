@@ -267,8 +267,10 @@ function centerNextGame() {
     if(!card)return;
     const viewportHeight=window.visualViewport?.height || window.innerHeight;
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
-    const rect=card.getBoundingClientRect(), top=12, bottom=dockTop-12;
-    // Headers scroll away with the list; only the bottom dock occludes content.
+    const header=document.querySelector('.season-header'),heading=header?.querySelector('h1');
+    const stickyHeight=header&&heading?header.getBoundingClientRect().height-(heading.getBoundingClientRect().top-header.getBoundingClientRect().top):0;
+    const rect=card.getBoundingClientRect(), top=stickyHeight+12, bottom=dockTop-12;
+    // Only the pinned section controls and bottom dock occlude the fixture.
     const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
     window.scrollTo({top:Math.max(0,window.scrollY+rect.top-targetTop),behavior:'instant'});
   });
@@ -277,7 +279,19 @@ function centerNextGame() {
 let appChromeObserver;
 function measureAppChrome() {
   const top=document.querySelector('body > .top');if(!top)return;
-  const measure=()=>{const height=top.getBoundingClientRect().height;document.documentElement.style.setProperty('--app-header-height',height+'px');document.body.style.setProperty('--games-header-height',height+'px');};
+  const measure=()=>{
+    const height=top.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--app-header-height',height+'px');
+    document.body.style.setProperty('--games-header-height',height+'px');
+    const header=document.querySelector('.games-mode .season-header'),heading=header?.querySelector?.('h1');
+    if(heading)document.body.style.setProperty('--games-sticky-offset',(heading.getBoundingClientRect().top-header.getBoundingClientRect().top)+'px');
+  };
   measure();
-  if(typeof ResizeObserver!=='undefined' && !appChromeObserver) {appChromeObserver=new ResizeObserver(measure);appChromeObserver.observe(top);}
+  if(typeof ResizeObserver!=='undefined') {
+    if(!appChromeObserver)appChromeObserver=new ResizeObserver(measure);
+    appChromeObserver.disconnect();
+    appChromeObserver.observe(top);
+    const header=document.querySelector('.games-mode .season-header');
+    if(header)appChromeObserver.observe(header);
+  }
 }
