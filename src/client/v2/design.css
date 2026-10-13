@@ -1,7 +1,7 @@
 /* Independent V2 theme. Loaded exclusively under /v2/. */
 :root[data-design='v2'] { --surface:#f5f2eb; --surface-2:#ebe7de; --text:#222b25; --muted:#596259; --line:#24312626; --glass:#f5f2ebd9; --font-display:Georgia,'Times New Roman',serif; --v2-serif:Georgia,'Times New Roman',serif; }
 :root[data-theme='dark'] { --surface:#141b16; --surface-2:#243027; --text:#f4f1e9; --muted:#b9c5b9; --line:#ffffff26; --glass:#1f2a23d9; }
-html[data-design='v2'] { scroll-snap-type:none!important; }
+html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] body { background:var(--surface); color:var(--text); }
 [data-design='v2'] h1 { font-family:var(--v2-serif); font-weight:600; letter-spacing:-.04em; text-wrap:balance; }
 [data-design='v2'] :is(.content,.v2-discover,.v2-news-heading) { max-width:1180px; }

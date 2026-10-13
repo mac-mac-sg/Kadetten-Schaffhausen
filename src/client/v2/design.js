@@ -56,6 +56,7 @@ setupViews=function() {
     tools.innerHTML='<span>Version 2 · Test</span><button type="button" data-v2-theme aria-label="Dunkle Ansicht aktivieren">◐</button><button type="button" data-v2-demo>Spielzustände</button><a href="../">Original ↗</a>';
     bar.prepend(tools);
   }
+  v2SetTheme(document.documentElement.dataset.theme);
   document.title+=' · V2 Test';
 };
 document.addEventListener('click',e=>{
