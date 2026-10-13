@@ -207,3 +207,22 @@ function sourceHealth(state, snapshotStamp, key) {
  const time=valid?new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr':'';
  return name+(state?.ok===false?' momentan nicht aktualisierbar.':' werden momentan verzögert aktualisiert.')+(time?' Letzter gültiger Stand: '+time+'.':'');
 }
+
+// The rim announces matchday; only an official live flag enables the live cadence.
+function matchdayOrbitState(g, live=false, now=new Date()) {
+  const finished=!live&&Array.isArray(g?.score)&&g.score.length===2&&g.score.every(n=>Number.isInteger(n)&&n>=0);
+  if(!g||finished||!live&&g.date!==swissToday(now))return {active:false,seconds:8};
+  const at=g.confirmed===false?null:kickoffAt(g), left=at?at.getTime()-now.getTime():null;
+  return {active:true,seconds:live?3:left>0&&left<=3600000?5:8};
+}
+// A clockwise centreline follows all four real CSS corners, including asymmetric/elliptical radii.
+function matchdayOrbitPath(width,height,corners,inset=1) {
+  if(!Number.isFinite(width)||!Number.isFinite(height)||width<=2*inset||height<=2*inset)return '';
+  const radii=corners.map(({x,y})=>({x:Number.isFinite(x)?Math.max(0,x):0,y:Number.isFinite(y)?Math.max(0,y):0}));
+  const [tl,tr,br,bl]=radii;
+  const scale=Math.min(1,width/(tl.x+tr.x),width/(bl.x+br.x),height/(tl.y+bl.y),height/(tr.y+br.y));
+  for(const r of radii){r.x=Math.max(0,r.x*scale-inset);r.y=Math.max(0,r.y*scale-inset);}
+  const n=value=>Number(value.toFixed(2)), right=width-inset,bottom=height-inset;
+  const arc=(r,x,y)=>r.x&&r.y?`A${n(r.x)} ${n(r.y)} 0 0 1 ${n(x)} ${n(y)}`:`L${n(x)} ${n(y)}`;
+  return `M${n(inset+tl.x)} ${n(inset)}H${n(right-tr.x)}${arc(tr,right,inset+tr.y)}V${n(bottom-br.y)}${arc(br,right-br.x,bottom)}H${n(inset+bl.x)}${arc(bl,inset,bottom-bl.y)}V${n(inset+tl.y)}${arc(tl,inset+tl.x,inset)}Z`;
+}
