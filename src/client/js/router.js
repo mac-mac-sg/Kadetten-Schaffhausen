@@ -269,8 +269,9 @@ function centerNextGame() {
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
     const header=document.querySelector('.season-header'),heading=header?.querySelector('h1');
     const stickyHeight=header&&heading?header.getBoundingClientRect().height-(heading.getBoundingClientRect().top-header.getBoundingClientRect().top):0;
-    const rect=card.getBoundingClientRect(), top=stickyHeight+12, bottom=dockTop-12;
-    // Only the pinned section controls and bottom dock occlude the fixture.
+    const clubHeight=document.querySelector('body > .top')?.getBoundingClientRect().height || 0;
+    const rect=card.getBoundingClientRect(), top=clubHeight+stickyHeight+12, bottom=dockTop-12;
+    // Keep the fixture below both the club selection and pinned section controls.
     const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
     window.scrollTo({top:Math.max(0,window.scrollY+rect.top-targetTop),behavior:'instant'});
   });

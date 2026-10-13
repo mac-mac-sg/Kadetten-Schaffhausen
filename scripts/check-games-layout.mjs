@@ -76,9 +76,9 @@ try {
       await page.evaluate(()=>window.scrollTo({top:180,behavior:'instant'}));
       const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,title:document.querySelector('.season-header h1').getBoundingClientRect().y,tabs:document.querySelector('.game-view-toggle').getBoundingClientRect().y,eyebrow:document.querySelector('.season-header .eyebrow').getBoundingClientRect().bottom}));
       assert.ok(moved.scrollY>100,club+': list scrolls');
-      assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top-moved.scrollY)<1,club+': app header scrolls');
-      assert.ok(Math.abs(moved.title)<1,club+': section title locks at top');
-      assert.ok(moved.eyebrow<=0,club+': season eyebrow scrolls away');
+      assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top)<1,club+': club header stays visible');
+      assert.ok(Math.abs(moved.title-start.boxes['body > .top'].height)<2,club+': section title locks below club selection');
+      assert.ok(moved.eyebrow<=start.boxes['body > .top'].height,club+': season eyebrow scrolls behind club header');
       await page.evaluate(()=>window.scrollTo({top:300,behavior:'instant'}));
       assert.ok(Math.abs(await page.locator('.game-view-toggle').evaluate(el=>el.getBoundingClientRect().y)-moved.tabs)<1,club+': tabs stay pinned');
       if(viewport.width===390)await page.screenshot({path:'/tmp/sticky-'+club+'.png'});

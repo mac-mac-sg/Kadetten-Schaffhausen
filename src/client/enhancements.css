@@ -629,17 +629,17 @@
   }
 }
 
-/* Club chrome scrolls away; the section below the season eyebrow stays in reach. */
+/* Club selection stays visible; section controls pin immediately beneath it. */
 body.games-mode { --games-header-height: 82px; }
 .games-mode .season.content { padding-top:0; }
 .games-mode .season-header { padding:16px 0 12px; }
 .games-mode > .top {
-  position: relative;
-  top: auto;
+  position: sticky;
+  top: 0;
   z-index: 30;
   background: var(--surface);
 }
-.games-mode .season-header { position:sticky; top:calc(0px - var(--games-sticky-offset,40px)); transform:none; }
+.games-mode .season-header { position:sticky; top:calc(var(--games-header-height) - var(--games-sticky-offset,40px) - 1px); transform:none; }
 @media (max-width: 640px) {
   body.games-mode { --games-header-height: 72px; }
 }

@@ -107,14 +107,14 @@ test('Kopfzeilenhöhe behält Subpixel bei, auch nach einer Grössenänderung',(
  assert.equal(bodyValues['--games-header-height'],'152.3125px');
 });
 
-test('Aktuelles Spiel liegt unter den eingerasteten Laschen; der Vereinskopf belegt keinen Platz',()=>{
+test('Aktuelles Spiel liegt unter der dauerhaft sichtbaren Vereinsauswahl und den eingerasteten Laschen',()=>{
  for(const [headerBottom,height] of [[350,320],[350,600],[240,320],[350,900]]){
   let scrolled;
-  const card={top:700,height},selectors={'.game-timeline .current-game':{getBoundingClientRect:()=>card},'body > .top':{getBoundingClientRect:()=>({bottom:140})},'.season-header':{getBoundingClientRect:()=>({top:140,height:headerBottom-140}),querySelector:()=>({getBoundingClientRect:()=>({top:180})})},'.dock':{getBoundingClientRect:()=>({top:750})}};
+  const card={top:700,height},selectors={'.game-timeline .current-game':{getBoundingClientRect:()=>card},'body > .top':{getBoundingClientRect:()=>({bottom:140,height:140})},'.season-header':{getBoundingClientRect:()=>({top:140,height:headerBottom-140}),querySelector:()=>({getBoundingClientRect:()=>({top:180})})},'.dock':{getBoundingClientRect:()=>({top:750})}};
   const c=vm.createContext({location:{hash:'#season/games'},mode:'list',cancelAnimationFrame(){},requestAnimationFrame:f=>{f();return 1;},document:{querySelector:s=>selectors[s]},window:{innerHeight:844,visualViewport:{height:820},scrollY:200,scrollTo:options=>scrolled=options}});
   load(c,'js/router.js');c.centerNextGame();
   const positionedTop=card.top+200-scrolled.top;
-  const pinnedHeight=headerBottom-180;
+  const pinnedHeight=140+headerBottom-180;
   assert.ok(positionedTop>=pinnedHeight+12);
   if(height<=750-24-pinnedHeight)assert.ok(positionedTop+height<=738);
   else assert.equal(positionedTop,pinnedHeight+12);
