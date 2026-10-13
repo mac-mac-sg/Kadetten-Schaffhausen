@@ -185,3 +185,31 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 @media(prefers-reduced-motion:no-preference) { @starting-style { .v2-scrollbar { opacity:0; transform:translateY(-6px); } } }
 
 [data-design='v2'] .immersive > .top { background:#f4f2e4a6; }
+/* Smartphone audit: comfortable targets and explicit light/dark surface ownership. */
+.v2-test-tools :is(button,a) { display:inline-flex; align-items:center; justify-content:center; min-height:44px; }
+.v2-test-tools [data-v2-theme] { min-width:44px; }
+.v2-story-compact .v2-text-link { min-height:44px; }
+[data-design='v2'] .season-header { background:var(--glass); color:var(--text); }
+[data-design='v2'] :is(.season-header .eyebrow,.footer-updated,.record-legend,.game-card .meta,.game-card .scoreline small,.game-card .venue) { color:var(--muted); }
+[data-design='v2'] .toggle button { background:var(--surface-2); color:var(--text); }
+[data-design='v2'] .toggle button[aria-pressed='true'] { background:var(--accent); color:#162018; }
+[data-design='v2'] .table-wrap .standings-table tbody tr { background:var(--surface-2); }
+[data-design='v2'] .table-wrap .standings-table tbody tr.our-team { background:color-mix(in srgb,var(--accent) 16%,var(--surface)); }
+[data-design='v2'][data-theme='light'] { --win:#41642d; --draw:#71601d; --loss:#a43832; }
+[data-design='v2'] .club-page { color:var(--text); }
+[data-design='v2'] :is(.club-intro,.club-cabinet) { color:#faf5e9; }
+[data-design='v2'] .club-intro h1 { color:inherit; }
+[data-design='v2'] :is(.club-topline span,.club-history .club-eyebrow,.club-chapter-year,.club-years button,.club-history .club-text-button,.club-next,.club-history .club-more summary,.club-chapter-position) { color:var(--muted); }
+[data-design='v2'] :is(.club-history-heading > p:last-child,.club-chapter-copy > p:not(.club-chapter-year):not(.club-chapter-position),.club-more p) { color:var(--muted); }
+[data-design='v2'] .club-history h2 { color:var(--text); }
+[data-design='v2'] .club-years button[aria-pressed='true'] { color:var(--text); }
+[data-design='v2'] .club-title-years button[aria-pressed='true'] { color:#151914; }
+[data-design='v2'] .v2-club-nav button:nth-child(3) { background:#805a3b; }
+[data-design='v2'] .club-history .club-chapter figure { color:#faf5e9; }
+[data-design='v2'] .dock a { color:var(--text); }
+[data-design='v2'][data-theme='light'] { --win:#305120; --draw:#594b12; --loss:#872923; }
+[data-design='v2'] :is(.game-card .game-derby,.game-card .clubmark,.record-text,.standing-meta,.season-balance-values span,.season-split small,.season-number-grid span,.player-leader-note,.player-leader-note a,.season-data-note,.season-data-note [data-update-key]) { color:var(--muted); }
+[data-design='v2'] .standings-table td { color:var(--text); }
+[data-design='v2'] :is(.season-number-grid strong,.history-show,.player-leader strong) { color:var(--text); }
+[data-design='v2'] .table-wrap .standings-table tbody tr td { color:var(--text); }
+[data-design='v2'] .game-card .meta .game-result-label { color:var(--text); }
