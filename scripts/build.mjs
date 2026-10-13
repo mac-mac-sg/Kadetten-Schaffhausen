@@ -14,12 +14,20 @@ fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JS
 const {createHash}=await import('node:crypto');
 const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/router.js','js/data-sync.js','js/live.js','js/main.js','style.css','enhancements.css','fcsg-match.css','club.css','pwa.js','manifest.webmanifest','assets/anton.ttf','assets/bbc-arena-hall.webp','assets/fcsg-stadium.jpg','assets/otmar-kreuzbleiche.webp'];
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
+const v2=process.env.KADETTEN_DESIGN==='v2';
+if(v2){
+  shellFiles.push('v2/design.css','v2/design.js');
+  html=html.replace('</head>','<link rel="stylesheet" href="v2/design.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/design.js"></script><script src="js/main.js"></script>');
+  const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
+  Object.assign(manifest,{name:'Meine Vereine · V2 Test',short_name:'Vereine V2',description:'Separate Design-Testversion der Vereins-App',background_color:'#f5f2eb',theme_color:'#f5f2eb'});
+  fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
+}
 let sw=fs.readFileSync('dist/client/sw.js','utf8').replace("const API_ORIGIN='';",'const API_ORIGIN='+JSON.stringify(apiOrigin)+';').replace(/const CACHE='[^']+';/,"const CACHE='kadetten-offline-build';").replace(/\?v=[a-f0-9]+/g,'');
 // Die Quellmodule bleiben getrennt; die öffentliche Hülle lädt zwei verzögerte Skripte und ein Stylesheet.
 const scripts=[...html.matchAll(/<script src="([^"?]+)"[^>]*><\/script>/g)].map(m=>m[1]).filter(file=>file!=='platform-config.js');
 const styles=[...html.matchAll(/<link rel="stylesheet" href="([^"?]+)"[^>]*>/g)].map(m=>m[1]);
 fs.mkdirSync('dist/client/js',{recursive:true});
-await build({stdin:{contents:scripts.map(file=>fs.readFileSync('dist/client/'+file,'utf8')).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
+await build({stdin:{contents:(v2?`const v2Storage={getItem:k=>window.localStorage.getItem('v2:'+k),setItem:(k,v)=>window.localStorage.setItem('v2:'+k,v),removeItem:k=>window.localStorage.removeItem('v2:'+k)};\n`:'')+scripts.map(file=>{const text=fs.readFileSync('dist/client/'+file,'utf8');return v2?text.replace(/\blocalStorage\b/g,'v2Storage'):text;}).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
 const {transform}=await import('esbuild');
 const css=await transform(styles.map(file=>fs.readFileSync('dist/client/'+file,'utf8')).join('\n'),{loader:'css',target:'es2022',minify:true,legalComments:'none'});
 fs.writeFileSync('dist/client/app.css',css.code);
