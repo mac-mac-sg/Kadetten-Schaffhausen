@@ -29,6 +29,8 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{const cache=a
 self.addEventListener('message',event=>{if(event.data?.type==='GET_APP_VERSION'){event.source?.postMessage({type:'APP_VERSION',version:CACHE});return;}if(event.data?.type!=='SAVE_OFFLINE')return;event.waitUntil((async()=>{const cache=await caches.open(SHELL_CACHE);await Promise.all(DATA_URLS.map(async url=>{if(!await cache.match(url))await readData(new Request(url,{credentials:API_ORIGIN?'omit':'same-origin',cache:'no-cache'}));}));})().catch(()=>{}))});
 self.addEventListener('fetch',event=>{
  const req=event.request,url=new URL(req.url);if(req.method!=='GET')return;
+ // Nested preview owns its own shell; never answer it with the parent app's cached index.
+ if(url.origin===BASE.origin&&url.pathname.startsWith(new URL('v2/',BASE).pathname))return;
  const apiOrigin=API_ORIGIN||BASE.origin;
  if(url.origin===apiOrigin&&DATA_URLS.includes(url.origin+url.pathname)){event.respondWith(readData(req));return}
  if(url.origin===apiOrigin&&/^\/api\/(?:fcsg\/|otmar\/)?articles\//.test(url.pathname)){event.respondWith(readArticle(req));return}
