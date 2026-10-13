@@ -32,7 +32,7 @@
  const visuals=[
   '<div class="guide-preview-picker">'+crests+'</div><div class="guide-preview-note">Oben wechseln · In den Einstellungen auswählen</div>',
   '<div class="guide-preview-news"><span>NEWS AUS DEINEM VEREIN</span><strong>Alles rund um dein Team.</strong><i>Zum Artikel →</i></div>',
-  '<div class="guide-preview-tabs"><span>Liste</span><span>Kalender</span><b>Meine Woche</b></div><div class="guide-preview-week">'+crests+'</div><div class="guide-preview-note">Eine Woche. Alle deine Vereine.</div>',
+  '<div class="guide-preview-tabs"><span>Liste</span><span>Kalender</span><b>Meine Woche</b></div><div class="guide-preview-week">'+crests+'</div><div class="guide-preview-note">Ein Kalender. Alle deine Vereine.</div>',
   '<div class="guide-preview-roster"><span>KADER</span><div class="guide-preview-history"><img src="assets/logo.png" alt=""><b>Verein</b></div></div><div class="guide-preview-players"><span><i></i>Spieler</span><span><i></i>Spieler</span><span><i></i>Spieler</span></div><div class="guide-preview-note">Wappen antippen → Geschichte &amp; Erfolge</div>'
  ];
  window.showAppIntroduction=(firstVisit=false)=>{
@@ -82,10 +82,12 @@
   navigator.serviceWorker.addEventListener('message',event=>{
    if(event.data?.type==='CLEAR_SAVED_DATA'){try{localStorage.removeItem(SNAPSHOT_KEY)}catch{}}
    if(event.data?.type==='APP_VERSION'&&version&&event.data.version!=='kadetten-offline-'+version&&!document.getElementById('app-update')){
-    const notice=document.createElement('aside');notice.id='app-update';notice.className='app-update';notice.setAttribute('aria-label','App aktualisieren');
-    notice.innerHTML='<p role="status">Neue Version verfügbar</p><button type="button" class="button">Jetzt aktualisieren</button><button type="button" class="button subtle" aria-label="Aktualisierungshinweis schliessen">Später</button>';
+    const notice=document.createElement('details');notice.id='app-update';notice.className='compact-status';notice.setAttribute('aria-label','App aktualisieren');
+    notice.innerHTML='<summary aria-label="Neue App-Version verfügbar" title="Neue App-Version verfügbar"><span class="status-dot" aria-hidden="true"></span></summary><div class="status-popover"><p>Neue Version verfügbar</p><button type="button" class="button">Jetzt aktualisieren</button><button type="button" class="button subtle" aria-label="Aktualisierungshinweis schliessen">Später</button></div>';
     notice.querySelector('button').onclick=()=>location.reload();notice.querySelector('.subtle').onclick=()=>{notice.hidden=true};
-    document.querySelector('.top').after(notice);
+    document.body.append(notice);
+    document.addEventListener('click',event=>{if(!notice.contains(event.target))notice.open=false;});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&notice.open){notice.open=false;notice.querySelector('summary').focus();}});
    }
   });
   navigator.serviceWorker.addEventListener('controllerchange',()=>{checkVersion();navigator.serviceWorker.controller?.postMessage({type:'SAVE_OFFLINE'});});

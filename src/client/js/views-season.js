@@ -1,6 +1,6 @@
 /* Saison: Spielplan, Kalender, Tabelle und Kader. */
 function season(tab) {
-  if(tab==='games'&&mode==='week')return `<section class="content season week-season"><div class="season-header"><p class="eyebrow">DEINE AUSGEWÄHLTEN VEREINE</p><h1>Spiele</h1>${gameControls()}${weekNavigation()}</div>${sharedWeekView()}</section>`;
+  if(tab==='games'&&mode==='week')return `<section class="content season calendar-season week-season"><div class="season-header"><p class="eyebrow">DEINE AUSGEWÄHLTEN VEREINE</p><h1>Spiele</h1>${gameControls()}${calendarNavigation()}</div>${sharedWeekView()}</section>`;
   const calendarView = tab === 'games' && mode === 'calendar';
   const title = {games: 'Spiele', table: 'Tabelle', squad: 'Kader'}[tab];
   return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
@@ -23,30 +23,18 @@ function calendarNavigation() {
   return `<div class="calendar-head"><button id="prev-month" aria-label="Vorheriger Monat">‹</button><h2>${new Date(calendarYear, month, 1).toLocaleDateString('de-CH', {month: 'long', year: 'numeric'})}</h2><button id="next-month" aria-label="Nächster Monat">›</button></div>`;
 }
 function calendar() {
-  const days = new Date(calendarYear, month + 1, 0).getDate(),
-    offset = (new Date(calendarYear, month, 1).getDay() + 6) % 7,
-    today = swissToday();
-  return `<div class="calendar match-calendar" style="--calendar-weeks:${Math.ceil((offset + days) / 7)}">${['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(d => `<b>${d}</b>`).join('')}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat(offset)}${Array.from(
-    {length: days},
-    (_, i) => {
-      const day = `${calendarYear}-${String(month + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`,
-        found = games.filter(g => g.date === day && (competition === 'Alle' || g.league === competition));
-      return `<div class="day ${found.length ? 'has-game' : ''} ${day === today ? 'today' : ''}">${
-        found.length
-          ? `<span class="fixture-date">${i + 1}</span>${found
-              .map(g => {
-                const home = isOwnHandballTeam(g.home),
-                  opponent = home ? g.away : g.home,
-                  label = `${date(g)} · ${home ? 'Heimspiel' : 'Auswärtsspiel'} gegen ${opponent}${g.time ? ' · ' + g.time + ' Uhr' : ''}${g.score ? ' · Endstand ' + g.score.join(':') : ''}`;
-                return `<a class="calendar-fixture ${home ? 'fixture-home' : 'fixture-away'}" href="#match/${liveEscape(g.id)}/overview" aria-label="${liveEscape(label)}" title="${liveEscape(label)}"><span class="calendar-crest">${badge(opponent)}</span><span class="fixture-location" aria-hidden="true"></span></a>`;
-              })
-              .join('')}`
-          : `<span class="calendar-date">${i + 1}</span>`
-      }</div>`;
-    }
-  ).join(
-    ''
-  )}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">Gegnerlogo antippen für Spielinfos und Resultat.</p>`;
+  return calendarGrid(day => games.filter(g => g.date === day && (competition === 'Alle' || g.league === competition)).map(g => {
+    const home = isOwnHandballTeam(g.home), opponent = home ? g.away : g.home;
+    const label = `${date(g)} · ${home ? 'Heimspiel' : 'Auswärtsspiel'} gegen ${opponent}${g.time ? ' · ' + g.time + ' Uhr' : ''}${g.score ? ' · Endstand ' + g.score.join(':') : ''}`;
+    return `<a class="calendar-fixture ${home ? 'fixture-home' : 'fixture-away'}" href="#match/${liveEscape(g.id)}/overview" aria-label="${liveEscape(label)}" title="${liveEscape(label)}"><span class="calendar-crest">${badge(opponent)}</span><span class="fixture-location" aria-hidden="true"></span></a>`;
+  }).join(''), 'Gegnerlogo antippen für Spielinfos und Resultat.');
+}
+function calendarGrid(fixturesForDay, hint) {
+  const days = new Date(calendarYear, month + 1, 0).getDate(), offset = (new Date(calendarYear, month, 1).getDay() + 6) % 7, today = swissToday();
+  return `<div class="calendar match-calendar" style="--calendar-weeks:${Math.ceil((offset + days) / 7)}">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(d => `<b>${d}</b>`).join('')}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat(offset)}${Array.from({length:days}, (_,i) => {
+    const day = `${calendarYear}-${String(month + 1).padStart(2,'0')}-${String(i + 1).padStart(2,'0')}`, fixtures = fixturesForDay(day);
+    return `<div class="day ${fixtures ? 'has-game' : ''} ${day === today ? 'today' : ''}">${fixtures ? `<span class="fixture-date">${i + 1}</span>${fixtures}` : `<span class="calendar-date">${i + 1}</span>`}</div>`;
+  }).join('')}${'<div class="day empty-day" aria-hidden="true"></div>'.repeat((7 - ((offset + days) % 7)) % 7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p><p class="muted calendar-hint">${liveEscape(hint)}</p>`;
 }
 function recordBar(name, total) {
   const row=tables.EHL.find(t=>t[0]===name);

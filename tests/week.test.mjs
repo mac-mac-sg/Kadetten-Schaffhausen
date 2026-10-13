@@ -11,7 +11,7 @@ function app() {
  const scripts=[...fs.readFileSync('src/client/index.html','utf8').matchAll(/<script src="([^"?]+)/g)].map(m=>m[1]).filter(s=>(s.startsWith('js/')||s.startsWith('data/')||s==='enhancements.js')&&s!=='js/main.js');
  for(const file of scripts)vm.runInContext(fs.readFileSync('src/client/'+file,'utf8'),context,{filename:file});
  const run=code=>vm.runInContext(code,context);
- run("mode='week';swissToday=()=> '2026-10-12';render=()=>{};loadCurrentData=()=>{};checkLiveMatch=()=>{};showLiveMatch=()=>{};refreshLiveViews=()=>{};loadFcsgData=()=>{};loadFcsgLive=()=>{};");
+ run("mode='week';calendarYear=2026;month=9;swissToday=()=> '2026-10-12';render=()=>{};loadCurrentData=()=>{};checkLiveMatch=()=>{};showLiveMatch=()=>{};refreshLiveViews=()=>{};loadFcsgData=()=>{};loadFcsgLive=()=>{};");
  return {context,document,location,run,timers,requests,history};
 }
 const home='Kadetten Schaffhausen',otmar='TSV St. Otmar St. Gallen';
@@ -27,15 +27,18 @@ test('Swiss Monday-to-Sunday weeks stay correct across Sundays, DST and year bou
 test('All selected clubs share a chronological week; an inter-club fixture appears once with both route IDs',()=>{
  const a=app();seed(a,[{id:'own-alias',date:'2026-10-13',time:'19:00',home,away:otmar,league:'QHL'}],[{id:'587',date:'2026-10-13',time:'18:00',home:'FC St.Gallen 1879',away:'Sion',league:'Super League'}],[{id:'508',date:'2026-10-13',time:'19:00',home,away:otmar,league:'QHL'}]);
  const entries=a.run('weekFixtures()');assert.equal(entries.length,2);assert.equal(entries[0].game.id,'587');assert.equal(entries[1].references.length,2);
- const out=a.run('sharedWeekContent()');assert.match(out,/2 Spiele/);assert.match(out,/data-week-match="own-alias"/);assert.match(out,/week-club-otmar/);
+ const out=a.run('sharedWeekContent()');assert.equal((out.match(/data-week-match=/g)||[]).length,3);assert.match(out,/data-week-match="own-alias"/);assert.match(out,/week-club-otmar/);
  a.run("activeClub='otmar'");assert.match(a.run('sharedWeekContent()'),/data-week-match="508"/);
  a.run("selectedClubs=['fcsg']");assert.equal(a.run('weekFixtures().length'),1);assert.doesNotMatch(a.run('sharedWeekContent()'),/week-club-kadetten|week-club-otmar/);
 });
-test('Week boundaries exclude adjacent weeks and a quiet week jumps to the next published fixture',()=>{
- const a=app();seed(a,[{id:'before',date:'2026-10-11',home,away:'A',league:'QHL'},{id:'next',date:'2026-10-27',home,away:'B',league:'QHL'}]);
- a.document.getElementById('app').innerHTML=a.run("season('games')");a.run('bindWeekControls()');
- assert.match(a.document.querySelector('.week-empty').textContent,/spielfrei/);
- a.document.querySelector('[data-week-next]').onclick();assert.equal(a.run('weekOffset'),2);assert.match(a.run('sharedWeekContent()'),/data-week-match="next"/);
+test('Shared calendar uses the same monthly raster, displays only selected crests and includes the whole month',()=>{
+ const a=app();seed(a,[{id:'before',date:'2026-10-11',home,away:'A',league:'QHL'},{id:'next',date:'2026-10-27',home,away:'B',league:'QHL'},{id:'outside',date:'2026-11-01',home,away:'C',league:'QHL'}]);
+ a.run("selectedClubs=['kadetten']");
+ const html=a.run('sharedWeekContent()');assert.match(html,/data-week-match="before"/);assert.match(html,/data-week-match="next"/);assert.doesNotMatch(html,/data-week-match="outside"/);
+ const doc=parseHTML(html).document;assert.equal(doc.querySelectorAll('.day').length,35);assert.equal(doc.querySelectorAll('img').length,2);
+ assert.ok([...doc.querySelectorAll('img')].every(img=>img.getAttribute('src')==='assets/logo.png'));
+ assert.match(a.run("season('games')"),/calendar-season/);assert.match(a.run("season('games')"),/id="next-month"/);
+ a.run('month=10');assert.match(a.run('sharedWeekContent()'),/data-week-match="outside"/);assert.doesNotMatch(a.run('sharedWeekContent()'),/data-week-match="next"/);
 });
 test('Official live and final results overlay fixture aliases without inventing missing scores; failures keep the last score',async()=>{
  const a=app();seed(a,[{id:'alias',date:'2026-10-12',home,away:'Basel',league:'QHL'}]);
@@ -44,7 +47,7 @@ test('Official live and final results overlay fixture aliases without inventing 
  await a.run('pollWeekLive()');assert.match(a.run('sharedWeekContent()'),/13 : 11/);assert.match(a.run('sharedWeekContent()'),/data-week-match="alias"/);
  a.context.apiFetch=async()=>{throw Error('offline');};await a.run('pollWeekLive()');assert.match(a.run('sharedWeekContent()'),/13 : 11/);assert.match(a.run('sharedWeekContent()'),/Letzter verfügbarer Stand/);
  a.context.apiFetch=async()=>({ok:true,json:async()=>({ok:true,checkedAt:new Date().toISOString(),match:null,finished:{date:'2026-10-12',home,away:'Basel',league:'QHL',status:'finished',score:[25,23]}})});
- await a.run('pollWeekLive()');assert.match(a.run('sharedWeekContent()'),/25 : 23/);assert.match(a.run('sharedWeekContent()'),/Beendet/);assert.doesNotMatch(a.run('sharedWeekContent()'),/week-card-live/);
+ await a.run('pollWeekLive()');assert.match(a.run('sharedWeekContent()'),/25 : 23/);assert.match(a.run('sharedWeekContent()'),/Beendet/);assert.doesNotMatch(a.run('sharedWeekContent()'),/week-fixture-live/);
  a.run("weekLive.clear()");assert.doesNotMatch(a.run('sharedWeekContent()'),/0 : 0/);assert.match(a.run('sharedWeekContent()'),/Anspielzeit offen/);
 });
 test('Weekly live polling requests only selected clubs and stops outside the view or in background',async()=>{
@@ -71,4 +74,12 @@ test('Browser history restores the club and weekly route on popstate without ren
  assert.ok(events.popstate);assert.ok(events.hashchange);
  events.popstate();assert.equal(a.run('activeClub'),'kadetten');assert.equal(a.location.hash,'#season/games');assert.equal(a.run('renderedRouteURL'),a.location.href);
  a.run("render=()=>{throw Error('Duplicate render');}");assert.doesNotThrow(()=>events.hashchange());
+});
+
+test('Stale and offline notices become a small opt-in status indicator and recover without losing data',()=>{
+ const a=app();a.run("selectedClubs=['kadetten'];mode='list';dataLoadFailed=true;syncOfflineNotice();");
+ const notice=a.document.getElementById('offline-notice');assert.equal(notice.tagName,'DETAILS');assert.equal(notice.open,undefined);assert.equal(notice.hidden,false);assert.match(notice.textContent,/nicht aktualisiert/);assert.ok(notice.querySelector('.status-dot'));
+ a.run('dataLoadFailed=false;syncOfflineNotice()');assert.equal(notice.hidden,true);
+ a.run("document.getElementById('app').innerHTML=sourceNotice('games');updateState={checkedAt:'2020-01-01T12:00:00Z',status:{games:{ok:false,updatedAt:'2020-01-01T12:00:00Z'}}};syncOfflineNotice();");
+ assert.equal(a.document.querySelector('[data-source-key]').hidden,true);assert.equal(notice.hidden,false);assert.match(notice.textContent,/Spieldaten/);
 });

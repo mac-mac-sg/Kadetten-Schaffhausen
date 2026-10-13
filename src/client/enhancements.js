@@ -68,20 +68,33 @@ function syncOfflineNotice() {
   if(typeof syncSourceNotices==='function')syncSourceNotices();
   let el = document.getElementById('offline-notice');
   if (!el) {
-    el = document.createElement('p');
-    el.id = 'offline-notice';
-    el.setAttribute('role', 'status');
-    document.querySelector('.top').after(el);
+    el = document.createElement('details');
+    el.id = 'offline-notice';el.className='compact-status';
+    el.innerHTML='<summary aria-label="Hinweis zum Datenstand" title="Hinweis zum Datenstand"><span class="status-dot" aria-hidden="true"></span></summary><div class="status-popover"><p></p></div>';
+    document.body.append(el);
+    document.addEventListener('click',event=>{if(!el.contains(event.target))el.open=false;});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&el.open){el.open=false;el.querySelector('summary').focus();}});
   }
   const fcsg = typeof activeClub !== 'undefined' && activeClub === 'fcsg';
   const failed = fcsg ? fcsgDataLoadFailed : dataLoadFailed;
   const stamp = fcsg ? fcsgData.checkedAt : updateState?.checkedAt;
-  el.hidden = navigator.onLine && !failed;
+  const messages=[];
   const saved = stamp ? 'Gespeicherter Stand: ' + new Date(stamp).toLocaleString('de-CH', {
     timeZone: 'Europe/Zurich', dateStyle: 'short', timeStyle: 'short'
   }) + ' Uhr.' : 'Der letzte verfügbare Stand bleibt sichtbar.';
-  el.textContent = el.hidden ? '' : (!navigator.onLine ? 'Offline · ' : 'Daten konnten gerade nicht aktualisiert werden. ') + saved;
-  document.body.classList.toggle('is-offline', !el.hidden);
+  if(!navigator.onLine||failed)messages.push((!navigator.onLine?'Offline · ':'Daten konnten gerade nicht aktualisiert werden. ')+saved);
+  document.querySelectorAll('[data-source-key]').forEach(node=>{if(node.textContent&&!messages.includes(node.textContent))messages.push(node.textContent);});
+  if(typeof weekVisible==='function'&&weekVisible())for(const club of selectedClubs){
+    const data=club==='fcsg'?fcsgData:handballSnapshots.get(club);
+    const health=sourceHealth(data?.status?.games,data?.checkedAt,'games');
+    if(health)messages.push(fanClubs[club].short+': '+health);
+    if(weekDataFailures.has(club)||weekLive.get(club)?.failed)messages.push(fanClubs[club].short+': Aktualisierung derzeit nicht verfügbar. Der letzte gültige Stand bleibt sichtbar.');
+  }
+  el.hidden=!messages.length;
+  if(el.hidden)el.open=false;
+  el.querySelector('p').textContent=messages.join(' ');
+  document.body.classList.toggle('is-offline', !navigator.onLine);
+
 }
 function setupEnhancements() {
   if (typeof activeClub !== 'undefined' && activeClub === 'fcsg') return;

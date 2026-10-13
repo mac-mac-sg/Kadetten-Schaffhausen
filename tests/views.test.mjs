@@ -695,7 +695,7 @@ test('Visible source warnings identify the failing area without marking fresh da
  context.__sourceData={checkedAt:new Date().toISOString(),status:{news:{ok:false,updatedAt:'2026-10-01T10:00:00Z'},games:{ok:true,updatedAt:new Date().toISOString()}}};
  try{
   run("activeClub='kadetten';updateState=__sourceData");
-  const news=parseHTML(view("sourceNotice('news')")).document.querySelector('p');assert.equal(news.hidden,false);assert.match(news.textContent,/News momentan nicht aktualisierbar/);
+  const news=parseHTML(view("sourceNotice('news')")).document.querySelector('p');assert.equal(news.hidden,true);assert.match(news.textContent,/News momentan nicht aktualisierbar/);
   assert.equal(parseHTML(view("sourceNotice('games')")).document.querySelector('p').hidden,true);
  }finally{context.__restoreSourceData=saved;context.__restoreSourceClub=club;run('updateState=__restoreSourceData;activeClub=__restoreSourceClub');}
 });

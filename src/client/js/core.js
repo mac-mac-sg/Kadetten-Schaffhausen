@@ -93,10 +93,10 @@ function sourceNoticeText(key) {
 }
 function sourceNotice(key) {
  const text=sourceNoticeText(key);
- return `<p class="source-health" data-source-key="${key}" role="status" ${text?'':'hidden'}>${liveEscape(text)}</p>`;
+ return `<p class="source-health" data-source-key="${key}" role="status" hidden>${liveEscape(text)}</p>`;
 }
 function syncSourceNotices() {
- document.querySelectorAll('[data-source-key]').forEach(el=>{const text=sourceNoticeText(el.dataset.sourceKey);el.textContent=text;el.hidden=!text;});
+ document.querySelectorAll('[data-source-key]').forEach(el=>{const text=sourceNoticeText(el.dataset.sourceKey);el.textContent=text;el.hidden=true;});
 }
 
 /* Decorative rim: one contour, with coincident fading trail/head strokes. */

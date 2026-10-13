@@ -64,7 +64,7 @@ test('PWA prompts only for different versions and reloads only on user action',(
  const listeners={},windowListeners={};let reloads=0;
  const c=vm.createContext({document,URL,Date,setInterval(){},localStorage:{removeItem(){}},location:{reload(){reloads++;}},navigator:{onLine:true,serviceWorker:{controller:{postMessage(){}},addEventListener:(k,f)=>listeners[k]=f}},window:{matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener:(k,f)=>windowListeners[k]=f}});load(c,'pwa.js');
  listeners.message({data:{type:'APP_VERSION',version:'kadetten-offline-abc'}});assert.equal(document.getElementById('app-update'),null);
- listeners.message({data:{type:'APP_VERSION',version:'kadetten-offline-def'}});assert.ok(document.getElementById('app-update'));assert.equal(reloads,0);
+ listeners.message({data:{type:'APP_VERSION',version:'kadetten-offline-def'}});assert.ok(document.getElementById('app-update'));assert.equal(document.getElementById('app-update').tagName,'DETAILS');assert.ok(document.querySelector('#app-update .status-dot'));assert.equal(reloads,0);
  document.querySelector('#app-update .subtle').onclick();assert.equal(document.getElementById('app-update').hidden,true);assert.equal(reloads,0);
  document.querySelector('#app-update button').onclick();assert.equal(reloads,1);
 });
