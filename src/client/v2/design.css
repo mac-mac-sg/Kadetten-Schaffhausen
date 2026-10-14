@@ -126,7 +126,7 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 }
 @media(max-width:380px) { .v2-test-tools { gap:6px; } [data-design='v2'] .brand span { font-size:11px; } .v2-layer summary { font-size:19px; padding:18px; } }
 @media(prefers-reduced-motion:reduce) { [data-design='v2'] * { scroll-behavior:auto!important; } }
-/* The immersive glass bar stays pale in both themes; its controls must follow that surface. */
+/* The light immersive glass bar uses dark controls. */
 [data-design='v2'] .immersive > .top .club-picker { background:transparent; }
 [data-design='v2'] .immersive > .top .club-picker button { background:transparent; color:#222b25; }
 [data-design='v2'] .immersive > .top .club-picker [aria-pressed='true'] { background:#25372a; color:#fff; }
@@ -295,8 +295,13 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .v2-story-link .v2-story-image { border-radius:18px 18px 0 0; }
 [data-design='v2'] .v2-story-link .story-copy { padding:18px 18px 22px; }
 [data-design='v2'] .v2-story-link .story-copy h2 { margin-bottom:0; }
+[data-design='v2'] .v2-story-link .story-copy p { font-size:13px; }
 [data-design='v2'] .v2-story-link .story-copy h2 { display:grid; grid-template-columns:minmax(0,1fr) 24px; gap:16px; align-items:start; }
 .v2-news-arrow { display:grid; place-items:center; width:24px; height:28px; margin-top:1px; }
 .v2-news-arrow svg { width:22px; height:22px; }
 .v2-story-link:active { opacity:.78; }
 @media(prefers-reduced-motion:reduce) { .v2-story-link { transition:none; } }
+
+/* Dark home chrome follows the page palette while retaining translucent glass. */
+[data-design='v2'][data-theme='dark'] .immersive > .top { background:var(--glass); color:var(--text); }
+[data-design='v2'][data-theme='dark'] .dock { border-color:color-mix(in srgb,var(--text) 24%,transparent); }
