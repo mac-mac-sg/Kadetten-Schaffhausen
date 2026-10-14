@@ -88,7 +88,8 @@ test('V2 compact header creates accessible controls once and hides the old picke
  assert.equal(doc.querySelectorAll('[data-v2-theme]').length,1);
  assert.equal(doc.querySelector('#club-settings').hidden,false);
  assert.equal(doc.querySelector('#club-switch').hidden,true);
- assert.equal(doc.querySelector('[data-v2-choose]').getAttribute('aria-haspopup'),'dialog');
+ assert.equal(doc.querySelector('[data-v2-choose]').getAttribute('aria-expanded'),'false');
+ assert.equal(doc.querySelector('[data-v2-choose]').getAttribute('aria-controls'),'v2-club-dropdown');
  assert.equal(doc.querySelector('.v2-test-tools'),null);
 });
 test('V2 match hierarchy handles preview, unknown time, live and result without invented values',()=>{
@@ -130,4 +131,28 @@ test('V2 countdown is compact and never turns an elapsed kickoff into a live cla
  run("countdownText=()=> 'Anpfiff in 01:00:00'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'60:00');
  run("countdownText=()=> 'Anpfiff in 05:09'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'05:09');
  run("countdownText=()=> 'Anspielzeit erreicht · Live-Status wird geprüft'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'19:15');
+});
+
+test('Slim home has no slogan or season title between navigation and match',()=>{
+ const run=app();
+ for(const club of ['kadetten','fcsg','otmar']){
+  const {document}=parseHTML(run(`activeClub='${club}';v2Home()`));
+  assert.equal(document.querySelector('.v2-hero-copy'),null);
+  assert.equal(document.querySelector('.home-title-zone').children.length,1);
+  assert.ok(document.querySelector('.home-title-zone > .home-matchday'));
+  assert.equal(document.querySelectorAll('h1').length,1);
+  assert.equal(document.querySelector('.v2-news-heading h1').id,'home-news-title');
+ }
+});
+test('Club disclosure is attached to header, toggles and preserves only selected clubs',()=>{
+ const run=app(),doc=run.context.document;
+ doc.body.innerHTML='<header class="top"><a class="brand" href="#home">Kadetten</a><button id="club-settings"></button><nav id="club-switch"></nav></header>';
+ run('v2SetupHeader();selectedClubs=["kadetten","otmar"];v2ChooseClub()');
+ const menu=doc.getElementById('v2-club-dropdown'),trigger=doc.querySelector('[data-v2-choose]');
+ assert.equal(menu.parentElement,doc.querySelector('.top'));
+ assert.equal(menu.tagName,'NAV');assert.equal(menu.hidden,false);assert.equal(trigger.getAttribute('aria-expanded'),'true');
+ assert.equal(menu.querySelectorAll('[data-v2-pick]').length,2);assert.equal(menu.querySelector('[data-v2-pick="fcsg"]'),null);
+ assert.equal(doc.querySelector('dialog'),null);
+ run('v2ChooseClub()');assert.equal(menu.hidden,true);assert.equal(trigger.getAttribute('aria-expanded'),'false');
+ run('v2ChooseClub();v2CloseClubDropdown()');assert.equal(menu.hidden,true);
 });

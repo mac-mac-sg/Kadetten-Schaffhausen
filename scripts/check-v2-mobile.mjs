@@ -98,8 +98,25 @@ try {
       assert.ok(await page.locator('[data-mode="'+mode+'"]').evaluate(el=>getComputedStyle(el).backgroundColor!==getComputedStyle(el.parentElement).backgroundColor),'selected game mode stays visible');
     }
     await page.locator('.dock a[data-nav="news"]').tap();
-    assert.equal(await page.locator('.v2-story-compact,.v2-scrollbar').count(),0);
+    assert.equal(await page.locator('.v2-story-compact,.v2-scrollbar,.v2-hero-copy').count(),0);
+    const entry=await page.locator('.home-title-zone').boundingBox();assert.ok(entry.height<420,'slim home entry');
     await page.locator('[data-v2-choose]').tap();
+    assert.equal(await page.locator('.v2-club-dropdown').isVisible(),true);
+    assert.equal(await page.locator('dialog[open]').count(),0);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('[data-v2-choose]').getAttribute('aria-expanded'),'false');
+    await page.keyboard.press('ArrowDown');
+    assert.ok(await page.evaluate(()=>document.activeElement.hasAttribute('data-v2-pick')),'keyboard opens club choices');
+    await page.evaluate(()=>window.scrollTo({top:30,behavior:'instant'}));
+    await page.waitForTimeout(100);
+    assert.equal(await page.locator('.v2-club-dropdown').isVisible(),false);
+    assert.ok(await page.evaluate(()=>document.activeElement.hasAttribute('data-v2-choose')),'scroll returns focus to visible trigger');
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.locator('[data-v2-choose]').tap();
+    await page.locator('.v2-news-heading h1').tap();
+    assert.equal(await page.locator('.v2-club-dropdown').isVisible(),false);
+    await page.locator('[data-v2-choose]').tap();
+    if(process.env.MOBILE_QA_SCREENSHOTS&&width===390)await page.screenshot({path:path.join(process.env.MOBILE_QA_SCREENSHOTS,'club-dropdown.png')});
     await page.addScriptTag({content:axe});
     assert.deepEqual(await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)),[],'club chooser accessibility');
     await page.locator('[data-v2-pick="otmar"]').tap();
