@@ -61,7 +61,7 @@ try {
         const rgba=value=>value.match(/[\d.]+/g).map(Number);
         return {background:rgba(style.backgroundColor),text:rgba(style.color),
           controlColors:[...header.querySelectorAll('.brand,.v2-club-trigger,[data-v2-theme],#club-settings')].map(el=>getComputedStyle(el).color),
-          headerColor:style.color,dockBorder:rgba(dock.borderTopColor),dockAlpha:rgba(dock.backgroundColor)[3],dockColor:rgba(dock.backgroundColor).slice(0,3),dockBlur:dock.backdropFilter,dockShadow:dock.boxShadow,newsColor:rgba(getComputedStyle(document.querySelector('.v2-story-link')).backgroundColor).slice(0,3),
+          headerColor:style.color,dockBorder:rgba(dock.borderTopColor),dockAlpha:rgba(dock.backgroundColor)[3],dockColor:rgba(dock.backgroundColor).slice(0,3),dockText:rgba(getComputedStyle(document.querySelector('.dock a:not(.active)')).color).slice(0,3),dockBlur:dock.backdropFilter,dockShadow:dock.boxShadow,newsColor:rgba(getComputedStyle(document.querySelector('.v2-story-link')).backgroundColor).slice(0,3),
           dates:[...document.querySelectorAll('.v2-story-link .story-copy p')].map(el=>parseFloat(getComputedStyle(el).fontSize))};
       });
       assert.ok(chrome.background[3]>0&&chrome.background[3]<1,'home header remains translucent');
@@ -70,7 +70,14 @@ try {
       assert.notDeepEqual(chrome.dockColor,chrome.newsColor,'dock has its own glass colour rather than the news surface');
       assert.ok(chrome.dockShadow.includes('inset')&&(chrome.dockShadow.match(/rgba?\(/g)||[]).length>=3,'dock has a light inner edge and soft elevation shadow');
       if(theme==='light')assert.ok(chrome.dockColor.every(value=>value>=210),'light dock uses pale pastel glass');
-      else assert.ok(chrome.dockColor.every(value=>value>=45&&value<=65),'dark dock uses a muted club tint');
+      else{
+        assert.ok(chrome.dockColor.every(value=>value>=30&&value<=90),'dark club glass remains subdued');
+        assert.ok(Math.max(...chrome.dockColor)-Math.min(...chrome.dockColor)>=28,'dark club tint is distinct from neutral grey');
+        const luminance=rgb=>rgb.map(value=>value/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
+        const worstBackground=chrome.dockColor.map(value=>value*chrome.dockAlpha+255*(1-chrome.dockAlpha));
+        const [low,high]=[luminance(chrome.dockText),luminance(worstBackground)].sort((a,b)=>a-b);
+        assert.ok((high+.05)/(low+.05)>=4.5,'dark dock text stays readable even over a white background');
+      }
       const [red,green,blue]=chrome.dockColor;
       if(club==='fcsg')assert.ok(green>red&&green>blue,'FCSG glass has a soft green tint');
       else{
