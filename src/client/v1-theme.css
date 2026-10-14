@@ -143,3 +143,7 @@ html:not([data-design='v2']) .games-mode .season.content { padding-top:calc(var(
 html:not([data-design='v2']) .games-mode .season-header { position:static; top:auto; padding:0; }
 html:not([data-design='v2']) .games-mode .season-header .game-control-bar { position:fixed; z-index:25; top:var(--v1-content-top); left:var(--v1-games-left,20px); width:var(--v1-games-width,calc(100% - 40px)); margin:0; background:color-mix(in srgb,var(--surface) 90%,transparent); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
 html:not([data-design='v2']):has(body.games-mode) { scroll-padding-top:calc(var(--v1-content-top) + var(--v1-games-controls-height,54px) + 12px); }
+
+/* Match the breathing room above the first roster position heading. */
+html:not([data-design='v2']) .standings-season.content { padding-top:40px; }
+html:not([data-design='v2']) .standings-season .season-header + * { margin-top:0; }
