@@ -164,3 +164,70 @@ html:not([data-design='v2']) .standings-season .season-header + * { margin-top:0
 html:not([data-design='v2']) .games-mode .game-control-bar::before { content:''; position:absolute; bottom:calc(100% - 1px); left:0; right:0; height:16px; background:var(--surface); pointer-events:none; }
 html:not([data-design='v2']) .game-control-bar .game-view-toggle button:not([aria-pressed='true']) { color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] .games-mode .season-header .game-control-bar { background:#f6f5f0ed; border-color:#52675640; box-shadow:0 6px 20px #26352616,inset 0 1px 0 #ffffffcc; }
+
+
+/* V1 refinement: reading surfaces stay quiet; statistics retain their own styling. */
+html:not([data-design='v2']) .v1-news-link { border-radius:18px; box-shadow:none; }
+html:not([data-design='v2']) .v1-news-copy { padding:18px 18px 20px; }
+html:not([data-design='v2']) .v1-news-copy h2 { font-size:clamp(24px,4vw,34px); font-weight:500; line-height:1.18; letter-spacing:-.018em; }
+html:not([data-design='v2']) .v1-news-copy p { font-size:12px; line-height:1.5; }
+html:not([data-design='v2']) .home-news-heading h1 { font-family:var(--font-text); font-size:20px; font-weight:600; letter-spacing:-.02em; }
+html:not([data-design='v2']) .news-article h1 { font:650 clamp(30px,5vw,48px)/1.15 var(--font-text); letter-spacing:-.025em; text-wrap:balance; }
+html:not([data-design='v2']) .season > .subhead:has(+ .players) { font-size:22px; font-weight:600; letter-spacing:-.02em; }
+html:not([data-design='v2']) .player-card { border-radius:18px; box-shadow:none; }
+html:not([data-design='v2']) .player-card strong { font-weight:600; }
+html:not([data-design='v2']) .games-mode .season > p.muted { font-size:13px; line-height:1.5; margin-bottom:16px; }
+html:not([data-design='v2']) .games-mode .notice { background:transparent; box-shadow:none; border:0; border-top:1px solid var(--line); border-radius:0; padding:20px 0; }
+html:not([data-design='v2']) .game-timeline { gap:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) {
+ position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; padding:14px 16px 8px;
+ background:var(--surface-2); border:0; border-left:2px solid var(--result-color,var(--line)); border-radius:14px; box-shadow:none; text-align:left;
+}
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.meta,.scoreline) { grid-column:1/-1; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .meta { margin:0 0 4px; font-size:12px; line-height:1.5; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .game-result-label { padding:0; background:transparent; border-radius:0; font-weight:600; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div { flex-direction:row; justify-content:flex-start; gap:8px; font-size:13px; line-height:1.35; min-width:0; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div:last-child { flex-direction:row-reverse; text-align:right; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div > span { overflow-wrap:anywhere; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.crest,.clubmark) { flex:none; width:28px; height:36px; object-fit:contain; font-size:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > strong { font-size:24px; font-weight:650; line-height:1.25; text-align:center; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline small { font-size:11px; line-height:1.4; margin-top:3px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .venue { margin:0; align-self:center; font-size:12px; line-height:1.4; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) > p.muted { grid-column:1/-1; margin:0; font-size:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions { align-self:center; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions .button { min-height:44px; padding:8px 0 8px 4px; font-size:12px; font-weight:600; color:var(--text); background:transparent; border:0; border-radius:0; transform:none; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions a::after { content:''; position:absolute; inset:0; border-radius:14px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):has(a:focus-visible) { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .game-timeline .game-card.current-game { box-shadow:none; }
+html:not([data-design='v2']) .game-timeline .game-card.current-game .scoreline > strong { font-weight:650; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .games-mode .season-header .game-control-bar { box-shadow:0 3px 12px #17211914; }
+
+/* Club tint remains in the glass; selection is a smaller, quieter layer. */
+html:not([data-design='v2']) .dock { box-shadow:0 4px 16px #17211924,inset 0 1px 0 #ffffff12; }
+html:not([data-design='v2']) .dock a { position:relative; font-size:12px; font-weight:500; transition:background-color 140ms ease,color 140ms ease; }
+html:not([data-design='v2']) .dock a.active,
+html:not([data-design='v2']) .dock a.active:hover { color:var(--text); background:color-mix(in srgb,var(--v1-selection) 18%,transparent); font-weight:650; }
+html:not([data-design='v2']) .dock a.active::before { content:''; position:absolute; bottom:3px; left:calc(50% - 8px); width:16px; height:2px; border-radius:2px; background:var(--v1-selection); }
+html:not([data-design='v2']) .dock a.active .nav-icon { color:var(--v1-selection); }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active .nav-icon,
+html:not([data-design='v2'])[data-theme='light'] .dock a.active::before { color:var(--accent); background-color:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active::before { background:var(--accent); }
+html:not([data-design='v2']) .dock a:active { transform:none; background:color-mix(in srgb,var(--v1-selection) 28%,transparent); }
+
+/* Frequent club changes use a short fade instead of a full-screen circle. */
+:root:not([data-design='v2']).club-transition::view-transition-new(root) { animation:club-soft-fade 160ms cubic-bezier(.23,1,.32,1) both; }
+:root:not([data-design='v2']).club-transition-reduced::view-transition-new(root) { animation:club-soft-fade 120ms ease-out both; }
+@media(hover:hover) and (pointer:fine) {
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):hover { background:color-mix(in srgb,var(--text) 4%,var(--surface-2)); }
+}
+@media(max-width:600px) {
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div { flex-direction:column; align-items:flex-start; gap:4px; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div:last-child { flex-direction:column; align-items:flex-end; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div > span { overflow-wrap:normal; hyphens:auto; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.crest,.clubmark) { width:24px; height:30px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ html:not([data-design='v2']) .dock a { transition:none; }
+ :root:not([data-design='v2']).club-transition::view-transition-new(root) { animation:club-soft-fade 120ms ease-out both; }
+}

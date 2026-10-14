@@ -250,3 +250,34 @@ test('Saved V1 theme is applied before the app bundle without touching V2',()=>{
   const {document}=parseHTML(html);vm.runInNewContext(script,{document,location:{pathname},localStorage:{getItem:()=>stored}});assert.equal(document.documentElement.dataset.theme,expected);
  }
 });
+
+
+test('V1 club fallback fades without a colour wave; V2 keeps its own transition',async()=>{
+ for(const design of ['v1','v2']){
+  const a=app('https://example.test/');if(design==='v2')a.document.documentElement.dataset.design='v2';
+  let frames,options;
+  const animate=(f,o)=>{frames=f;options=o;return {finished:Promise.resolve()};};
+  a.document.getElementById('app').animate=animate;
+  const create=a.document.createElement.bind(a.document);a.document.createElement=tag=>{const e=create(tag);e.animate=animate;return e;};
+  a.run("switchClub('fcsg')");
+  assert.equal(a.run('activeClub'),'fcsg');
+  assert.equal(options.duration,design==='v1'?160:280);
+  assert.equal(frames.some(f=>'clipPath' in f),design==='v2');
+  assert.equal(a.document.querySelector('.club-color-wave')!==null,design==='v2');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(a.document.querySelector('.club-color-wave'),null);
+  assert.equal(a.document.getElementById('app')!==null,true);
+  assert.equal(a.document.getElementById('club-switch').disabled,false);
+ }
+});
+
+
+test('A live FCSG fixture retains a prominent card and live details',()=>{
+ const a=app('https://example.test/?club=fcsg#season/games');
+ const markup=a.run("fcsgLiveGames.set(fcsgData.games[0].id,{...fcsgData.games[0],live:true,score:[1,0]});fcsgCard(fcsgData.games[0])");
+ const {document}=parseHTML(markup);
+ assert.ok(document.querySelector('.game-card.fcsg-game-live'));
+ assert.match(document.querySelector('.actions a').textContent,/Live verfolgen/);
+ assert.ok(document.querySelector('[data-fcsg-score]'));
+ assert.ok(document.querySelector('[data-fcsg-phase]'));
+});
