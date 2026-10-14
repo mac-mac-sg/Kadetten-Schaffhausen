@@ -58,6 +58,22 @@ try {
     if(route==='home'){
       assert.equal(await page.locator('.v2-story .v2-text-link,.v2-story-link a').count(),0);
       assert.equal(await page.locator('.v2-story-link').count(),await page.locator('.v2-story').count());
+      const newsCards=await page.locator('.v2-story-link').evaluateAll(cards=>cards.map(card=>{
+        const image=card.querySelector('.v2-story-image'),copy=card.querySelector('.story-copy');
+        const tile=card.getBoundingClientRect(),photo=image.getBoundingClientRect(),text=copy.getBoundingClientRect();
+        const style=getComputedStyle(card),imageStyle=getComputedStyle(image),copyStyle=getComputedStyle(copy);
+        return {background:style.backgroundColor,pageBackground:getComputedStyle(document.body).backgroundColor,
+          corner:parseFloat(style.borderBottomLeftRadius),imageBottomCorner:parseFloat(imageStyle.borderBottomLeftRadius),
+          padding:parseFloat(copyStyle.paddingLeft),gap:text.top-photo.bottom,containsText:tile.bottom>=text.bottom,
+          shadow:style.boxShadow};
+      }));
+      for(const card of newsCards){
+        assert.notEqual(card.background,'rgba(0, 0, 0, 0)','news has a shared tinted surface');
+        assert.notEqual(card.background,card.pageBackground,'news surface separates it from the page');
+        assert.ok(card.corner>=16&&card.imageBottomCorner===0,'photo and text form one rounded tile');
+        assert.ok(card.padding>=16&&Math.abs(card.gap)<1&&card.containsText,'text sits inside the tile directly below its photo');
+        assert.equal(card.shadow,'none','news tiles remain free of shadows');
+      }
       const action=page.locator('.v2-match-action');
       if(await action.count()){
         assert.equal(await action.getAttribute('href'),await page.locator('.home-matchday .live-match').getAttribute('href'));
