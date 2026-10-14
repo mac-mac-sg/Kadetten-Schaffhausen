@@ -72,7 +72,7 @@ try {
     await page.locator('[data-compact-pick="fcsg"]').tap();assert.equal(await page.locator('html').getAttribute('data-club'),'fcsg');
     assert.equal(await page.locator('#compact-club-menu').isVisible(),false);
     await page.locator('.dock a[data-nav="games"]').tap();
-    for(const mode of ['list','calendar','week']){
+    for(const mode of ['list','calendar']){
       await page.locator('[data-mode="'+mode+'"]').tap();
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
       await page.locator('[data-compact-clubs]').tap();await page.locator('[data-compact-pick="otmar"]').tap();

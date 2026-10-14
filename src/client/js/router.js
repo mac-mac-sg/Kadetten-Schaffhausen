@@ -136,6 +136,7 @@ function render() {
     scrollTop = window.scrollY;
   scrollRoot.style.scrollSnapType = 'none';
   const [page = 'home', id, tab = 'overview'] = (location.hash.slice(1) || 'home').split('/');
+  if(scrollRoot.dataset?.design!=='v2'&&mode==='week')mode='calendar';
   const fixedCalendar = page === 'season' && id === 'games' && ['calendar','week'].includes(mode);
   document.body.classList.toggle('games-mode', page === 'season' && id === 'games');
   scrollRoot.classList.toggle('calendar-mode', fixedCalendar);

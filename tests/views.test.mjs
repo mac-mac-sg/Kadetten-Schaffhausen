@@ -181,6 +181,22 @@ test('Startseite zeigt alle Nachrichten mit Titel', () => {
   for (const story of run('stories.slice(0, 5)')) assert.ok(out.includes(story.title), story.title);
 });
 
+test('V1 groups only Liste, Kalender and the competition filter; V2 retains its third view',()=>{
+  for(const club of ['kadetten','fcsg','otmar'])for(const selected of ['list','calendar']){
+    run(`activeClub='${club}';mode='${selected}'`);
+    const doc=parseHTML(view('gameControls()')).document,bar=doc.querySelector('.game-control-bar');
+    assert.ok(bar);assert.equal(bar.querySelectorAll('[data-mode]').length,2);
+    assert.equal(bar.querySelector('[data-mode="week"]'),null);
+    assert.equal(bar.querySelector('[aria-pressed="true"]').getAttribute('data-mode'),selected);
+    assert.equal(bar.querySelector('select').id,'competition');assert.equal(bar.querySelector('select').getAttribute('aria-label'),'Wettbewerb');
+    assert.equal(bar.querySelector('option').textContent,'Alle');
+  }
+  try {
+    context.document.documentElement.dataset.design='v2';
+    const doc=parseHTML(view('gameControls()')).document;assert.ok(doc.querySelector('[data-mode="week"]'));assert.equal(doc.querySelector('.game-control-bar'),null);
+  } finally {delete context.document.documentElement.dataset.design;run("activeClub='kadetten';mode='list'");}
+});
+
 test('Alle Vereine zeigen vollständige News-Karten unter dem bestehenden Trenner, ohne Vollbild-Navigation',()=>{
   for(const club of ['kadetten','fcsg','otmar']){
     run(`activeClub='${club}'`);

@@ -9,7 +9,9 @@ function weekStart(today = swissToday(), offset = weekOffset) {
 }
 function weekVisible() { return mode === 'week' && location.hash === '#season/games'; }
 function gameViewToggle() {
-  return `<div class="toggle game-view-toggle" aria-label="Spielplanansicht">${[['list','Liste'],['calendar','Kalender'],['week','Meine Woche']].map(([id,label])=>`<button type="button" data-mode="${id}" aria-pressed="${mode===id}">${label}</button>`).join('')}</div>`;
+  const views=[['list','Liste'],['calendar','Kalender']];
+  if(document.documentElement.dataset?.design==='v2')views.push(['week','Meine Woche']);
+  return `<div class="toggle game-view-toggle" aria-label="Spielplanansicht">${views.map(([id,label])=>`<button type="button" data-mode="${id}" aria-pressed="${mode===id}">${label}</button>`).join('')}</div>`;
 }
 function weekFixtures(clubs=selectedClubs) {
   const fixtures=new Map();

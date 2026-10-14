@@ -27,7 +27,7 @@ try{
   await ctx.close();return report;
  }
  let count=0;
- for(const width of [390,1280])for(const club of ['kadetten','fcsg','otmar'])for(const [route,mode] of [['home','list'],['season/games','list'],['season/games','calendar'],['season/games','week'],['season/table','list'],['season/squad','list'],['player/'+(club==='fcsg'?data[1].players[0].id:6),'list']]){
+ for(const width of [390,1280])for(const club of ['kadetten','fcsg','otmar'])for(const [route,mode] of [['home','list'],['season/games','list'],['season/games','calendar'],['season/table','list'],['season/squad','list'],['player/'+(club==='fcsg'?data[1].players[0].id:6),'list']]){
   const a=await inspect('before',club,width,route,mode),b=await inspect('after',club,width,route,mode);assert.equal(b.h1,1);assert.equal(b.overflow,false);assert.deepEqual(b.violations,[]);assert.equal(a.text,b.text);assert.deepEqual(a.items.map(x=>[x.selector,x.box,x.font]),b.items.map(x=>[x.selector,x.box,x.font]));assert.notEqual(a.surface,b.surface);count++;console.log(JSON.stringify({club,width,route,mode,geometry:true,content:true,axe:true}));
  }
  for(const club of ['kadetten','fcsg','otmar'])for(const theme of ['light','dark'])for(const route of ['home','season/games']){const a=await inspect('before',club,390,route,'list',theme),b=await inspect('after',club,390,route,'list',theme);assert.deepEqual(a.items,b.items);assert.equal(a.surface,b.surface);assert.equal(a.text,b.text);console.log(JSON.stringify({club,theme,route,v2Unchanged:true}));}
