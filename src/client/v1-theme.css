@@ -101,6 +101,18 @@ html:not([data-design='v2'])[data-theme='light'] .team-switch button { color:var
 html:not([data-design='v2'])[data-theme='light'] .team-switch button[aria-pressed='true'] { color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] .team-switch-slider { background:var(--v1-selection); }
 
+/* Match reports and previews also contain legacy dark-only colours. */
+html:not([data-design='v2'])[data-theme='light'] :is(.scorers small,.form-team small) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .scorers strong { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .recent .recent-game { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .recent-score .result-label { background:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .record-0,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:first-child::before { background:var(--win); }
+html:not([data-design='v2'])[data-theme='light'] .record-1,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:nth-child(2)::before { background:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .record-2,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:nth-child(3)::before { background:var(--loss); }
+
 /* V2's editorial news cards, below V1's unchanged arena entry and divider. */
 html:not([data-design='v2']) .v1-news-layout { --news-card-surface:#243027; --news-card-text:#f4f1e9; --news-card-muted:#b9c5b9; }
 html:not([data-design='v2'])[data-theme='light'] .v1-news-layout { --news-card-surface:#ebe7de; --news-card-text:#222b25; --news-card-muted:#596259; }
