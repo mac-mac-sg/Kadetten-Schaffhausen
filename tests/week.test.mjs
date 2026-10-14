@@ -83,3 +83,10 @@ test('Stale and offline notices become a small opt-in status indicator and recov
  a.run("document.getElementById('app').innerHTML=sourceNotice('games');updateState={checkedAt:'2020-01-01T12:00:00Z',status:{games:{ok:false,updatedAt:'2020-01-01T12:00:00Z'}}};syncOfflineNotice();");
  assert.equal(a.document.querySelector('[data-source-key]').hidden,true);assert.equal(notice.hidden,false);assert.match(notice.textContent,/Spieldaten/);
 });
+
+test('Handball data also refreshes on a quiet day, but never in the background, offline or alongside the FCSG poller',async()=>{
+ const a=app();seed(a,[],[],[]);a.run("activeClub='kadetten';loadCurrentData=()=>{globalThis.loads=(globalThis.loads||0)+1;}");await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
+ a.run('document.hidden=true');await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
+ a.run("document.hidden=false;navigator.onLine=false");await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
+ a.run("navigator.onLine=true;activeClub='fcsg'");await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
+});

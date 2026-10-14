@@ -145,7 +145,7 @@ function setupEnhancements() {
   }, 1000);
 }
 async function syncMatchdayData() {
-  if (navigator.onLine && !document.hidden && (todayGames().length || freshLive())) await loadCurrentData();
+  if (navigator.onLine && !document.hidden && activeClub !== 'fcsg') await loadCurrentData();
 }
 window.addEventListener('offline', () => {
   liveState = null;
