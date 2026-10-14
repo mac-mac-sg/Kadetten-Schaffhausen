@@ -11,6 +11,7 @@ document.querySelector('.dock [data-nav="games"]').addEventListener('click', eve
     $('#app').focus({preventScroll: true});
   }
 });
+restoreV1Theme();
 restoreActiveClub();
 restoreFcsgData();
 document.getElementById('club-switch').addEventListener('click', e=>{const button=e.target.closest('[data-select-club]');if(button)switchClub(button.dataset.selectClub);});

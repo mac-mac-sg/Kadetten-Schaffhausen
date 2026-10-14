@@ -1,0 +1,102 @@
+/* V1 settings and complete light palette. V2 owns its theme independently. */
+.theme-settings { margin:20px 0; border-block:1px solid var(--line); padding:16px 0; }
+.theme-settings h3 { margin:0 0 8px; font-size:16px; }
+.theme-setting { display:flex; align-items:center; gap:16px; min-height:60px; cursor:pointer; }
+.theme-setting > span { flex:1; font-size:15px; font-weight:650; }
+.theme-setting small { display:block; margin-top:5px; font-size:12px; line-height:1.5; font-weight:400; color:var(--muted); }
+.theme-setting input { appearance:none; position:relative; flex:none; width:46px; height:28px; margin:0; border:1px solid var(--line); border-radius:18px; background:#656b61; cursor:pointer; }
+.theme-setting input::before { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:white; }
+.theme-setting input:checked { background:var(--accent); }
+.theme-setting input:checked::before { transform:translateX(18px); }
+html:not([data-design='v2']) .club-settings-dialog { max-height:calc(100dvh - 32px); overflow-y:auto; }
+:root:not([data-design='v2'])[data-theme='light'] {
+ --surface:#f6f5f0; --surface-2:#ffffff; --text:#25312a; --muted:#536258; --line:#233a292b;
+ --accent:#99470f; --accent-soft:#92491b; --win:#376d29; --draw:#806416; --loss:#a53d35;
+ --v1-selection:#efbd98; --v1-dock-glass:#fff0e3d1; --panel:#ffffff;
+ --match-green:#246d45;
+}
+:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#e8f3ead1; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#fff6d8d1; }
+html:not([data-design='v2'])[data-theme='light'] body { background:var(--surface); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.top.v1-compact-header,.season-header,.match-top,.article-bar,.player-sticky,.profile-jumps,.fcsg-profile-jumps) { background:#f6f5f0e8; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#58664f42; box-shadow:0 6px 22px #26352626,inset 0 1px 0 #ffffffcc; }
+html:not([data-design='v2'])[data-theme='light'] :is(.button.subtle,.header-button) { background:#25312a06; color:var(--text); border-color:#25312a36; }
+html:not([data-design='v2'])[data-theme='light'] :is(.button.subtle,.header-button):hover { background:#25312a10; }
+html:not([data-design='v2'])[data-theme='light'] :is(select,.calendar-head button,.journey-controls button,.segments,.toggle) { background:#ebece6; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .segments a { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .segments a.selected { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .game-card { background:linear-gradient(115deg,#ffffff 0 48%,#f1f3ee 48%); border-color:var(--line); box-shadow:0 3px 12px #2834290c; }
+html:not([data-design='v2'])[data-theme='light'] .game-card.finished { background:linear-gradient(115deg,#fafbf7 0 48%,#f0f2ec 48%); }
+html:not([data-design='v2'])[data-theme='light'] .game-card.current-game { background:linear-gradient(115deg,color-mix(in srgb,var(--v1-selection) 24%,white) 0 48%,color-mix(in srgb,var(--v1-selection) 38%,white) 48%); border-color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(.game-card .meta,.game-card .venue,.game-card .scoreline small,.game-result-label,.current-game .meta,.current-game .venue,.current-game .scoreline small,.eyebrow,.heading > a,.footer-updated,.record-text,.record-legend,.game-derby) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .current-label { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.match-calendar .day,.report-player,.live-event,.report-comparison-row) { border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.match-calendar .day > span.calendar-date,.calendar-legend,.calendar-hint,.matchday-panel p) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .match-calendar .day.today > span { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(th,td,.table-wrap thead th,.report-table thead th,.report-table td,.report-table tbody th) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table tbody tr { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap :is(.our-team th,.our-team td) { background:color-mix(in srgb,var(--v1-selection) 40%,white); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.stats-block,.season-split,.season-number-grid > div,.bento-metric,.bento-panel,.fcsg-bento-tile,.journey-streaks > div,.journey-chart,.duel-summary,.notice,.report-comparison,.report-score-card,.ehf-zone,.ehf-shooting-detail,.live-match-header) { background:var(--surface-2); border-color:var(--line); box-shadow:0 3px 12px #2834290c; }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-primary,.fcsg-bento-primary) { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-primary,.fcsg-bento-primary) :is(span,strong,small) { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-metric > small,.bento-panel small,.fcsg-bento-tile > small,.season-number-grid span,.stats-table .num,.report-comparison-row > div > span,.report-score-card p,.report-score-legend,.live-status) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a,.form-result) { background:var(--win); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a.loss,.form-result.loss) { background:var(--loss); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a.draw,.form-result.draw) { background:var(--draw); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-game,.journey-game.loss,.journey-game.draw) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-game small,.journey-streaks span,.journey-controls button,.journey-game em) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-chart text,.goal-difference-chart text) { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.record-bar,.difference-track,.report-bars > span,.stat-bar,.fcsg-stat-track) { background:#25312a13; }
+html:not([data-design='v2'])[data-theme='light'] :is(.status-popover,.app-feedback,.source-health,.programme-dialog,.programme-toolbar,.programme-tools,.programme-pages) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.programme-status,.programme-toolbar p,.programme-tools a) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .programme-dialog button { background:#ebece6; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-settings-dialog,.app-introduction,.install-intro) { box-shadow:0 16px 56px #26352626; }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-settings-dialog,.app-introduction,.install-intro)::backdrop { background:#22332766; }
+html:not([data-design='v2'])[data-theme='light'] :is(.guide-visual,.guide-preview-news,.guide-preview-tabs,.guide-preview-roster,.guide-tip) { background:#eef0e9; color:var(--text); border-color:var(--line); }
+/* Keep photographic overlays and matchday surfaces readable in either page theme. */
+html:not([data-design='v2'])[data-theme='light'] .home-title-zone .home-news-heading h1 { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .home-matchday { --text:#f2f3ee; --muted:#c4cec6; --accent:#ff790e; --accent-soft:#ffbb80; --surface:#171b18; --surface-2:#242b26; --win:#a2cf75; --draw:#d5c778; --loss:#f07d6c; }
+html:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] .home-matchday { --accent:#66d99b; --accent-soft:#a3edc2; }
+html:not([data-design='v2'])[data-theme='light'][data-club='otmar'] .home-matchday { --accent:#efcc32; --accent-soft:#ffe477; }
+html:not([data-design='v2'])[data-theme='light'] :is(.story-copy,.photo-feature,.player-card) { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] .story-copy > p { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] .story-copy .button { background:#17211999; color:#fff9f0; border-color:#fff9f080; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { color:#fff9f0; --text:#fff9f0; --muted:#d5e1d5; }
+/* Club history: all reading surfaces follow the light palette; archival photos stay original. */
+html:not([data-design='v2'])[data-theme='light'] :is(.club-title-panel,.club-trophy,.club-chapter figure,.club-more,.fcsg-history-mark) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-hero-text,.club-intro-copy) { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-topline,.club-chapter-position,.club-chapter figcaption,.club-years button,.club-next,.club-more summary,.club-credits,.club-chapter-copy > p:not(.club-chapter-year),.club-more p) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-chapter-year,.club-years button[aria-pressed='true'],.club-trophy strong) { color:var(--accent); }
+/* Legacy detail labels use explicit colours in V1 and need light counterparts. */
+html:not([data-design='v2'])[data-theme='light'] :is(.notice,.club-page) { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.standing-meta,.record-legend,.season-data-note,.season-split small,.player-leader-note,.stat-scope,.stat-note,.facts span,.stat-facts span,.comparison span,.recent small,.recent-game small,.match-top > small,.season-balance-values span,.venue-thumb figcaption) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.stat-facts strong,.comparison strong:first-child,.news-link,.text-link,.club-text-button) { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .clubmark { color:var(--muted); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-live-notice.is-stale { color:#78551b; }
+html:not([data-design='v2'])[data-theme='light'] .club-cabinet { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-trophy span,.club-count-note,.club-year-hint,.club-cabinet > p,.club-history-heading > p:last-child,.club-title-years button,.club-topline span) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .club-cabinet .club-eyebrow { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-trophy[aria-pressed='true'],.club-title-years button[aria-pressed='true']) { background:color-mix(in srgb,var(--v1-selection) 40%,white); color:var(--text); border-color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .club-history .club-eyebrow { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .profile-back.back-link { color:#fff9f0; background:#172119b3; }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table tbody tr.our-team { background:color-mix(in srgb,var(--v1-selection) 30%,white); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table .our-team :is(th,td) { background:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-match-dashboard { --match-green:var(--accent); --match-opponent:#68776e; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { --match-green:#a9e877; }
+/* Diagram ink and grid lines need their own light contrast, independently of text. */
+html:not([data-design='v2'])[data-theme='light'] .report-score-card { --score-orange:#a94d13; --score-purple:#7042a0; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart text { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-grid { stroke:#25312a1c; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-half { stroke:#25312a40; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-end { fill:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.report-score-status,.ehf-shot-map,.ehf-keeper-zones,.ehf-half-quotes) { border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.report-score-card .eyebrow,.report-score-legend) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .report-bars i { background:#78529a; }
+html:not([data-design='v2'])[data-theme='light'] .report-bars .is-kadetten i { background:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-bar { background:#25312a16; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-card { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-values .is-leading { background:color-mix(in srgb,var(--v1-selection) 45%,white); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch { background:#ebece6; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch button { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch button[aria-pressed='true'] { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch-slider { background:var(--v1-selection); }
