@@ -52,8 +52,10 @@ try {
     await page.waitForTimeout(150);
     await page.addScriptTag({content:axe});
     const issues=await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})));
-    const measure=await page.evaluate(()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,small:[...document.querySelectorAll('.v2-test-tools button,.v2-test-tools a,.v2-text-link')].slice(0,8).map(e=>({text:e.textContent.trim(),width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
+    const measure=await page.evaluate(()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,small:[...document.querySelectorAll('.top > button:not([hidden]):not(.install-button),.v2-match-action,.v2-text-link')].slice(0,8).map(e=>({text:e.textContent.trim(),width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
     results.push({width,club,theme,route,...measure,issues});
+    assert.ok(await page.locator('body > .top').evaluate(el=>el.getBoundingClientRect().height<=90),'compact header');
+    if(route==='home'){const action=page.locator('.v2-match-action');if(await action.count())assert.equal(await action.getAttribute('href'),await page.locator('.home-matchday .live-match').getAttribute('href'));}
     assert.equal(measure.h1,1,club+' '+route+': heading');
     assert.equal(measure.overflow,false,club+' '+route+': overflow');
     assert.deepEqual(issues,[],club+' '+theme+' '+route+': accessibility');
@@ -83,8 +85,22 @@ try {
     }
     await page.locator('.dock a[data-nav="news"]').tap();
     assert.equal(await page.locator('.v2-story-compact,.v2-scrollbar').count(),0);
+    await page.locator('[data-v2-choose]').tap();
+    await page.addScriptTag({content:axe});
+    assert.deepEqual(await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)),[],'club chooser accessibility');
+    await page.locator('[data-v2-pick="otmar"]').tap();
+    assert.equal(await page.locator('html').getAttribute('data-club'),'otmar');
     await page.locator('#club-settings').tap();
     assert.ok(await page.locator('dialog[open]').count());
+    await page.addScriptTag({content:axe});
+    for(const theme of ['light','dark']){await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+    assert.deepEqual(await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))),[],'settings '+theme+' accessibility');}
+    assert.equal(await page.locator('.v2-test-menu').count(),1);
+    await page.locator('.v2-test-menu summary').tap();
+    await page.locator('[data-v2-demo]').tap();
+    assert.equal(await page.locator('.v2-demo[open]').count(),1);
+    await page.locator('.v2-demo [data-close]').tap();
+    await page.keyboard.press('Escape');
   }
   // Matchday colours belong to the dark card, independently of the page theme.
   for(const club of ['kadetten','fcsg','otmar']) {

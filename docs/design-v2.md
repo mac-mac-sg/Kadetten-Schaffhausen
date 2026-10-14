@@ -6,7 +6,7 @@ Die ausdrücklich beauftragte zweite Oberfläche wird unter `https://mac-mac-sg.
 
 Die erste Fassung enthält den bildstarken Arena-Einstieg für alle drei Vereine, schwebende Glasnavigation, normale News im Magazinlayout, gestapelte Entdeckungsbereiche, aufklappbare Spielvorschauen, Kader-Einstiege, angepasste Spielerprofile und einen Hell-/Dunkelwechsel. Spielplan, Kalender, gemeinsame Woche und Statistikfunktionen bleiben aus der aktuellen App erhalten. Die vorhandenen Spieltags-/Live-Effekte und aktualisierten Daten werden weiterverwendet. «Spielzustände» öffnet ausschliesslich gekennzeichnete fiktive Gestaltungsbeispiele; die echten Daten werden dabei nicht verändert.
 
-`npm run verify` prüft zusätzlich sechs V2-Ansichtstests. Der Pages-Build prüft mit `scripts/check-preview.mjs` die Trennung der beiden Skript-Bündel, PWA-Scopes, Cache-Namensräume und lokale Assets. Die ursprünglichen App-Bündel können gegen einen einzelnen `KADETTEN_TARGET=pages node scripts/build.mjs`-Build verglichen werden.
+`npm run verify` prüft zusätzlich zehn V2-Ansichtstests. Der Pages-Build prüft mit `scripts/check-preview.mjs` die Trennung der beiden Skript-Bündel, PWA-Scopes, Cache-Namensräume und lokale Assets. Die ursprünglichen App-Bündel können gegen einen einzelnen `KADETTEN_TARGET=pages node scripts/build.mjs`-Build verglichen werden.
 
 Die Browser-Prüfung bei 390 px und Desktop sowie mit axe-core ist zusätzlich erforderlich. Ist kein Browser installiert, muss diese Grenze ausdrücklich dokumentiert werden. Ein reales Smartphone bleibt für Bildausschnitte, Touchbedienung, Glasflächen und Scrollgefühl der wichtigste Abnahmeschritt.
 
@@ -19,3 +19,11 @@ V2 richtet sich ausschliesslich an Smartphone-Nutzung. Die klare Informationsstr
 Auf Wunsch ist die erste V2-Startseite wiederhergestellt: grosse Newsbilder und Entdecken-Layer nach dem Newsfeed, ohne kompakte Meldungen oder zusätzliche Scrollleiste auf Home. Die Vereinsseite behält die kompakte Glasnavigation und ihre sanften Einblendungen. Spiele behalten die angeheftete Ansichtenwahl.
 
 Der Spieltagsblock ist eine eigenständige dunkle Glasfläche in beiden Seiten-Themen. Seine Text-, Metadaten- und Ergebnisfarben bleiben bei Hell/Dunkel identisch; der übrige Bildschirm folgt weiterhin dem gewählten Thema. Die Vereinsfarben sowie Vorschau-, Matchday-, Live- und Endresultat-Zustände bleiben erhalten. Der mobile Browser-Regressionslauf vergleicht die berechneten Farben des Blocks und seiner Kinder für alle drei Vereine und sechs Zustände zwischen Hell und Dunkel.
+
+## Kompakter Kopf und Matchkarte
+
+Der Kopfbereich zeigt Vereinslogo/-name, einen 44 px grossen Vereinswahl-Knopf, Einstellungen und den Themenwechsel in einer Zeile. Eine native Dialog-Auswahl zeigt die gewählten Vereine inklusive vorhandener Spieltagshinweise. Der Wechsel erhält die aktuelle Hauptroute; nicht übertragbare Artikel/Spieler/Matchdetails wechseln zur jeweiligen Übersicht. Installieren und die gekennzeichneten V2-Testwerkzeuge liegen in den Einstellungen.
+
+Die dunkle Matchkarte verwendet für alle Vereine dieselbe Grundgeometrie: Status und Wettbewerb oben, Wappen und Namen auf beiden Seiten, Anspielzeit beziehungsweise bestätigtes Resultat in der Mitte, Datum/Heim-/Auswärtskontext oder Live-Phase unten. Unbestätigte Zeiten bleiben offen. Innerhalb der letzten Stunde zeigt die Mitte einen ruhigen Countdown; das Erreichen der Startzeit behauptet keinen Live-Status. Eine leicht versetzte Aktionsebene unter der Karte führt auf dieselbe echte Spielroute und folgt Vorschau/Matchday/Live/Rückblick. Die grossen Newsbilder bleiben erhalten.
+
+Der bisherige Glanz, Hintergrundschimmer und Herzschlag sind im V2-Matchblock entfernt. Am Matchday verbleibt ein dezenter umlaufender Lichtakzent, live ein kleiner Statuspunkt. Neue Ergebniswerte blenden kurz um; reduzierte Bewegung schaltet diese Animationen aus. API-Läufe, Quellen und ursprüngliche App bleiben unverändert.
