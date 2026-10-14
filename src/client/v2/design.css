@@ -19,7 +19,7 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .club-picker button { color:inherit; min-height:44px; border-radius:12px; }
 [data-design='v2'] .club-picker [aria-pressed='true'] { background:#25372a; color:#fff; }
 [data-design='v2'] .header-button { color:inherit; }
-[data-design='v2'] .dock { background:var(--glass); color:var(--text); border:1px solid var(--line); border-radius:22px; box-shadow:0 6px 24px #10211724; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+[data-design='v2'] .dock { background:color-mix(in srgb,var(--glass) 90%,transparent); color:var(--text); border:1px solid var(--line); border-radius:22px; box-shadow:0 6px 24px #10211724; backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
 [data-design='v2'] .dock a { color:var(--muted); }
 [data-design='v2'] .dock a.active { color:#162018; background:var(--accent); }
 [data-design='v2'] .home-front-page { display:block; min-height:0; scroll-snap-align:none; }

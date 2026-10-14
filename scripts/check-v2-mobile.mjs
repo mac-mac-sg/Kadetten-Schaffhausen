@@ -61,10 +61,12 @@ try {
         const rgba=value=>value.match(/[\d.]+/g).map(Number);
         return {background:rgba(style.backgroundColor),text:rgba(style.color),
           controlColors:[...header.querySelectorAll('.brand,.v2-club-trigger,[data-v2-theme],#club-settings')].map(el=>getComputedStyle(el).color),
-          headerColor:style.color,dockBorder:rgba(dock.borderTopColor),
+          headerColor:style.color,dockBorder:rgba(dock.borderTopColor),dockAlpha:rgba(dock.backgroundColor)[3],dockBlur:dock.backdropFilter,
           dates:[...document.querySelectorAll('.v2-story-link .story-copy p')].map(el=>parseFloat(getComputedStyle(el).fontSize))};
       });
       assert.ok(chrome.background[3]>0&&chrome.background[3]<1,'home header remains translucent');
+      assert.ok(chrome.dockAlpha>=.75&&chrome.dockAlpha<.8,'dock glass is subtly more translucent in both themes');
+      assert.equal(chrome.dockBlur,'blur(18px)','dock retains its blur for legibility over images');
       assert.ok(chrome.dates.every(size=>size===13),'news dates use a readable 13px size in both themes');
       assert.ok(chrome.controlColors.every(color=>color===chrome.headerColor),'header text and controls follow the glass surface');
       if(theme==='dark'){
