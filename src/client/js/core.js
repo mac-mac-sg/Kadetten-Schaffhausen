@@ -112,7 +112,8 @@ function syncV1MatchAction(slot) {
   if(!action){
     action=document.createElement('a');action.className='v1-match-action';
     action.innerHTML='<span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>';
-    section.classList.add('v1-match-stack');section.append(action);
+    const stack=document.createElement('div');stack.className='v1-match-stack';
+    slot.before(stack);stack.append(slot,action);
   }
   action.hidden=false;action.setAttribute('href',slot.getAttribute('href')||'#season/games');
   const label=slot.classList.contains('is-live')?'Live verfolgen':slot.matches('.matchday-win,.matchday-draw,.matchday-loss')?'Zum Spielrückblick':slot.classList.contains('is-matchday')?'Zum Spiel':'Spielvorschau';
