@@ -207,6 +207,9 @@ test('V1 compact header uses one club trigger and a dropdown instead of the perm
  assert.equal(a.document.getElementById('club-switch').hidden,true);
  assert.equal(a.document.getElementById('club-settings').hidden,false);
  const trigger=a.document.querySelector('[data-compact-clubs]');
+ assert.equal(trigger,a.document.querySelector('.brand'));assert.equal(trigger.tagName,'BUTTON');assert.equal(trigger.hasAttribute('href'),false);
+ assert.match(trigger.textContent,/KADETTEN/);assert.match(trigger.getAttribute('aria-label'),/Verein wechseln/);
+ assert.equal(trigger.querySelectorAll('.compact-club-chevron').length,1);
  assert.equal(trigger.getAttribute('aria-controls'),'compact-club-menu');
  assert.equal(trigger.getAttribute('aria-expanded'),'false');
  a.run('openCompactClubMenu()');
@@ -217,6 +220,7 @@ test('V1 compact header uses one club trigger and a dropdown instead of the perm
  assert.ok(menu.querySelector('a[href="#club"]'));assert.ok(menu.querySelector('[data-compact-manage]'));
  a.run('openCompactClubMenu()');assert.equal(menu.hidden,true);
  a.run("selectedClubs=['fcsg'];activeClub='fcsg';updateClubHeader();openCompactClubMenu()");
+ assert.equal(trigger.querySelectorAll('.compact-club-chevron').length,1);assert.match(trigger.getAttribute('aria-label'),/FC St. Gallen/);
  assert.equal(menu.querySelectorAll('[data-compact-pick]').length,1);
  assert.match(menu.textContent,/FC St. Gallen/);
 });

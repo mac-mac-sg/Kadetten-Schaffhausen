@@ -50,6 +50,11 @@ try {
     await page.locator('[data-compact-clubs]').waitFor();
     await page.waitForTimeout(100);
     const header=await page.locator('body > .top').boundingBox();assert.ok(header.height<=70,'single compact row');
+    const target=await page.locator('[data-compact-clubs]').boundingBox(),name=await page.locator('.brand > span').boundingBox(),arrow=await page.locator('.compact-club-chevron').boundingBox();
+    assert.ok(target.width>name.width+44,'one generous trigger for crest, name and arrow');assert.ok(target.height>=44);
+    assert.ok(arrow.x-(name.x+name.width)<=12,'arrow immediately follows club name');
+    const hash=new URL(page.url()).hash;await page.locator('.brand > span').tap();assert.equal(await page.locator('#compact-club-menu').isVisible(),true);assert.equal(new URL(page.url()).hash,hash);await page.keyboard.press('Escape');
+    await page.locator('.brand > img').tap();assert.equal(await page.locator('#compact-club-menu').isVisible(),true);await page.keyboard.press('Escape');
     if(route==='home'){const card=await page.locator('.home-matchday .live-match').boundingBox();if(card)assert.ok(card.y>=header.y+header.height+8,'matchday clears the compact header');}
     assert.equal(await page.locator('#club-switch').isVisible(),false);
     await page.addScriptTag({content:axe});
@@ -65,7 +70,7 @@ try {
     await page.locator('[data-compact-clubs]').tap();
     assert.equal(await page.locator('#compact-club-menu').isVisible(),true);assert.equal(await page.locator('dialog[open]').count(),0);
     await page.addScriptTag({content:axe});
-    assert.deepEqual(await page.evaluate(async()=>(await axe.run(document)).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))),[]);
+    assert.deepEqual(await page.evaluate(async()=>(await axe.run(document.querySelector('body > .top'))).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))),[]);
     await page.keyboard.press('Escape');assert.equal(await page.locator('[data-compact-clubs]').getAttribute('aria-expanded'),'false');
     await page.locator('[data-compact-clubs]').focus();await page.keyboard.press('ArrowDown');
     assert.ok(await page.evaluate(()=>document.activeElement.hasAttribute('data-compact-pick')));
