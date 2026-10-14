@@ -1,9 +1,12 @@
 /* Saison: Spielplan, Kalender, Tabelle und Kader. */
+function seasonHeading(title) {
+  return document.documentElement.dataset?.design==='v2'?`<p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>`:`<h1 class="season-screen-title">${title}</h1>`;
+}
 function season(tab) {
   if(tab==='games'&&mode==='week')return `<section class="content season calendar-season week-season"><div class="season-header"><p class="eyebrow">DEINE AUSGEWÄHLTEN VEREINE</p><h1>Spiele</h1>${gameControls()}${calendarNavigation()}</div>${sharedWeekView()}</section>`;
   const calendarView = tab === 'games' && mode === 'calendar';
   const title = {games: 'Spiele', table: 'Tabelle', squad: 'Kader'}[tab];
-  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header"><p class="eyebrow">1. Mannschaft · Saison 2026/27</p><h1>${title}</h1>${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
+  return `<section class="content season ${tab === 'table' ? 'standings-season' : ''} ${calendarView ? 'calendar-season' : ''}"><div class="season-header">${seasonHeading(title)}${tab === 'games' ? gameControls() + (mode === 'calendar' ? calendarNavigation() : '') : ''}${sourceNotice(tab==='squad'?'players':tab==='table'?'table':'games')}</div>${tab === 'table' ? standing() : tab === 'squad' ? squad() : gameList()}</section>${footer()}`;
 }
 function gameControls() {
   const choices=activeClub==='fcsg' ? ['Alle',...new Set(fcsgData.games.map(g=>g.league))] : handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle','QHL','EHL','Testspiel','Falkencup'];
