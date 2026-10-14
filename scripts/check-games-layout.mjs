@@ -65,6 +65,11 @@ try {
     if(axe)await page.addScriptTag({content:axe});
     if(empty)await page.waitForFunction(()=>document.querySelectorAll('.game-timeline .game-card').length===0);
     const before=await measure();
+    const bridge=await page.locator('.game-control-bar').evaluate(e=>{const css=getComputedStyle(e,'::before');return{content:css.content,height:parseFloat(css.height),colour:css.backgroundColor,pointerEvents:css.pointerEvents,gap:e.getBoundingClientRect().top-document.querySelector('body > .top').getBoundingClientRect().bottom};});
+    assert.notEqual(bridge.content,'none',club+': gap above controls has a backing');
+    assert.ok(bridge.height>=bridge.gap-1,club+': backing covers the gap to the club header');
+    assert.ok(!bridge.colour.startsWith('rgba('),club+': scrolling text cannot show through the gap');
+    assert.equal(bridge.pointerEvents,'none',club+': backing never intercepts navigation');
     await page.locator('[data-mode="calendar"]').click();const calendar=await measure();stable(before,calendar,club+' calendar');
     assert.ok(calendar.calendarBottom<=calendar.dockTop,club+': calendar fits above dock');assert.equal(calendar.scrollY,0);
     assert.equal(await page.locator('[data-mode="week"]').count(),0);
