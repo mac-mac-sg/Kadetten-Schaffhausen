@@ -56,6 +56,18 @@ try {
     results.push({width,club,theme,route,...measure,issues});
     assert.ok(await page.locator('body > .top').evaluate(el=>el.getBoundingClientRect().height<=90),'compact header');
     if(route==='home'){
+      const arena=await page.locator('.home-title-zone').evaluate(el=>{
+        const photo=getComputedStyle(el,'::before'),overlay=getComputedStyle(el,'::after');
+        return {brightness:Number(photo.filter.match(/brightness\(([\d.]+)\)/)?.[1]),overlay:overlay.backgroundImage,
+          source:photo.backgroundImage,blur:photo.filter.includes('blur')};
+      });
+      assert.ok(arena.source.includes({kadetten:'bbc-arena-hall.webp',fcsg:'fcsg-stadium.jpg',otmar:'otmar-kreuzbleiche.webp'}[club]),'club retains its real arena photo');
+      assert.ok(arena.brightness>1&&!arena.blur,'arena photo is brighter and stays sharp');
+      if(club==='otmar')assert.ok(arena.brightness>=2,'pre-darkened Otmar photo receives stronger correction');
+      else if(club==='fcsg')assert.ok(arena.brightness<=1.1,'FCSG retains its bright sky with only a light correction');
+      else assert.ok(arena.brightness>1.1&&arena.brightness<1.3,'Kadetten receives moderate correction');
+      const shade=[...arena.overlay.matchAll(/rgba\([^)]*, ([\d.]+)\)/g)].map(match=>Number(match[1]));
+      assert.ok(shade.length>=2&&Math.max(...shade)<.4,'arena overlay stays light rather than obscuring the photo');
       const chrome=await page.evaluate(()=>{
         const header=document.querySelector('body > .top'),style=getComputedStyle(header),dock=getComputedStyle(document.querySelector('.dock'));
         const rgba=value=>value.match(/[\d.]+/g).map(Number);

@@ -31,9 +31,12 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .dock a.active { color:#162018; background:var(--accent); }
 [data-design='v2'] .home-front-page { display:block; min-height:0; scroll-snap-align:none; }
 [data-design='v2'] .home-title-zone { display:flex; flex-direction:column; justify-content:flex-end; padding:180px 22px 22px; min-height:510px; max-width:1180px; margin:0 auto; border-radius:0 0 32px 32px; color:#fff9ef; }
-[data-design='v2'] .home-title-zone::before { filter:none; transform:none; inset:0; }
-[data-design='v2'] [data-club='otmar'] .home-title-zone::before { filter:brightness(1.8); }
-[data-design='v2'] .home-title-zone::after { background:linear-gradient(180deg,#12251816 15%,#10201660 40%,#0f1b14ed); }
+[data-design='v2'] .home-title-zone::before { filter:brightness(1.16); transform:none; inset:0; }
+[data-design='v2'][data-club='fcsg'] .home-title-zone::before { filter:brightness(1.05); }
+[data-design='v2'][data-club='otmar'] .home-title-zone::before { filter:brightness(2.4); }
+[data-design='v2'] .home-title-zone::after { background:linear-gradient(180deg,#12251808 15%,#10201614 55%,#0f1b1459); }
+[data-design='v2'][data-club='fcsg'] .home-title-zone::after { background:linear-gradient(180deg,#12251804 15%,#10201614 55%,#0f1b1452); }
+[data-design='v2'][data-club='otmar'] .home-title-zone::after { background:linear-gradient(180deg,#12251800 15%,#10201608 55%,#0f1b143d); }
 .v2-hero-copy .eyebrow { color:#efefdf; letter-spacing:.08em; font-size:10px; margin:0 0 10px; }
 .v2-hero-copy h1 { font:600 clamp(38px,7vw,72px)/1.03 var(--v2-serif); margin:0 0 14px; min-height:2.06em; }
 .v2-hero-copy > p:last-child { font-size:12px; margin-bottom:18px; color:#e5ebdf; }
