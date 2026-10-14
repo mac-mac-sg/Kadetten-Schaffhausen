@@ -69,8 +69,15 @@ try {
       assert.equal(chrome.dockBlur,'blur(24px)','dock softens background detail more strongly');
       assert.notDeepEqual(chrome.dockColor,chrome.newsColor,'dock has its own glass colour rather than the news surface');
       assert.ok(chrome.dockShadow.includes('inset')&&(chrome.dockShadow.match(/rgba?\(/g)||[]).length>=3,'dock has a light inner edge and soft elevation shadow');
-      if(theme==='light')assert.ok(chrome.dockColor.every(value=>value===255),'light dock uses white glass');
-      else assert.ok(chrome.dockColor.every(value=>value>=50&&value<=65),'dark dock uses lighter neutral glass');
+      if(theme==='light')assert.ok(chrome.dockColor.every(value=>value>=210),'light dock uses pale pastel glass');
+      else assert.ok(chrome.dockColor.every(value=>value>=45&&value<=65),'dark dock uses a muted club tint');
+      const [red,green,blue]=chrome.dockColor;
+      if(club==='fcsg')assert.ok(green>red&&green>blue,'FCSG glass has a soft green tint');
+      else{
+        assert.ok(red>green&&green>blue,'Kadetten and Otmar use warm club glass');
+        if(club==='kadetten')assert.ok(red-green>green-blue,'Kadetten glass leans towards apricot');
+        else assert.ok(green-blue>red-green,'Otmar glass leans towards butter yellow');
+      }
       assert.ok(chrome.dates.every(size=>size===13),'news dates use a readable 13px size in both themes');
       assert.ok(chrome.controlColors.every(color=>color===chrome.headerColor),'header text and controls follow the glass surface');
       if(theme==='dark'){
@@ -209,6 +216,19 @@ try {
       assert.deepEqual(styles[1],styles[0],club+' '+state+': same dark matchday card in both themes');
     }
   }
+  // Club switching changes only the dock tint, with reduced-motion support.
+  await page.goto(origin+'/v2/?club=kadetten#home');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const dockBefore=await page.locator('.dock').evaluate(el=>({color:getComputedStyle(el).backgroundColor,width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,duration:getComputedStyle(el).transitionDuration}));
+  assert.equal(dockBefore.duration,'0.22s','club tint changes gently');
+  await page.locator('[data-v2-choose]').tap();
+  await page.locator('[data-v2-pick="fcsg"]').tap();
+  await page.waitForTimeout(300);
+  const dockAfter=await page.locator('.dock').evaluate(el=>({color:getComputedStyle(el).backgroundColor,width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height}));
+  assert.notEqual(dockAfter.color,dockBefore.color,'club selection updates the glass tint');
+  assert.equal(dockAfter.width,dockBefore.width);assert.equal(dockAfter.height,dockBefore.height);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await page.locator('.dock').evaluate(el=>getComputedStyle(el).transitionDuration),'0s','reduced motion disables the tint transition');
   assert.deepEqual(errors,[]);
   console.log(`${results.length} V2 mobile view/theme cases and 3 touch flows plus 18 matchday theme comparisons passed.`);
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
