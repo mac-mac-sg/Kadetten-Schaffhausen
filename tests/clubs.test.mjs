@@ -199,3 +199,29 @@ test('Heute-Hinweis im Spiele-Menü gilt für alle Vereine, auch vor Anpfiff und
   assert.equal(a.document.querySelector('[data-nav=games]').classList.contains('is-matchday'),false,club);
  }
 });
+
+test('V1 compact header uses one club trigger and a dropdown instead of the permanent club row',()=>{
+ const a=app('https://example.test/#season/table');a.run('restoreActiveClub();updateClubHeader();updateClubHeader()');
+ assert.equal(a.document.querySelectorAll('[data-compact-clubs]').length,1);
+ assert.equal(a.document.getElementById('club-switch').hidden,true);
+ assert.equal(a.document.getElementById('club-settings').hidden,false);
+ const trigger=a.document.querySelector('[data-compact-clubs]');
+ assert.equal(trigger.getAttribute('aria-controls'),'compact-club-menu');
+ assert.equal(trigger.getAttribute('aria-expanded'),'false');
+ a.run('openCompactClubMenu()');
+ const menu=a.document.getElementById('compact-club-menu');
+ assert.equal(menu.hidden,false);assert.equal(trigger.getAttribute('aria-expanded'),'true');
+ assert.equal(menu.querySelectorAll('[data-compact-pick]').length,3);
+ assert.equal(menu.querySelector('[data-compact-pick="kadetten"]').getAttribute('aria-pressed'),'true');
+ assert.ok(menu.querySelector('a[href="#club"]'));assert.ok(menu.querySelector('[data-compact-manage]'));
+ a.run('openCompactClubMenu()');assert.equal(menu.hidden,true);
+ a.run("selectedClubs=['fcsg'];activeClub='fcsg';updateClubHeader();openCompactClubMenu()");
+ assert.equal(menu.querySelectorAll('[data-compact-pick]').length,1);
+ assert.match(menu.textContent,/FC St. Gallen/);
+});
+test('V1 compact header does not change V2 controls',()=>{
+ const a=app('https://example.test/');a.document.documentElement.dataset.design='v2';
+ a.run('restoreActiveClub();updateClubHeader()');
+ assert.equal(a.document.querySelector('[data-compact-clubs]'),null);
+ assert.equal(a.document.querySelector('.v1-compact-header'),null);
+});
