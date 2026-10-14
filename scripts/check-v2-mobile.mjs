@@ -56,6 +56,24 @@ try {
     results.push({width,club,theme,route,...measure,issues});
     assert.ok(await page.locator('body > .top').evaluate(el=>el.getBoundingClientRect().height<=90),'compact header');
     if(route==='home'){
+      const chrome=await page.evaluate(()=>{
+        const header=document.querySelector('body > .top'),style=getComputedStyle(header),dock=getComputedStyle(document.querySelector('.dock'));
+        const rgba=value=>value.match(/[\d.]+/g).map(Number);
+        return {background:rgba(style.backgroundColor),text:rgba(style.color),
+          controlColors:[...header.querySelectorAll('.brand,.v2-club-trigger,[data-v2-theme],#club-settings')].map(el=>getComputedStyle(el).color),
+          headerColor:style.color,dockBorder:rgba(dock.borderTopColor),
+          dates:[...document.querySelectorAll('.v2-story-link .story-copy p')].map(el=>parseFloat(getComputedStyle(el).fontSize))};
+      });
+      assert.ok(chrome.background[3]>0&&chrome.background[3]<1,'home header remains translucent');
+      assert.ok(chrome.dates.every(size=>size===13),'news dates use a readable 13px size in both themes');
+      assert.ok(chrome.controlColors.every(color=>color===chrome.headerColor),'header text and controls follow the glass surface');
+      if(theme==='dark'){
+        assert.ok(chrome.background.slice(0,3).every(value=>value<80),'dark header uses dark glass');
+        assert.ok(chrome.text.slice(0,3).every(value=>value>200),'dark header uses light text and icons');
+        assert.ok((chrome.dockBorder[3]??1)>.2,'dark dock has a clearer outer edge');
+      }else{
+        assert.ok(chrome.background.slice(0,3).every(value=>value>200),'light header retains its pale glass');
+      }
       assert.equal(await page.locator('.v2-story .v2-text-link,.v2-story-link a').count(),0);
       assert.equal(await page.locator('.v2-story-link').count(),await page.locator('.v2-story').count());
       const newsCards=await page.locator('.v2-story-link').evaluateAll(cards=>cards.map(card=>{
