@@ -2340,14 +2340,15 @@ html:not([data-design='v2'])[data-club] .home-matchday :is(#live-match,.fcsg-mat
 html:not([data-design='v2']) .season-number-grid > div { background:var(--surface-2); box-shadow:0 3px 12px #00000018; }
 
 /* V1 compact club header: the same single-row geometry as V2. */
+html:not([data-design='v2']) { --v1-header-top:calc(14px + env(safe-area-inset-top)); --v1-content-top:calc(var(--v1-header-top) + var(--app-header-height,64px) + 14px); scroll-padding-top:var(--v1-content-top); }
+html:not([data-design='v2']) body:not(.immersive) { padding-top:var(--v1-content-top); }
 html:not([data-design='v2']) .top.v1-compact-header {
- position:relative; display:flex; flex-wrap:nowrap; align-items:center; gap:2px;
+ position:fixed; inset:var(--v1-header-top) 14px auto; display:flex; flex-wrap:nowrap; align-items:center; gap:2px;
  width:calc(100% - 28px); max-width:1152px; min-height:64px; height:auto;
- margin:14px auto; padding:8px 12px; border:1px solid #ffffff50; border-radius:20px;
+ margin:0 auto; padding:8px 12px; border:1px solid #ffffff50; border-radius:20px;
  color:#f2f3ee; background:#1f2a23d9; box-shadow:0 5px 24px #10211712;
  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); z-index:30;
 }
-html:not([data-design='v2']) .immersive > .top.v1-compact-header { position:absolute; inset:env(safe-area-inset-top) 14px auto; width:auto; }
 html:not([data-design='v2']) .top.v1-compact-header .brand { flex:1; min-width:0; margin:0; gap:9px; font-size:12px; }
 html:not([data-design='v2']) .top.v1-compact-header .brand img { width:26px; height:34px; }
 html:not([data-design='v2']) .top.v1-compact-header .brand small { font-size:9px; margin-top:3px; }
@@ -2378,7 +2379,8 @@ html:not([data-design='v2']) .v1-match-action {
 html:not([data-design='v2']) .v1-match-action svg { width:20px; height:20px; flex-shrink:0; }
 html:not([data-design='v2']) .v1-match-action[hidden] { display:none; }
 html:not([data-design='v2']) .v1-match-action:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
-html:not([data-design='v2']) .games-mode > .top.v1-compact-header { position:sticky; top:env(safe-area-inset-top); margin-block:0; }
-html:not([data-design='v2']) .calendar-mode > .top.v1-compact-header { flex:none; }
-html:not([data-design='v2']) .player-mode > .top.v1-compact-header { display:none; }
-html:not([data-design='v2']) .fcsg-profile-mode > .top.v1-compact-header { position:sticky; top:0; margin-block:0; }
+html:not([data-design='v2']) :is(.season-header,.article-bar,.match-top,.player-sticky,.club-years) { top:var(--v1-content-top); }
+html:not([data-design='v2']) .games-mode .season-header { top:calc(var(--v1-content-top) - var(--games-sticky-offset,40px) - 1px); }
+html:not([data-design='v2']) .profile-back { top:var(--v1-content-top); }
+html:not([data-design='v2']).snap-profile { scroll-padding-top:var(--v1-content-top); }
+html:not([data-design='v2']) .player-mode .profile-slide { min-height:calc(100svh - var(--v1-content-top)); }

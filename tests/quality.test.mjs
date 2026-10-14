@@ -114,7 +114,7 @@ test('Aktuelles Spiel liegt unter der dauerhaft sichtbaren Vereinsauswahl und de
   const c=vm.createContext({location:{hash:'#season/games'},mode:'list',cancelAnimationFrame(){},requestAnimationFrame:f=>{f();return 1;},document:{querySelector:s=>selectors[s]},window:{innerHeight:844,visualViewport:{height:820},scrollY:200,scrollTo:options=>scrolled=options}});
   load(c,'js/router.js');c.centerNextGame();
   const positionedTop=card.top+200-scrolled.top;
-  const pinnedHeight=140+headerBottom-180;
+  const pinnedHeight=154+headerBottom-180;
   assert.ok(positionedTop>=pinnedHeight+12);
   if(height<=750-24-pinnedHeight)assert.ok(positionedTop+height<=738);
   else assert.equal(positionedTop,pinnedHeight+12);
@@ -206,4 +206,13 @@ test('V1 inset match action follows preview, live, result and hidden states with
  slot.hidden=false;c.syncV1MatchAction(slot);assert.equal(action.hidden,false);assert.equal(document.querySelectorAll('.v1-match-action').length,1);
  action.remove();document.documentElement.dataset.design='v2';c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
  delete document.documentElement.dataset.design;slot.closest('.home-matchday').classList.add('games-matchday');c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
+});
+
+test('V1 reserves the complete fixed club header and gap; V2 keeps its existing header height',()=>{
+ const document={documentElement:{dataset:{}},querySelector:()=>({getBoundingClientRect:()=>({top:14,height:64,bottom:78})})};
+ const c=vm.createContext({document});load(c,'js/router.js');
+ assert.equal(c.clubHeaderOffset(),92);
+ document.querySelector=()=>({getBoundingClientRect:()=>({top:38,height:80,bottom:118})});assert.equal(c.clubHeaderOffset(),132);
+ document.documentElement.dataset.design='v2';assert.equal(c.clubHeaderOffset(),80);
+ document.querySelector=()=>null;assert.equal(c.clubHeaderOffset(),0);
 });
