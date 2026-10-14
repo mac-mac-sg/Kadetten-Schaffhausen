@@ -80,7 +80,57 @@ function updateClubHeader() {
   const entry=document.querySelector('.club-entry');
   if(entry){entry.hidden=hash!=='#season/squad';entry.innerHTML=`<img src="${club.logo}" alt="" width="24" height="28"><span>Verein</span>`;entry.setAttribute('aria-label','Verein · '+club.name+': Geschichte und Erfolge');}
   updateClubDot();
+  if(document.documentElement.dataset.design!=='v2')setupCompactClubHeader();
 }
+/* The original app shares V2's compact header pattern, with its own dropdown. */
+function closeCompactClubMenu(restoreFocus=false){
+  const menu=document.getElementById('compact-club-menu');
+  const focused=!!menu?.contains(document.activeElement);
+  if(menu)menu.hidden=true;
+  const trigger=document.querySelector('[data-compact-clubs]');
+  trigger?.setAttribute('aria-expanded','false');
+  if(restoreFocus||focused)trigger?.focus({preventScroll:true});
+}
+function setupCompactClubHeader(){
+  const top=document.querySelector('body > .top');if(!top)return;
+  closeCompactClubMenu();top.classList.add('v1-compact-header');
+  if(!top.querySelector('[data-compact-clubs]')){
+    const trigger=document.createElement('button');trigger.type='button';trigger.className='header-button compact-club-trigger';
+    trigger.setAttribute('data-compact-clubs','');trigger.setAttribute('aria-label','Verein wechseln');
+    trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','compact-club-menu');
+    trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>';
+    top.querySelector('.brand')?.after(trigger);
+    const menu=document.createElement('nav');menu.id='compact-club-menu';menu.className='compact-club-menu';menu.hidden=true;menu.setAttribute('aria-label','Verein auswählen');top.append(menu);
+  }
+  const picker=document.getElementById('club-switch');if(picker)picker.hidden=true;
+  const settings=document.getElementById('club-settings');if(settings)settings.hidden=false;
+}
+function openCompactClubMenu(){
+  const menu=document.getElementById('compact-club-menu');if(!menu)return;
+  if(!menu.hidden){closeCompactClubMenu();return;}
+  menu.innerHTML=`<div class="compact-club-options">${selectedClubs.map(id=>{
+    const native=document.querySelector('[data-select-club="'+id+'"]'),state=native?.dataset.dot;
+    const status=state?({soon:'spielt heute',live:'spielt gerade',pending:'hat heute gespielt',win:'heute gewonnen',draw:'heute unentschieden',loss:'heute verloren'}[state]||''):'';
+    return `<button type="button" data-compact-pick="${id}" aria-pressed="${id===activeClub}"><img src="${fanClubs[id].logo}" alt="" width="32" height="38"><span>${liveEscape(fanClubs[id].name)}<small>${id==='fcsg'?'Fussball':'Handball'}${id===activeClub?' · Ausgewählt':''}${status?' · '+status:''}</small></span><i aria-hidden="true">${id===activeClub?'✓':'→'}</i></button>`;
+  }).join('')}</div><a href="#club" class="compact-club-action">Verein · Geschichte und Erfolge</a><button type="button" class="compact-club-action" data-compact-manage>Meine Vereine verwalten</button>`;
+  menu.hidden=false;document.querySelector('[data-compact-clubs]')?.setAttribute('aria-expanded','true');
+}
+document.addEventListener('click',event=>{
+  if(document.documentElement.dataset.design==='v2')return;
+  if(event.target.closest('[data-compact-clubs]'))openCompactClubMenu();
+  else if(!event.target.closest('.compact-club-menu'))closeCompactClubMenu();
+  const pick=event.target.closest('[data-compact-pick]');
+  if(pick){closeCompactClubMenu(true);applyClubChange(pick.dataset.compactPick,clubSwitchRoute(location.hash),true);}
+  if(event.target.closest('[data-compact-manage]')){closeCompactClubMenu();openClubSettings();}
+  if(event.target.closest('.compact-club-menu a'))closeCompactClubMenu();
+});
+document.addEventListener('keydown',event=>{
+  if(document.documentElement.dataset.design==='v2')return;
+  const menu=document.getElementById('compact-club-menu'),trigger=document.querySelector('[data-compact-clubs]');
+  if(event.key==='Escape'&&menu&&!menu.hidden){event.preventDefault();closeCompactClubMenu(true);}
+  if(event.key==='ArrowDown'&&document.activeElement===trigger){event.preventDefault();if(menu?.hidden)openCompactClubMenu();menu?.querySelector('button')?.focus();}
+});
+window.addEventListener?.('scroll',()=>{if(document.documentElement.dataset.design!=='v2')closeCompactClubMenu();},{passive:true});
 /* Punkt am Vereinsknopf: der andere Verein hat heute ein Spiel.
    Vor der Anspielzeit ruhig, ab Anspielzeit 2 Stunden pulsierend, danach in der Farbe des Resultats (Sieg grün, Unentschieden blau,
    Niederlage rot) bis Mitternacht. Ohne Resultat bleibt der Punkt grau; der andere Verein wird dann höchstens alle 10 Minuten neu geladen. */
