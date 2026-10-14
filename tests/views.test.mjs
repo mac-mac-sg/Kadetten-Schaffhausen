@@ -181,6 +181,18 @@ test('Startseite zeigt alle Nachrichten mit Titel', () => {
   for (const story of run('stories.slice(0, 5)')) assert.ok(out.includes(story.title), story.title);
 });
 
+test('V1 season views omit repeated titles and the season eyebrow while retaining an accessible page heading',()=>{
+  for(const club of ['kadetten','fcsg','otmar'])for(const tab of ['games','table','squad']){
+    run(`activeClub='${club}';mode='list'`);
+    const doc=parseHTML(view(club==='fcsg'?`fcsgView('season','${tab}')`:`season('${tab}')`)).document;
+    assert.equal(doc.querySelector('.season-header .eyebrow'),null);
+    assert.equal(doc.querySelectorAll('h1.season-screen-title').length,1);
+    assert.equal(doc.querySelector('h1').textContent,{games:'Spiele',table:'Tabelle',squad:'Kader'}[tab]);
+  }
+  try{context.document.documentElement.dataset.design='v2';assert.match(view("seasonHeading('Spiele')"),/1\. Mannschaft/);assert.doesNotMatch(view("seasonHeading('Spiele')"),/season-screen-title/);}
+  finally{delete context.document.documentElement.dataset.design;run("activeClub='kadetten';mode='list'");}
+});
+
 test('V1 groups only Liste, Kalender and the competition filter; V2 retains its third view',()=>{
   for(const club of ['kadetten','fcsg','otmar'])for(const selected of ['list','calendar']){
     run(`activeClub='${club}';mode='${selected}'`);

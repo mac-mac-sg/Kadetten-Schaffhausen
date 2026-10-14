@@ -273,7 +273,8 @@ function centerNextGame() {
     const viewportHeight=window.visualViewport?.height || window.innerHeight;
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
     const header=document.querySelector('.season-header'),heading=header?.querySelector('h1');
-    const stickyHeight=header&&heading?header.getBoundingClientRect().height-(heading.getBoundingClientRect().top-header.getBoundingClientRect().top):0;
+    const controls=document.documentElement?.dataset?.design!=='v2'?document.querySelector('.game-control-bar'):null;
+    const stickyHeight=controls?controls.getBoundingClientRect().height:header&&heading?header.getBoundingClientRect().height-(heading.getBoundingClientRect().top-header.getBoundingClientRect().top):0;
     const clubHeight=clubHeaderOffset();
     const rect=card.getBoundingClientRect(), top=clubHeight+stickyHeight+12, bottom=dockTop-12;
     // Keep the fixture below both the club selection and pinned section controls.
@@ -289,6 +290,13 @@ function measureAppChrome() {
     const height=top.getBoundingClientRect().height;
     document.documentElement.style.setProperty('--app-header-height',height+'px');
     document.body.style.setProperty('--games-header-height',height+'px');
+    const controls=document.querySelector('.games-mode .game-control-bar'),season=document.querySelector('.games-mode .season');
+    if(controls&&season&&typeof getComputedStyle==='function'){
+      const rect=season.getBoundingClientRect(),css=getComputedStyle(season),left=parseFloat(css.paddingLeft)||0,right=parseFloat(css.paddingRight)||0;
+      document.body.style.setProperty('--v1-games-left',(rect.left+left)+'px');
+      document.body.style.setProperty('--v1-games-width',Math.max(0,rect.width-left-right)+'px');
+      document.documentElement.style.setProperty('--v1-games-controls-height',controls.getBoundingClientRect().height+'px');
+    }
     const header=document.querySelector('.games-mode .season-header'),heading=header?.querySelector?.('h1');
     if(heading)document.body.style.setProperty('--games-sticky-offset',(heading.getBoundingClientRect().top-header.getBoundingClientRect().top)+'px');
   };
@@ -299,5 +307,8 @@ function measureAppChrome() {
     appChromeObserver.observe(top);
     const header=document.querySelector('.games-mode .season-header');
     if(header)appChromeObserver.observe(header);
+    const controls=document.querySelector('.games-mode .game-control-bar'),season=document.querySelector('.games-mode .season');
+    if(controls)appChromeObserver.observe(controls);
+    if(season)appChromeObserver.observe(season);
   }
 }

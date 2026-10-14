@@ -42,7 +42,7 @@ try {
     for(let i=0;i<data.length;i++)localStorage.setItem(['kadetten','fcsg','otmar'][i]+'-public-data-v1',JSON.stringify({...data[i],checkedAt,...(new URL(location.href).searchParams.has('test-empty')?{games:[]}: {})}));
   },{data:snapshots,checkedAt});
   const axe=process.env.GAMES_AXE_SCRIPT ? fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8') : null;
-  const selectors=['body > .top','.season-header .eyebrow','.season-header h1','.game-view-toggle'];
+  const selectors=['body > .top','.game-control-bar','.game-view-toggle','#competition'];
   async function measure() {
     await page.waitForTimeout(200);
     await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
@@ -74,14 +74,15 @@ try {
     if(!empty && viewport.height>550) {
       const start=await measure();
       await page.evaluate(()=>window.scrollTo({top:180,behavior:'instant'}));
-      const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,title:document.querySelector('.season-header h1').getBoundingClientRect().y,tabs:document.querySelector('.game-view-toggle').getBoundingClientRect().y,eyebrow:document.querySelector('.season-header .eyebrow').getBoundingClientRect().bottom}));
+      const moved=await page.evaluate(()=>({scrollY,top:document.querySelector('body > .top').getBoundingClientRect().y,bar:document.querySelector('.game-control-bar').getBoundingClientRect().y,tabs:document.querySelector('.game-view-toggle').getBoundingClientRect().y}));
       assert.ok(moved.scrollY>100,club+': list scrolls');
-      assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top)<1,club+': club header stays visible');
-      const headerBottom=start.boxes['body > .top'].y+start.boxes['body > .top'].height+14;
-      assert.ok(Math.abs(moved.title-headerBottom)<2,club+': section title locks below club selection');
-      assert.ok(moved.eyebrow<=headerBottom,club+': season eyebrow scrolls behind club header');
+      assert.ok(Math.abs(start.boxes['body > .top'].y-moved.top)<1,club+': club header stays fixed');
+      assert.ok(Math.abs(start.boxes['.game-control-bar'].y-moved.bar)<1,club+': view and competition controls stay fixed');
+      assert.ok(moved.bar>=start.boxes['body > .top'].y+start.boxes['body > .top'].height,club+': controls sit beneath club header');
       await page.evaluate(()=>window.scrollTo({top:300,behavior:'instant'}));
       assert.ok(Math.abs(await page.locator('.game-view-toggle').evaluate(el=>el.getBoundingClientRect().y)-moved.tabs)<1,club+': tabs stay pinned');
+      await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
+      assert.ok(Math.abs(await page.locator('.game-control-bar').evaluate(el=>el.getBoundingClientRect().y)-moved.bar)<1,club+': controls remain fixed at the end of the list');
       if(viewport.width===390)await page.screenshot({path:'/tmp/sticky-'+club+'.png'});
     }
     cases++;console.log(JSON.stringify({club,...viewport,empty,stable:true}));
