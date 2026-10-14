@@ -156,3 +156,22 @@ test('Club disclosure is attached to header, toggles and preserves only selected
  run('v2ChooseClub()');assert.equal(menu.hidden,true);assert.equal(trigger.getAttribute('aria-expanded'),'false');
  run('v2ChooseClub();v2CloseClubDropdown()');assert.equal(menu.hidden,true);
 });
+
+test('Each V2 news has one accessible link wrapping image, date, title and a decorative arrow',()=>{
+ const run=app();
+ for(const club of ['kadetten','fcsg','otmar']){
+  const {document}=parseHTML(run(`activeClub='${club}';v2Home()`));
+  for(const article of document.querySelectorAll('.v2-story')){
+   const link=article.querySelector('.v2-story-link');assert.ok(link);
+   assert.equal(article.querySelectorAll('a').length,1);
+   assert.equal(link.querySelectorAll('a').length,0);
+   assert.ok(link.querySelector('.v2-story-image img'));
+   assert.ok(link.querySelector('.story-copy p'));
+   assert.equal(link.getAttribute('aria-labelledby'),link.querySelector('h2').id);
+   assert.match(link.getAttribute('href'),/^#news\//);
+   assert.equal(link.querySelector('.v2-news-arrow').getAttribute('aria-hidden'),'true');
+   assert.equal(link.hasAttribute('tabindex'),false);
+   assert.doesNotMatch(link.textContent,/Geschichte lesen/);
+  }
+ }
+});

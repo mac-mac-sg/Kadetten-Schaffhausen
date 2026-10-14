@@ -52,10 +52,12 @@ try {
     await page.waitForTimeout(150);
     await page.addScriptTag({content:axe});
     const issues=await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})));
-    const measure=await page.evaluate(()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,small:[...document.querySelectorAll('.top > button:not([hidden]):not(.install-button),.v2-match-action,.v2-text-link')].slice(0,8).map(e=>({text:e.textContent.trim(),width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
+    const measure=await page.evaluate(()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,small:[...document.querySelectorAll('.top > button:not([hidden]):not(.install-button),.v2-match-action,.v2-story-link')].slice(0,8).map(e=>({text:e.textContent.trim(),width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
     results.push({width,club,theme,route,...measure,issues});
     assert.ok(await page.locator('body > .top').evaluate(el=>el.getBoundingClientRect().height<=90),'compact header');
     if(route==='home'){
+      assert.equal(await page.locator('.v2-story .v2-text-link,.v2-story-link a').count(),0);
+      assert.equal(await page.locator('.v2-story-link').count(),await page.locator('.v2-story').count());
       const action=page.locator('.v2-match-action');
       if(await action.count()){
         assert.equal(await action.getAttribute('href'),await page.locator('.home-matchday .live-match').getAttribute('href'));
@@ -133,6 +135,20 @@ try {
     await page.locator('.v2-demo [data-close]').tap();
     await page.keyboard.press('Escape');
   }
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(origin+'/v2/?club=kadetten#home');
+  const firstNews=page.locator('.v2-story-link').first(),newsHref=await firstNews.getAttribute('href');
+  await firstNews.scrollIntoViewIfNeeded();
+  if(process.env.MOBILE_QA_SCREENSHOTS)await page.screenshot({path:path.join(process.env.MOBILE_QA_SCREENSHOTS,'news-link.png')});
+  await firstNews.locator('.v2-story-image').tap();
+  assert.equal(await page.evaluate(()=>location.hash),newsHref,'photo opens the complete article route');
+  await page.goBack();
+  await page.locator('.v2-story-link').first().locator('h2').tap();
+  assert.equal(await page.evaluate(()=>location.hash),newsHref,'headline opens the same article');
+  await page.goBack();
+  await page.locator('.v2-story-link').first().focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>location.hash),newsHref,'whole link works with keyboard');
   // Matchday colours belong to the dark card, independently of the page theme.
   for(const club of ['kadetten','fcsg','otmar']) {
     await page.goto(origin+'/v2/?club='+club+'#home');
