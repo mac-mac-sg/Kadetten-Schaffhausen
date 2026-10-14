@@ -195,6 +195,7 @@ test('V1 inset match action follows preview, live, result and hidden states with
  const slot=document.querySelector('.live-match'),original=slot.outerHTML;
  c.syncV1MatchAction(slot);
  const action=document.querySelector('.v1-match-action');
+ assert.equal(slot.parentNode.className,'v1-match-stack');assert.equal(slot.parentNode.parentNode.className,'home-matchday');
  assert.equal(slot.outerHTML,original);assert.equal(action.parentNode,slot.parentNode);assert.equal(slot.contains(action),false);
  assert.equal(action.textContent,'Spielvorschau');assert.equal(action.getAttribute('href'),'#match/one/overview');
  slot.classList.add('is-matchday');c.syncV1MatchAction(slot);assert.equal(action.textContent,'Zum Spiel');
@@ -204,5 +205,5 @@ test('V1 inset match action follows preview, live, result and hidden states with
  slot.hidden=true;c.syncV1MatchAction(slot);assert.equal(action.hidden,true);
  slot.hidden=false;c.syncV1MatchAction(slot);assert.equal(action.hidden,false);assert.equal(document.querySelectorAll('.v1-match-action').length,1);
  action.remove();document.documentElement.dataset.design='v2';c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
- delete document.documentElement.dataset.design;slot.parentNode.classList.add('games-matchday');c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
+ delete document.documentElement.dataset.design;slot.closest('.home-matchday').classList.add('games-matchday');c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
 });
