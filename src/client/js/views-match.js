@@ -106,7 +106,7 @@ function formComparison(g) {
     .map(team => {
       const cached = recentData(g, team),
         list = cached?.games || localRecent(g, team);
-      return `<div class="form-team">${badge(team)}<strong>${liveEscape(team)}</strong><div class="form-strip" aria-label="Form von ältestem zu neuestem Spiel">${[
+      return `<div class="form-team">${badge(team)}<strong>${liveEscape(team)}</strong><div class="form-strip" role="group" aria-label="Form von ältestem zu neuestem Spiel">${[
         ...list
       ]
         .reverse()
