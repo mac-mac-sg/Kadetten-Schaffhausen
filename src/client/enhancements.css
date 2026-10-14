@@ -2373,7 +2373,7 @@ html:not([data-design='v2']) .v1-match-action {
   display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
   position:absolute; inset:24px -8px 0 8px; z-index:0;
   min-height:48px; margin:0; padding:12px 18px 14px;
-  border-radius:20px; background:var(--v1-selection,#efad79); color:#25312a;
+  border-radius:20px; background:color-mix(in srgb,var(--accent) 20%,#e7e9dc); color:#222b25;
   font-size:13px; font-weight:650; text-decoration:none;
 }
 html:not([data-design='v2']) .v1-match-action svg { width:20px; height:20px; flex-shrink:0; }
