@@ -161,12 +161,14 @@ test('Each V2 news has one accessible link wrapping image, date, title and a dec
  const run=app();
  for(const club of ['kadetten','fcsg','otmar']){
   const {document}=parseHTML(run(`activeClub='${club}';v2Home()`));
+  const dates=JSON.parse(run("JSON.stringify((activeClub==='fcsg'?fcsgData.stories:stories).map(n=>n.date))"));
+  let index=0;
   for(const article of document.querySelectorAll('.v2-story')){
    const link=article.querySelector('.v2-story-link');assert.ok(link);
    assert.equal(article.querySelectorAll('a').length,1);
    assert.equal(link.querySelectorAll('a').length,0);
    assert.ok(link.querySelector('.v2-story-image img'));
-   assert.ok(link.querySelector('.story-copy p'));
+   assert.equal(link.querySelector('.story-copy p').textContent,dates[index++]);
    assert.equal(link.getAttribute('aria-labelledby'),link.querySelector('h2').id);
    assert.match(link.getAttribute('href'),/^#news\//);
    assert.equal(link.querySelector('.v2-news-arrow').getAttribute('aria-hidden'),'true');
