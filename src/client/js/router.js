@@ -21,6 +21,10 @@ function updateNewsDots(index) {
     .forEach(el => el.classList.toggle('story-current', el.id === 'story-' + index));
 }
 let fcsgProfileViewportObserver;
+function clubHeaderOffset(header=document.querySelector('body > .top')) {
+  const rect=header?.getBoundingClientRect();if(!rect)return 0;
+  return document.documentElement?.dataset?.design==='v2'?rect.height:Number.isFinite(rect.bottom)?rect.bottom+14:rect.height;
+}
 function setupFcsgProfileViewport() {
   fcsgProfileViewportObserver?.disconnect();
   const root = document.documentElement;
@@ -31,7 +35,7 @@ function setupFcsgProfileViewport() {
   const header = document.querySelector('body > .top');
   const dock = document.querySelector('body > .dock');
   const measure = () => {
-    if (header) root.style.setProperty('--fcsg-profile-top', `${Math.ceil(header.getBoundingClientRect().height)}px`);
+    if (header) root.style.setProperty('--fcsg-profile-top', `${Math.ceil(clubHeaderOffset(header))}px`);
     if (dock) root.style.setProperty('--fcsg-profile-bottom', `${Math.ceil(window.innerHeight - dock.getBoundingClientRect().top + 16)}px`);
   };
   measure();
@@ -269,7 +273,7 @@ function centerNextGame() {
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
     const header=document.querySelector('.season-header'),heading=header?.querySelector('h1');
     const stickyHeight=header&&heading?header.getBoundingClientRect().height-(heading.getBoundingClientRect().top-header.getBoundingClientRect().top):0;
-    const clubHeight=document.querySelector('body > .top')?.getBoundingClientRect().height || 0;
+    const clubHeight=clubHeaderOffset();
     const rect=card.getBoundingClientRect(), top=clubHeight+stickyHeight+12, bottom=dockTop-12;
     // Keep the fixture below both the club selection and pinned section controls.
     const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
