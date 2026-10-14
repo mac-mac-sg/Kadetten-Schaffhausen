@@ -79,3 +79,55 @@ test('Editorial reveal skips reduced motion and never observes match or statisti
  run.context.matchMedia=()=>({matches:false});run('v2SetupReveals()');assert.equal(observed.length,1);
  assert.equal(observed[0],doc.querySelector('article'));
 });
+
+test('V2 compact header creates accessible controls once and hides the old picker',()=>{
+ const run=app(),doc=run.context.document;
+ doc.body.innerHTML='<header class="top"><a class="brand" href="#home">Kadetten</a><button id="club-settings" hidden></button><nav id="club-switch"></nav></header>';
+ run('v2SetupHeader();v2SetupHeader()');
+ assert.equal(doc.querySelectorAll('[data-v2-choose]').length,1);
+ assert.equal(doc.querySelectorAll('[data-v2-theme]').length,1);
+ assert.equal(doc.querySelector('#club-settings').hidden,false);
+ assert.equal(doc.querySelector('#club-switch').hidden,true);
+ assert.equal(doc.querySelector('[data-v2-choose]').getAttribute('aria-haspopup'),'dialog');
+ assert.equal(doc.querySelector('.v2-test-tools'),null);
+});
+test('V2 match hierarchy handles preview, unknown time, live and result without invented values',()=>{
+ const run=app();
+ for(const club of ['kadetten','fcsg','otmar']) {
+  run(`activeClub='${club}'`);
+  const home=club==='fcsg'?'FC St.Gallen 1879':club==='otmar'?'TSV St. Otmar St. Gallen':'Kadetten Schaffhausen';
+  const game={id:'test',date:'2030-10-14',time:'19:15',confirmed:true,league:'Liga',home,away:'Gast <script>',homeLogo:'',awayLogo:''};
+  run.context.matchFixture=game;
+  let {document}=parseHTML(run('v2MatchContents(matchFixture)'));
+  assert.equal(document.querySelector('.v2-match-centre strong').textContent,'19:15');
+  assert.equal(document.querySelectorAll('.live-score > span').length,2);
+  assert.equal(document.querySelector('script'),null);
+  assert.match(document.querySelector('.v2-match-context').textContent,/Heimspiel/);
+  run.context.matchFixture={...game,time:'',confirmed:false};
+  ({document}=parseHTML(run('v2MatchContents(matchFixture)')));
+  assert.equal(document.querySelector('.v2-match-centre strong').textContent,'Zeit offen');
+  run.context.matchFixture={...game,live:true,score:[24,21],liveScore:[2,1],phase:'2. Halbzeit',clock:'42′'};
+  ({document}=parseHTML(run('v2MatchContents(matchFixture,true)')));
+  assert.equal(document.querySelector('[data-v2-score]').textContent,club==='fcsg'?'2 : 1':'24 : 21');
+  run.context.matchFixture={...game,score:[3,1]};
+  ({document}=parseHTML(run('v2MatchContents(matchFixture)')));
+  assert.equal(document.querySelector('[data-v2-score]').textContent,'3 : 1');
+  assert.match(document.querySelector('.v2-match-context').textContent,/Sieg · Endresultat/);
+ }
+});
+test('V2 action layer follows the real card route, live/result state and visibility',()=>{
+ const run=app(),doc=run.context.document;
+ doc.body.innerHTML='<section class="home-matchday"><a class="live-match match-preview" href="#match/real/overview"></a></section>';
+ run('v2SyncMatchAction()');const action=doc.querySelector('.v2-match-action');
+ assert.equal(action.getAttribute('href'),'#match/real/overview');assert.match(action.textContent,/Spielvorschau/);
+ const card=doc.querySelector('.live-match');card.classList.add('is-live');card.setAttribute('href','#match/real/ticker');
+ run('v2SyncMatchAction()');assert.match(action.textContent,/Live verfolgen/);assert.equal(action.getAttribute('href'),'#match/real/ticker');
+ card.classList.remove('is-live');card.classList.add('matchday-loss');run('v2SyncMatchAction()');assert.match(action.textContent,/Spielrückblick/);
+ card.hidden=true;run('v2SyncMatchAction()');assert.equal(action.hidden,true);
+});
+test('V2 countdown is compact and never turns an elapsed kickoff into a live claim',()=>{
+ const run=app();
+ run("countdownText=()=> 'Anpfiff in 01:00:00'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'60:00');
+ run("countdownText=()=> 'Anpfiff in 05:09'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'05:09');
+ run("countdownText=()=> 'Anspielzeit erreicht · Live-Status wird geprüft'");assert.equal(run("v2CountdownValue({time:'19:15'})"),'19:15');
+});
