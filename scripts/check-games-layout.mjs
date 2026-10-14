@@ -67,9 +67,9 @@ try {
     const before=await measure();
     await page.locator('[data-mode="calendar"]').click();const calendar=await measure();stable(before,calendar,club+' calendar');
     assert.ok(calendar.calendarBottom<=calendar.dockTop,club+': calendar fits above dock');assert.equal(calendar.scrollY,0);
-    await page.locator('[data-mode="week"]').click();stable(before,await measure(),club+' week');
-    await page.locator('[data-mode="calendar"]').click();stable(before,await measure(),club+' calendar after week');
-    await page.locator('[data-mode="week"]').click();stable(before,await measure(),club+' week after calendar');
+    assert.equal(await page.locator('[data-mode="week"]').count(),0);
+    const controls=await page.locator('.game-control-bar').evaluate(e=>{const a=e.querySelector('button').getBoundingClientRect(),b=e.querySelector('select').getBoundingClientRect();return{buttons:e.querySelectorAll('button').length,sameRow:Math.abs(a.y-b.y)<1};});
+    assert.equal(controls.buttons,2);assert.equal(controls.sameRow,true);
     await page.locator('[data-mode="list"]').click();stable(before,await measure(),club+' list');
     if(!empty && viewport.height>550) {
       const start=await measure();
@@ -86,5 +86,5 @@ try {
     }
     cases++;console.log(JSON.stringify({club,...viewport,empty,stable:true}));
   }
-  assert.deepEqual(errors,[]);console.log(`${cases} List → Calendar → Week → List cases passed.`);
+  assert.deepEqual(errors,[]);console.log(`${cases} List → Calendar → List cases passed.`);
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}

@@ -146,7 +146,10 @@ test('Introduction guides first-time users, remembers dismissal and can be reope
   store.set('fan-app-install-intro-v1','seen');events.load();
   assert.equal(document.querySelector('dialog'),null);
   window.showAppIntroduction();
-  for(let i=0;i<3;i++)document.querySelector('[data-next]').onclick();
+  for(let i=0;i<2;i++)document.querySelector('[data-next]').onclick();
+  assert.doesNotMatch(document.querySelector('.app-introduction').textContent,/Meine Woche/);
+  assert.match(document.querySelector('.app-introduction').textContent,/Wettbewerbsfilter/);
+  document.querySelector('[data-next]').onclick();
   assert.match(document.querySelector('.guide-visual').textContent,/Wappen antippen.*Geschichte/);
   assert.equal(document.querySelector('[data-next]').textContent,'Los geht’s');
   document.querySelector('[data-next]').onclick();
