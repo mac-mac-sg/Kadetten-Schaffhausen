@@ -2364,6 +2364,19 @@ html:not([data-design='v2']) .compact-club-options small { display:block; color:
 html:not([data-design='v2']) .compact-club-options i { margin-left:auto; font-style:normal; }
 html:not([data-design='v2']) .compact-club-action { display:block; width:100%; min-height:44px; margin-top:8px; padding:12px; text-align:left; background:transparent; color:var(--text); border:0; font-size:13px; }
 html.snap-news:not([data-design='v2']) .home-matchday { padding-top:calc(var(--app-header-height,64px) + 28px + env(safe-area-inset-top)); }
+
+/* Inset action tile below the unchanged V1 match card. */
+html:not([data-design='v2']) .v1-match-stack > .live-match { position:relative; z-index:1; }
+html:not([data-design='v2']) .v1-match-action {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  position:relative; left:4px; width:calc(100% - 8px); max-width:472px;
+  min-height:48px; margin:0 auto; padding:12px 18px;
+  border-radius:0 0 6px 20px; background:var(--v1-selection,#efad79); color:#25312a;
+  font-size:13px; font-weight:650; text-decoration:none;
+}
+html:not([data-design='v2']) .v1-match-action svg { width:20px; height:20px; flex-shrink:0; }
+html:not([data-design='v2']) .v1-match-action[hidden] { display:none; }
+html:not([data-design='v2']) .v1-match-action:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 html:not([data-design='v2']) .games-mode > .top.v1-compact-header { position:sticky; top:env(safe-area-inset-top); margin-block:0; }
 html:not([data-design='v2']) .calendar-mode > .top.v1-compact-header { flex:none; }
 html:not([data-design='v2']) .player-mode > .top.v1-compact-header { display:none; }

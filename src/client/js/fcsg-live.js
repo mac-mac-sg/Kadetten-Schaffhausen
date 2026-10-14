@@ -75,6 +75,7 @@ function updateFcsgPulse() {
  slot.classList.toggle('pulse-paused',document.hidden);
  syncMatchdayOrbit(slot,g,!!g.live);
  slot.classList.toggle('is-matchday',!!g.live||(!g.score&&g.date===swissToday()));
+ syncV1MatchAction(slot);
 }
 setInterval(()=>{if(!document.hidden)updateFcsgPulse();},1000);
 document.addEventListener('visibilitychange',updateFcsgPulse);

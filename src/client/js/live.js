@@ -20,6 +20,7 @@ function updateMatchPulse() {
   if (slot.dataset.pulse !== phase) slot.dataset.pulse = phase;
   slot.classList.toggle('pulse-paused', document.hidden);
   syncMatchdayOrbit(slot,game,!!live);
+  syncV1MatchAction(slot);
 }
 function showLiveMatch() {
   const slot = document.getElementById('live-match');
@@ -30,6 +31,7 @@ function showLiveMatch() {
     matchdayContentHTML.delete(slot);
     slot.hidden = true;
     slot.innerHTML = '';
+    syncV1MatchAction(slot);
     return;
   }
   const today = g.date === swissToday(),

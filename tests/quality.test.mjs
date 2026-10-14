@@ -188,3 +188,21 @@ test('Live content updates preserve the orbit node; confirmed completion hides i
  c.syncMatchdayOrbit(slot,{...g,score:[25,23]});assert.equal(orbit.hasAttribute('hidden'),true);
  c.syncMatchdayOrbit(slot,g);assert.equal(orbit.hasAttribute('hidden'),false);assert.equal(slot.querySelectorAll('.matchday-orbit').length,1);
 });
+
+test('V1 inset match action follows preview, live, result and hidden states without changing the foreground card',()=>{
+ const {document}=parseHTML('<html><body><section class="home-matchday"><a class="live-match" href="#match/one/overview"><b>Vorschau</b></a></section></body></html>');
+ const c=vm.createContext({document,Date});load(c,'js/core.js');
+ const slot=document.querySelector('.live-match'),original=slot.outerHTML;
+ c.syncV1MatchAction(slot);
+ const action=document.querySelector('.v1-match-action');
+ assert.equal(slot.outerHTML,original);assert.equal(action.parentNode,slot.parentNode);assert.equal(slot.contains(action),false);
+ assert.equal(action.textContent,'Spielvorschau');assert.equal(action.getAttribute('href'),'#match/one/overview');
+ slot.classList.add('is-matchday');c.syncV1MatchAction(slot);assert.equal(action.textContent,'Zum Spiel');
+ slot.classList.add('is-live');slot.setAttribute('href','#match/two/ticker');c.syncV1MatchAction(slot);
+ assert.equal(action.textContent,'Live verfolgen');assert.equal(action.getAttribute('href'),'#match/two/ticker');
+ slot.classList.remove('is-live');slot.classList.add('matchday-win');c.syncV1MatchAction(slot);assert.equal(action.textContent,'Zum Spielrückblick');
+ slot.hidden=true;c.syncV1MatchAction(slot);assert.equal(action.hidden,true);
+ slot.hidden=false;c.syncV1MatchAction(slot);assert.equal(action.hidden,false);assert.equal(document.querySelectorAll('.v1-match-action').length,1);
+ action.remove();document.documentElement.dataset.design='v2';c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
+ delete document.documentElement.dataset.design;slot.parentNode.classList.add('games-matchday');c.syncV1MatchAction(slot);assert.equal(document.querySelector('.v1-match-action'),null);
+});
