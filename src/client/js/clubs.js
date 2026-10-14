@@ -29,8 +29,24 @@ function setClubSelected(id, checked) {
   updateClubHeader();
   syncClubSettings();
 }
+const V1_THEME_KEY='fan-v1-theme';
+function setV1Theme(theme,persist=true) {
+  if(document.documentElement.dataset.design==='v2')return;
+  const value=theme==='light'?'light':'dark';
+  document.documentElement.dataset.theme=value;
+  document.documentElement.style.colorScheme=value;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',value==='light'?'#f6f5f0':'#171b18');
+  if(persist)try{localStorage.setItem(V1_THEME_KEY,value);}catch{}
+  const input=clubSettingsDialog?.querySelector?.('[data-v1-light-mode]');if(input)input.checked=value==='light';
+}
+function restoreV1Theme() {
+  if(document.documentElement.dataset.design==='v2')return;
+  let theme='dark';try{theme=localStorage.getItem(V1_THEME_KEY);}catch{}
+  setV1Theme(theme,false);
+}
 let clubSettingsDialog=null;
 function syncClubSettings() {
+  const theme=clubSettingsDialog?.querySelector?.('[data-v1-light-mode]');if(theme)theme.checked=document.documentElement.dataset.theme==='light';
   clubSettingsDialog?.querySelectorAll('[data-club-choice]').forEach(input=>{
     input.checked=selectedClubs.includes(input.dataset.clubChoice);
     input.disabled=input.checked && selectedClubs.length===1;
@@ -41,11 +57,11 @@ function openClubSettings() {
     clubSettingsDialog=document.createElement('dialog');
     clubSettingsDialog.className='club-settings-dialog';
     clubSettingsDialog.setAttribute('aria-labelledby','club-settings-title');
-    clubSettingsDialog.innerHTML=`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('')}</div><p class="club-settings-note">Mindestens ein Verein bleibt ausgewählt. Deine Auswahl wird auf diesem Gerät gespeichert.</p><div class="club-settings-help"><button class="button subtle" type="button" data-open-introduction>Einführung &amp; Tipps</button><p>Die wichtigsten Funktionen kurz erklärt.</p></div><form method="dialog"><button class="button" type="submit">Fertig</button></form>`;
+    clubSettingsDialog.innerHTML=`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('')}</div><p class="club-settings-note">Mindestens ein Verein bleibt ausgewählt. Deine Auswahl wird auf diesem Gerät gespeichert.</p>${document.documentElement.dataset.design==='v2'?'':`<section class="theme-settings" aria-labelledby="theme-settings-title"><h3 id="theme-settings-title">Darstellung</h3><label class="theme-setting"><span>Heller Modus<small>Deine Auswahl wird auf diesem Gerät gespeichert.</small></span><input type="checkbox" role="switch" data-v1-light-mode aria-label="Heller Modus"></label></section>`}<div class="club-settings-help"><button class="button subtle" type="button" data-open-introduction>Einführung &amp; Tipps</button><p>Die wichtigsten Funktionen kurz erklärt.</p></div><form method="dialog"><button class="button" type="submit">Fertig</button></form>`;
     document.body.append(clubSettingsDialog);
     clubSettingsDialog.querySelector('[data-open-introduction]').onclick=()=>{clubSettingsDialog.close();window.showAppIntroduction?.();};
     clubSettingsDialog.querySelector('[data-close-clubs]').onclick=()=>clubSettingsDialog.close();
-    clubSettingsDialog.addEventListener('change',e=>{if(e.target.matches('[data-club-choice]'))setClubSelected(e.target.dataset.clubChoice,e.target.checked);});
+    clubSettingsDialog.addEventListener('change',e=>{if(e.target.matches('[data-club-choice]'))setClubSelected(e.target.dataset.clubChoice,e.target.checked);if(e.target.matches('[data-v1-light-mode]'))setV1Theme(e.target.checked?'light':'dark');});
     clubSettingsDialog.addEventListener('close',()=>{document.getElementById('club-settings')?.setAttribute('aria-expanded','false');if(!document.querySelector('.app-introduction[open]'))document.getElementById('club-settings')?.focus();});
     clubSettingsDialog.addEventListener('click',e=>{if(e.target===clubSettingsDialog){const r=clubSettingsDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)clubSettingsDialog.close();}});
   }

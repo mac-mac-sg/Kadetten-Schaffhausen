@@ -225,3 +225,23 @@ test('V1 compact header does not change V2 controls',()=>{
  assert.equal(a.document.querySelector('[data-compact-clubs]'),null);
  assert.equal(a.document.querySelector('.v1-compact-header'),null);
 });
+
+test('V1 light mode persists independently, restores safely and never changes V2',()=>{
+ const a=app('https://example.test/');a.run('restoreV1Theme()');assert.equal(a.document.documentElement.dataset.theme,'dark');
+ a.run("setV1Theme('light')");assert.equal(a.store.get('fan-v1-theme'),'light');assert.equal(a.document.documentElement.style.colorScheme,'light');
+ a.document.documentElement.dataset.club='otmar';a.run('restoreV1Theme()');assert.equal(a.document.documentElement.dataset.theme,'light');
+ a.document.documentElement.dataset.design='v2';a.document.documentElement.dataset.theme='dark';a.run("setV1Theme('light');restoreV1Theme()");assert.equal(a.document.documentElement.dataset.theme,'dark');
+ const blocked=app('https://example.test/',null,true);assert.doesNotThrow(()=>blocked.run("restoreV1Theme();setV1Theme('light')"));assert.equal(blocked.document.documentElement.dataset.theme,'light');
+});
+test('Settings switch applies light mode immediately and reflects the saved state when reopened',()=>{
+ const a=app('https://example.test/'),create=a.document.createElement.bind(a.document);
+ a.document.createElement=tag=>{const el=create(tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;};
+ a.run('openClubSettings()');const input=a.document.querySelector('[data-v1-light-mode]');assert.ok(input);input.checked=true;input.dispatchEvent(new a.document.defaultView.Event('change',{bubbles:true}));
+ assert.equal(a.document.documentElement.dataset.theme,'light');assert.equal(a.store.get('fan-v1-theme'),'light');a.run('openClubSettings()');assert.equal(input.checked,true);
+});
+test('Saved V1 theme is applied before the app bundle without touching V2',()=>{
+ const html=fs.readFileSync('src/client/index.html','utf8'),script=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
+ for(const [pathname,stored,expected] of [['/Kadetten-Schaffhausen/','light','light'],['/','invalid','dark'],['/Kadetten-Schaffhausen/v2/','light',undefined]]){
+  const {document}=parseHTML(html);vm.runInNewContext(script,{document,location:{pathname},localStorage:{getItem:()=>stored}});assert.equal(document.documentElement.dataset.theme,expected);
+ }
+});
