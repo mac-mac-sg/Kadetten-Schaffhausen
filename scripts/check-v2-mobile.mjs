@@ -55,7 +55,21 @@ try {
     const measure=await page.evaluate(()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,small:[...document.querySelectorAll('.top > button:not([hidden]):not(.install-button),.v2-match-action,.v2-text-link')].slice(0,8).map(e=>({text:e.textContent.trim(),width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));
     results.push({width,club,theme,route,...measure,issues});
     assert.ok(await page.locator('body > .top').evaluate(el=>el.getBoundingClientRect().height<=90),'compact header');
-    if(route==='home'){const action=page.locator('.v2-match-action');if(await action.count())assert.equal(await action.getAttribute('href'),await page.locator('.home-matchday .live-match').getAttribute('href'));}
+    if(route==='home'){
+      const action=page.locator('.v2-match-action');
+      if(await action.count()){
+        assert.equal(await action.getAttribute('href'),await page.locator('.home-matchday .live-match').getAttribute('href'));
+        const layer=await action.evaluate(el=>{
+          const front=el.parentElement.querySelector('.live-match').getBoundingClientRect(),back=el.getBoundingClientRect(),label=el.querySelector('span').getBoundingClientRect();
+          return {frontTop:front.top,frontBottom:front.bottom,frontRight:front.right,backTop:back.top,backBottom:back.bottom,backRight:back.right,labelTop:label.top,corner:parseFloat(getComputedStyle(el).borderTopRightRadius)};
+        });
+        assert.ok(layer.corner>0,'underlying tile has a rounded upper edge');
+        assert.ok(layer.backTop>layer.frontTop&&layer.backTop<layer.frontBottom-80,'underlying tile continues behind the card');
+        assert.ok(layer.backRight>layer.frontRight,'underlying tile is visible along the side');
+        assert.ok(layer.labelTop>=layer.frontBottom,'action label remains uncovered');
+        assert.ok(layer.backBottom-layer.frontBottom>=44,'uncovered action strip remains touch sized');
+      }
+    }
     assert.equal(measure.h1,1,club+' '+route+': heading');
     assert.equal(measure.overflow,false,club+' '+route+': overflow');
     assert.deepEqual(issues,[],club+' '+theme+' '+route+': accessibility');

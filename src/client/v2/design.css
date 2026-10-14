@@ -253,7 +253,7 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 .v2-test-menu > div { display:grid; gap:8px; }
 .v2-test-menu :is(button,a),.v2-install { display:flex; align-items:center; gap:10px; min-height:44px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--text); font-size:14px; }
 .v2-install[hidden] { display:none; }
-[data-design='v2'] .home-matchday { position:relative; padding-right:8px!important; }
+[data-design='v2'] .home-matchday { position:relative; padding-right:8px!important; padding-bottom:50px!important; isolation:isolate; }
 [data-design='v2'] .home-matchday :is(#live-match,.fcsg-matchday):not([hidden]) { position:relative; z-index:2; display:grid; grid-template-rows:auto minmax(112px,auto) auto; animation:none; gap:10px; min-height:204px; padding:18px 16px; border-radius:20px; background:#17221de8; border:1px solid #fff8ee30; box-shadow:0 8px 24px #10211718; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#f4f1e9; }
 [data-design='v2'] .home-matchday .live-heading { align-items:center; gap:8px; }
 [data-design='v2'] .home-matchday .live-heading > span { padding:0; background:none; color:#f4f1e9; border-radius:0; font-size:10px; letter-spacing:.1em; font-weight:650; }
@@ -266,7 +266,7 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .home-matchday .v2-match-centre strong { display:block; font:650 clamp(24px,7vw,34px)/1.15 var(--font-text); color:#f4f1e9; white-space:nowrap; }
 .v2-match-centre small { display:block; font-size:10px; color:#b9c5b9; margin-top:6px; }
 .v2-match-context { grid-row:3; min-height:1.3em; margin:0; text-align:center; font-size:12px; line-height:1.4; color:#b9c5b9; }
-.v2-match-action { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:16px; margin:-12px -8px 0 8px; min-height:62px; padding:24px 20px 14px; border-radius:0 0 20px 20px; background:color-mix(in srgb,var(--accent) 20%,#e7e9dc); color:#222b25; font-size:13px; font-weight:650; }
+.v2-match-action { position:absolute; inset:24px 0 0 8px; z-index:1; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:0; min-height:62px; padding:16px 20px 14px; border-radius:20px; background:color-mix(in srgb,var(--accent) 20%,#e7e9dc); color:#222b25; font-size:13px; font-weight:650; }
 .v2-match-action svg { width:20px; height:20px; }
 .v2-match-action[hidden] { display:none; }
 [data-design='v2'] .home-matchday :is(#live-match,.fcsg-matchday)::before,[data-design='v2'] .home-matchday :is(#live-match,.fcsg-matchday)::after,[data-design='v2'] .home-matchday .arena-team::before { display:none!important; }
