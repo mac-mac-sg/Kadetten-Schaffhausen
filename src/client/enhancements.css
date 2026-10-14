@@ -2352,6 +2352,9 @@ html:not([data-design='v2']) .top.v1-compact-header {
 html:not([data-design='v2']) .top.v1-compact-header .brand { flex:1; min-width:0; margin:0; gap:9px; font-size:12px; }
 html:not([data-design='v2']) .top.v1-compact-header .brand img { width:26px; height:34px; }
 html:not([data-design='v2']) .top.v1-compact-header .brand small { font-size:9px; margin-top:3px; }
+html:not([data-design='v2']) .top.v1-compact-header .brand.compact-club-trigger { min-height:44px; padding:0; border:0; border-radius:12px; background:transparent; color:inherit; text-align:left; cursor:pointer; }
+html:not([data-design='v2']) .compact-club-chevron { flex:none; width:18px; height:18px; margin-left:2px; }
+html:not([data-design='v2']) .compact-club-trigger:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 html:not([data-design='v2']) .top.v1-compact-header :is(.edition,.club-entry,.club-picker) { display:none; }
 html:not([data-design='v2']) .top.v1-compact-header .header-button { flex:0 0 44px; width:44px; height:44px; min-height:44px; padding:11px; border:0; border-radius:12px; background:transparent; color:inherit; }
 html:not([data-design='v2']) .compact-club-trigger[aria-expanded='true'] svg { transform:rotate(180deg); }

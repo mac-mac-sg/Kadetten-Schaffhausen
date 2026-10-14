@@ -110,14 +110,17 @@ function closeCompactClubMenu(restoreFocus=false){
 function setupCompactClubHeader(){
   const top=document.querySelector('body > .top');if(!top)return;
   closeCompactClubMenu();top.classList.add('v1-compact-header');
-  if(!top.querySelector('[data-compact-clubs]')){
-    const trigger=document.createElement('button');trigger.type='button';trigger.className='header-button compact-club-trigger';
+  let trigger=top.querySelector('[data-compact-clubs]');
+  if(!trigger){
+    const brand=top.querySelector('.brand');if(!brand)return;
+    trigger=document.createElement('button');trigger.type='button';trigger.className=brand.className+' compact-club-trigger';
     trigger.setAttribute('data-compact-clubs','');trigger.setAttribute('aria-label','Verein wechseln');
     trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','compact-club-menu');
-    trigger.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>';
-    top.querySelector('.brand')?.after(trigger);
+    trigger.innerHTML=brand.innerHTML;brand.replaceWith(trigger);
     const menu=document.createElement('nav');menu.id='compact-club-menu';menu.className='compact-club-menu';menu.hidden=true;menu.setAttribute('aria-label','Verein auswählen');top.append(menu);
   }
+  if(!trigger.querySelector('.compact-club-chevron'))trigger.insertAdjacentHTML('beforeend','<svg class="compact-club-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>');
+  trigger.setAttribute('aria-label',fanClubs[activeClub].name+(activeClub==='fcsg'?' 1879':'')+' · Verein wechseln');
   const picker=document.getElementById('club-switch');if(picker)picker.hidden=true;
   const settings=document.getElementById('club-settings');if(settings)settings.hidden=false;
 }
