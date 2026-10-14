@@ -103,6 +103,21 @@ function syncSourceNotices() {
 const matchdayOrbitMarkup='<svg class="matchday-orbit" aria-hidden="true" focusable="false"><g class="matchday-orbit-pulse"><path class="matchday-orbit-trail" pathLength="1000"/><path class="matchday-orbit-middle" pathLength="1000"/><path class="matchday-orbit-head" pathLength="1000"/></g></svg>';
 const matchdayContentHTML=new WeakMap();
 let matchdayOrbitObserver, matchdayOrbitCard;
+function syncV1MatchAction(slot) {
+  if(document.documentElement.dataset.design==='v2')return;
+  const section=slot.closest('.home-matchday');
+  if(!section||section.classList.contains('games-matchday'))return;
+  let action=section.querySelector('.v1-match-action');
+  if(slot.hidden){if(action)action.hidden=true;return;}
+  if(!action){
+    action=document.createElement('a');action.className='v1-match-action';
+    action.innerHTML='<span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>';
+    section.classList.add('v1-match-stack');section.append(action);
+  }
+  action.hidden=false;action.setAttribute('href',slot.getAttribute('href')||'#season/games');
+  const label=slot.classList.contains('is-live')?'Live verfolgen':slot.matches('.matchday-win,.matchday-draw,.matchday-loss')?'Zum Spielrückblick':slot.classList.contains('is-matchday')?'Zum Spiel':'Spielvorschau';
+  if(action.firstElementChild.textContent!==label)action.firstElementChild.textContent=label;
+}
 function setMatchdayContent(slot,html) {
   if(matchdayContentHTML.get(slot)===html)return;
   const orbit=slot.querySelector('.matchday-orbit');
