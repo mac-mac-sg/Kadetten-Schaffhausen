@@ -5,9 +5,9 @@
 :root[data-design='v2'][data-theme='light'][data-club='kadetten'] { --v2-dock-glass:#fff0e3c4; }
 :root[data-design='v2'][data-theme='light'][data-club='fcsg'] { --v2-dock-glass:#eaf4ecc4; }
 :root[data-design='v2'][data-theme='light'][data-club='otmar'] { --v2-dock-glass:#fff6d8c4; }
-:root[data-design='v2'][data-theme='dark'][data-club='kadetten'] { --v2-dock-glass:#403a35c4; }
-:root[data-design='v2'][data-theme='dark'][data-club='fcsg'] { --v2-dock-glass:#303e37c4; }
-:root[data-design='v2'][data-theme='dark'][data-club='otmar'] { --v2-dock-glass:#3e3b30c4; }
+:root[data-design='v2'][data-theme='dark'][data-club='kadetten'] { --v2-dock-glass:#56382bc4; }
+:root[data-design='v2'][data-theme='dark'][data-club='fcsg'] { --v2-dock-glass:#254832c4; }
+:root[data-design='v2'][data-theme='dark'][data-club='otmar'] { --v2-dock-glass:#4a4021c4; }
 html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] body { background:var(--surface); color:var(--text); }
 [data-design='v2'] h1 { font-family:var(--v2-serif); font-weight:600; letter-spacing:-.04em; text-wrap:balance; }
