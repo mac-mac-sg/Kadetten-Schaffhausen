@@ -222,8 +222,9 @@ function switchClub(id) {
   const fallback = () => {
     change();
     if (typeof document.getElementById('app')?.animate !== 'function') { finish(); return; }
-    const target = reduced ? document.getElementById('app') : document.createElement('div');
-    if (!reduced) {
+    const soft = reduced || root.dataset.design !== 'v2';
+    const target = soft ? document.getElementById('app') : document.createElement('div');
+    if (!soft) {
       target.className = 'club-color-wave';
       target.setAttribute('aria-hidden', 'true');
       target.style.setProperty('--club-wave-x', x + 'px');
@@ -232,14 +233,14 @@ function switchClub(id) {
       document.body.append(target);
     }
     try {
-      const frames = reduced ? [{opacity: 0.7}, {opacity: 1}] : [
+      const frames = soft ? [{opacity: 0.85}, {opacity: 1}] : [
         {clipPath: `circle(0px at ${x}px ${y}px)`, opacity: 0.65},
         {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0.3, offset: 0.7},
         {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0}
       ];
-      target.animate(frames, {duration: reduced ? 120 : 280, easing: 'cubic-bezier(.22,1,.36,1)'})
-        .finished.catch(() => {}).finally(() => { if (!reduced) target.remove(); finish(); });
-    } catch { if (!reduced) target.remove(); finish(); }
+      target.animate(frames, {duration: reduced ? 120 : soft ? 160 : 280, easing: 'cubic-bezier(.22,1,.36,1)'})
+        .finished.catch(() => {}).finally(() => { if (!soft) target.remove(); finish(); });
+    } catch { if (!soft) target.remove(); finish(); }
   };
   clubTransitionBusy = true;
   if (button) button.disabled = true;
@@ -303,7 +304,7 @@ async function loadFcsgArticle(){const [page,id]=location.hash.slice(1).split('/
  }catch{if(target===document.getElementById('fcsg-article-body')){const n=fcsgData.stories.find(n=>n.id===id);target.innerHTML=`<p class="notice">Der vollständige Artikel ist gerade nicht verfügbar.</p><button id="fcsg-retry-article" class="button subtle">Erneut laden</button>${n?ext(n.url,'Originalartikel öffnen','text-link'):''}`;document.getElementById('fcsg-retry-article').onclick=loadFcsgArticle;}}
 }
 function fcsgCard(g,current=false){g=fcsgGame(g.id)||g;const r=fcsgResult(g);
- return `<article class="game-card ${r?'finished result-'+r.state:''} ${current?'current-game':''}" data-fcsg-game="${g.id}">${current?'<p class="current-label">'+(g.live?'Jetzt live':'Nächstes Spiel')+'</p>':''}<p class="meta">${r?`<span class="game-result-label">${r.label}</span> · `:''}${liveEscape(g.league)} · ${date(g)} · ${g.confirmed?g.time+' Uhr':'Termin noch nicht bestätigt'}</p><div class="scoreline"><div>${fcsgBadge(g.home,g.homeLogo)}<span>${liveEscape(g.home)}</span></div><strong><span data-fcsg-score="${g.id}">${fcsgDisplayScore(g)}</span><small data-fcsg-phase="${g.id}">${fcsgLiveState(g)}</small></strong><div>${fcsgBadge(g.away,g.awayLogo)}<span>${liveEscape(g.away)}</span></div></div>${g.penalties&&!g.penalties.includes(null)?`<p class="muted">Elfmeterschiessen: ${g.penalties.join(' : ')}</p>`:''}<p class="venue">${liveEscape(g.venue)}</p><div class="actions"><a class="button ${g.score?'subtle':''}" href="#match/${g.id}/overview">${g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau'}</a></div></article>`;
+ return `<article class="game-card ${g.live?'fcsg-game-live':''} ${r?'finished result-'+r.state:''} ${current?'current-game':''}" data-fcsg-game="${g.id}">${current?'<p class="current-label">'+(g.live?'Jetzt live':'Nächstes Spiel')+'</p>':''}<p class="meta">${r?`<span class="game-result-label">${r.label}</span> · `:''}${liveEscape(g.league)} · ${date(g)} · ${g.confirmed?g.time+' Uhr':'Termin noch nicht bestätigt'}</p><div class="scoreline"><div>${fcsgBadge(g.home,g.homeLogo)}<span>${liveEscape(g.home)}</span></div><strong><span data-fcsg-score="${g.id}">${fcsgDisplayScore(g)}</span><small data-fcsg-phase="${g.id}">${fcsgLiveState(g)}</small></strong><div>${fcsgBadge(g.away,g.awayLogo)}<span>${liveEscape(g.away)}</span></div></div>${g.penalties&&!g.penalties.includes(null)?`<p class="muted">Elfmeterschiessen: ${g.penalties.join(' : ')}</p>`:''}<p class="venue">${liveEscape(g.venue)}</p><div class="actions"><a class="button ${g.score?'subtle':''}" href="#match/${g.id}/overview">${g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau'}</a></div></article>`;
 }
 function fcsgGames(){const filtered=fcsgData.games.filter(g=>competition==='Alle'||g.league===competition).slice().sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''))),next=filtered.find(g=>fcsgGame(g.id)?.live||!g.score&&g.date>=swissToday());
  if(mode==='calendar')return fcsgCalendar(filtered);
