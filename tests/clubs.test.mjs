@@ -37,6 +37,7 @@ function app(url, saved, storageFails = false) {
   vm.runInContext(fs.readFileSync("src/client/data/fcsg-fallback.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/data/club.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/views-club.js", "utf8"), context);
+  vm.runInContext(fs.readFileSync("src/client/js/views-news.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/logic.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/views-match.js", "utf8"), context);
   vm.runInContext(fs.readFileSync("src/client/js/views-week.js", "utf8"), context);

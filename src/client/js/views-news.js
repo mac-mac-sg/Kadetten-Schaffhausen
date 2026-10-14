@@ -1,7 +1,13 @@
 /* Startseite und News-Artikel. */
+function homeNewsCard(n, index, football = false) {
+  const image=football?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image);
+  return `<article class="v1-news-card" id="story-${index}"><a class="v1-news-link" href="#news/${liveEscape(n.id)}" aria-labelledby="news-title-${index}"><div class="v1-news-image"><img src="${liveEscape(image)}" alt="" decoding="async" ${index?'loading="lazy"':'fetchpriority="high"'}></div><div class="v1-news-copy"><p>${snapshotText(n.date)}</p><h2 id="news-title-${index}"><span>${snapshotText(n.title)}</span><span class="v1-news-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span></h2></div></a></article>`;
+}
+function homeNewsLayout(news, fixture, football = false) {
+  return `<section class="home-news v1-news-layout" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone">${fixture}<header class="home-news-heading"><span aria-hidden="true"></span><h1 id="home-news-title">Neues aus dem Verein</h1></header>${sourceNotice('news')}</div>${news[0]?homeNewsCard(news[0],0,football):'<p class="notice">Noch keine News verfügbar.</p>'}</div><div class="v1-news-grid">${news.slice(1).map((n,i)=>homeNewsCard(n,i+1,football)).join('')}</div></div></section>${football?fcsgFooter():footer()}`;
+}
 function home() {
-  const storyMarkup = (n, i) => `<section class="story-screen" id="story-${i}"><img src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" decoding="async" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}><div class="story-copy"><p>${n.date} · News</p><h2>${n.title}</h2><a class="button subtle" href="#news/${liveEscape(n.id)}">Zum Artikel</a></div></section>`;
-  return `<section class="home-news" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><section class="home-matchday" aria-label="Aktuelles ${handballTeamName()}-Spiel"><a id="live-match" class="live-match" aria-label="${handballTeamName()}-Spiel" aria-live="polite" hidden></a></section><header class="home-news-heading"><span aria-hidden="true"></span><h1 id="home-news-title">Neues aus dem Verein</h1></header>${sourceNotice('news')}</div>${stories[0] ? storyMarkup(stories[0], 0) : ''}</div>${stories.slice(1).map((n, i) => storyMarkup(n, i + 1)).join('')}</div><nav class="story-dots" aria-label="News auswählen" hidden>${stories.map((n, i) => `<button data-story="${i}" ${i > 4 ? 'hidden' : ''} aria-label="${n.title}" aria-pressed="${i === 0}"><span></span></button>`).join('')}</nav></section>${footer()}`;
+  return homeNewsLayout(stories, `<section class="home-matchday" aria-label="Aktuelles ${handballTeamName()}-Spiel"><a id="live-match" class="live-match" aria-label="${handballTeamName()}-Spiel" aria-live="polite" hidden></a></section>`);
 }
 function articleKey(n) {
   return handballClub() + ':' + String(n.id) + ':' + (n.articleVersion || 'pending');
