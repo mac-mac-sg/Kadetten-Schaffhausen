@@ -6,7 +6,7 @@ Die ausdrücklich beauftragte zweite Oberfläche wird unter `https://mac-mac-sg.
 
 Die erste Fassung enthält den bildstarken Arena-Einstieg für alle drei Vereine, schwebende Glasnavigation, normale News im Magazinlayout, gestapelte Entdeckungsbereiche, aufklappbare Spielvorschauen, Kader-Einstiege, angepasste Spielerprofile und einen Hell-/Dunkelwechsel. Spielplan, Kalender, gemeinsame Woche und Statistikfunktionen bleiben aus der aktuellen App erhalten. Die vorhandenen Spieltags-/Live-Effekte und aktualisierten Daten werden weiterverwendet. «Spielzustände» öffnet ausschliesslich gekennzeichnete fiktive Gestaltungsbeispiele; die echten Daten werden dabei nicht verändert.
 
-`npm run verify` prüft zusätzlich zehn V2-Ansichtstests. Der Pages-Build prüft mit `scripts/check-preview.mjs` die Trennung der beiden Skript-Bündel, PWA-Scopes, Cache-Namensräume und lokale Assets. Die ursprünglichen App-Bündel können gegen einen einzelnen `KADETTEN_TARGET=pages node scripts/build.mjs`-Build verglichen werden.
+`npm run verify` prüft zusätzlich zwölf V2-Ansichtstests. Der Pages-Build prüft mit `scripts/check-preview.mjs` die Trennung der beiden Skript-Bündel, PWA-Scopes, Cache-Namensräume und lokale Assets. Die ursprünglichen App-Bündel können gegen einen einzelnen `KADETTEN_TARGET=pages node scripts/build.mjs`-Build verglichen werden.
 
 Die Browser-Prüfung bei 390 px und Desktop sowie mit axe-core ist zusätzlich erforderlich. Ist kein Browser installiert, muss diese Grenze ausdrücklich dokumentiert werden. Ein reales Smartphone bleibt für Bildausschnitte, Touchbedienung, Glasflächen und Scrollgefühl der wichtigste Abnahmeschritt.
 
@@ -22,10 +22,12 @@ Der Spieltagsblock ist eine eigenständige dunkle Glasfläche in beiden Seiten-T
 
 ## Kompakter Kopf und Matchkarte
 
-Der Kopfbereich zeigt Vereinslogo/-name, einen 44 px grossen Vereinswahl-Knopf, Einstellungen und den Themenwechsel in einer Zeile. Eine native Dialog-Auswahl zeigt die gewählten Vereine inklusive vorhandener Spieltagshinweise. Der Wechsel erhält die aktuelle Hauptroute; nicht übertragbare Artikel/Spieler/Matchdetails wechseln zur jeweiligen Übersicht. Installieren und die gekennzeichneten V2-Testwerkzeuge liegen in den Einstellungen.
+Der Kopfbereich zeigt Vereinslogo/-name, einen 44 px grossen Vereinswahl-Knopf, Einstellungen und den Themenwechsel in einer Zeile. Ein Dropdown direkt unter dem Kopf zeigt die gewählten Vereine inklusive vorhandener Spieltagshinweise. Der Wechsel erhält die aktuelle Hauptroute; nicht übertragbare Artikel/Spieler/Matchdetails wechseln zur jeweiligen Übersicht. Installieren und die gekennzeichneten V2-Testwerkzeuge liegen in den Einstellungen.
 
 Die dunkle Matchkarte verwendet für alle Vereine dieselbe Grundgeometrie: Status und Wettbewerb oben, Wappen und Namen auf beiden Seiten, Anspielzeit beziehungsweise bestätigtes Resultat in der Mitte, Datum/Heim-/Auswärtskontext oder Live-Phase unten. Unbestätigte Zeiten bleiben offen. Innerhalb der letzten Stunde zeigt die Mitte einen ruhigen Countdown; das Erreichen der Startzeit behauptet keinen Live-Status. Eine leicht versetzte Aktionsebene unter der Karte führt auf dieselbe echte Spielroute und folgt Vorschau/Matchday/Live/Rückblick. Die grossen Newsbilder bleiben erhalten.
 
 Der bisherige Glanz, Hintergrundschimmer und Herzschlag sind im V2-Matchblock entfernt. Am Matchday verbleibt ein dezenter umlaufender Lichtakzent, live ein kleiner Statuspunkt. Neue Ergebniswerte blenden kurz um; reduzierte Bewegung schaltet diese Animationen aus. API-Läufe, Quellen und ursprüngliche App bleiben unverändert.
 
 Die Aktionsebene ist eine vollständige, an allen vier Ecken abgerundete Kachel. Sie beginnt 24 px unterhalb der oberen Matchkante, liegt hinter der Matchkarte und bleibt seitlich um 8 px sowie unten um 50 px sichtbar. Die Beschriftung steht im freien unteren Bereich. So verschwindet ihre obere Kante unter der Vorderkarte, statt als rechteckiger Balken am Kartenfuss zu enden. Der Smartphone-Regressionslauf misst Überlappung, obere Rundung, seitlichen Versatz und den frei bedienbaren unteren Streifen.
+
+Der Arena-Einstieg enthält ausschliesslich die Matchkarte unter dem kompakten Kopf. Slogan, grosser Vereinstitel und Saisonzeile entfallen; die Hauptüberschrift steht im News-Bereich. Der Vereins-Pfeil klappt eine direkt am Kopf verankerte Auswahl auf, ohne Dialog oder Hintergrundabdunklung. Er schliesst beim erneuten Antippen, nach der Auswahl, ausserhalb, beim Scrollen oder mit Escape; ArrowDown öffnet ihn mit Tastaturfokus auf den ersten Verein.

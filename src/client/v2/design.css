@@ -235,12 +235,9 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 .v2-club-trigger svg { width:22px; height:22px; }
 [data-design='v2'] .top .v2-club-trigger { flex-basis:44px; width:44px; padding:11px; }
 [data-design='v2'] .home-title-zone { padding-top:130px; }
-.v2-club-chooser { width:calc(100% - 28px); max-width:440px; max-height:85dvh; overflow:auto; padding:22px; border:1px solid var(--line); border-radius:24px; background:var(--surface); color:var(--text); }
-.v2-club-chooser::backdrop { background:#0f1b1480; backdrop-filter:blur(6px); }
-.v2-club-chooser header { display:flex; align-items:start; gap:12px; justify-content:space-between; }
-.v2-club-chooser h2 { font:600 28px/1.2 var(--v2-serif); margin:6px 0 22px; }
-.v2-club-chooser .eyebrow { color:var(--muted); font-size:11px; }
-.v2-club-chooser .header-button { flex-shrink:0; background:var(--surface-2); color:var(--text); }
+ .v2-club-dropdown { position:absolute; top:calc(100% + 8px); left:0; right:0; z-index:40; max-height:calc(100dvh - 160px); overflow:auto; padding:8px; border:1px solid var(--line); border-radius:20px; background:var(--surface); color:var(--text); box-shadow:0 12px 32px #10211726; }
+.v2-club-dropdown[hidden] { display:none; }
+.v2-club-trigger[aria-expanded='true'] svg { transform:rotate(180deg); }
 .v2-club-options { display:grid; gap:8px; }
 .v2-club-options button { display:flex; align-items:center; gap:14px; width:100%; min-height:74px; padding:14px; background:var(--surface-2); color:var(--text); border:1px solid transparent; border-radius:16px; text-align:left; font-size:14px; }
 .v2-club-options [aria-pressed='true'] { border-color:var(--accent); }
@@ -287,3 +284,8 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 [data-design='v2'] .home-matchday :is(#live-match,.fcsg-matchday).matchday-loss:not([hidden]) { border-bottom-color:var(--loss); }
 [data-design='v2'] .club-settings-dialog .eyebrow { color:var(--muted); }
 [data-design='v2'] .club-settings-dialog .header-button { color:var(--text); background:var(--surface-2); border-color:var(--line); }
+
+/* A slim arena entry: the match follows the header directly. */
+[data-design='v2'] .home-title-zone { min-height:0; padding:calc(100px + env(safe-area-inset-top)) 22px 22px; }
+[data-design='v2'] .immersive > .top { top:env(safe-area-inset-top); }
+.v2-news-heading h1 { font:600 clamp(30px,4vw,46px)/1.13 var(--v2-serif); letter-spacing:-.035em; margin:0 0 12px; }

@@ -20,7 +20,7 @@ function v2Home() {
   const name=liveEscape(fanClubs[activeClub].name);
   const fixture=activeClub==='fcsg'?fcsgMatchday():`<section class="home-matchday" aria-label="Aktuelles ${name}-Spiel"><a id="live-match" class="live-match" aria-label="${name}-Spiel" aria-live="polite" hidden></a></section>`;
   const story=(n,i)=>`<article class="story-screen v2-story" id="story-${i}"><a class="v2-story-image" href="#news/${liveEscape(n.id)}" tabindex="-1" aria-hidden="true"><img src="${liveEscape(activeClub==='fcsg'?(n.image||'assets/fcsg-logo.svg'):photoUrl(n.image))}" alt="" decoding="async" ${i?'loading="lazy"':'fetchpriority="high"'}></a><div class="story-copy"><p>${liveEscape(n.date)} · Vereinsnews</p><h2><a href="#news/${liveEscape(n.id)}">${n.title}</a></h2><a class="v2-text-link" href="#news/${liveEscape(n.id)}">Geschichte lesen <span aria-hidden="true">↗</span></a></div></article>`;
-  return `<section class="home-news v2-home-classic" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone"><div class="v2-hero-copy"><p class="eyebrow">Dein Verein. Dein Spiel.</p><h1 id="home-news-title">${activeClub==='kadetten'?'Zusammen.<br>Für Orange.':activeClub==='fcsg'?'Hier schlägt<br>Grünweiss.':'Zämästoh.<br>Für Gelbschwarz.'}</h1><p>${name} · Saison 2026/27</p></div>${fixture}</div><header class="v2-news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h2>Neues aus dem Verein</h2>${sourceNotice('news')}</header>${news[0]?story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div><div class="v2-news-grid">${news.slice(1).map((n,i)=>story(n,i+1)).join('')}</div></div>${v2Discover().replace(' data-v2-reveal="discover"','')}</section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
+  return `<section class="home-news v2-home-classic" aria-labelledby="home-news-title"><div class="story-feed"><div class="home-front-page"><div class="home-title-zone">${fixture}</div><header class="v2-news-heading"><p class="eyebrow">Auf und neben dem Spielfeld</p><h1 id="home-news-title">Neues aus dem Verein</h1>${sourceNotice('news')}</header>${news[0]?story(news[0],0):'<p class="notice">Noch keine News verfügbar.</p>'}</div><div class="v2-news-grid">${news.slice(1).map((n,i)=>story(n,i+1)).join('')}</div></div>${v2Discover().replace(' data-v2-reveal="discover"','')}</section>${activeClub==='fcsg'?fcsgFooter():footer()}`;
 }
 home=v2Home;
 fcsgHome=v2Home;
@@ -149,9 +149,10 @@ document.addEventListener('keydown',event=>{
 const v2UpdateClubHeader=updateClubHeader;
 updateClubHeader=function(){v2UpdateClubHeader();v2SetupHeader();};
 function v2SetupHeader(){
+ v2CloseClubDropdown();
  const bar=document.querySelector('body > .top');if(!bar)return;
  if(!bar.querySelector('[data-v2-choose]')) {
-  const button=document.createElement('button');button.type='button';button.className='v2-club-trigger';button.dataset.v2Choose='';button.setAttribute('aria-label','Verein wechseln');button.setAttribute('aria-haspopup','dialog');
+  const button=document.createElement('button');button.type='button';button.className='v2-club-trigger';button.dataset.v2Choose='';button.setAttribute('aria-label','Verein wechseln');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','v2-club-dropdown');
   button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>';
   bar.querySelector('.brand')?.after(button);
   const theme=document.createElement('button');theme.type='button';theme.className='header-button v2-theme-button';theme.dataset.v2Theme='';theme.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 14.1A8.5 8.5 0 0 1 9.9 4a8.5 8.5 0 1 0 10.1 10.1Z"/></svg>';bar.append(theme);
@@ -161,11 +162,18 @@ function v2SetupHeader(){
  v2SetTheme(document.documentElement.dataset.theme);
 }
 function v2ClubStatus(id){const state=document.querySelector('[data-select-club="'+id+'"]')?.dataset.dot;return state?' · '+({soon:'spielt heute',live:'spielt gerade',pending:'hat heute gespielt',win:'heute gewonnen',draw:'heute unentschieden',loss:'heute verloren'}[state]||''):'';}
+function v2CloseClubDropdown(restoreFocus=false){
+ const menu=document.getElementById('v2-club-dropdown'),heldFocus=!!document.activeElement&&!!menu?.contains(document.activeElement);if(menu)menu.hidden=true;
+ const trigger=document.querySelector('[data-v2-choose]');trigger?.setAttribute('aria-expanded','false');
+ if(restoreFocus||heldFocus)trigger?.focus({preventScroll:true});
+}
 function v2ChooseClub(){
- document.querySelector('.v2-club-chooser')?.remove();
- const dialog=document.createElement('dialog');dialog.className='v2-club-chooser';dialog.setAttribute('aria-labelledby','v2-choose-title');
- dialog.innerHTML=`<header><div><p class="eyebrow">Deine Vereine</p><h2 id="v2-choose-title">Für wen schlägt dein Herz?</h2></div><button type="button" class="header-button" data-v2-close-choice aria-label="Vereinswahl schliessen">×</button></header><div class="v2-club-options">${selectedClubs.map(id=>`<button type="button" data-v2-pick="${id}" aria-pressed="${id===activeClub}"><img src="${fanClubs[id].logo}" alt="" width="32" height="38"><span>${liveEscape(fanClubs[id].name)}<small>${id==='fcsg'?'Fussball':'Handball'}${id===activeClub?' · Ausgewählt':''}${v2ClubStatus(id)}</small></span><i aria-hidden="true">${id===activeClub?'✓':'→'}</i></button>`).join('')}</div><button type="button" class="v2-manage-clubs" data-v2-manage>Meine Vereine verwalten</button>`;
- document.body.append(dialog);dialog.addEventListener('close',()=>{dialog.remove();document.querySelector('[data-v2-choose]')?.focus({preventScroll:true});});dialog.showModal();
+ const bar=document.querySelector('body > .top');if(!bar)return;
+ let menu=document.getElementById('v2-club-dropdown');
+ if(menu&&!menu.hidden){v2CloseClubDropdown();return;}
+ if(!menu){menu=document.createElement('nav');menu.id='v2-club-dropdown';menu.className='v2-club-dropdown';menu.setAttribute('aria-label','Verein auswählen');bar.append(menu);}
+ menu.innerHTML=`<div class="v2-club-options">${selectedClubs.map(id=>`<button type="button" data-v2-pick="${id}" aria-pressed="${id===activeClub}"><img src="${fanClubs[id].logo}" alt="" width="32" height="38"><span>${liveEscape(fanClubs[id].name)}<small>${id==='fcsg'?'Fussball':'Handball'}${id===activeClub?' · Ausgewählt':''}${v2ClubStatus(id)}</small></span><i aria-hidden="true">${id===activeClub?'✓':'→'}</i></button>`).join('')}</div><button type="button" class="v2-manage-clubs" data-v2-manage>Meine Vereine verwalten</button>`;
+ menu.hidden=false;document.querySelector('[data-v2-choose]')?.setAttribute('aria-expanded','true');
 }
 const v2OpenClubSettings=openClubSettings;
 openClubSettings=function(){
@@ -177,9 +185,9 @@ openClubSettings=function(){
 };
 document.addEventListener('click',event=>{
  if(event.target.closest('[data-v2-choose]'))v2ChooseClub();
- if(event.target.closest('[data-v2-close-choice]'))document.querySelector('.v2-club-chooser')?.close();
- if(event.target.closest('[data-v2-manage]')){document.querySelector('.v2-club-chooser')?.close();openClubSettings();}
- const pick=event.target.closest('[data-v2-pick]');if(pick){const id=pick.dataset.v2Pick;document.querySelector('.v2-club-chooser')?.close();if(id!==activeClub)applyClubChange(id,clubSwitchRoute(location.hash),true);}
+ else if(!event.target.closest('.v2-club-dropdown'))v2CloseClubDropdown();
+ if(event.target.closest('[data-v2-manage]')){v2CloseClubDropdown();openClubSettings();}
+ const pick=event.target.closest('[data-v2-pick]');if(pick){const id=pick.dataset.v2Pick;v2CloseClubDropdown();if(id!==activeClub)applyClubChange(id,clubSwitchRoute(location.hash),true);}
 });
 
 /* One geometry for preview, matchday, live and confirmed results. */
@@ -221,3 +229,9 @@ setInterval(()=>{
  if(document.hidden)return;
  document.querySelectorAll('[data-v2-countdown]').forEach(el=>{const g=activeClub==='fcsg'?fcsgFixture():homeFixture().game;if(g?.id===el.dataset.v2Countdown){const text=v2CountdownValue(g);if(el.textContent!==text)el.textContent=text;if(!countdownSoon(g)){el.removeAttribute('data-v2-countdown');el.nextElementSibling.textContent='Anspielzeit';}}});
 },1000);
+
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&document.getElementById('v2-club-dropdown')?.hidden===false){v2CloseClubDropdown(true);event.preventDefault();}
+ if(event.key==='ArrowDown'&&event.target.closest('[data-v2-choose]')){event.preventDefault();if(document.getElementById('v2-club-dropdown')?.hidden!==false)v2ChooseClub();document.querySelector('.v2-club-dropdown [data-v2-pick]')?.focus();}
+});
+window.addEventListener('scroll',()=>v2CloseClubDropdown(),{passive:true});
