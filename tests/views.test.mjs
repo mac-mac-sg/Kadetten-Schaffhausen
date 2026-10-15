@@ -750,3 +750,12 @@ test('Visible source warnings identify the failing area without marking fresh da
   assert.equal(parseHTML(view("sourceNotice('games')")).document.querySelector('p').hidden,true);
  }finally{context.__restoreSourceData=saved;context.__restoreSourceClub=club;run('updateState=__restoreSourceData;activeClub=__restoreSourceClub');}
 });
+
+
+test('V1 removes the repeated disclaimer and timestamp footer; V2 retains its footer',()=>{
+ assert.equal(run('footer()'),'');assert.equal(run("fcsgFooter('games')"),'');
+ for(const tab of ['games','table','squad'])assert.doesNotMatch(view("season('"+tab+"')"),/footer-updated|nicht-kommerzielles Fan-Projekt/);
+ context.document.documentElement.dataset.design='v2';
+ try{assert.match(run('footer()'),/footer-updated/);assert.match(run('fcsgFooter()'),/nicht-kommerzielles Fan-Projekt/);}
+ finally{delete context.document.documentElement.dataset.design;}
+});

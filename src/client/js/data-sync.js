@@ -46,6 +46,7 @@ function viewDataSignature() {
   );
 }
 function syncUpdateLabels() {
+  if(typeof syncSettingsUpdatedAt==='function')syncSettingsUpdatedAt();
   syncSourceNotices();
   document
     .querySelectorAll('[data-update-key]')

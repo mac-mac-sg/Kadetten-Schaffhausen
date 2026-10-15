@@ -45,7 +45,34 @@ function restoreV1Theme() {
   setV1Theme(theme,false);
 }
 let clubSettingsDialog=null;
+function syncSettingsUpdatedAt() {
+  const time=clubSettingsDialog?.querySelector('[data-settings-updated]');if(!time)return;
+  const snapshot=activeClub==='fcsg'?fcsgData:typeof updateState!=='undefined'?updateState:null;
+  const stamp=snapshot?.checkedAt,ms=typeof stamp==='string'?Date.parse(stamp):NaN;
+  time.title=fanClubs[activeClub].name+' · Datenstand';
+  if(!Number.isFinite(ms)){time.textContent='Noch nicht verfügbar';time.removeAttribute('datetime');return;}
+  time.setAttribute('datetime',new Date(ms).toISOString());
+  time.textContent=new Date(ms).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+function appDisclaimerContent() {
+  return `<p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p><h3>Quellen &amp; Bildnachweise</h3><p>${ext('https://kadettensh.ch/','Kadetten Schaffhausen','')} · Spielbilder © André Frensel / Erich Mosberger.</p><p>${ext('https://www.fcsg.ch/','FC St.Gallen 1879','')} · Vereinsdaten, Artikel, Fotos und Wappen: FC St.Gallen 1879 und jeweilige Urheber.</p><p>${ext('https://otmar.ch/','TSV St. Otmar St. Gallen','')} · Fotos und Vereinsinhalte: TSV St. Otmar St. Gallen und jeweilige Urheber.</p><p>Handball-Daten: ${ext('https://www.handball.ch/de/matchcenter/','SHV','')} und ${ext('https://www.eurohandball.com/','EHF','')}. Weitere Quellen stehen bei den jeweiligen Inhalten.</p>`;
+}
+let appDisclaimerDialog=null;
+function openAppDisclaimer() {
+  if(!appDisclaimerDialog){
+    appDisclaimerDialog=document.createElement('dialog');
+    appDisclaimerDialog.className='app-disclaimer-dialog';
+    appDisclaimerDialog.setAttribute('aria-labelledby','app-disclaimer-title');
+    appDisclaimerDialog.innerHTML=`<header><h2 id="app-disclaimer-title">Disclaimer</h2><button type="button" class="header-button" data-close-disclaimer aria-label="Disclaimer schliessen">×</button></header><div class="disclaimer-copy">${appDisclaimerContent()}</div><form method="dialog"><button class="button" type="submit">Schliessen</button></form>`;
+    document.body.append(appDisclaimerDialog);
+    appDisclaimerDialog.querySelector('[data-close-disclaimer]').onclick=()=>appDisclaimerDialog.close();
+    appDisclaimerDialog.addEventListener('close',()=>clubSettingsDialog?.querySelector('[data-open-disclaimer]')?.focus());
+    appDisclaimerDialog.addEventListener('click',e=>{if(e.target!==appDisclaimerDialog)return;const r=appDisclaimerDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)appDisclaimerDialog.close();});
+  }
+  appDisclaimerDialog.showModal();
+}
 function syncClubSettings() {
+  syncSettingsUpdatedAt();
   const theme=clubSettingsDialog?.querySelector?.('[data-v1-light-mode]');if(theme)theme.checked=document.documentElement.dataset.theme==='light';
   clubSettingsDialog?.querySelectorAll('[data-club-choice]').forEach(input=>{
     input.checked=selectedClubs.includes(input.dataset.clubChoice);
@@ -57,9 +84,10 @@ function openClubSettings() {
     clubSettingsDialog=document.createElement('dialog');
     clubSettingsDialog.className='club-settings-dialog';
     clubSettingsDialog.setAttribute('aria-labelledby','club-settings-title');
-    clubSettingsDialog.innerHTML=`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('')}</div><p class="club-settings-note">Mindestens ein Verein bleibt ausgewählt. Deine Auswahl wird auf diesem Gerät gespeichert.</p>${document.documentElement.dataset.design==='v2'?'':`<section class="theme-settings" aria-labelledby="theme-settings-title"><h3 id="theme-settings-title">Darstellung</h3><label class="theme-setting"><span>Heller Modus<small>Deine Auswahl wird auf diesem Gerät gespeichert.</small></span><input type="checkbox" role="switch" data-v1-light-mode aria-label="Heller Modus"></label></section>`}<div class="club-settings-help"><button class="button subtle" type="button" data-open-introduction>Einführung &amp; Tipps</button><p>Die wichtigsten Funktionen kurz erklärt.</p></div><form method="dialog"><button class="button" type="submit">Fertig</button></form>`;
+    clubSettingsDialog.innerHTML=`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('')}</div><p class="club-settings-note">Mindestens ein Verein bleibt ausgewählt. Deine Auswahl wird auf diesem Gerät gespeichert.</p>${document.documentElement.dataset.design==='v2'?'':`<section class="theme-settings" aria-labelledby="theme-settings-title"><h3 id="theme-settings-title">Darstellung</h3><label class="theme-setting"><span>Heller Modus<small>Deine Auswahl wird auf diesem Gerät gespeichert.</small></span><input type="checkbox" role="switch" data-v1-light-mode aria-label="Heller Modus"></label></section>`}<div class="club-settings-help"><button class="button subtle" type="button" data-open-introduction>Einführung &amp; Tipps</button><p>Die wichtigsten Funktionen kurz erklärt.</p></div>${document.documentElement.dataset.design==='v2'?'':`<section class="settings-app-info" aria-label="App-Informationen"><button type="button" class="settings-info-row" data-open-disclaimer><span>Disclaimer</span><span aria-hidden="true">↗</span></button><div class="settings-info-row"><span>Zuletzt aktualisiert</span><time data-settings-updated></time></div></section>`}<form method="dialog"><button class="button" type="submit">Fertig</button></form>`;
     document.body.append(clubSettingsDialog);
     clubSettingsDialog.querySelector('[data-open-introduction]').onclick=()=>{clubSettingsDialog.close();window.showAppIntroduction?.();};
+    const disclaimer=clubSettingsDialog.querySelector('[data-open-disclaimer]');if(disclaimer)disclaimer.onclick=openAppDisclaimer;
     clubSettingsDialog.querySelector('[data-close-clubs]').onclick=()=>clubSettingsDialog.close();
     clubSettingsDialog.addEventListener('change',e=>{if(e.target.matches('[data-club-choice]'))setClubSelected(e.target.dataset.clubChoice,e.target.checked);if(e.target.matches('[data-v1-light-mode]'))setV1Theme(e.target.checked?'light':'dark');});
     clubSettingsDialog.addEventListener('close',()=>{document.getElementById('club-settings')?.setAttribute('aria-expanded','false');if(!document.querySelector('.app-introduction[open]'))document.getElementById('club-settings')?.focus();});
@@ -287,6 +315,7 @@ function fcsgStamp(key) {
  return `${state?.ok===false||stale?'Letzter gültiger Stand':'Aktualisiert'}: ${new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})} Uhr${stale?' · Aktualisierung verzögert':''}`;
 }
 function fcsgFooter(key='news') {
+ if(document.documentElement.dataset.design!=='v2')return '';
  return `<footer><span class="footer-updated" data-fcsg-update-key="${key}">${fcsgStamp(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p><p>${ext('https://www.fcsg.ch/','FC St.Gallen 1879','')} · Vereinsdaten, Artikel, Fotos und Wappen: FC St.Gallen 1879 und jeweilige Urheber.</p></details></footer>`;
 }
 function fcsgBadge(name, logo) {return logo?`<img class="crest" src="${liveEscape(safeUrl(logo))}" alt="${liveEscape(name)}" width="48" height="60" loading="lazy" decoding="async">`:`<span class="clubmark" aria-hidden="true">${liveEscape(name.split(' ').map(w=>w[0]).slice(0,3).join(''))}</span>`;}
@@ -405,7 +434,7 @@ function fcsgViewSignature(d) {
  const [page='home',id]=location.hash.slice(1).split('/');
  return JSON.stringify(page==='home'||!page?d.stories:page==='news'?d.stories.find(n=>n.id===id):page==='match'?d.games.find(g=>g.id===id):page==='player'?d.players.find(p=>p.id===id):page==='club'?null:id==='squad'?d.players:id==='table'?{table:d.table,games:d.games}:d.games);
 }
-function syncFcsgLabels(){document.querySelectorAll('[data-fcsg-update-key]').forEach(el=>el.textContent=fcsgStamp(el.dataset.fcsgUpdateKey));syncSourceNotices();}
+function syncFcsgLabels(){if(typeof syncSettingsUpdatedAt==='function')syncSettingsUpdatedAt();document.querySelectorAll('[data-fcsg-update-key]').forEach(el=>el.textContent=fcsgStamp(el.dataset.fcsgUpdateKey));syncSourceNotices();}
 async function loadFcsgData(){if(fcsgBusy)return;fcsgBusy=true;
  try{const r=await apiFetch('/api/fcsg/data',{cache:'no-store',signal:AbortSignal.timeout(25000)});if(!r.ok)throw Error();const d=await r.json();if(!validFcsgData(d))throw Error();const changed=fcsgViewSignature(fcsgData)!==fcsgViewSignature(d);for(const story of d.stories)if(story.articleVersion!==fcsgData.stories.find(n=>n.id===story.id)?.articleVersion)fcsgArticles.delete(story.id);for(const g of d.games){const old=fcsgData.games.find(x=>x.id===g.id);if(JSON.stringify(old)!==JSON.stringify(g)&&!fcsgLiveGames.get(g.id)?.live)fcsgLiveGames.delete(g.id);}fcsgData=d;fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=r.headers.get('X-Kadetten-Offline')==='1';try{localStorage.setItem('fcsg-public-data-v1',JSON.stringify(d))}catch{}if(activeClub==='fcsg'){if(changed){if(location.hash.startsWith('#match/'))updateFcsgLiveView();else render();}syncFcsgLabels();}}
  catch{fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=true;}

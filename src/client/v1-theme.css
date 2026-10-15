@@ -231,3 +231,21 @@ html:not([data-design='v2']) .dock a:active { transform:none; background:color-m
  html:not([data-design='v2']) .dock a { transition:none; }
  :root:not([data-design='v2']).club-transition::view-transition-new(root) { animation:club-soft-fade 120ms ease-out both; }
 }
+
+
+/* App notices live in settings, away from the reading surfaces. */
+html:not([data-design='v2']) .settings-app-info { margin:18px 0; border-block:1px solid var(--line); }
+html:not([data-design='v2']) .settings-info-row { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:48px; margin:0; padding:12px 0; border:0; border-radius:0; background:transparent; color:var(--text); text-align:left; font-size:13px; line-height:1.5; }
+html:not([data-design='v2']) .settings-info-row + .settings-info-row { border-top:1px solid var(--line); }
+html:not([data-design='v2']) .settings-info-row time { color:var(--muted); font-size:12px; text-align:right; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .settings-info-row[data-open-disclaimer]:active { background:color-mix(in srgb,var(--text) 5%,transparent); }
+html:not([data-design='v2']) .settings-info-row:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .app-disclaimer-dialog { width:calc(100% - 28px); max-width:480px; max-height:calc(100dvh - 32px); overflow:auto; padding:24px; border:1px solid var(--line); border-radius:24px; color:var(--text); background:var(--surface); box-shadow:0 16px 56px #17211940; }
+html:not([data-design='v2']) .app-disclaimer-dialog::backdrop { background:#17211988; backdrop-filter:blur(6px); }
+html:not([data-design='v2']) .app-disclaimer-dialog > header { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+html:not([data-design='v2']) .app-disclaimer-dialog h2 { margin:0; font:600 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2']) .disclaimer-copy { margin:20px 0; font-size:14px; line-height:1.6; }
+html:not([data-design='v2']) .disclaimer-copy h3 { margin:24px 0 12px; font-size:16px; }
+html:not([data-design='v2']) .disclaimer-copy p { margin:0 0 12px; }
+html:not([data-design='v2']) .disclaimer-copy a { text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2']) .app-disclaimer-dialog form .button { width:100%; }

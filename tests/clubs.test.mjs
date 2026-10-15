@@ -85,7 +85,7 @@ test('Header, Titel und FCSG-Seiten enthalten keine fremden Vereinsdaten', () =>
   assert.equal(a.document.querySelector('[data-select-club=fcsg]').getAttribute('aria-pressed'),'true');
   for (const [page, id] of [['home',''], ['season','games'], ['season','table'], ['season','squad'], ['club','']]) {
     const html = a.run(`fcsgView('${page}', '${id}')`);
-    assert.match(html, /FC St.Gallen 1879|Vereinsgeschichte/);
+    assert.match(html, page==='season' ? /class="content season/ : /FC St.Gallen 1879|Vereinsgeschichte/);
     assert.doesNotMatch(html, /undefined|NaN|Quickline|Strafminuten|Rikhardsson/);
   }
   a.run("activeClub='kadetten'; updateClubHeader()");
@@ -280,4 +280,26 @@ test('A live FCSG fixture retains a prominent card and live details',()=>{
  assert.match(document.querySelector('.actions a').textContent,/Live verfolgen/);
  assert.ok(document.querySelector('[data-fcsg-score]'));
  assert.ok(document.querySelector('[data-fcsg-phase]'));
+});
+
+
+test('V1 settings contain exactly two app-information rows and a reusable disclaimer popup',()=>{
+ const a=app('https://example.test/'),create=a.document.createElement.bind(a.document);
+ a.document.createElement=tag=>{const e=create(tag);if(tag==='dialog'){e.showModal=()=>e.setAttribute('open','');e.close=()=>e.removeAttribute('open');}return e;};
+ a.run("var updateState={checkedAt:'2026-10-15T04:20:00Z'};openClubSettings()");
+ const info=a.document.querySelector('.settings-app-info');
+ assert.equal(info.querySelectorAll('.settings-info-row').length,2);
+ assert.equal(info.querySelector('[data-open-disclaimer] > span').textContent,'Disclaimer');
+ assert.match(info.textContent,/Zuletzt aktualisiert/);
+ const time=info.querySelector('time');assert.equal(time.getAttribute('datetime'),'2026-10-15T04:20:00.000Z');assert.match(time.textContent,/15.10.2026.*06:20/);
+ info.querySelector('[data-open-disclaimer]').onclick();
+ const popup=a.document.querySelector('.app-disclaimer-dialog');assert.ok(popup.hasAttribute('open'));
+ assert.match(popup.textContent,/nicht-kommerzielles Fan-Projekt/);assert.match(popup.textContent,/Alle Marken- und Bildrechte/);
+ for(const url of ['https://kadettensh.ch/','https://www.fcsg.ch/','https://otmar.ch/'])assert.ok(popup.querySelector('a[href="'+url+'"]'));
+ popup.querySelector('[data-close-disclaimer]').onclick();assert.equal(popup.hasAttribute('open'),false);
+ info.querySelector('[data-open-disclaimer]').onclick();assert.equal(a.document.querySelectorAll('.app-disclaimer-dialog').length,1);
+ a.run("activeClub='fcsg';fcsgData.checkedAt='2026-10-15T05:15:00Z';syncSettingsUpdatedAt()");assert.match(time.textContent,/07:15/);
+ a.run("activeClub='otmar';updateState={checkedAt:'invalid'};syncSettingsUpdatedAt()");assert.equal(time.textContent,'Noch nicht verfügbar');assert.equal(time.hasAttribute('datetime'),false);
+ const v2=app('https://example.test/v2/');v2.document.documentElement.dataset.design='v2';const c=v2.document.createElement.bind(v2.document);
+ v2.document.createElement=tag=>{const e=c(tag);if(tag==='dialog')e.showModal=()=>{};return e;};v2.run('openClubSettings()');assert.equal(v2.document.querySelector('.settings-app-info'),null);
 });
