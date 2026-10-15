@@ -21,7 +21,7 @@ test('Snapshot warning follows Zurich schedule, grace period, night and DST',()=
 test('PDF survives same-route render, while navigation closes it',()=>{
  let closes=0;
  const route='kadetten#match/izvidac/overview';
- const c=vm.createContext({programmeDialog:{dataset:{route}},activeClub:'kadetten',location:{hash:'#match/izvidac/overview'},closeMatchProgramme(){closes++;},document:{documentElement:{style:{},classList:{toggle(){}}},body:{classList:{toggle(){}}}},window:{scrollY:300},mode:'list',games:[{id:'izvidac'}],match:()=>'',notFound:()=>'', $:()=>({set innerHTML(v){throw Error('render reached');}})});
+ const c=vm.createContext({applyPendingNews(){},beginViewRender:()=>null,programmeDialog:{dataset:{route}},activeClub:'kadetten',location:{hash:'#match/izvidac/overview'},closeMatchProgramme(){closes++;},document:{documentElement:{style:{},classList:{toggle(){}}},body:{classList:{toggle(){}}}},window:{scrollY:300},mode:'list',games:[{id:'izvidac'}],match:()=>'',notFound:()=>'', $:()=>({set innerHTML(v){throw Error('render reached');}})});
  load(c,'js/router.js');
  assert.throws(()=>c.render(),/render reached/);assert.equal(closes,0);
  c.location.hash='#match/other/overview';assert.throws(()=>c.render(),/render reached/);assert.equal(closes,1);
@@ -88,7 +88,7 @@ test('Handball-Startseite füllt die Spielkarte vor der ersten Layoutmessung',()
  for(const activeClub of ['kadetten','otmar']){
   let filled=false,measurements=0;
   const noop=()=>{},style={set scrollSnapType(v){},removeProperty:noop},classList={toggle:noop};
-  const c=vm.createContext({activeClub,programmeDialog:null,location:{hash:'#home'},mode:'list',fanClubs:{[activeClub]:{name:activeClub}},document:{documentElement:{style,classList},body:{classList},querySelectorAll:()=>[]},window:{scrollY:0,scrollTo:noop},requestAnimationFrame:noop,$:s=>s==='#app'?{set innerHTML(v){filled=false;}}:null,home:()=>'<a id="live-match" hidden></a>',showLiveMatch:()=>{filled=true;},updateClubHeader:noop,loadMatchPreview:noop,loadMatchProgramme:noop,setupClubPage:noop,setupRecentGames:noop,setupEnhancements:noop,loadGameReports:noop,loadPlayerReports:noop,loadEhfArchive:noop,loadFullArticle:noop});
+  const c=vm.createContext({applyPendingNews(){},beginViewRender:()=>null,finishViewRender(){},setupGameJumps(){},activeClub,programmeDialog:null,location:{hash:'#home'},mode:'list',fanClubs:{[activeClub]:{name:activeClub}},document:{documentElement:{style,classList},body:{classList},querySelectorAll:()=>[]},window:{scrollY:0,scrollTo:noop},requestAnimationFrame:noop,$:s=>s==='#app'?{set innerHTML(v){filled=false;}}:null,home:()=>'<a id="live-match" hidden></a>',showLiveMatch:()=>{filled=true;},updateClubHeader:noop,loadMatchPreview:noop,loadMatchProgramme:noop,setupClubPage:noop,setupRecentGames:noop,setupEnhancements:noop,loadGameReports:noop,loadPlayerReports:noop,loadEhfArchive:noop,loadFullArticle:noop});
   load(c,'js/router.js');c.setupViews=noop;c.setupWeekView=noop;
   c.measureAppChrome=()=>{measurements++;assert.equal(filled,true,'Layout darf nicht mit der ausgeblendeten Spielkarte gemessen werden');};
   c.render();assert.equal(measurements,1);
