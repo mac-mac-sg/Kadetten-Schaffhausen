@@ -13,10 +13,10 @@ function gameControls() {
   if(document.documentElement.dataset?.design!=='v2')return `<div class="game-control-bar" role="group" aria-label="Spielplan und Wettbewerb">${gameViewToggle()}<div class="game-filter"><select id="competition" aria-label="Wettbewerb">${choices.map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></div></div>`;
   return `${gameViewToggle()}${mode==='week'?'':`<div class="controls"><label>Wettbewerb <select id="competition">${choices.map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label></div>`}`;
 }
-function gameJumpControls(ordered){
-  if(document.documentElement.dataset?.design==='v2')return '';
-  const today=swissToday(),past=ordered.some(g=>g.score||g.date<today),future=ordered.filter(g=>!g.score&&g.date>=today);
-  return `<nav class="game-jumps" aria-label="In der Spieleliste springen"><button type="button" data-game-jump="past" ${past?'':'disabled'}>Vergangen</button><button type="button" data-game-jump="current" ${ordered.length?'':'disabled'}>Aktuell</button><button type="button" data-game-jump="upcoming" ${future.length>1?'':'disabled'}>Kommend</button></nav>`;
+function gameTimelineCards(ordered,current,renderCard){
+  const index=ordered.indexOf(current),v1=document.documentElement.dataset?.design!=='v2';
+  const divider=(period,label,path)=>`<div class="game-list-divider" data-game-period="${period}"><span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${path}"/></svg>${label}</span></div>`;
+  return ordered.map((g,i)=>`${v1&&i===index&&i>0?divider('past','Vergangen','m4 9 4-4 4 4'):''}${renderCard(g,g===current)}${v1&&i===index&&i<ordered.length-1?divider('upcoming','Kommend','m4 7 4 4 4-4'):''}`).join('');
 }
 function gameJumpTargets(){
   const cards=[...document.querySelectorAll('.game-timeline .game-card')],current=cards.find(e=>e.classList.contains('current-game')),index=cards.indexOf(current);
@@ -27,7 +27,6 @@ function setupGameJumps(){
   if(gameJumpScrollHandler)window.removeEventListener('scroll',gameJumpScrollHandler);
   document.getElementById('return-current-game')?.remove();
   if(document.documentElement.dataset.design==='v2'||location.hash!=='#season/games'||mode!=='list')return;
-  document.querySelectorAll('[data-game-jump]').forEach(button=>{button.onclick=()=>{const target=gameJumpTargets()[button.dataset.gameJump];if(target)scrollGameCardIntoView(target,true);};});
   const card=gameJumpTargets().current;if(!card)return;
   const back=document.createElement('button');back.type='button';back.id='return-current-game';back.className='return-current-game';back.textContent='Zum aktuellen Spiel';back.hidden=true;document.body.append(back);
   back.onclick=()=>scrollGameCardIntoView(gameJumpTargets().current,true);
@@ -42,7 +41,7 @@ function gameList() {
     .sort((a, b) => (a.date + (a.time || '00:00')).localeCompare(b.date + (b.time || '00:00')));
   const today = new Date().toLocaleDateString('sv-SE', {timeZone: 'Europe/Zurich'});
   const next = ordered.find(g => !g.score && g.date >= today);
-  return `<p class="muted">Saison 2026/27 · ${games.length} im Vereins-Matchcenter veröffentlichte Partien</p>${mode === 'calendar' ? calendar() : `${gameJumpControls(ordered)}<div class="games game-timeline">${ordered.map(g => card(g, g === next)).join('')}</div>${handballClub()==='otmar'?'':`<aside class="notice"><strong>Weiterer Saisonverlauf</strong><p>Für die Zeit nach Dezember sind im Vereins-Matchcenter noch keine weiteren konkreten Paarungen veröffentlicht. Weitere Liga-, Cup- und Europacuppartien werden ergänzt, sobald Gegner und Termine feststehen. Datenstand: 02.10.2026.</p></aside>`}`}`;
+  return `<p class="muted">Saison 2026/27 · ${games.length} im Vereins-Matchcenter veröffentlichte Partien</p>${mode === 'calendar' ? calendar() : `<div class="games game-timeline">${gameTimelineCards(ordered,next,card)}</div>${handballClub()==='otmar'?'':`<aside class="notice"><strong>Weiterer Saisonverlauf</strong><p>Für die Zeit nach Dezember sind im Vereins-Matchcenter noch keine weiteren konkreten Paarungen veröffentlicht. Weitere Liga-, Cup- und Europacuppartien werden ergänzt, sobald Gegner und Termine feststehen. Datenstand: 02.10.2026.</p></aside>`}`}`;
 }
 function calendarNavigation() {
   return `<div class="calendar-head"><button id="prev-month" aria-label="Vorheriger Monat">‹</button><h2>${new Date(calendarYear, month, 1).toLocaleDateString('de-CH', {month: 'long', year: 'numeric'})}</h2><button id="next-month" aria-label="Nächster Monat">›</button></div>`;
