@@ -283,14 +283,16 @@ test('A live FCSG fixture retains a prominent card and live details',()=>{
 });
 
 
-test('V1 settings contain exactly two app-information rows and a reusable disclaimer popup',()=>{
+test('V1 settings show disclaimer and clock with timestamp on one row',()=>{
  const a=app('https://example.test/'),create=a.document.createElement.bind(a.document);
  a.document.createElement=tag=>{const e=create(tag);if(tag==='dialog'){e.showModal=()=>e.setAttribute('open','');e.close=()=>e.removeAttribute('open');}return e;};
  a.run("var updateState={checkedAt:'2026-10-15T04:20:00Z'};openClubSettings()");
  const info=a.document.querySelector('.settings-app-info');
- assert.equal(info.querySelectorAll('.settings-info-row').length,2);
+ assert.equal(info.querySelectorAll('.settings-info-row').length,1);
+ assert.equal(info.querySelector('.settings-update').getAttribute('aria-label'),'Zuletzt aktualisiert');
+ assert.ok(info.querySelector('.settings-clock[aria-hidden="true"]'));
  assert.equal(info.querySelector('[data-open-disclaimer] > span').textContent,'Disclaimer');
- assert.match(info.textContent,/Zuletzt aktualisiert/);
+ assert.doesNotMatch(info.textContent,/Zuletzt aktualisiert/);
  const time=info.querySelector('time');assert.equal(time.getAttribute('datetime'),'2026-10-15T04:20:00.000Z');assert.match(time.textContent,/15.10.2026.*06:20/);
  info.querySelector('[data-open-disclaimer]').onclick();
  const popup=a.document.querySelector('.app-disclaimer-dialog');assert.ok(popup.hasAttribute('open'));
