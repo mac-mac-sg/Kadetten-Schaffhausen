@@ -77,7 +77,25 @@ try {
     assert.equal(await page.locator('[data-mode="week"]').count(),0);
     const controls=await page.locator('.game-control-bar').evaluate(e=>{const a=e.querySelector('button').getBoundingClientRect(),b=e.querySelector('select').getBoundingClientRect();return{buttons:e.querySelectorAll('button').length,sameRow:Math.abs(a.y-b.y)<1};});
     assert.equal(controls.buttons,2);assert.equal(controls.sameRow,true);
+    assert.equal(await page.locator('[data-mode="calendar"]').getAttribute('aria-pressed'),'true');
+    const bar=page.locator('.game-control-bar'),painted=await bar.screenshot(),clip=await bar.boundingBox();
+    await bar.evaluate(e=>e.style.visibility='hidden');
+    try {assert.ok(!(await page.screenshot({clip})).equals(painted),club+': calendar controls remain visibly painted');}
+    finally {await bar.evaluate(e=>e.style.removeProperty('visibility'));}
+    if(await page.locator('#competition option').count()>1){
+    const choice=await page.locator('#competition option').nth(1).getAttribute('value')||await page.locator('#competition option').nth(1).textContent();
+    await page.locator('#competition').selectOption({label:choice});
+    assert.equal(await page.locator('#competition').inputValue(),choice);
+    assert.equal(await page.locator('[data-mode="calendar"]').getAttribute('aria-pressed'),'true');
+    await page.locator('#competition').selectOption({label:'Alle'});
+    }
+    const monthLabel=await page.locator('.calendar-head h2').textContent();
+    await page.locator('#next-month').click();assert.notEqual(await page.locator('.calendar-head h2').textContent(),monthLabel);
+    await page.locator('#prev-month').click();assert.equal(await page.locator('.calendar-head h2').textContent(),monthLabel);
+
     await page.locator('[data-mode="list"]').click();stable(before,await measure(),club+' list');
+    await page.locator('[data-mode=calendar]').click();await page.locator('[data-mode=list]').click();
+    assert.equal(await page.locator('[data-mode=list]').getAttribute('aria-pressed'),'true');
     if(!empty && viewport.height>550) {
       const start=await measure();
       await page.evaluate(()=>window.scrollTo({top:180,behavior:'instant'}));

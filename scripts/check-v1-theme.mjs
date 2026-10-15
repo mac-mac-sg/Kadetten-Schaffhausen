@@ -97,14 +97,22 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   if(states.length>1){assert.notEqual(states[0].background,states[1].background,label+': competition states are distinct');await page.locator('[data-league="EHL"]').click();assert.equal(await page.locator('[data-league="EHL"]').getAttribute('aria-pressed'),'true');await page.locator('[data-league="QHL"]').click();}
  }
  async function checkGamesHeaderAlignment(label){
-  if(!label.includes('games-list'))return;
+  if(!label.includes('games-list')&&!label.endsWith(' calendar'))return;
   const layout=await page.locator('.game-control-bar').evaluate(e=>{const a=e.getBoundingClientRect(),b=document.querySelector('body > .top').getBoundingClientRect(),s=getComputedStyle(e,'::before');return {left:a.left,headerLeft:b.left,width:a.width,headerWidth:b.width,gap:a.top-b.bottom,coverHeight:parseFloat(s.height),coverLeft:a.left+parseFloat(getComputedStyle(e).borderLeftWidth)+parseFloat(s.left),coverWidth:parseFloat(s.width),viewport:innerWidth,cover:s.backgroundColor};});
   assert.ok(Math.abs(layout.left-layout.headerLeft)<.5,label+': controls align with club header');
   assert.ok(Math.abs(layout.width-layout.headerWidth)<.5,label+': controls match club header width');
   assert.ok(layout.coverHeight>=layout.gap,label+': entire vertical gap is covered');
   assert.ok(Math.abs(layout.coverLeft)<.5&&Math.abs(layout.coverWidth-layout.viewport)<.5,label+': gap backing spans the viewport');
   assert.ok(!layout.cover.startsWith('rgba('),label+': gap backing is opaque');
+  assert.equal(await page.locator('.game-view-toggle').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)',label+': no rectangular panel behind the view buttons');
+  const bar=page.locator('.game-control-bar');
   await page.evaluate(async()=>document.fonts.ready);
+  const visible=await bar.screenshot();
+  await bar.evaluate(e=>e.style.visibility='hidden');
+  const rect=await bar.boundingBox();
+  try {assert.ok(!(await page.screenshot({clip:rect})).equals(visible),label+': toolbar is painted above its opaque backing');}
+  finally {await bar.evaluate(e=>e.style.removeProperty('visibility'));}
+  for(const selector of ['[data-mode="list"]','[data-mode="calendar"]','#competition'])assert.equal(await page.locator(selector).evaluate(e=>{const r=e.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===e;}),true,label+': '+selector+' is directly tappable');
   const clip=await page.locator('.game-control-bar').evaluate(e=>({x:0,y:0,width:innerWidth,height:Math.floor(e.getBoundingClientRect().bottom)}));
   const before=await page.screenshot({clip});
   await page.evaluate(height=>{const probe=document.createElement('div');probe.id='chrome-underlay-probe';probe.style.cssText='position:fixed;top:0;left:0;width:100%;height:'+height+'px;background:#ff00ff;z-index:23;pointer-events:none';document.body.append(probe);},clip.height);
@@ -121,10 +129,10 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  }
  await page.goto(origin+'/?club=kadetten#home');await page.evaluate(()=>window.showAppIntroduction());for(let n=0;n<4;n++){await audit('introduction '+n);await page.locator('.app-introduction [data-next]').click();}
  await page.setViewportSize({width:375,height:667});await page.locator('#club-settings').click();await audit('small settings');await page.locator('[data-v1-light-mode]').uncheck();assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');await audit('dark settings');await checkDisclaimerPopup('dark disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.reload();assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
- for(const club of clubs){for(const route of ['home','season/games','season/squad']){await page.goto(origin+'/?club='+club+'#'+route);if(route==='season/games')await page.locator('[data-mode="list"]').click();await audit('dark '+club+' '+(route==='season/games'?'games-list':route));}}
+ for(const club of clubs){for(const route of ['home','season/games','season/squad']){await page.goto(origin+'/?club='+club+'#'+route);if(route==='season/games')await page.locator('[data-mode="list"]').click();await audit('dark '+club+' '+(route==='season/games'?'games-list':route));if(route==='season/games'){await page.locator('[data-mode=calendar]').click();await audit('dark '+club+' calendar');await page.locator('[data-mode=list]').click();}}}
  await page.goto(origin+'/v2/?club=kadetten#home');await page.locator('#club-settings').click();assert.equal(await page.locator('[data-v1-light-mode]').count(),0);await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.goto(origin+'/?club=kadetten#home');assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
  await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').check();await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.setViewportSize({width:1280,height:844});
- for(let i=0;i<clubs.length;i++){const d=data[i],player=i===1?d.players[0].id:i===2?d.roster?.[0]?.number||6:6,g=d.games.filter(g=>g.score).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||d.games[0];for(const route of ['home','season/games','season/table','player/'+player,'match/'+g.id+'/stats']){await page.goto(origin+'/?club='+clubs[i]+'#'+route);if(route==='season/games')await page.locator('[data-mode="list"]').click();await audit('desktop '+clubs[i]+' '+(route==='season/games'?'games-list':route));}}
+ for(let i=0;i<clubs.length;i++){const d=data[i],player=i===1?d.players[0].id:i===2?d.roster?.[0]?.number||6:6,g=d.games.filter(g=>g.score).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||d.games[0];for(const route of ['home','season/games','season/table','player/'+player,'match/'+g.id+'/stats']){await page.goto(origin+'/?club='+clubs[i]+'#'+route);if(route==='season/games')await page.locator('[data-mode="list"]').click();await audit('desktop '+clubs[i]+' '+(route==='season/games'?'games-list':route));if(route==='season/games'){await page.locator('[data-mode=calendar]').click();await audit('desktop '+clubs[i]+' calendar');await page.locator('[data-mode=list]').click();}}}
  await page.locator('#club-settings').click();await checkDisclaimerPopup('desktop disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();
  if(process.env.V1_THEME_REPORT)fs.writeFileSync(process.env.V1_THEME_REPORT,JSON.stringify({reports,errors},null,2));assert.deepEqual(errors,[]);assert.deepEqual(reports.filter(r=>r.violations.length||r.overflow||r.h1!==1),[]);console.log(reports.length+' theme/accessibility checks passed.');await ctx.close();
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
