@@ -795,3 +795,23 @@ test('Vereins-Timelines zeigen alle Kapiteltexte direkt ohne Trophäenschrank-Ve
   }
  }finally{run("activeClub='kadetten'");}
 });
+
+
+test('Spieler-Ranglisten verwenden Vereinsfotos statt vereinsübergreifender Trikotnummern',()=>{
+ const saved={club:run('activeClub'),state:run('updateState'),players:run('players'),league:run('tableLeague')};
+ try {
+  run("activeClub='otmar';updateState=otmarFallback;players=otmarFallback.roster.map(p=>[p.number,p.name,p.position]);tableLeague='QHL'");
+  const doc=parseHTML(view('seasonPlayerLeaders()')).document;
+  assert.ok(doc.querySelectorAll('.player-leader').length>0);
+  for(const row of doc.querySelectorAll('.player-leader')){
+   const id=Number(row.getAttribute('href').split('/').at(-1));
+   const roster=run('otmarFallback.roster').find(p=>p.number===id);
+   assert.equal(row.querySelector('img').getAttribute('src'),roster.image||'assets/club-140684.webp');
+   assert.doesNotMatch(row.querySelector('img').getAttribute('src'),/^assets\/player-/);
+  }
+  run("updateState={...otmarFallback,roster:[]}");
+  for(const image of parseHTML(view('seasonPlayerLeaders()')).document.querySelectorAll('.player-leader img'))assert.equal(image.getAttribute('src'),'assets/club-140684.webp');
+  run("activeClub='kadetten';players=[[13,'Kadetten-Spieler','Rückraum']];updateState={playerSeason:{season:'2026/27',competition:'QHL',teamGames:1,players:{13:{goals:5,twoMinutes:1}}}}");
+  assert.equal(parseHTML(view('seasonPlayerLeaders()')).document.querySelector('.player-leader img').getAttribute('src'),'assets/player-13.webp');
+ }finally{context.__leaderSaved=saved;run('activeClub=__leaderSaved.club;updateState=__leaderSaved.state;players=__leaderSaved.players;tableLeague=__leaderSaved.league');}
+});
