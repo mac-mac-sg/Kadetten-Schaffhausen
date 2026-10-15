@@ -40,19 +40,15 @@ setupViews=function() {
   document.documentElement.classList.remove('snap-news');
   const season=document.querySelector('.season');
   if(season&&location.hash==='#season/squad') {
-    const intro=document.createElement('section');intro.className='v2-roster-intro';intro.dataset.v2Reveal='roster-intro';
-    intro.innerHTML=`<img src="${v2ClubImages[activeClub]}" alt="Heimstätte von ${liveEscape(fanClubs[activeClub].name)}"><div><p class="eyebrow">Menschen hinter dem Wappen</p><h2>Unsere Mannschaft.</h2><a class="button subtle" href="#club">Geschichte & Erfolge ↗</a></div>`;
+    const intro=document.createElement('a');intro.className='v2-roster-intro';intro.href='#club';intro.setAttribute('aria-label','Unser Verein · Geschichte & Erfolge');intro.dataset.v2Reveal='roster-intro';
+    intro.innerHTML=`<img src="${v2ClubImages[activeClub]}" alt="Heimstätte von ${liveEscape(fanClubs[activeClub].name)}"><div><p class="eyebrow">Menschen hinter dem Wappen</p><h2>Unser Verein</h2><span class="button subtle">Geschichte & Erfolge ↗</span></div>`;
     season.querySelector('.season-header')?.after(intro);
     season.insertAdjacentHTML('beforeend',v2Discover());
-  }
-  const club=document.querySelector('.club-page');
-  if(club&&!club.querySelector('.v2-club-nav')) {
-    const intro=club.querySelector('.club-intro');
-    intro?.insertAdjacentHTML('afterend',`<nav class="v2-club-nav" aria-label="Verein entdecken"><button data-club-jump="club-history">Unsere Geschichte <span aria-hidden="true">+</span></button><button data-club-jump="club-cabinet">Unsere Erfolge <span aria-hidden="true">+</span></button><button data-v2-venue>Unsere Heimstätte <span aria-hidden="true">+</span></button></nav><section class="v2-club-venue" hidden><img src="${v2ClubImages[activeClub]}" alt="Heimstätte von ${liveEscape(fanClubs[activeClub].name)}"><h2>${activeClub==='kadetten'?'BBC Arena':activeClub==='fcsg'?'Berit Sitterstadion':'Kreuzbleiche'}</h2></section>`);
   }
   v2SetupHeader();
   v2SyncMatchAction();
   v2SetTheme(document.documentElement.dataset.theme);
+  v2SetupClubDeck();
   document.querySelectorAll('.club-chapter,.club-cabinet').forEach((element,index)=>element.dataset.v2Reveal='club-'+(element.id||index));
   v2SetupScrollChrome();
   v2SetupReveals();
@@ -62,7 +58,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-v2-theme]'))v2SetTheme(document.documentElement.dataset.theme==='light'?'dark':'light');
   if(e.target.closest('[data-v2-venue]')) { const venue=document.querySelector('.v2-club-venue');if(venue){venue.hidden=!venue.hidden;e.target.closest('button').setAttribute('aria-expanded',String(!venue.hidden));} }
   const jump=e.target.closest('[data-v2-club-target]');
-  if(jump) { const target=jump.dataset.v2ClubTarget;setTimeout(()=>{const element=document.querySelector('.'+target+',#'+target);if(element){element.hidden=false;element.scrollIntoView({behavior:'auto'});}},0); }
+  if(jump){e.preventDefault();location.hash=jump.dataset.v2ClubTarget==='club-cabinet'?'#club/achievements':'#club/venue';}
   if(e.target.closest('[data-v2-demo]'))v2ShowDemo();
 });
 function v2ShowDemo() {
@@ -90,7 +86,7 @@ function v2SetupScrollChrome() {
   v2TopObserver?.disconnect();v2HeroObserver?.disconnect();
   document.querySelector('.v2-scrollbar')?.remove();
   const home=!location.hash||location.hash==='#home', club=location.hash==='#club';
-  if(!club)return;
+  if(!club||document.querySelector('.v2-club-overview,.v2-club-detail'))return;
   const top=document.querySelector('body > .top');if(!top)return;
   const nav=document.createElement('nav');nav.className='v2-scrollbar';nav.hidden=true;nav.dataset.surface='photo';
   nav.setAttribute('aria-label','Kompakte Vereinsnavigation');nav.innerHTML=v2ScrollMarkup();document.body.append(nav);
@@ -235,3 +231,76 @@ document.addEventListener('keydown',event=>{
  if(event.key==='ArrowDown'&&event.target.closest('[data-v2-choose]')){event.preventDefault();if(document.getElementById('v2-club-dropdown')?.hidden!==false)v2ChooseClub();document.querySelector('.v2-club-dropdown [data-v2-pick]')?.focus();}
 });
 window.addEventListener('scroll',()=>v2CloseClubDropdown(),{passive:true});
+
+/* Club chapters: a compact card deck with native chapter routes and browser back. */
+const v2ClubOrders={};
+let v2ClubTitleTarget=null,v2ClubHistoryTarget=null;
+function v2ClubChapters(){
+ const chapters=activeClub==='fcsg'?fcsgHistory:activeClub==='otmar'?otmarHistory:clubHistory;
+ const history=chapters.find(chapter=>chapter.image&&chapter.id!=='roots')||chapters.find(chapter=>chapter.image),success=chapters.find(chapter=>chapter.image&&chapter.trophy)||history;
+ const venue={kadetten:'BBC Arena',fcsg:'Berit Sitterstadion',otmar:'Kreuzbleiche'}[activeClub];
+ return {
+  history:{title:'Geschichte',description:'Die Menschen und Momente hinter dem Wappen.',image:history?.image||v2ClubImages[activeClub],caption:history?.caption||venue},
+  achievements:{title:'Erfolge',description:'Titel, Erinnerungen und besondere Augenblicke.',image:success?.image||v2ClubImages[activeClub],caption:success?.caption||venue},
+  venue:{title:'Heimstätte',description:venue+' · Hier sind wir zu Hause.',image:v2ClubImages[activeClub],caption:venue}
+ };
+}
+function v2ClubDeckMarkup(){
+ const chapters=v2ClubChapters(),order=v2ClubOrders[activeClub]||['history','achievements','venue'];
+ return order.map((key,index)=>{
+  const chapter=chapters[key];
+  return `<article class="v2-club-card v2-club-card--${key}" style="--rank:${index}" data-v2-deck-card="${key}"><a class="v2-club-face" href="#club/${key}" aria-label="${chapter.title} entdecken" ${index?'hidden':''}><img src="${liveEscape(chapter.image)}" alt="" decoding="async"><div class="v2-club-face-copy"><h2>${chapter.title}</h2><p>${liveEscape(chapter.description)}</p><span class="v2-club-arrow" aria-hidden="true">↗</span></div></a><button type="button" class="v2-club-tab" data-v2-club-select="${key}" ${index?'':'hidden'} aria-label="${chapter.title} nach vorne holen"><span aria-hidden="true">+</span>${chapter.title}</button></article>`;
+ }).join('');
+}
+function v2ClubView(original){
+ const source=document.createElement('div');source.innerHTML=original;
+ const chapters=v2ClubChapters(),key=location.hash.split('/')[1],detail=Object.hasOwn(chapters,key),name=liveEscape(fanClubs[activeClub].name);
+ const credits=source.querySelector('.club-credits')?.outerHTML||'';
+ if(!detail)return `<div class="club-page v2-club-overview"><div class="v2-club-back">${backLink('#season/squad','Zurück zum Kader')}</div><h1 class="v2-sr-only">Unser Verein · ${name}</h1><p class="v2-club-name">${name}</p><div class="v2-club-deck" aria-label="Geschichte, Erfolge und Heimstätte">${v2ClubDeckMarkup()}</div><p class="v2-club-hint">Kapitel wählen und die vordere Karte öffnen.</p>${credits}</div>`;
+ let content='';
+ if(key==='venue'){
+  const venue=chapters.venue;
+  const official={kadetten:'https://bbcarena.ch/',fcsg:'https://www.fcsg.ch/',otmar:'https://otmar.ch/'}[activeClub];
+  content=`<section class="v2-venue-chapter"><img src="${venue.image}" alt="${liveEscape(venue.caption)}"><h2>${liveEscape(venue.caption)}</h2><p>Die Heimstätte von ${name}.</p><p>${ext(official,'Mehr beim Verein erfahren','news-link')}</p></section>`;
+ }else{
+  const section=source.querySelector(key==='history'?'.club-history':'.club-cabinet');
+  if(key==='achievements'&&v2ClubTitleTarget?.club===activeClub){
+   const trophies=activeClub==='fcsg'?fcsgTrophies:activeClub==='otmar'?otmarTrophies:clubTrophies;
+   const history=activeClub==='fcsg'?fcsgHistory:activeClub==='otmar'?otmarHistory:clubHistory;
+   section.querySelector('#club-title-panel').innerHTML=clubTrophyYears(v2ClubTitleTarget.id,v2ClubTitleTarget.year,trophies,history);
+   section.querySelectorAll('[data-club-trophy]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.clubTrophy===v2ClubTitleTarget.id)));
+   v2ClubTitleTarget=null;
+  }
+  content=section?.outerHTML||'';
+ }
+ return `<div class="club-page v2-club-detail" data-v2-club-chapter="${key}"><div class="v2-club-back">${backLink('#club','Zurück zu unserem Verein')}</div><p class="v2-club-name">${name}</p><h1>${chapters[key].title}</h1>${content}${credits}</div>`;
+}
+const v2OriginalClubPage=clubPage,v2OriginalFcsgClubPage=fcsgClubPage;
+clubPage=function(){return v2ClubView(v2OriginalClubPage());};
+fcsgClubPage=function(){return v2ClubView(v2OriginalFcsgClubPage());};
+function v2SetupClubDeck(){
+ const deck=document.querySelector('.v2-club-deck');
+ if(deck)deck.addEventListener('click',event=>{
+  const button=event.target.closest('[data-v2-club-select]');if(!button)return;
+  const key=button.dataset.v2ClubSelect,order=v2ClubOrders[activeClub]||['history','achievements','venue'];
+  if(!order.includes(key))return;
+  v2ClubOrders[activeClub]=[key,...order.filter(item=>item!==key)];
+  deck.innerHTML=v2ClubDeckMarkup();
+  const front=deck.querySelector('.v2-club-face:not([hidden])');front?.focus({preventScroll:true});
+  if(typeof matchMedia==='function'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)front?.animate?.([{opacity:.6,transform:'translateY(8px) rotateY(-6deg)'},{opacity:1,transform:'none'}],{duration:260,easing:'cubic-bezier(.22,1,.36,1)'});
+ });
+ if(v2ClubHistoryTarget&&document.querySelector('.v2-club-detail[data-v2-club-chapter="history"]')){
+  const id=v2ClubHistoryTarget;v2ClubHistoryTarget=null;
+  setTimeout(()=>{const target=document.getElementById(id);target?.scrollIntoView({block:'start',behavior:'instant'});const heading=target?.querySelector('h3');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});},0);
+ }
+}
+document.addEventListener('click',event=>{
+ const root=event.target.closest('.v2-club-detail');if(!root)return;
+ const trophy=event.target.closest('[data-club-trophy]'),jump=event.target.closest('[data-club-jump]');
+ if(root.dataset.v2ClubChapter==='history'&&trophy){
+  event.preventDefault();event.stopImmediatePropagation();
+  v2ClubTitleTarget={club:activeClub,id:trophy.dataset.clubTrophy,year:Number(trophy.dataset.clubTitleYear)};location.hash='#club/achievements';
+ }else if(root.dataset.v2ClubChapter==='achievements'&&jump?.dataset.clubJump.startsWith('club-history')){
+  event.preventDefault();event.stopImmediatePropagation();v2ClubHistoryTarget=jump.dataset.clubJump;location.hash='#club/history';
+ }
+},true);

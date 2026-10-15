@@ -33,3 +33,10 @@ Die Aktionsebene ist eine vollständige, an allen vier Ecken abgerundete Kachel
 Der Arena-Einstieg enthält ausschliesslich die Matchkarte unter dem kompakten Kopf. Slogan, grosser Vereinstitel und Saisonzeile entfallen; die Hauptüberschrift steht im News-Bereich. Der Vereins-Pfeil klappt eine direkt am Kopf verankerte Auswahl auf, ohne Dialog oder Hintergrundabdunklung. Er schliesst beim erneuten Antippen, nach der Auswahl, ausserhalb, beim Scrollen oder mit Escape; ArrowDown öffnet ihn mit Tastaturfokus auf den ersten Verein.
 
 Die News-Vorschau besteht aus einem einzigen zugänglichen Link um Bild, Datum und Titel. «Geschichte lesen» entfällt. Ein dekorativer SVG-Pfeil nach rechts steht neben der ersten Titelzeile; die Fläche gibt beim Antippen kurz über die Deckkraft Rückmeldung. Die offenen Flächen und grossen Bilder bleiben erhalten. Die Browserprüfung öffnet denselben Artikel über Foto, Überschrift und Enter-Taste.
+
+### Vereinskapitel als Kartenstapel
+Im Kader öffnet die gesamte Kachel «Unser Verein» die Vereinsübersicht. Diese beginnt direkt mit drei vollständigen, versetzten Karten für Geschichte, Erfolge und Heimstätte. Hintere Kapitelstreifen holen die betreffende Karte nach vorne; nur die Vorderseite verlinkt zur Detailansicht. Die Reihenfolge bleibt je Verein im laufenden App-Besuch erhalten. Detailrouten: `#club/history`, `#club/achievements`, `#club/venue`; «Zurück» öffnet wieder den ausgewählten Stapel.
+
+Zeitreise und Trophäenschrank verwenden die bestehenden Daten und Bedienelemente. Verknüpfungen zwischen Titeljahr und historischem Moment wechseln das passende Kapitel. Bestehende Links von der Startseite führen ebenfalls ins zugehörige Kapitel. Ohne verfügbare Archivbilder bleibt die ruhige Kartenfarbe sichtbar. Reduzierte Animationen deaktivieren die Wechselbewegung. V1 bleibt unverändert.
+
+Browserprüfung nach `npm run build:pages`: `node scripts/check-v2-club-deck.mjs` mit denselben Browser-/axe-Umgebungsvariablen wie `scripts/check-v2-mobile.mjs`.

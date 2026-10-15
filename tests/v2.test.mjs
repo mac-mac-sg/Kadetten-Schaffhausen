@@ -177,3 +177,35 @@ test('Each V2 news has one accessible link wrapping image, date, title and a dec
   }
  }
 });
+
+test('V2 club overview starts with three complete chapter cards and restores the selected front card',()=>{
+ const run=app();
+ for(const club of ['kadetten','fcsg','otmar']){
+  run(`activeClub='${club}';location.hash='#club'`);
+  const original=run(club==='fcsg'?'fcsgClubPage()':'clubPage()');
+  const {document}=parseHTML(original);
+  assert.equal(document.querySelectorAll('h1').length,1);
+  assert.equal(document.querySelectorAll('.v2-club-card').length,3);
+  assert.equal(document.querySelectorAll('.v2-club-face:not([hidden])').length,1);
+  assert.equal(document.querySelectorAll('.v2-club-tab:not([hidden])').length,2);
+  assert.equal(document.querySelector('.v2-club-face:not([hidden])').getAttribute('href'),'#club/history');
+  assert.equal(document.querySelector('.club-intro'),null);
+  assert.doesNotMatch(original,/undefined|NaN/);
+  run(`v2ClubOrders['${club}']=['venue','history','achievements']`);
+  const again=parseHTML(run(club==='fcsg'?'fcsgClubPage()':'clubPage()')).document;
+  assert.equal(again.querySelector('.v2-club-face:not([hidden])').getAttribute('href'),'#club/venue');
+ }
+});
+test('V2 chapter routes retain the full history, trophy controls, sources and venue image',()=>{
+ const run=app();
+ for(const club of ['kadetten','fcsg','otmar'])for(const chapter of ['history','achievements','venue']){
+  run(`activeClub='${club}';location.hash='#club/${chapter}'`);
+  const {document}=parseHTML(run(club==='fcsg'?'fcsgClubPage()':'clubPage()'));
+  assert.equal(document.querySelectorAll('h1').length,1);
+  assert.ok(document.querySelector('a[href="#club"]'));
+  assert.ok(document.querySelector('.club-credits'));
+  if(chapter==='history')assert.equal(document.querySelectorAll('.club-chapter').length,run("activeClub==='fcsg'?fcsgHistory.length:activeClub==='otmar'?otmarHistory.length:clubHistory.length"));
+  if(chapter==='achievements'){assert.ok(document.querySelector('#club-title-panel'));assert.equal(document.querySelectorAll('.club-trophy').length,run("activeClub==='fcsg'?fcsgTrophies.length:activeClub==='otmar'?otmarTrophies.length:clubTrophies.length"));}
+  if(chapter==='venue')assert.ok(document.querySelector('.v2-venue-chapter > img'));
+ }
+});
