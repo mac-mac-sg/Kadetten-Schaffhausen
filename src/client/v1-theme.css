@@ -12,11 +12,11 @@ html:not([data-design='v2']) .club-settings-dialog { max-height:calc(100dvh - 32
 :root:not([data-design='v2'])[data-theme='light'] {
  --surface:#e8ece5; --surface-2:#ffffff; --text:#25312a; --muted:#536258; --line:#233a292b;
  --accent:#99470f; --accent-soft:#92491b; --win:#376d29; --draw:#806416; --loss:#a53d35;
- --v1-selection:#efbd98; --v1-dock-glass:#f4dcc6ed; --v1-filter-surface:#e4d8cbf5; --panel:#ffffff;
+ --v1-selection:#efbd98; --v1-dock-glass:#fff0e39e; --v1-filter-surface:#e4d8cbf5; --panel:#ffffff;
  --match-green:#246d45;
 }
-:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#d5e6d8ed; --v1-filter-surface:#d4e0d3f5; }
-:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#f1e4b8ed; --v1-filter-surface:#e8dfc4f5; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#eaf4ec9e; --v1-filter-surface:#d4e0d3f5; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#fff6d89e; --v1-filter-surface:#e8dfc4f5; }
 html:not([data-design='v2'])[data-theme='light'] body { background:var(--surface); color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] :is(.top.v1-compact-header,.season-header,.match-top,.article-bar,.player-sticky,.profile-jumps,.fcsg-profile-jumps) { background:#f6f5f0e8; color:var(--text); border-color:var(--line); }
 html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#58664f42; box-shadow:0 6px 22px #26352626,inset 0 1px 0 #ffffffcc; }
@@ -341,3 +341,10 @@ html:not([data-design='v2'])[data-theme='light'] .league-toggle button { min-hei
 html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true'],
 html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; border-color:var(--accent); font-weight:650; }
 html:not([data-design='v2'])[data-theme='light'] .league-toggle button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+/* Match V2's translucent club glass while retaining V1's navigation layout. */
+:root:not([data-design='v2'])[data-theme='dark'] { --v1-dock-glass:#4e3023bd; }
+:root:not([data-design='v2'])[data-theme='dark'][data-club='fcsg'] { --v1-dock-glass:#1d402bbd; }
+:root:not([data-design='v2'])[data-theme='dark'][data-club='otmar'] { --v1-dock-glass:#43391abd; }
+html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px solid color-mix(in srgb,var(--text) 24%,transparent); box-shadow:0 8px 28px #00000066,0 2px 8px #00000033,inset 0 1px 0 #ffffff26; backdrop-filter:blur(16px) saturate(1.15); -webkit-backdrop-filter:blur(16px) saturate(1.15); }
+html:not([data-design='v2'])[data-theme='light'] .dock { border-color:var(--line); box-shadow:0 8px 28px #10211730,0 2px 8px #10211714,inset 0 1px 0 #ffffffb3; }

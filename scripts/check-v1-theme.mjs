@@ -16,11 +16,14 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  async function compareUnderlayWithV2(){
   const action=page.locator('.v1-match-action');if(!await action.count())return;
   const colours=locator=>locator.evaluate(e=>({background:getComputedStyle(e).backgroundColor,text:getComputedStyle(e).color}));
+  const glass=locator=>locator.evaluate(e=>{const s=getComputedStyle(e);return {background:s.backgroundColor,blur:s.backdropFilter,shadow:s.boxShadow};});
+  const dock=await glass(page.locator('.dock'));
   const expected=await colours(action),club=await page.locator('html').getAttribute('data-club'),theme=await page.locator('html').getAttribute('data-theme'),reference=await ctx.newPage();
   try {
    await reference.setViewportSize(page.viewportSize());await reference.goto(origin+'/v2/?club='+club+'#home');
    if(await reference.locator('html').getAttribute('data-theme')!==theme)await reference.locator('[data-v2-theme]').click();
    assert.deepEqual(await colours(reference.locator('.v2-match-action')),expected,club+' '+theme+': V1 underlay matches V2');
+   assert.deepEqual(await glass(reference.locator('.dock')),dock,club+' '+theme+': V1 navigation glass matches V2');
   } finally {await reference.close();}
  }
  async function compareTableSpacing(label){
