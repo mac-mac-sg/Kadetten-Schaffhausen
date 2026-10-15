@@ -77,3 +77,10 @@ Eine dekorative SVG-Kontur folgt den tatsächlichen vier CSS-Ecken, einschliessl
 In den Einstellungen unter «Darstellung» schaltet «Heller Modus» die gesamte V1 um. Standard bleibt dunkel. Die Wahl gilt für alle Vereine auf diesem Gerät und wird unter `fan-v1-theme` gespeichert; die Startseite setzt sie vor dem App-Bündel, damit beim erneuten Öffnen keine dunkle Zwischenansicht erscheint. Ein fehlender oder gesperrter lokaler Speicher verhindert die Bedienung nicht. V2 behält seine unabhängigen Einstellungen.
 
 Die helle Farbpalette umfasst Navigation, Vereinsmenü, Dialoge, Leseflächen, Spielplan, Kalender, Tabellen, Spielerstatistiken, Matchdetails, Diagramme und Vereinsgeschichte. Fotos behalten ihre natürlichen Farben; Matchday-Karten und das Aufstellungs-Spielfeld verwenden bewusst dunkle Flächen mit heller Schrift. `scripts/check-v1-theme.mjs` prüft Umschalten, Wiederherstellen, Vereinswechsel, kleine Displays, Einführung und Kontraste im Browser.
+
+### V1: Wischen zwischen Hauptansichten
+Ein deutlicher horizontaler Wisch im Inhalt wechselt zwischen News, Spiele, Tabelle und Kader. Nach links geht es zur nächsten, nach rechts zur vorherigen Ansicht; an den Enden bleibt die aktuelle Ansicht geöffnet. Beim Wechsel zu Spiele wird wie beim Antippen der unteren Navigation die ungefilterte Liste geöffnet. Verein und Browserhistorie bleiben erhalten.
+
+Vertikales Scrollen, mehrfingerige Gesten, Textauswahl, Bildschirmränder, Bedienelemente, Kalender und tatsächlich horizontal scrollbare Inhalte lösen keinen Tabwechsel aus. Artikel, Spieleinzelansichten, Spielerprofile, Vereinsgeschichte und offene Dialoge sind ausgenommen. Eine kurze Überblendung verändert die Position fixierter Leisten nicht und entfällt bei reduzierter Bewegung. V2 bleibt unabhängig.
+
+`tests/swipe-tabs.test.mjs` prüft Gestenerkennung und Ausschlüsse; `scripts/check-tab-swipes.mjs` prüft native Touch-Ereignisse über Chromium/CDP, Navigationszustand, Scrollverhalten und Barrierefreiheit. Die Browser-Umgebungsvariablen entsprechen `scripts/check-v1-theme.mjs`.
