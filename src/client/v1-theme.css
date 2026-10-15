@@ -307,3 +307,21 @@ html:not([data-design='v2']) .game-list-divider::before,
 html:not([data-design='v2']) .game-list-divider::after { content:''; flex:1; border-top:1px solid var(--line); }
 html:not([data-design='v2']) .game-list-divider span { display:flex; align-items:center; gap:5px; }
 html:not([data-design='v2']) .game-list-divider svg { width:14px; height:14px; }
+
+/* No layout shrink on scroll: the compact row overlaps the outgoing header's last 56px. */
+html:not([data-design='v2']) .match-top[data-match-full] { position:static; z-index:auto; }
+html:not([data-design='v2']) .match-sticky-bar { position:sticky; top:var(--v1-content-top); z-index:12; margin-top:-56px; margin-bottom:22px; isolation:isolate; }
+html:not([data-design='v2']) .match-compact-header { display:flex; align-items:center; gap:8px; height:56px; padding:0 max(12px,5%); box-sizing:border-box; background:var(--surface); color:var(--text); border-bottom:1px solid var(--line); opacity:0; visibility:hidden; transform:translateY(6px); pointer-events:none; transition:opacity 140ms ease,transform 140ms cubic-bezier(.23,1,.32,1),visibility 140ms; }
+html:not([data-design='v2']) .match-sticky-bar.is-collapsed .match-compact-header { opacity:1; visibility:visible; transform:none; pointer-events:auto; }
+html:not([data-design='v2']) .match-compact-back { display:grid; place-items:center; flex:none; width:44px; min-height:44px; color:var(--text); border-radius:10px; }
+html:not([data-design='v2']) .match-compact-back svg { width:20px; height:20px; }
+html:not([data-design='v2']) .match-compact-back:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+html:not([data-design='v2']) .match-compact-crest { display:grid; place-items:center; flex:none; width:26px; }
+html:not([data-design='v2']) .match-compact-crest :is(.crest,.clubmark) { width:24px; height:28px; object-fit:contain; font-size:10px; }
+html:not([data-design='v2']) .match-compact-copy { flex:1; min-width:0; text-align:left; }
+html:not([data-design='v2']) .match-compact-names { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:600; line-height:1.4; }
+html:not([data-design='v2']) .match-compact-detail { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px; line-height:1.5; }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs { display:flex; flex-wrap:nowrap; gap:6px; width:100%; max-width:none; margin:0; padding:4px max(12px,5%); box-sizing:border-box; background:var(--surface); border-bottom:1px solid var(--line); }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs a { flex:1; min-width:0; min-height:44px; display:flex; align-items:center; justify-content:center; padding:8px 6px; box-sizing:border-box; text-align:center; font-size:13px; }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs a:not(.selected) { color:var(--muted); }
+@media(prefers-reduced-motion:reduce) { html:not([data-design='v2']) .match-compact-header { transition:none; transform:none; } }

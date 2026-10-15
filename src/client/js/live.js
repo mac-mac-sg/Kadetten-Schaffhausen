@@ -1,4 +1,6 @@
 /* Live-Karte auf der Startseite und Live-Abfrage. */
+// Compare source markup, since V1 enhances the rendered header after insertion.
+const liveDetailSourceHTML=new WeakMap();
 let matchdayIntroDay = null;
 let liveRequestFailed = false, lastLiveMatch = null, lastLiveAt = null, lastLiveDate = null;
 function playMatchdayIntro(slot, day) {
@@ -270,7 +272,7 @@ function refreshLiveViews() {
    const open=container.querySelector('.live-all-events')?.open, focused=document.activeElement?.dataset?.statsTeam;
    if(container.contains(document.activeElement)&&!focused)return;
    const html=liveMatchContent(g,tab);
-   if(container.innerHTML!==html){container.innerHTML=html;if(focused)container.querySelector('[data-stats-team="'+focused+'"]')?.focus();}
+   if((liveDetailSourceHTML.get(container)??container.innerHTML)!==html){container.innerHTML=html;liveDetailSourceHTML.set(container,html);setupCollapsingMatchHeader();if(focused)container.querySelector('[data-stats-team="'+focused+'"]')?.focus();}
    if(open&&container.querySelector('.live-all-events'))container.querySelector('.live-all-events').open=true;
   } else if(liveForFixture(g)&&!(g.league==='EHL'&&verifiedReport(g)))render();
  }

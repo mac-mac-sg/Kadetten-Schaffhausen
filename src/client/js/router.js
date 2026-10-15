@@ -251,7 +251,7 @@ function render() {
     loadFcsgPlayerDetails();
     window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
     requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
-    finishViewRender(viewMemory);setupGameJumps();
+    finishViewRender(viewMemory);setupGameJumps();setupCollapsingMatchHeader(viewMemory);
     return;
   }
   setupClubPage();
@@ -264,7 +264,7 @@ function render() {
   loadFullArticle();
   window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
   requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
-  finishViewRender(viewMemory);setupGameJumps();
+  finishViewRender(viewMemory);setupGameJumps();setupCollapsingMatchHeader(viewMemory);
 }
 let gameCenterFrame;
 function centerNextGame() {
