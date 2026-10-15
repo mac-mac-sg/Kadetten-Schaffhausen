@@ -303,9 +303,9 @@ function measureAppChrome() {
     document.body.style.setProperty('--games-header-height',height+'px');
     const controls=document.querySelector('.games-mode .game-control-bar'),season=document.querySelector('.games-mode .season');
     if(controls&&season&&typeof getComputedStyle==='function'){
-      const rect=season.getBoundingClientRect(),css=getComputedStyle(season),left=parseFloat(css.paddingLeft)||0,right=parseFloat(css.paddingRight)||0;
-      document.body.style.setProperty('--v1-games-left',(rect.left+left)+'px');
-      document.body.style.setProperty('--v1-games-width',Math.max(0,rect.width-left-right)+'px');
+      const rect=top.getBoundingClientRect();
+      document.body.style.setProperty('--v1-games-left',rect.left+'px');
+      document.body.style.setProperty('--v1-games-width',rect.width+'px');
       document.documentElement.style.setProperty('--v1-games-controls-height',controls.getBoundingClientRect().height+'px');
     }
     const header=document.querySelector('.games-mode .season-header'),heading=header?.querySelector?.('h1');

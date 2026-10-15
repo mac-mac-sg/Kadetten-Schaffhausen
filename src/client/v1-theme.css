@@ -161,7 +161,7 @@ html:not([data-design='v2']) .standings-season.content { padding-top:40px; }
 html:not([data-design='v2']) .standings-season .season-header + * { margin-top:0; }
 
 /* Keep the pinned games navigation distinct from the cards moving underneath. */
-html:not([data-design='v2']) .games-mode .game-control-bar::before { content:''; position:absolute; bottom:calc(100% - 1px); left:0; right:0; height:16px; background:var(--surface); pointer-events:none; }
+html:not([data-design='v2']) .games-mode .game-control-bar::before { content:''; position:absolute; bottom:calc(100% - 1px); left:calc(-1 * var(--v1-games-left,20px) - 1px); width:100vw; height:16px; background:var(--surface); pointer-events:none; }
 html:not([data-design='v2']) .game-control-bar .game-view-toggle button:not([aria-pressed='true']) { color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] .games-mode .season-header .game-control-bar { background:var(--v1-filter-surface); border-color:#41554247; box-shadow:0 5px 16px #26352624,inset 0 1px 0 #ffffffb3; }
 
