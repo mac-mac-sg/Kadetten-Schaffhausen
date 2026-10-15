@@ -148,7 +148,7 @@ html:not([data-design='v2']) .game-control-bar :is(button,select):focus-visible 
 
 /* The bottom navigation identifies these sections; keep one semantic heading. */
 html:not([data-design='v2']) .season.content { padding-top:0; }
-html:not([data-design='v2']) .season-header { position:static; top:auto; margin:0; padding:0; border:0; background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; transform:none; }
+html:not([data-design='v2']) .season-header { position:static; z-index:auto; top:auto; margin:0; padding:0; border:0; background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; transform:none; }
 html:not([data-design='v2']) .season-header > .eyebrow { display:none; }
 html:not([data-design='v2']) .season-header > h1 { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 html:not([data-design='v2']) .games-mode .season.content { padding-top:calc(var(--v1-games-controls-height,54px) + 12px); }
@@ -333,6 +333,7 @@ html:not([data-design='v2'])[data-theme='light'] .game-timeline .game-card:not(.
 html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true'],
 html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; }
 html:not([data-design='v2'])[data-theme='light'] .game-control-bar select { background:#fffffff2; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle { background:transparent; }
 html:not([data-design='v2'])[data-theme='light'] .dock a.active,
 html:not([data-design='v2'])[data-theme='light'] .dock a.active:hover { background:var(--v1-selection); color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] .return-current-game { background:var(--accent); color:#ffffff; border-color:var(--accent); box-shadow:0 5px 16px #213a2926; }
