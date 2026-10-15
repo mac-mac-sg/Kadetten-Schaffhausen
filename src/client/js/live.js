@@ -23,11 +23,13 @@ function updateMatchPulse() {
   syncV1MatchAction(slot);
 }
 function showLiveMatch() {
-  const slot = document.getElementById('live-match');
+  paintHandballMatchday(document.getElementById('live-match'));
+}
+function paintHandballMatchday(slot,preview=false) {
   if (!slot) return;
   const {game: g, live} = homeFixture();
   if (!g || (slot.dataset.liveOnly === 'true' && !live)) {
-    syncMatchdayOrbit(slot,null);
+    if(!preview)syncMatchdayOrbit(slot,null);
     matchdayContentHTML.delete(slot);
     slot.hidden = true;
     slot.innerHTML = '';
@@ -60,8 +62,8 @@ function showLiveMatch() {
   slot.classList.toggle('matchday-over', ended && result?.state !== 'win');
   setMatchdayContent(slot,html);
   slot.hidden = false;
-  updateMatchPulse();
-  if (today && !ended) playMatchdayIntro(slot, g.date);
+  if(preview){slot.dataset.pulse=matchPulsePhase(g,!!live);syncV1MatchAction(slot);}
+  else {updateMatchPulse();if (today && !ended) playMatchdayIntro(slot, g.date);}
 }
 
 async function checkLiveMatch() {
