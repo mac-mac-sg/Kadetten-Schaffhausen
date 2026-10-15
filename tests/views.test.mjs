@@ -201,7 +201,8 @@ test('V1 groups only Liste, Kalender and the competition filter; V2 retains its 
     assert.equal(bar.querySelector('[data-mode="week"]'),null);
     assert.equal(bar.querySelector('[aria-pressed="true"]').getAttribute('data-mode'),selected);
     assert.equal(bar.querySelector('select').id,'competition');assert.equal(bar.querySelector('select').getAttribute('aria-label'),'Wettbewerb');
-    assert.equal(bar.querySelector('option').textContent,'Alle');
+    assert.equal(bar.querySelector('option').textContent,'Wettbewerb');
+    assert.equal(bar.querySelector('option').getAttribute('value'),'Alle');
   }
   try {
     context.document.documentElement.dataset.design='v2';

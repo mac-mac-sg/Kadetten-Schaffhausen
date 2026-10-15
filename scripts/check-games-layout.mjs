@@ -65,9 +65,10 @@ try {
     if(axe)await page.addScriptTag({content:axe});
     if(empty)await page.waitForFunction(()=>document.querySelectorAll('.game-timeline .game-card').length===0);
     const before=await measure();
+    assert.equal(await page.locator('#competition option[value=Alle]').textContent(),'Wettbewerb');
     assert.ok(Math.abs(before.boxes['body > .top'].x-before.boxes['.game-control-bar'].x)<.5,club+': control and club bars share their left edge');
     assert.ok(Math.abs(before.boxes['body > .top'].width-before.boxes['.game-control-bar'].width)<.5,club+': control and club bars have equal width');
-    const bridge=await page.locator('.game-control-bar').evaluate(e=>{const css=getComputedStyle(e,'::before');return{content:css.content,height:parseFloat(css.height),colour:css.backgroundColor,pointerEvents:css.pointerEvents,gap:e.getBoundingClientRect().top-document.querySelector('body > .top').getBoundingClientRect().bottom};});
+    const bridge=await page.locator('.game-control-bar').evaluate(e=>{const css=getComputedStyle(document.body,'::before');return{content:css.content,height:parseFloat(css.height),colour:css.backgroundColor,pointerEvents:css.pointerEvents,gap:e.getBoundingClientRect().top-document.querySelector('body > .top').getBoundingClientRect().bottom};});
     assert.notEqual(bridge.content,'none',club+': gap above controls has a backing');
     assert.ok(bridge.height>=bridge.gap-1,club+': backing covers the gap to the club header');
     assert.ok(!bridge.colour.startsWith('rgba('),club+': scrolling text cannot show through the gap');
@@ -87,7 +88,7 @@ try {
     await page.locator('#competition').selectOption({label:choice});
     assert.equal(await page.locator('#competition').inputValue(),choice);
     assert.equal(await page.locator('[data-mode="calendar"]').getAttribute('aria-pressed'),'true');
-    await page.locator('#competition').selectOption({label:'Alle'});
+    await page.locator('#competition').selectOption({value:'Alle'});
     }
     const monthLabel=await page.locator('.calendar-head h2').textContent();
     await page.locator('#next-month').click();assert.notEqual(await page.locator('.calendar-head h2').textContent(),monthLabel);

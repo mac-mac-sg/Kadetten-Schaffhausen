@@ -98,7 +98,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  }
  async function checkGamesHeaderAlignment(label){
   if(!label.includes('games-list')&&!label.endsWith(' calendar'))return;
-  const layout=await page.locator('.game-control-bar').evaluate(e=>{const a=e.getBoundingClientRect(),b=document.querySelector('body > .top').getBoundingClientRect(),s=getComputedStyle(e,'::before');return {left:a.left,headerLeft:b.left,width:a.width,headerWidth:b.width,gap:a.top-b.bottom,coverHeight:parseFloat(s.height),coverLeft:a.left+parseFloat(getComputedStyle(e).borderLeftWidth)+parseFloat(s.left),coverWidth:parseFloat(s.width),viewport:innerWidth,cover:s.backgroundColor};});
+  const layout=await page.locator('.game-control-bar').evaluate(e=>{const a=e.getBoundingClientRect(),b=document.querySelector('body > .top').getBoundingClientRect(),s=getComputedStyle(document.body,'::before');return {left:a.left,headerLeft:b.left,width:a.width,headerWidth:b.width,gap:a.top-b.bottom,coverHeight:parseFloat(s.height),coverLeft:parseFloat(s.left),coverWidth:parseFloat(s.width),viewport:innerWidth,cover:s.backgroundColor};});
   assert.ok(Math.abs(layout.left-layout.headerLeft)<.5,label+': controls align with club header');
   assert.ok(Math.abs(layout.width-layout.headerWidth)<.5,label+': controls match club header width');
   assert.ok(layout.coverHeight>=layout.gap,label+': entire vertical gap is covered');
@@ -106,6 +106,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   assert.ok(!layout.cover.startsWith('rgba('),label+': gap backing is opaque');
   assert.equal(await page.locator('.game-view-toggle').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)',label+': no rectangular panel behind the view buttons');
   const bar=page.locator('.game-control-bar');
+  assert.equal(await bar.evaluate(e=>getComputedStyle(e,'::before').content),'none',label+': no old gap cover overlaps the top border');
   await page.evaluate(async()=>document.fonts.ready);
   const visible=await bar.screenshot();
   await bar.evaluate(e=>e.style.visibility='hidden');

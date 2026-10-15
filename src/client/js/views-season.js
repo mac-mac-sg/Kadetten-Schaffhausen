@@ -10,7 +10,7 @@ function season(tab) {
 }
 function gameControls() {
   const choices=activeClub==='fcsg' ? ['Alle',...new Set(fcsgData.games.map(g=>g.league))] : handballClub()==='otmar' ? ['Alle',...new Set(games.map(g=>g.league))] : ['Alle','QHL','EHL','Testspiel','Falkencup'];
-  if(document.documentElement.dataset?.design!=='v2')return `<div class="game-control-bar" role="group" aria-label="Spielplan und Wettbewerb">${gameViewToggle()}<div class="game-filter"><select id="competition" aria-label="Wettbewerb">${choices.map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></div></div>`;
+  if(document.documentElement.dataset?.design!=='v2')return `<div class="game-control-bar" role="group" aria-label="Spielplan und Wettbewerb">${gameViewToggle()}<div class="game-filter"><select id="competition" aria-label="Wettbewerb">${choices.map(c=>`<option value="${liveEscape(c)}" ${c===competition?'selected':''}>${c==='Alle'?'Wettbewerb':liveEscape(c)}</option>`).join('')}</select></div></div>`;
   return `${gameViewToggle()}${mode==='week'?'':`<div class="controls"><label>Wettbewerb <select id="competition">${choices.map(c=>`<option ${c===competition?'selected':''}>${liveEscape(c)}</option>`).join('')}</select></label></div>`}`;
 }
 function gameTimelineCards(ordered,current,renderCard){
