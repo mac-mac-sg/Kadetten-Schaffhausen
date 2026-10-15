@@ -335,3 +335,9 @@ html:not([data-design='v2'])[data-theme='light'] .game-control-bar select { back
 html:not([data-design='v2'])[data-theme='light'] .dock a.active,
 html:not([data-design='v2'])[data-theme='light'] .dock a.active:hover { background:var(--v1-selection); color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] .return-current-game { background:var(--accent); color:#ffffff; border-color:var(--accent); box-shadow:0 5px 16px #213a2926; }
+
+/* Both competition choices must read as buttons, including the unselected one. */
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button { min-height:44px; background:#ffffff; color:var(--text); border:1px solid #778178; }
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true'],
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; border-color:var(--accent); font-weight:650; }
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
