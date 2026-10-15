@@ -351,3 +351,27 @@ html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px
 html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#24312614; box-shadow:0 8px 28px #10211724; }
 /* Clip glass and selected tabs to one antialiased contour on mobile compositors. */
 html:not([data-design='v2']) .dock { overflow:hidden; background-clip:padding-box; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translate3d(-50%,0,0); }
+
+/* Shared V1 roles: themes change colours, not the hierarchy of the components. */
+:root:not([data-design='v2']) {
+ --v1-control-fill:var(--v1-selection); --v1-control-ink:#182019;
+ --v1-control-tray:#354138e6;
+ --v1-card-surface:var(--surface-2); --v1-inset-surface:color-mix(in srgb,var(--text) 4%,var(--surface-2));
+ --v1-heading-size:22px; --v1-section-size:20px; --v1-card-heading-size:18px; --v1-meta-size:13px;
+}
+:root:not([data-design='v2'])[data-theme='light'] { --v1-control-fill:var(--accent); --v1-control-ink:#ffffff; --v1-control-tray:var(--v1-filter-surface); }
+html:not([data-design='v2'])[data-theme] :is(.league-toggle,.match-tabs.segments) { background:var(--v1-control-tray); border:1px solid var(--line); border-radius:16px; padding:4px; gap:4px; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a) { min-height:44px; border:1px solid transparent; border-radius:12px; font:500 14px/1.3 var(--font-text); color:var(--text); background:transparent; display:flex; align-items:center; justify-content:center; text-align:center; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected),
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected):hover { background:var(--v1-control-fill); color:var(--v1-control-ink); border-color:var(--v1-control-fill); font-weight:650; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+html:not([data-design='v2'])[data-theme] .v1-news-layout { --news-card-surface:var(--v1-card-surface); --news-card-text:var(--text); --news-card-muted:var(--muted); }
+html:not([data-design='v2'])[data-theme] :is(.club-settings-dialog,.app-disclaimer-dialog,.app-introduction,.install-intro) { background:var(--v1-card-surface); color:var(--text); }
+html:not([data-design='v2'])[data-theme] :is(.stats-block .season-split,.stats-block .season-number-grid > div,.bento-panel .bento-metric:not(.bento-primary)) { background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .v1-news-copy h2 { font:600 24px/1.2 var(--font-text); letter-spacing:-.018em; text-wrap:balance; }
+html:not([data-design='v2'])[data-theme] :is(.home-news-heading h1,.season > .subhead,.season-numbers > h2,.match .content > h2,.season-stats-content > h2,.fcsg-player-bento > h2) { font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .stats-block > h3 { font:600 var(--v1-section-size)/1.3 var(--font-text); letter-spacing:-.015em; }
+html:not([data-design='v2'])[data-theme] :is(.stats-block > h4,.player-leader-group > h4) { font:600 var(--v1-card-heading-size)/1.35 var(--font-text); }
+html:not([data-design='v2'])[data-theme] .club-settings-dialog h2 { font:600 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-copy > p,.game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .meta,.game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .venue,.standing-meta,.record-text,.season-data-note,.player-leader-note) { font-size:var(--v1-meta-size); line-height:1.5; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .game-control-bar .game-filter { flex:1.35; }
