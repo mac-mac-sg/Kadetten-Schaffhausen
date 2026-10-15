@@ -776,3 +776,22 @@ test('V1 fixture dividers sit directly above and below the current game; no jump
  assert.equal(make([{id:'past'},{id:'future'}]).querySelectorAll('.game-list-divider').length,0);
  run("document.documentElement.dataset.design='v2'");assert.equal(make([{id:'past'},{id:'current'},{id:'future'}]).querySelectorAll('.game-list-divider').length,0);
 });
+
+
+test('Vereins-Timelines zeigen alle Kapiteltexte direkt ohne Trophäenschrank-Verweise',()=>{
+ try {
+  for(const club of ['kadetten','fcsg','otmar']){
+   run(`activeClub='${club}'`);
+   const markup=run(club==='fcsg'?'fcsgClubPage()':'clubPage()');
+   const history=parseHTML(markup).document.querySelector('.club-history');
+   assert.equal(history.querySelectorAll('details').length,0,club+': no collapsed chapter text');
+   assert.equal(history.querySelectorAll('[data-club-trophy],[data-club-title-year],[data-club-jump="club-cabinet"]').length,0,club+': no trophy cabinet jumps in timeline');
+   const chapters=run(club==='fcsg'?'fcsgHistory':club==='otmar'?'otmarHistory':'clubHistory');
+   for(const chapter of chapters.filter(c=>c.detail)){
+    const node=history.querySelector('#club-history-'+chapter.id+' .club-chapter-detail');
+    assert.ok(node,club+': detail stays with chapter '+chapter.id);
+    assert.equal(node.textContent,parseHTML('<p>'+chapter.detail+'</p>').document.querySelector('p').textContent);
+   }
+  }
+ }finally{run("activeClub='kadetten'");}
+});

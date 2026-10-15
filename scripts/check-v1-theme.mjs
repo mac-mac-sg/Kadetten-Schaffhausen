@@ -121,7 +121,20 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   finally {await page.locator('#chrome-underlay-probe').evaluate(e=>e.remove());}
 
  }
- async function audit(label){await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);if(label.includes('home'))await compareUnderlayWithV2();await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
+ async function checkExpandedClubHistory(label){
+  if(!label.endsWith(' club'))return;
+  const history=page.locator('.club-history');
+  assert.equal(await history.locator('details,[data-club-trophy],[data-club-title-year]').count(),0,label+': timeline has no collapsed text or cabinet links');
+  const details=history.locator('.club-chapter-detail');
+  if(label==='kadetten club')assert.ok(await details.count()>0,label+': expanded chapter details are present');
+  for(const detail of await details.all()){
+   await detail.scrollIntoViewIfNeeded();
+   assert.ok(await detail.isVisible(),label+': extra text is readable without opening anything');
+   assert.ok(await detail.evaluate(e=>e.getBoundingClientRect().height>0&&!e.closest('details')),label+': detail is in the timeline flow');
+  }
+  if(process.env.V1_THEME_SCREENSHOTS&&label==='kadetten club')await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'kadetten-expanded-timeline.png')});
+ }
+ async function audit(label){await checkExpandedClubHistory(label);await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);if(label.includes('home'))await compareUnderlayWithV2();await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
  await page.goto(origin+'/?club=kadetten#home');await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').check();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');await audit('kadetten settings');await checkDisclaimerPopup('light disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.reload();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
  for(let i=0;i<clubs.length;i++){const club=clubs[i],d=data[i],player=club==='fcsg'?d.players[0].id:club==='otmar'?d.roster[0].number:6,game=d.games.filter(g=>g.score).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||d.games[0],story=d.stories[0];
   const routes=[['home','home'],['season/games','games-list'],['season/games','calendar'],['season/table','table'],['season/squad','squad'],['player/'+player,'player'],['club','club'],['news/'+story.id,'article'],['match/'+game.id+'/stats','match-stats'],['match/'+game.id+'/squad','lineup'],['match/'+game.id+'/overview','ticker']];
