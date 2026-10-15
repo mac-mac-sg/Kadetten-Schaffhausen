@@ -10,7 +10,7 @@ const server=http.createServer((req,res)=>{try{const url=new URL(req.url,'http:/
 let browser;const reports=[],errors=[];
 try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
  browser=await chromium.launch({headless:true,executablePath:process.env.GAMES_CHROMIUM_EXECUTABLE,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});const axe=fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8');
- const ctx=await browser.newContext({serviceWorkers:'block',bypassCSP:true,reducedMotion:'reduce',viewport:{width:390,height:844}}),page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
+ const ctx=await browser.newContext({serviceWorkers:'block',bypassCSP:true,reducedMotion:'reduce',deviceScaleFactor:2.75,viewport:{width:390,height:844}}),page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
  await ctx.route('**/api/**',async r=>{const url=new URL(r.request().url()),p=url.pathname,i=['/api/data','/api/fcsg/data','/api/otmar/data'].indexOf(p);let d=i>=0?data[i]:{ok:true,checkedAt:now,match:null,finished:null};if(p==='/api/ehf-reports/chambery'&&process.env.V1_THEME_FIXTURES_DIR&&fs.existsSync(path.join(process.env.V1_THEME_FIXTURES_DIR,'ehf-light-fixture.json')))d=JSON.parse(fs.readFileSync(path.join(process.env.V1_THEME_FIXTURES_DIR,'ehf-light-fixture.json'),'utf8'));if(p.includes('/articles/'))d={id:p.split('/').at(-1),version:url.searchParams.get('v'),html:'<h2>Vereinsbericht</h2><p>Offizielle Vereinsnachrichten und Informationen zum letzten Spiel.</p>'};await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(d)});});
  await ctx.addInitScript(now=>{const D=Date;window.Date=class extends D{constructor(...a){super(...(a.length?a:[now]));}static now(){return D.parse(now);}};for(const prefix of ['','v2:']){localStorage.setItem(prefix+'fan-app-onboarding-v1','seen');localStorage.setItem(prefix+'fan-app-install-intro-v1','seen');}},now);
  async function compareUnderlayWithV2(){
@@ -18,7 +18,10 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   const colours=locator=>locator.evaluate(e=>({background:getComputedStyle(e).backgroundColor,text:getComputedStyle(e).color}));
   const glass=locator=>locator.evaluate(e=>{const s=getComputedStyle(e);return {background:s.backgroundColor,blur:s.backdropFilter};});
   const dock=await glass(page.locator('.dock'));
-  const edge=await page.locator('.dock').evaluate(e=>{const s=getComputedStyle(e),c=s.borderTopColor;return {width:s.borderTopWidth,alpha:c.startsWith('rgba')?Number(c.match(/[\d.]+/g).at(-1)):1,shadow:s.boxShadow};});
+  const edge=await page.locator('.dock').evaluate(e=>{const s=getComputedStyle(e),c=s.borderTopColor;return {width:s.borderTopWidth,alpha:c.startsWith('rgba')?Number(c.match(/[\d.]+/g).at(-1)):1,shadow:s.boxShadow,overflow:s.overflow,backgroundClip:s.backgroundClip,backface:s.backfaceVisibility};});
+  assert.equal(edge.overflow,'hidden','Navigation clips glass and selection at its rounded contour');
+  assert.equal(edge.backgroundClip,'padding-box','Glass tint does not overlap the subtle border');
+  assert.equal(edge.backface,'hidden','Navigation uses the composited mobile edge treatment');
   assert.equal(edge.width,'1px','Navigation keeps a sharp one-pixel edge');
   assert.ok(edge.alpha<=.11,'Navigation edge has low opacity');
   assert.ok(!edge.shadow.includes('inset'),'Navigation has no bright inner rim');

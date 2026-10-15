@@ -348,3 +348,5 @@ html:not([data-design='v2'])[data-theme='light'] .league-toggle button:focus-vis
 :root:not([data-design='v2'])[data-theme='dark'][data-club='otmar'] { --v1-dock-glass:#43391abd; }
 html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px solid #ffffff1a; box-shadow:0 8px 28px #00000055; backdrop-filter:blur(16px) saturate(1.15); -webkit-backdrop-filter:blur(16px) saturate(1.15); }
 html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#24312614; box-shadow:0 8px 28px #10211724; }
+/* Clip glass and selected tabs to one antialiased contour on mobile compositors. */
+html:not([data-design='v2']) .dock { overflow:hidden; background-clip:padding-box; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translate3d(-50%,0,0); }
