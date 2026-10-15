@@ -10,13 +10,13 @@
 .theme-setting input:checked::before { transform:translateX(18px); }
 html:not([data-design='v2']) .club-settings-dialog { max-height:calc(100dvh - 32px); overflow-y:auto; }
 :root:not([data-design='v2'])[data-theme='light'] {
- --surface:#f6f5f0; --surface-2:#ffffff; --text:#25312a; --muted:#536258; --line:#233a292b;
+ --surface:#e8ece5; --surface-2:#ffffff; --text:#25312a; --muted:#536258; --line:#233a292b;
  --accent:#99470f; --accent-soft:#92491b; --win:#376d29; --draw:#806416; --loss:#a53d35;
- --v1-selection:#efbd98; --v1-dock-glass:#fff0e3d1; --panel:#ffffff;
+ --v1-selection:#efbd98; --v1-dock-glass:#f4dcc6ed; --v1-filter-surface:#e4d8cbf5; --panel:#ffffff;
  --match-green:#246d45;
 }
-:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#e8f3ead1; }
-:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#fff6d8d1; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#d5e6d8ed; --v1-filter-surface:#d4e0d3f5; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#f1e4b8ed; --v1-filter-surface:#e8dfc4f5; }
 html:not([data-design='v2'])[data-theme='light'] body { background:var(--surface); color:var(--text); }
 html:not([data-design='v2'])[data-theme='light'] :is(.top.v1-compact-header,.season-header,.match-top,.article-bar,.player-sticky,.profile-jumps,.fcsg-profile-jumps) { background:#f6f5f0e8; color:var(--text); border-color:var(--line); }
 html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#58664f42; box-shadow:0 6px 22px #26352626,inset 0 1px 0 #ffffffcc; }
@@ -163,7 +163,7 @@ html:not([data-design='v2']) .standings-season .season-header + * { margin-top:0
 /* Keep the pinned games navigation distinct from the cards moving underneath. */
 html:not([data-design='v2']) .games-mode .game-control-bar::before { content:''; position:absolute; bottom:calc(100% - 1px); left:0; right:0; height:16px; background:var(--surface); pointer-events:none; }
 html:not([data-design='v2']) .game-control-bar .game-view-toggle button:not([aria-pressed='true']) { color:var(--text); }
-html:not([data-design='v2'])[data-theme='light'] .games-mode .season-header .game-control-bar { background:#f6f5f0ed; border-color:#52675640; box-shadow:0 6px 20px #26352616,inset 0 1px 0 #ffffffcc; }
+html:not([data-design='v2'])[data-theme='light'] .games-mode .season-header .game-control-bar { background:var(--v1-filter-surface); border-color:#41554247; box-shadow:0 5px 16px #26352624,inset 0 1px 0 #ffffffb3; }
 
 
 /* V1 refinement: reading surfaces stay quiet; statistics retain their own styling. */
@@ -325,3 +325,13 @@ html:not([data-design='v2']) .match-sticky-bar > .match-tabs { display:flex; fle
 html:not([data-design='v2']) .match-sticky-bar > .match-tabs a { flex:1; min-width:0; min-height:44px; display:flex; align-items:center; justify-content:center; padding:8px 6px; box-sizing:border-box; text-align:center; font-size:13px; }
 html:not([data-design='v2']) .match-sticky-bar > .match-tabs a:not(.selected) { color:var(--muted); }
 @media(prefers-reduced-motion:reduce) { html:not([data-design='v2']) .match-compact-header { transition:none; transform:none; } }
+
+/* Light-mode hierarchy: muted canvas, white cards, club-tinted navigation and solid selection. */
+html:not([data-design='v2'])[data-theme='light'] .top.v1-compact-header { background:#fffffff0; border-color:#41554238; }
+html:not([data-design='v2'])[data-theme='light'] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { background:#ffffff; box-shadow:0 1px 3px #213a2912; }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true'],
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar select { background:#fffffff2; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active,
+html:not([data-design='v2'])[data-theme='light'] .dock a.active:hover { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .return-current-game { background:var(--accent); color:#ffffff; border-color:var(--accent); box-shadow:0 5px 16px #213a2926; }
