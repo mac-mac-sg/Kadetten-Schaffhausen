@@ -50,7 +50,7 @@ try {
     if(axe)assert.deepEqual(await page.evaluate(async()=>(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)),[]);
     return page.evaluate(selectors=>({boxes:Object.fromEntries(selectors.map(selector=>{
       const element=document.querySelector(selector),rect=element.getBoundingClientRect();
-      return [selector,{x:rect.x,y:rect.y,height:rect.height,font:getComputedStyle(element).fontSize}];
+      return [selector,{x:rect.x,y:rect.y,height:rect.height,width:rect.width,font:getComputedStyle(element).fontSize}];
     })),h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,calendarBottom:document.querySelector('.calendar-panel')?.getBoundingClientRect().bottom,dockTop:document.querySelector('.dock').getBoundingClientRect().top,scrollY}),selectors);
   }
   function stable(before,after,label) {
@@ -65,6 +65,8 @@ try {
     if(axe)await page.addScriptTag({content:axe});
     if(empty)await page.waitForFunction(()=>document.querySelectorAll('.game-timeline .game-card').length===0);
     const before=await measure();
+    assert.ok(Math.abs(before.boxes['body > .top'].x-before.boxes['.game-control-bar'].x)<.5,club+': control and club bars share their left edge');
+    assert.ok(Math.abs(before.boxes['body > .top'].width-before.boxes['.game-control-bar'].width)<.5,club+': control and club bars have equal width');
     const bridge=await page.locator('.game-control-bar').evaluate(e=>{const css=getComputedStyle(e,'::before');return{content:css.content,height:parseFloat(css.height),colour:css.backgroundColor,pointerEvents:css.pointerEvents,gap:e.getBoundingClientRect().top-document.querySelector('body > .top').getBoundingClientRect().bottom};});
     assert.notEqual(bridge.content,'none',club+': gap above controls has a backing');
     assert.ok(bridge.height>=bridge.gap-1,club+': backing covers the gap to the club header');
