@@ -321,10 +321,27 @@ function mainTabSwipeTarget(route,dx,dy,duration,width) {
   if(index<0||duration<0||duration>800||Math.abs(dx)<distance||Math.abs(dy)>48||Math.abs(dx)<Math.abs(dy)*1.8)return null;
   return mainTabSwipeRoutes[Math.max(0,Math.min(mainTabSwipeRoutes.length-1,index+(dx<0?1:-1)))];
 }
+function mainTabSwipeMotionTargets(app) {
+  const pinned=new Set(),ancestors=new Set();
+  for(const element of app.querySelectorAll('*')){
+    if(element.matches('.season-header')||['fixed','sticky'].includes(getComputedStyle(element).position)){
+      pinned.add(element);
+      for(let parent=element.parentElement;parent&&parent!==app;parent=parent.parentElement)ancestors.add(parent);
+    }
+  }
+  const targets=[];
+  const visit=element=>{
+    if(pinned.has(element))return;
+    if(ancestors.has(element)){for(const child of element.children)visit(child);}
+    else targets.push(element);
+  };
+  for(const child of app.children)visit(child);
+  return targets;
+}
 function setupMainTabSwipe() {
   const root=document.documentElement,app=document.getElementById('app');
   if(root.dataset.design==='v2'||!app)return;
-  let gesture=null,pending=null;
+  let gesture=null,pending=null,animations=[];
   const blocked=()=>!!document.querySelector('dialog[open],[role="dialog"][aria-modal="true"],#compact-club-menu:not([hidden])')||window.getSelection?.()?.isCollapsed===false;
   const ownsGesture=target=>{
     if(target.closest('button,input,select,textarea,summary,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-swipe-ignore],.calendar-panel,.match-calendar,.calendar,.week-calendar'))return true;
@@ -357,12 +374,17 @@ function setupMainTabSwipe() {
     if(event.cancelable)event.preventDefault();
     if(next===route)return;
     if(next==='#season/games'){mode='list';competition='Alle';}
-    pending=next;location.hash=next;
+    pending={route:next,direction:t.clientX<start.x?1:-1};location.hash=next;
   },{passive:false});
   window.addEventListener('hashchange',()=>{
-    const target=pending;pending=null;
-    if(!target||location.hash!==target||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
-    // Opacity keeps pinned controls in place; transforming #app would move its fixed children.
-    app.animate?.([{opacity:.9},{opacity:1}],{duration:140,easing:'cubic-bezier(.23,1,.32,1)'});
+    const transition=pending;pending=null;
+    for(const animation of animations)animation.cancel?.();animations=[];
+    if(!transition||location.hash!==transition.route||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    // Animate only branches without pinned descendants, never their containing block.
+    const frames=[{opacity:.9,transform:`translateX(${transition.direction*14}px)`},{opacity:1,transform:'translateX(0px)'}];
+    for(const target of mainTabSwipeMotionTargets(app)){
+      const animation=target.animate?.(frames,{duration:180,easing:'cubic-bezier(.23,1,.32,1)'});
+      if(animation){animation.finished?.catch(()=>{});animations.push(animation);}
+    }
   });
 }
