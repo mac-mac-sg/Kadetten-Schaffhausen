@@ -34,7 +34,9 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  }
  async function checkDisclaimerPopup(label){
   const settings=page.locator('.club-settings-dialog');
-  assert.equal(await settings.locator('.settings-app-info > .settings-info-row').count(),2);
+  assert.equal(await settings.locator('.settings-app-info > .settings-info-row').count(),1);
+  const inline=await settings.locator('.settings-app-info').evaluate(e=>{const a=e.querySelector('button').getBoundingClientRect(),b=e.querySelector('.settings-update').getBoundingClientRect();return {height:e.getBoundingClientRect().height,alignment:Math.abs(a.y+a.height/2-b.y-b.height/2),overflow:e.scrollWidth>e.clientWidth};});
+  assert.ok(inline.height<=52&&inline.alignment<1&&!inline.overflow,'Disclaimer and timestamp fit on a single row');
   assert.match(await settings.locator('[data-settings-updated]').textContent(),/\d{2}\.\d{2}\.\d{4}/);
   await settings.locator('[data-open-disclaimer]').click();
   assert.equal(await page.locator('.app-disclaimer-dialog').isVisible(),true);
