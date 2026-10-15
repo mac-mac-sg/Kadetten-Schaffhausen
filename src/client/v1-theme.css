@@ -273,3 +273,6 @@ html:not([data-design='v2']) .settings-help-row .settings-help-arrow { width:16p
 html:not([data-design='v2']) .settings-help-row:active { background:color-mix(in srgb,var(--text) 5%,transparent); transform:none; }
 html:not([data-design='v2']) .settings-help-row:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 html:not([data-design='v2']) .club-settings-dialog .settings-app-info { margin:12px 0 0; border-bottom:0; }
+
+/* Keep the short swipe entrance inside the viewport without creating a scroll container. */
+html:not([data-design='v2']) #app { overflow-x:clip; }

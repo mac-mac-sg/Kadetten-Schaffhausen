@@ -16,6 +16,21 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
 
  const cdp=await ctx.newCDPSession(page);
  await page.addInitScript(()=>localStorage.setItem('fan-v1-theme','light'));
+ await page.addInitScript(()=>{
+  window.swipeMotionChecks=[];
+  const original=Element.prototype.animate;
+  Element.prototype.animate=function(frames,options){
+   const result=original.call(this,frames,options);
+   if(options?.duration===180&&frames[0]?.transform?.startsWith('translateX(')){
+    const selectors=['body > .top','body > .dock','.games-mode .game-control-bar'];
+    const measure=()=>selectors.map(s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height];});
+    const before=measure(),target=this;
+    setTimeout(()=>{const after=measure();window.swipeMotionChecks.push({direction:frames[0].transform,overflow:document.documentElement.scrollWidth>innerWidth,pinnedMoved:before.some((r,i)=>r&&after[i]&&r.some((v,j)=>Math.abs(v-after[i][j])>1)),pinnedDescendant:[...target.querySelectorAll('*')].some(e=>['fixed','sticky'].includes(getComputedStyle(e).position))});},45);
+   }
+   return result;
+  };
+ });
+
  async function touchSwipe(dx=-160,dy=0,x=dx<0?275:110,y=400){
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
   for(let n=1;n<=6;n++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*n/6,y:y+dy*n/6}]});await page.waitForTimeout(16);}
@@ -24,7 +39,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  async function go(club,route='#home'){await page.goto(origin+'/?club='+club+route);await page.waitForTimeout(150);}
  async function audit(label){
   await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({route:location.hash,club:document.documentElement.dataset.club,active:document.querySelector('.dock a.active')?.getAttribute('href'),overflow:document.documentElement.scrollWidth>innerWidth,h1:document.querySelectorAll('h1').length,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))}));
-  reports.push({label,...r});assert.equal(r.active,r.route);assert.equal(r.overflow,false);assert.equal(r.h1,1);assert.deepEqual(r.violations,[]);console.log(label+' passed');
+  reports.push({label,...r});assert.equal(r.active,r.route);assert.equal(r.overflow,false);assert.equal(r.h1,1);assert.deepEqual(r.violations,[]);const motion=await page.evaluate(()=>window.swipeMotionChecks);assert.ok(motion.every(m=>!m.overflow&&!m.pinnedMoved&&!m.pinnedDescendant),'Swipe motion stays within viewport and leaves pinned controls stationary: '+JSON.stringify(motion));console.log(label+' passed');
  }
  for(const club of clubs){
   await go(club);await audit(club+' initial');
@@ -33,6 +48,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   await touchSwipe();assert.equal(new URL(page.url()).hash,'#season/squad');
   for(const route of ['#season/table','#season/games','#home']){await touchSwipe(160);assert.equal(new URL(page.url()).hash,route);await audit(club+' backward '+route);}
  }
+ const directions=await page.evaluate(()=>window.swipeMotionChecks.map(m=>m.direction));assert.ok(directions.includes('translateX(14px)')&&directions.includes('translateX(-14px)'));
  await go('kadetten');await touchSwipe(-20);assert.equal(new URL(page.url()).hash,'#home');
  await touchSwipe(-80,-100);assert.equal(new URL(page.url()).hash,'#home');
  await go('kadetten');await touchSwipe(0,-160,200,450);assert.equal(new URL(page.url()).hash,'#home');assert.ok(await page.evaluate(()=>scrollY>0),'Native vertical scrolling still works');

@@ -10,8 +10,8 @@ function harness(route='#home',design='v1'){
  let url=new URL('https://example.test/?club=otmar'+route),now=1000,reduced=false;
  const events={},animations=[],location={get href(){return url.href;},get hash(){return url.hash;},set hash(v){url.hash=v;}};
  const window={innerWidth:390,addEventListener:(type,fn)=>{events[type]=fn;},matchMedia:()=>({matches:reduced}),getSelection:()=>({isCollapsed:true})};
- const app=document.getElementById('app');app.animate=(frames,options)=>animations.push({frames,options});
- const context=vm.createContext({document,window,location,mode:'calendar',competition:'QHL',Date:{now:()=>now},getComputedStyle:e=>({overflowX:e.style.overflowX||'visible'})});
+ const app=document.getElementById('app');for(const target of app.querySelectorAll('*'))target.animate=(frames,options)=>{animations.push({target,frames,options});return {cancel(){},finished:Promise.resolve()};};
+ const context=vm.createContext({document,window,location,mode:'calendar',competition:'QHL',Date:{now:()=>now},getComputedStyle:e=>({overflowX:e.style.overflowX||'visible',position:e.style.position||'static'})});
  vm.runInContext(source,context);vm.runInContext('setupMainTabSwipe()',context);
  const touch=(x,y,id=1)=>({clientX:x,clientY:y,identifier:id});
  const emit=(type,target,x=220,y=200,{touches,changedTouches,cancelable=true}={})=>{
@@ -47,6 +47,13 @@ test('Controls, calendars, horizontal scrollers, dialogs, edge gestures and deta
  for(const type of ['dialog','menu','selection']){const a=harness();if(type==='dialog'){const d=a.document.createElement('dialog');d.setAttribute('open','');a.document.body.append(d);}if(type==='menu')a.document.getElementById('compact-club-menu').removeAttribute('hidden');if(type==='selection')a.window.getSelection=()=>({isCollapsed:false});a.swipe();assert.equal(a.location.hash,'#home',type);}
  const v2=harness('#home','v2');v2.swipe();assert.equal(v2.location.hash,'#home');
 });
-test('Swipe feedback is a short opacity-only fade and respects reduced motion',()=>{
- for(const reduced of [false,true]){const a=harness();a.setReduced(reduced);a.swipe();a.events.hashchange();assert.equal(a.animations.length,reduced?0:1);if(!reduced){assert.equal(a.animations[0].options.duration,140);assert.ok(a.animations[0].frames.every(f=>Object.keys(f).every(k=>k==='opacity')));}}
+test('Swipe feedback follows direction, leaves pinned branches alone and respects reduced motion',()=>{
+ for(const reduced of [false,true])for(const [route,dx,offset] of [['#home',-120,14],['#season/table',120,-14]]){
+  const a=harness(route);a.setReduced(reduced);a.swipe(dx);a.events.hashchange();
+  if(reduced)assert.equal(a.animations.length,0);
+  else{assert.ok(a.animations.length>0);for(const animation of a.animations){assert.notEqual(animation.target,a.app);assert.equal(animation.options.duration,180);assert.equal(animation.frames[0].transform,'translateX('+offset+'px)');assert.equal(animation.frames[1].transform,'translateX(0px)');}}
+ }
+ const a=harness();a.app.innerHTML='<section id="season"><div class="season-header"><div id="filter" style="position:fixed">Filter</div></div><div id="content">Spiele</div></section><aside id="fixed" style="position:fixed">Fixiert</aside>';
+ const targets=vm.runInContext('mainTabSwipeMotionTargets(document.getElementById("app"))',a.context);
+ assert.deepEqual(Array.from(targets,e=>e.id),['content']);
 });
