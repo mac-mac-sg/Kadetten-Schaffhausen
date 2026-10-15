@@ -16,8 +16,12 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  async function compareUnderlayWithV2(){
   const action=page.locator('.v1-match-action');if(!await action.count())return;
   const colours=locator=>locator.evaluate(e=>({background:getComputedStyle(e).backgroundColor,text:getComputedStyle(e).color}));
-  const glass=locator=>locator.evaluate(e=>{const s=getComputedStyle(e);return {background:s.backgroundColor,blur:s.backdropFilter,shadow:s.boxShadow};});
+  const glass=locator=>locator.evaluate(e=>{const s=getComputedStyle(e);return {background:s.backgroundColor,blur:s.backdropFilter};});
   const dock=await glass(page.locator('.dock'));
+  const edge=await page.locator('.dock').evaluate(e=>{const s=getComputedStyle(e),c=s.borderTopColor;return {width:s.borderTopWidth,alpha:c.startsWith('rgba')?Number(c.match(/[\d.]+/g).at(-1)):1,shadow:s.boxShadow};});
+  assert.equal(edge.width,'1px','Navigation keeps a sharp one-pixel edge');
+  assert.ok(edge.alpha<=.11,'Navigation edge has low opacity');
+  assert.ok(!edge.shadow.includes('inset'),'Navigation has no bright inner rim');
   const expected=await colours(action),club=await page.locator('html').getAttribute('data-club'),theme=await page.locator('html').getAttribute('data-theme'),reference=await ctx.newPage();
   try {
    await reference.setViewportSize(page.viewportSize());await reference.goto(origin+'/v2/?club='+club+'#home');

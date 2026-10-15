@@ -346,5 +346,5 @@ html:not([data-design='v2'])[data-theme='light'] .league-toggle button:focus-vis
 :root:not([data-design='v2'])[data-theme='dark'] { --v1-dock-glass:#4e3023bd; }
 :root:not([data-design='v2'])[data-theme='dark'][data-club='fcsg'] { --v1-dock-glass:#1d402bbd; }
 :root:not([data-design='v2'])[data-theme='dark'][data-club='otmar'] { --v1-dock-glass:#43391abd; }
-html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px solid color-mix(in srgb,var(--text) 24%,transparent); box-shadow:0 8px 28px #00000066,0 2px 8px #00000033,inset 0 1px 0 #ffffff26; backdrop-filter:blur(16px) saturate(1.15); -webkit-backdrop-filter:blur(16px) saturate(1.15); }
-html:not([data-design='v2'])[data-theme='light'] .dock { border-color:var(--line); box-shadow:0 8px 28px #10211730,0 2px 8px #10211714,inset 0 1px 0 #ffffffb3; }
+html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px solid #ffffff1a; box-shadow:0 8px 28px #00000055; backdrop-filter:blur(16px) saturate(1.15); -webkit-backdrop-filter:blur(16px) saturate(1.15); }
+html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#24312614; box-shadow:0 8px 28px #10211724; }
