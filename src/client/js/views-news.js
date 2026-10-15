@@ -12,11 +12,15 @@ function home() {
 function articleKey(n) {
   return handballClub() + ':' + String(n.id) + ':' + (n.articleVersion || 'pending');
 }
+function articleLoadingMarkup(){
+  if(document.documentElement.dataset.design==='v2')return '<p class="article-loading" role="status">Vollständiger Artikel wird geladen …</p>';
+  return '<div class="article-loading" role="status"><span>Vollständiger Artikel wird geladen …</span><div class="article-placeholder" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>';
+}
 function articleContentMarkup(n) {
   const saved = articleMemory.get(articleKey(n));
   return saved
     ? sanitiseArticle(saved.html, n.url)
-    : `<p class="lead">${n.text}</p><p class="article-loading" role="status">Vollständiger Artikel wird geladen …</p>`;
+    : `<p class="lead">${n.text}</p>${articleLoadingMarkup()}`;
 }
 function sanitiseArticle(html, source) {
   const doc = new DOMParser().parseFromString(html, 'text/html'),
@@ -174,10 +178,12 @@ async function loadFullArticle() {
     const d = await pending;
     if (document.getElementById('article-body') === target) {
       target.innerHTML = sanitiseArticle(d.html, n.url);
+      target.setAttribute('aria-busy','false');
       target.querySelector('a')?.setAttribute('rel', 'noopener noreferrer');
     }
   } catch {
     if (document.getElementById('article-body') === target) {
+      target.setAttribute('aria-busy','false');
       target.innerHTML = `<p class="lead">${n.text}</p><p class="notice">Der vollständige Artikel konnte gerade nicht geladen werden.</p><button class="button subtle" id="retry-article">Erneut laden</button>`;
       document.getElementById('retry-article').onclick = loadFullArticle;
     }
@@ -188,7 +194,7 @@ async function loadFullArticle() {
 function article(id) {
   const n = stories.find(n => n.id === id);
   if (!n) return notFound();
-  return `<article class="news-article"><div class="article-bar">${backLink('#home', 'Zurück zu den News', 'back')}<button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1>${sourceNotice('news')}<div id="article-body" class="article-fulltext">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, handballClub()==='otmar'?'Originalartikel bei St. Otmar':'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
+  return `<article class="news-article"><div class="article-bar">${backLink('#home', 'Zurück zu den News', 'back')}<button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1>${sourceNotice('news')}<div id="article-body" class="article-fulltext" aria-busy="${!articleMemory.has(articleKey(n))}">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, handballClub()==='otmar'?'Originalartikel bei St. Otmar':'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
     .filter(x => x.id !== id)
     .slice(0, 4)
     .map(

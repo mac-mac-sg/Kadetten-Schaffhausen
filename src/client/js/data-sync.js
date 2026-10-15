@@ -88,11 +88,12 @@ async function loadCurrentData(club=handballClub()) {
       storyId = anchor ? stories[Number(anchor.id.replace('story-', ''))]?.id : null,
       offset = anchor?.getBoundingClientRect().top,
       y = window.scrollY;
-    setCurrentData(d,club);
+    const nextStories=typeof deferUpdatedStories==='function'?deferUpdatedStories(club,d.stories,stories):d.stories;
+    setCurrentData({...d,stories:nextStories},club);
     saveCurrentData(d,club);
     if (previous !== viewDataSignature()) {
       render();
-      if (storyId) {
+      if(document.documentElement.dataset.design==='v2'&&storyId) {
         const i = stories.findIndex(n => n.id === storyId);
         if (i >= 0) {
           const target = document.getElementById('story-' + i);
@@ -101,7 +102,7 @@ async function loadCurrentData(club=handballClub()) {
             updateNewsDots(i);
           }
         }
-      } else if (!location.hash.startsWith('#season/games')) window.scrollTo({top: y, behavior: 'instant'});
+      } else if (document.documentElement.dataset.design==='v2'&&!location.hash.startsWith('#season/games')) window.scrollTo({top: y, behavior: 'instant'});
     } else syncUpdateLabels();
     refreshWeekView();
     syncOfflineNotice();

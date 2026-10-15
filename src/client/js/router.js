@@ -130,6 +130,8 @@ function notFound() {
   return '<section class="content"><h1>Hier geht’s zurück aufs Feld.</h1><a class="button" href="#home">Zur Startseite</a></section>';
 }
 function render() {
+  applyPendingNews();
+  const viewMemory=beginViewRender();
   renderedRouteURL=location.href;
   if (programmeDialog && programmeDialog.dataset.route !== activeClub + location.hash) closeMatchProgramme();
   const scrollRoot = document.documentElement,
@@ -187,7 +189,6 @@ function render() {
   document.querySelectorAll('[data-mode]').forEach(
     b =>
       (b.onclick = () => {
-        window.scrollTo({top:0,behavior:'instant'});
         mode = b.dataset.mode;
         render();
       })
@@ -242,7 +243,7 @@ function render() {
   if (activeClub === 'fcsg') {
     document.body.classList.toggle('player-mode', false);
     scrollRoot.classList.toggle('snap-profile', page === 'player');
-    if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
+    if (page === 'season' && id === 'games' && mode === 'list' && !viewMemory?.position) centerNextGame();
     syncOfflineNotice();
     loadFcsgArticle();
     setupClubPage();
@@ -250,11 +251,12 @@ function render() {
     loadFcsgPlayerDetails();
     window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
     requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
+    finishViewRender(viewMemory);setupGameJumps();
     return;
   }
   setupClubPage();
   setupRecentGames();
-  if (page === 'season' && id === 'games' && mode === 'list') centerNextGame();
+  if (page === 'season' && id === 'games' && mode === 'list' && !viewMemory?.position) centerNextGame();
   setupEnhancements();
   loadGameReports();
   loadPlayerReports();
@@ -262,6 +264,7 @@ function render() {
   loadFullArticle();
   window.scrollTo({top: fixedCalendar ? 0 : scrollTop, behavior: 'instant'});
   requestAnimationFrame(() => scrollRoot.style.removeProperty('scroll-snap-type'));
+  finishViewRender(viewMemory);setupGameJumps();
 }
 let gameCenterFrame;
 function centerNextGame() {
@@ -270,6 +273,12 @@ function centerNextGame() {
     if (location.hash !== '#season/games' || mode !== 'list') return;
     const card=document.querySelector('.game-timeline .current-game');
     if(!card)return;
+    scrollGameCardIntoView(card);
+  });
+}
+
+function scrollGameCardIntoView(card,interactive=false){
+  if(!card)return;
     const viewportHeight=window.visualViewport?.height || window.innerHeight;
     const dockTop=Math.min(viewportHeight,document.querySelector('.dock')?.getBoundingClientRect().top ?? viewportHeight);
     const header=document.querySelector('.season-header'),heading=header?.querySelector('h1');
@@ -279,8 +288,10 @@ function centerNextGame() {
     const rect=card.getBoundingClientRect(), top=clubHeight+stickyHeight+12, bottom=dockTop-12;
     // Keep the fixture below both the club selection and pinned section controls.
     const targetTop=top+Math.max(0,(bottom-top-rect.height)/2);
-    window.scrollTo({top:Math.max(0,window.scrollY+rect.top-targetTop),behavior:'instant'});
-  });
+    const targetY=Math.max(0,window.scrollY+rect.top-targetTop);
+    // Long jumps are immediate, so the reader never flies through a whole season.
+    const smooth=interactive&&Math.abs(targetY-window.scrollY)<viewportHeight&&!document.documentElement.classList.contains('keyboard-input')&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:targetY,behavior:smooth?'smooth':'instant'});
 }
 
 let appChromeObserver;
@@ -364,7 +375,6 @@ function setupMainTabSwipe() {
       const completed=result?.then?await result:result;
       if(completed===false)return;
       if(!next||next===route||location.href!==start.url||blocked()){pager.cancel();return;}
-      if(next==='#season/games'){mode='list';competition='Alle';}
       location.hash=next;
     } finally {settling=false;}
   },{passive:false});
@@ -374,9 +384,9 @@ function setupMainTabSwipe() {
 
 /* Script-free preview documents isolate each page's body styles without live polling. */
 function mainTabPreviewMarkup(route) {
-  const savedMode=mode,savedCompetition=competition;
+  const savedOptions=viewOptions();
   try {
-    if(route==='#season/games'){mode='list';competition='Alle';}
+    applyViewOptions(rememberedView(route).options);
     const tab=route.split('/')[1],markup=route==='#home'?(activeClub==='fcsg'?fcsgHome():home()):(activeClub==='fcsg'?fcsgView('season',tab):season(tab));
     const container=document.createElement('div');container.innerHTML=markup;
     if(route==='#home'){
@@ -384,7 +394,7 @@ function mainTabPreviewMarkup(route) {
       if(slot){if(activeClub!=='fcsg')paintHandballMatchday(slot,true);else syncV1MatchAction(slot);}
     }
     return container.innerHTML;
-  } finally {mode=savedMode;competition=savedCompetition;}
+  } finally {applyViewOptions(savedOptions);}
 }
 function createMainTabPager(app) {
   const host=document.createElement('div');host.className='main-tab-pager';host.setAttribute('aria-hidden','true');host.inert=true;document.body.append(host);
@@ -397,6 +407,7 @@ function createMainTabPager(app) {
   function align(entry,current=false){
     const doc=entry.frame.contentDocument,win=entry.frame.contentWindow;if(!doc?.querySelector('#app'))return;
     if(current){win.scrollTo(0,window.scrollY);return;}
+    if(entry.position){win.scrollTo(0,positionScrollY(entry.position,doc,win));return;}
     win.scrollTo(0,0);
     if(entry.route==='#season/games'){
       const card=doc.querySelector('.game-timeline .current-game');if(!card)return;
@@ -408,14 +419,14 @@ function createMainTabPager(app) {
   }
   function build(route){
     const frame=document.createElement('iframe');frame.title='Ansichtsvorschau';frame.tabIndex=-1;frame.setAttribute('aria-hidden','true');frame.setAttribute('sandbox','allow-same-origin');frame.inert=true;
-    const entry={frame,route,ready:false};frames.set(route,entry);
+    const memory=rememberedView(route),entry={frame,route,ready:false,position:memory.position};frames.set(route,entry);
     const root=document.documentElement,styles=[...document.querySelectorAll('link[rel="stylesheet"]')].map(e=>e.outerHTML).join('');
     const vars=['--app-header-height','--v1-content-top','--v1-games-left','--v1-games-width','--v1-games-controls-height'].map(k=>k+':'+getComputedStyle(root).getPropertyValue(k)).join(';');
-    const isCurrent=route===(location.hash||'#home'),bodyClass=isCurrent?document.body.className:route==='#home'?'immersive':route==='#season/games'?'games-mode':'';
+    const isCurrent=route===(location.hash||'#home'),bodyClass=isCurrent?document.body.className:route==='#home'?'immersive':route==='#season/games'?'games-mode'+(memory.options.mode==='calendar'?' calendar-mode':''):'';
     const markup=route===(location.hash||'#home')?app.innerHTML:mainTabPreviewMarkup(route);
     const theme=root.dataset.theme==='light'?'light':'dark';
     frame.addEventListener('load',()=>{try{entry.ready=true;align(entry,route===(location.hash||'#home'));}catch{entry.ready=false;}});
-    frame.srcdoc=`<!doctype html><html lang="de-CH" class="${isCurrent?root.className:''}" data-theme="${theme}" data-club="${activeClub}" style="${vars}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><base href="${location.href.split('#')[0]}">${styles}<style>html{scroll-snap-type:none!important;scroll-behavior:auto!important}*{animation:none!important;transition:none!important}.season-header,.game-control-bar,.story-dots{visibility:hidden!important}body{pointer-events:none}</style></head><body class="${bodyClass}"><main id="app">${markup}</main></body></html>`;
+    frame.srcdoc=`<!doctype html><html lang="de-CH" class="${isCurrent?root.className:route==='#season/games'&&memory.options.mode==='calendar'?'calendar-mode':''}" data-theme="${theme}" data-club="${activeClub}" style="${vars}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><base href="${location.href.split('#')[0]}">${styles}<style>html{scroll-snap-type:none!important;scroll-behavior:auto!important}*{animation:none!important;transition:none!important}.season-header,.game-control-bar,.story-dots{visibility:hidden!important}body{pointer-events:none}</style></head><body class="${bodyClass}"><main id="app">${markup}</main></body></html>`;
     host.append(frame);
   }
   function prepare(){

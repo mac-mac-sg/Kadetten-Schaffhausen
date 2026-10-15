@@ -25,7 +25,7 @@ function harness(route='#home',design='v1'){
 test('Swipes follow the four main tabs in both directions and stop at the ends',()=>{
  for(const [route,dx,expected] of [['#home',-120,'#season/games'],['#season/games',-120,'#season/table'],['#season/table',-120,'#season/squad'],['#season/squad',120,'#season/table'],['#season/table',120,'#season/games'],['#season/games',120,'#home'],['#home',120,'#home'],['#season/squad',-120,'#season/squad']]){
   const a=harness(route);const e=a.swipe(dx);assert.equal(a.location.hash,expected);assert.ok(e.defaultPrevented);assert.match(a.location.href,/club=otmar/);
-  if(expected==='#season/games'&&route!==expected){assert.equal(a.context.mode,'list');assert.equal(a.context.competition,'Alle');}
+  if(expected==='#season/games'&&route!==expected){assert.equal(a.context.mode,'calendar');assert.equal(a.context.competition,'QHL');}
  }
 });
 test('Vertical, diagonal, short, cancelled and multi-touch gestures do not navigate',()=>{

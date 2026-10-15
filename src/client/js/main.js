@@ -3,8 +3,7 @@ document.addEventListener('keydown', () => document.documentElement.classList.ad
 document.addEventListener('pointerdown', () => document.documentElement.classList.remove('keyboard-input'), true);
 /* Start: registriert Ereignisse und baut die erste Ansicht. Muss als letzte App-Datei geladen werden. */
 document.querySelector('.dock [data-nav="games"]').addEventListener('click', event => {
-  mode = 'list';
-  competition = 'Alle';
+  if(document.documentElement.dataset.design==='v2'){mode='list';competition='Alle';}
   if (location.hash === '#season/games') {
     event.preventDefault();
     render();
@@ -12,6 +11,7 @@ document.querySelector('.dock [data-nav="games"]').addEventListener('click', eve
   }
 });
 restoreV1Theme();
+restoreV1TextSize();
 restoreActiveClub();
 restoreFcsgData();
 document.getElementById('club-switch').addEventListener('click', e=>{const button=e.target.closest('[data-select-club]');if(button)switchClub(button.dataset.selectClub);});
@@ -22,7 +22,7 @@ function handleRouteChange() {
   const club=new URL(location.href).searchParams.get('club') || (selectedClubs.includes('kadetten')?'kadetten':selectedClubs[0]);
   if(Object.hasOwn(fanClubs,club)&&club!==activeClub){applyClubChange(club,location.hash);return;}
   render();
-  window.scrollTo({top: 0, behavior: 'instant'});
+  if(document.documentElement.dataset.design==='v2')window.scrollTo({top: 0, behavior: 'instant'});
   $('#app').focus({preventScroll: true});
   checkLiveMatch();
 }

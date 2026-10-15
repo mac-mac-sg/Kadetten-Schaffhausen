@@ -325,3 +325,9 @@ test('V1 settings use clear groups and one close action while choices save immed
  a.run('window.showAppIntroduction=()=>{window.introOpened=true}');dialog.querySelector('[data-open-introduction]').onclick();
  assert.equal(dialog.hasAttribute('open'),false);assert.equal(a.run('window.introOpened'),true);
 });
+
+test('V1 reading size persists and restores independently of the theme',()=>{
+ const a=app('https://example.test/');a.run("setV1TextSize('large')");assert.equal(a.document.documentElement.dataset.textSize,'large');assert.equal(a.store.get('fan-v1-text-size'),'large');a.document.documentElement.dataset.textSize='standard';a.run('restoreV1TextSize()');assert.equal(a.document.documentElement.dataset.textSize,'large');a.run("setV1TextSize('invalid')");assert.equal(a.document.documentElement.dataset.textSize,'standard');
+ const unavailable=app('https://example.test/',null,true);unavailable.run("setV1TextSize('large');restoreV1TextSize()");assert.equal(unavailable.document.documentElement.dataset.textSize,'standard');
+ const v2=app('https://example.test/v2/');v2.document.documentElement.dataset.design='v2';v2.run("setV1TextSize('large')");assert.equal(v2.document.documentElement.dataset.textSize,undefined);
+});
