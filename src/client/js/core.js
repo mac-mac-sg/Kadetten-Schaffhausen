@@ -36,6 +36,7 @@ const $ = s => document.querySelector(s),
   league = g =>
     g.league === 'QHL' ? 'Quickline Handball League' : g.league === 'EHL' ? 'EHF European League' : g.league;
 function footer() {
+  if(document.documentElement.dataset.design!=='v2')return '';
   const [page = 'home', id, tab = 'overview'] = (location.hash.slice(1) || 'home').split('/');
   const game = page === 'match' ? games.find(g => g.id === id) : null;
   const key =
