@@ -40,7 +40,7 @@ function matchSquad(g) {
     .filter(p => Object.hasOwn(goals, p[0]))
     .map(
       p =>
-        `<a href="#player/${p[0]}"><img src="assets/player-${p[0]}.webp" alt="" width="600" height="400" loading="lazy" decoding="async"><span><strong>${p[1]}</strong><small>${p[2]} · Nr. ${p[0]}</small></span><b>${goals[p[0]]} <small>Tore</small></b></a>`
+        `<a href="#player/${p[0]}"><img src="${liveEscape(handballPlayerImage(p[0]))}" alt="" width="600" height="400" loading="lazy" decoding="async"><span><strong>${p[1]}</strong><small>${p[2]} · Nr. ${p[0]}</small></span><b>${goals[p[0]]} <small>Tore</small></b></a>`
     )
     .join(
       ''
@@ -279,7 +279,7 @@ function seasonPlayerLeaders() {
     `<ol class="player-leaders">${list
       .map((p, i) => {
         const rank = list.findIndex(x => x.value === p.value) + 1;
-        return `<li><a href="#player/${p.id}" class="player-leader"><span class="leader-rank">${rank}</span><img src="assets/player-${p.id}.webp" width="600" height="400" loading="lazy" decoding="async" alt=""><span class="leader-name">${liveEscape(p.name)}<small>Nr. ${p.id}${unit === 'Min.' ? ' · ' + p.stats.twoMinutes + ' × 2 Minuten' : ''}</small></span><strong>${p.value}<small>${unit}</small></strong></a></li>`;
+        return `<li><a href="#player/${p.id}" class="player-leader"><span class="leader-rank">${rank}</span><img src="${liveEscape(handballPlayerImage(p.id))}" width="600" height="400" loading="lazy" decoding="async" alt=""><span class="leader-name">${liveEscape(p.name)}<small>Nr. ${p.id}${unit === 'Min.' ? ' · ' + p.stats.twoMinutes + ' × 2 Minuten' : ''}</small></span><strong>${p.value}<small>${unit}</small></strong></a></li>`;
       })
       .join('')}</ol>`;
   const scorers = ranking('goals'),
