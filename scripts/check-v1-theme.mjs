@@ -104,6 +104,13 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   assert.ok(layout.coverHeight>=layout.gap,label+': entire vertical gap is covered');
   assert.ok(Math.abs(layout.coverLeft)<.5&&Math.abs(layout.coverWidth-layout.viewport)<.5,label+': gap backing spans the viewport');
   assert.ok(!layout.cover.startsWith('rgba('),label+': gap backing is opaque');
+  await page.evaluate(async()=>document.fonts.ready);
+  const clip=await page.locator('.game-control-bar').evaluate(e=>({x:0,y:0,width:innerWidth,height:Math.floor(e.getBoundingClientRect().bottom)}));
+  const before=await page.screenshot({clip});
+  await page.evaluate(height=>{const probe=document.createElement('div');probe.id='chrome-underlay-probe';probe.style.cssText='position:fixed;top:0;left:0;width:100%;height:'+height+'px;background:#ff00ff;z-index:23;pointer-events:none';document.body.append(probe);},clip.height);
+  try {assert.deepEqual(await page.screenshot({clip}),before,label+': content behind the entire chrome, including rounded corners, is invisible');}
+  finally {await page.locator('#chrome-underlay-probe').evaluate(e=>e.remove());}
+
  }
  async function audit(label){await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);if(label.includes('home'))await compareUnderlayWithV2();await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
  await page.goto(origin+'/?club=kadetten#home');await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').check();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');await audit('kadetten settings');await checkDisclaimerPopup('light disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.reload();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
