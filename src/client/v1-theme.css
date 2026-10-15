@@ -250,3 +250,26 @@ html:not([data-design='v2']) .disclaimer-copy h3 { margin:24px 0 12px; font-size
 html:not([data-design='v2']) .disclaimer-copy p { margin:0 0 12px; }
 html:not([data-design='v2']) .disclaimer-copy a { text-decoration:underline; text-underline-offset:3px; }
 html:not([data-design='v2']) .app-disclaimer-dialog form .button { width:100%; }
+
+
+/* A compact native-style settings sheet, with consistent groups and rows. */
+html:not([data-design='v2']) .club-settings-dialog { padding:22px; }
+html:not([data-design='v2']) .club-settings-dialog > header { margin-bottom:24px; }
+html:not([data-design='v2']) .club-settings-dialog h2 { margin:0; font:650 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2']) .club-settings-dialog .settings-group { margin:0 0 22px; padding:0; border:0; }
+html:not([data-design='v2']) .club-settings-dialog .settings-group h3 { margin:0 0 8px; color:var(--muted); font-size:12px; line-height:1.5; font-weight:600; letter-spacing:.02em; }
+html:not([data-design='v2']) .club-settings-list label { min-height:64px; gap:12px; padding:10px 0; border:0; }
+html:not([data-design='v2']) .club-settings-list label + label { border-top:1px solid var(--line); }
+html:not([data-design='v2']) .club-settings-list img { width:30px; height:36px; }
+html:not([data-design='v2']) .club-settings-list span { min-width:0; font-size:14px; line-height:1.4; font-weight:500; }
+html:not([data-design='v2']) .club-settings-list small { margin-top:2px; font-size:12px; line-height:1.4; }
+html:not([data-design='v2']) .club-settings-dialog .theme-setting { min-height:64px; gap:12px; }
+html:not([data-design='v2']) .club-settings-dialog .theme-setting > span { font-size:14px; font-weight:500; }
+html:not([data-design='v2']) .club-settings-help { margin:0; padding:12px 0 0; border-top:1px solid var(--line); }
+html:not([data-design='v2']) .settings-help-row { display:flex; align-items:center; gap:12px; width:100%; min-height:52px; padding:10px 0; color:var(--text); background:transparent; border:0; border-radius:0; text-align:left; font-size:14px; font-weight:500; }
+html:not([data-design='v2']) .settings-help-row > svg { flex:none; width:20px; height:20px; color:var(--muted); }
+html:not([data-design='v2']) .settings-help-row > span { flex:1; }
+html:not([data-design='v2']) .settings-help-row .settings-help-arrow { width:16px; height:16px; }
+html:not([data-design='v2']) .settings-help-row:active { background:color-mix(in srgb,var(--text) 5%,transparent); transform:none; }
+html:not([data-design='v2']) .settings-help-row:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .club-settings-dialog .settings-app-info { margin:12px 0 0; border-bottom:0; }

@@ -305,3 +305,23 @@ test('V1 settings show disclaimer and clock with timestamp on one row',()=>{
  const v2=app('https://example.test/v2/');v2.document.documentElement.dataset.design='v2';const c=v2.document.createElement.bind(v2.document);
  v2.document.createElement=tag=>{const e=c(tag);if(tag==='dialog')e.showModal=()=>{};return e;};v2.run('openClubSettings()');assert.equal(v2.document.querySelector('.settings-app-info'),null);
 });
+
+
+test('V1 settings use clear groups and one close action while choices save immediately',()=>{
+ const a=app('https://example.test/'),create=a.document.createElement.bind(a.document);
+ a.document.createElement=tag=>{const e=create(tag);if(tag==='dialog'){e.showModal=()=>e.setAttribute('open','');e.close=()=>e.removeAttribute('open');}return e;};
+ a.run('openClubSettings()');const dialog=a.document.querySelector('.club-settings-dialog');
+ assert.equal(dialog.querySelector('h2').textContent,'Einstellungen');
+ assert.deepEqual([...dialog.querySelectorAll('.settings-group h3')].map(e=>e.textContent),['Meine Vereine','Darstellung']);
+ assert.equal(dialog.querySelectorAll('[data-club-choice]').length,3);
+ assert.equal(dialog.querySelector('form'),null);
+ assert.equal(dialog.querySelector('.eyebrow'),null);
+ assert.doesNotMatch(dialog.textContent,/Wähle die Vereine|DEINE FAN-APP|Fertig/);
+ assert.ok(dialog.querySelector('.settings-help-row [aria-hidden="true"]'));
+ const light=dialog.querySelector('[data-v1-light-mode]');light.checked=true;light.dispatchEvent(new a.document.defaultView.Event('change',{bubbles:true}));
+ assert.equal(a.store.get('fan-v1-theme'),'light');
+ dialog.querySelector('[data-close-clubs]').onclick();assert.equal(dialog.hasAttribute('open'),false);
+ a.run('openClubSettings()');assert.equal(light.checked,true);
+ a.run('window.showAppIntroduction=()=>{window.introOpened=true}');dialog.querySelector('[data-open-introduction]').onclick();
+ assert.equal(dialog.hasAttribute('open'),false);assert.equal(a.run('window.introOpened'),true);
+});
