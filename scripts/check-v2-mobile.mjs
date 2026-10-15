@@ -147,18 +147,11 @@ try {
   for(const width of [360,390,430]) {
     await page.setViewportSize({width,height:740});
     await page.goto(origin+'/v2/?club=kadetten#club');
-    await page.evaluate(()=>window.scrollTo({top:350,behavior:'instant'}));
-    await page.waitForTimeout(100);
-    await page.locator('.v2-scrollbar').waitFor({state:'visible'});
-    assert.equal(await page.locator('.v2-scrollbar').getAttribute('data-surface'),'photo');
-    await page.evaluate(()=>window.scrollTo({top:document.querySelector('.club-intro')?.getBoundingClientRect().bottom+scrollY+120||800,behavior:'instant'}));
-    await page.waitForTimeout(100);
-    assert.equal(await page.locator('.v2-scrollbar').getAttribute('data-surface'),'content');
-    await page.locator('[data-v2-menu]').tap();
-    await page.locator('[data-v2-select="fcsg"]').tap();
-    await page.waitForTimeout(100);
+    assert.equal(await page.locator('.v2-club-deck').count(),1);
+    assert.equal(await page.locator('.club-intro,.v2-scrollbar').count(),0);
+    await page.locator('[data-v2-choose]').tap();
+    await page.locator('[data-v2-pick="fcsg"]').tap();
     assert.equal(await page.locator('html').getAttribute('data-club'),'fcsg');
-    assert.equal(await page.evaluate(()=>scrollY),0);
     await page.locator('.dock a[href="#season/games"]').tap();
     for(const mode of ['calendar','week','list']) {
       await page.locator('[data-mode="'+mode+'"]').tap();

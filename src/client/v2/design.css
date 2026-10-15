@@ -315,3 +315,38 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 /* Dark home chrome follows the page palette while retaining translucent glass. */
 [data-design='v2'][data-theme='dark'] .immersive > .top { background:var(--glass); color:var(--text); }
 [data-design='v2'][data-theme='dark'] .dock { border-color:color-mix(in srgb,var(--text) 24%,transparent); }
+
+/* The club overview begins with three complete, overlapping chapter cards. */
+.v2-sr-only { position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+[data-design='v2'] .v2-roster-intro { display:block; }
+[data-design='v2'] .v2-club-overview,[data-design='v2'] .v2-club-detail { max-width:760px; margin:auto; padding:4px 22px 110px; }
+.v2-club-back { margin:4px 0 18px; font-size:13px; }
+.v2-club-back a { display:inline-flex; align-items:center; min-height:44px; }
+.v2-club-name { margin:0 0 14px; font-size:12px; color:var(--muted); }
+.v2-club-deck { --card-height:clamp(280px,43svh,390px); position:relative; height:calc(var(--card-height) + 112px); isolation:isolate; }
+.v2-club-card { position:absolute; inset:0 16px auto 0; height:var(--card-height); transform:translate(calc(var(--rank)*8px),calc(var(--rank)*56px)); z-index:calc(3 - var(--rank)); border-radius:22px; background:#53674e; color:#fff; box-shadow:0 2px 6px #1021170a; overflow:hidden; }
+.v2-club-card--achievements { background:#e8d6b7; color:#293127; }
+.v2-club-card--venue { background:#805a3b; color:#fff; }
+.v2-club-face { position:absolute; inset:0; display:block; border-radius:inherit; overflow:hidden; color:#fff; }
+.v2-club-face[hidden],.v2-club-tab[hidden] { display:none; }
+.v2-club-face > img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.v2-club-face-copy { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:22px; background:linear-gradient(180deg,#08110c0d 20%,#08110cb3 65%,#08110cf2); }
+.v2-club-face-copy h2 { font:600 28px/1.1 var(--v2-serif); margin:0 0 10px; }
+.v2-club-face-copy p { color:#f4f1e9; font-size:13px; line-height:1.5; margin:0 0 16px; max-width:28ch; }
+.v2-club-arrow { display:grid; place-items:center; width:40px; height:32px; border-radius:30px; background:#fff; color:#222b25; font-size:22px; }
+.v2-club-tab { position:absolute; inset:auto 0 0; width:100%; height:56px; display:flex; gap:12px; align-items:center; padding:10px 18px; border:0; background:inherit; color:inherit; font-size:18px; font-weight:600; text-align:left; }
+.v2-club-tab > span { display:grid; place-items:center; flex:none; width:30px; height:30px; border-radius:50%; background:#ffffffed; color:#222b25; font-size:24px; font-weight:400; }
+.v2-club-hint { margin:16px 0 28px; font-size:12px; color:var(--muted); }
+[data-design='v2'] .v2-club-detail > h1 { font-size:28px; line-height:1.15; margin:0 0 26px; }
+[data-design='v2'] .v2-club-detail .club-cabinet { padding:24px 20px; border-radius:22px; }
+[data-design='v2'] .v2-club-detail .club-history { padding-top:0; }
+[data-design='v2'] .v2-club-detail .club-history-heading h2 { font-size:26px; }
+.v2-venue-chapter > img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:22px; }
+.v2-venue-chapter h2 { font:600 26px/1.2 var(--v2-serif); margin:24px 0 12px; }
+[data-design='v2'][data-club='otmar'] .v2-club-card img[src='assets/otmar-kreuzbleiche.webp'],[data-design='v2'][data-club='otmar'] .v2-venue-chapter > img { filter:brightness(2.4); }
+.v2-club-overview .club-credits,.v2-club-detail .club-credits { padding:12px 0; }
+[data-design='v2'] .v2-club-face:focus-visible,[data-design='v2'] .v2-club-tab:focus-visible { outline:3px solid var(--accent); outline-offset:-5px; }
+
+[data-design='v2'] .v2-roster-intro > img { object-fit:cover; }
+[data-design='v2'] .v2-club-detail .club-cabinet > h2 { font-size:28px; }
+.v2-club-detail .news-link { color:var(--text); text-decoration:underline; text-underline-offset:3px; }
