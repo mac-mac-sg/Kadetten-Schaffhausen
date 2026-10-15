@@ -96,3 +96,11 @@ Unter Einstellungen → Darstellung lässt sich die Leseschrift zwischen Standar
 Beim Lesen unterhalb des ersten News-Bereichs verändern eingehende Artikel die sichtbare Liste nicht. «Neue Beiträge verfügbar» übernimmt die neue Liste auf Wunsch und führt zum Anfang. Andere Daten werden weiter aktualisiert; beim nächsten bewussten Ansichtswechsel wird die vorgemerkte Liste ebenfalls übernommen.
 
 `tests/view-state.test.mjs` deckt Ansichten, Vereinswechsel, Filter und vorgemerkte News ab. `scripts/check-view-comfort.mjs` prüft nach dem Pages-Build zusätzlich reale Browserhistorie, Spielabschnittsmarkierungen, Kalender-/Filterzustand, Schriftgrösse, neue News für alle drei Vereine, Ladefehler sowie mobile und Desktop-Barrierefreiheit. Browser-Variablen entsprechen den übrigen Layoutprüfungen.
+
+## V1: einklappender Spielkopf
+
+Der grosse Spielkopf mit Teamlogos bleibt beim Öffnen sichtbar und scrollt mit dem Inhalt nach oben. Sobald die Spielbereich-Laschen die Vereinskopfzeile erreichen, übernimmt eine kompakte Zeile mit Zurück-Link, kleinen Logos, Teams und Termin beziehungsweise bestätigtem Spielstand/Status. Die Laschen bleiben direkt darunter erreichbar. Beim Zurückscrollen erscheint der grosse Kopf wieder. Die kompakte Zeile überlagert den auslaufenden Kopf, sodass sich die Dokumenthöhe beim Umschalten nicht verändert.
+
+Das Verhalten gilt für Handball- und FCSG-Spielseiten in V1. Ein Laschenwechsel innerhalb desselben Spiels behält den kompakten Zustand, wenn noch keine andere Leseposition für die Zielansicht gespeichert ist. Live-Aktualisierungen übernehmen Spielstand und Status, ohne allein wegen der erweiterten Kopf-Darstellung die unveränderte Handball-Live-Ansicht neu aufzubauen. Reduzierte Bewegung verzichtet auf den kurzen Übergang; V2 bleibt unverändert.
+
+`tests/match-header.test.mjs` deckt Einklappen, Rückkehr, Live-Werte, unveränderte Live-Antworten und V2 ab. `scripts/check-match-header.mjs` prüft im Browser alle drei Vereine bei 390 px und Desktop in hell/dunkel: stabile Dokumentposition, kompakte Kopf-/Laschen-Geometrie, Rückwege, Laschenwechsel, geänderte Spielstände, reduzierte Bewegung und axe-Barrierefreiheit. Browser-Variablen entsprechen den übrigen Layoutprüfungen; `MATCH_HEADER_SCREENSHOT` und `MATCH_HEADER_REPORT` sind optionale Ausgaben.
