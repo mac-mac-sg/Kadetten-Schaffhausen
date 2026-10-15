@@ -318,30 +318,14 @@ const mainTabSwipeRoutes=['#home','#season/games','#season/table','#season/squad
 function mainTabSwipeTarget(route,dx,dy,duration,width) {
   const index=mainTabSwipeRoutes.indexOf(route||'#home');
   const distance=Math.max(64,Math.min(96,width*.18));
-  if(index<0||duration<0||duration>800||Math.abs(dx)<distance||Math.abs(dy)>48||Math.abs(dx)<Math.abs(dy)*1.8)return null;
+  if(index<0||duration<0||duration>10000||Math.abs(dx)<distance||Math.abs(dy)>48||Math.abs(dx)<Math.abs(dy)*1.8)return null;
   return mainTabSwipeRoutes[Math.max(0,Math.min(mainTabSwipeRoutes.length-1,index+(dx<0?1:-1)))];
-}
-function mainTabSwipeMotionTargets(app) {
-  const pinned=new Set(),ancestors=new Set();
-  for(const element of app.querySelectorAll('*')){
-    if(element.matches('.season-header')||['fixed','sticky'].includes(getComputedStyle(element).position)){
-      pinned.add(element);
-      for(let parent=element.parentElement;parent&&parent!==app;parent=parent.parentElement)ancestors.add(parent);
-    }
-  }
-  const targets=[];
-  const visit=element=>{
-    if(pinned.has(element))return;
-    if(ancestors.has(element)){for(const child of element.children)visit(child);}
-    else targets.push(element);
-  };
-  for(const child of app.children)visit(child);
-  return targets;
 }
 function setupMainTabSwipe() {
   const root=document.documentElement,app=document.getElementById('app');
   if(root.dataset.design==='v2'||!app)return;
-  let gesture=null,pending=null,animations=[];
+  const pager=createMainTabPager(app);
+  let gesture=null,settling=false;
   const blocked=()=>!!document.querySelector('dialog[open],[role="dialog"][aria-modal="true"],#compact-club-menu:not([hidden])')||window.getSelection?.()?.isCollapsed===false;
   const ownsGesture=target=>{
     if(target.closest('button,input,select,textarea,summary,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-swipe-ignore],.calendar-panel,.match-calendar,.calendar,.week-calendar'))return true;
@@ -352,7 +336,7 @@ function setupMainTabSwipe() {
   };
   app.addEventListener('touchstart',event=>{
     gesture=null;
-    if(root.dataset.design==='v2'||event.touches.length!==1||blocked()||!mainTabSwipeRoutes.includes(location.hash||'#home')||ownsGesture(event.target))return;
+    if(settling||root.dataset.design==='v2'||event.touches.length!==1||blocked()||!mainTabSwipeRoutes.includes(location.hash||'#home')||ownsGesture(event.target))return;
     const t=event.touches[0];
     if(t.clientX<24||t.clientX>window.innerWidth-24)return;
     gesture={id:t.identifier,x:t.clientX,y:t.clientY,at:Date.now(),url:location.href,target:event.target};
@@ -360,31 +344,126 @@ function setupMainTabSwipe() {
   app.addEventListener('touchmove',event=>{
     if(!gesture)return;
     const t=event.touches[0];
-    if(event.touches.length!==1||t.identifier!==gesture.id||blocked()){gesture=null;return;}
-    const dx=Math.abs(t.clientX-gesture.x),dy=Math.abs(t.clientY-gesture.y);
-    if(dy>12&&dy>dx/1.3)gesture=null;
-  },{passive:true});
-  app.addEventListener('touchcancel',()=>{gesture=null;},{passive:true});
-  app.addEventListener('touchend',event=>{
-    const start=gesture;gesture=null;
-    if(!start||event.touches.length||location.href!==start.url||!start.target.isConnected||blocked())return;
-    const t=Array.from(event.changedTouches).find(t=>t.identifier===start.id);if(!t)return;
-    const route=location.hash||'#home',next=mainTabSwipeTarget(route,t.clientX-start.x,t.clientY-start.y,Date.now()-start.at,window.innerWidth);
-    if(!next)return;
-    if(event.cancelable)event.preventDefault();
-    if(next===route)return;
-    if(next==='#season/games'){mode='list';competition='Alle';}
-    pending={route:next,direction:t.clientX<start.x?1:-1};location.hash=next;
+    if(event.touches.length!==1||t.identifier!==gesture.id||blocked()){gesture=null;pager.cancel();return;}
+    const dx=t.clientX-gesture.x,dy=Math.abs(t.clientY-gesture.y);
+    if(!gesture.locked&&dy>12&&dy>Math.abs(dx)/1.3){gesture=null;return;}
+    if(!gesture.locked&&Math.abs(dx)>12&&Math.abs(dx)>dy*1.5){gesture.locked=true;pager.begin(location.hash||'#home');}
+    if(gesture.locked){if(event.cancelable)event.preventDefault();pager.move(dx);}
   },{passive:false});
-  window.addEventListener('hashchange',()=>{
-    const transition=pending;pending=null;
-    for(const animation of animations)animation.cancel?.();animations=[];
-    if(!transition||location.hash!==transition.route||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
-    // Animate only branches without pinned descendants, never their containing block.
-    const frames=[{opacity:.9,transform:`translateX(${transition.direction*14}px)`},{opacity:1,transform:'translateX(0px)'}];
-    for(const target of mainTabSwipeMotionTargets(app)){
-      const animation=target.animate?.(frames,{duration:180,easing:'cubic-bezier(.23,1,.32,1)'});
-      if(animation){animation.finished?.catch(()=>{});animations.push(animation);}
+  app.addEventListener('touchcancel',()=>{gesture=null;pager.cancel();},{passive:true});
+  app.addEventListener('touchend',async event=>{
+    const start=gesture;gesture=null;
+    if(!start||event.touches.length||location.href!==start.url||!start.target.isConnected||blocked()){pager.cancel();return;}
+    const t=Array.from(event.changedTouches).find(t=>t.identifier===start.id);if(!t){pager.cancel();return;}
+    const route=location.hash||'#home',next=mainTabSwipeTarget(route,t.clientX-start.x,t.clientY-start.y,Date.now()-start.at,window.innerWidth);
+    if((start.locked||next)&&event.cancelable)event.preventDefault();
+    if(!start.locked&&!next)return;
+    settling=true;
+    try {
+      const result=pager.finish(next&&next!==route?next:null);
+      const completed=result?.then?await result:result;
+      if(completed===false)return;
+      if(!next||next===route||location.href!==start.url||blocked()){pager.cancel();return;}
+      if(next==='#season/games'){mode='list';competition='Alle';}
+      location.hash=next;
+    } finally {settling=false;}
+  },{passive:false});
+  window.addEventListener('hashchange',()=>{gesture=null;pager.routeChanged();});
+}
+
+
+/* Script-free preview documents isolate each page's body styles without live polling. */
+function mainTabPreviewMarkup(route) {
+  const savedMode=mode,savedCompetition=competition;
+  try {
+    if(route==='#season/games'){mode='list';competition='Alle';}
+    const tab=route.split('/')[1],markup=route==='#home'?(activeClub==='fcsg'?fcsgHome():home()):(activeClub==='fcsg'?fcsgView('season',tab):season(tab));
+    const container=document.createElement('div');container.innerHTML=markup;
+    if(route==='#home'){
+      const slot=container.querySelector('.home-matchday .live-match');
+      if(slot){if(activeClub!=='fcsg')paintHandballMatchday(slot,true);else syncV1MatchAction(slot);}
     }
-  });
+    return container.innerHTML;
+  } finally {mode=savedMode;competition=savedCompetition;}
+}
+function createMainTabPager(app) {
+  const host=document.createElement('div');host.className='main-tab-pager';host.setAttribute('aria-hidden','true');host.inert=true;document.body.append(host);
+  let frames=new Map(),key='',timer=0,drag=null,committing=null,animations=[],generation=0;
+  const reduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const signature=()=>[activeClub,document.documentElement.dataset.theme,window.innerWidth,window.innerHeight,location.hash||'#home'].join('|');
+  const stop=()=>{generation++;for(const a of animations)a.cancel();animations=[];};
+  const hide=()=>{host.classList.remove('is-dragging');for(const entry of frames.values()){entry.frame.style.visibility='hidden';entry.frame.style.transform='translateX(0px)';}};
+  const cancel=()=>{stop();drag=null;committing=null;hide();schedule();};
+  function align(entry,current=false){
+    const doc=entry.frame.contentDocument,win=entry.frame.contentWindow;if(!doc?.querySelector('#app'))return;
+    if(current){win.scrollTo(0,window.scrollY);return;}
+    win.scrollTo(0,0);
+    if(entry.route==='#season/games'){
+      const card=doc.querySelector('.game-timeline .current-game');if(!card)return;
+      const rootTop=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--v1-content-top'));
+      const top=(Number.isFinite(rootTop)?rootTop:clubHeaderOffset())+(doc.querySelector('.game-control-bar')?.getBoundingClientRect().height||54)+12;
+      const bottom=(document.querySelector('body > .dock')?.getBoundingClientRect().top||innerHeight)-12,r=card.getBoundingClientRect();
+      win.scrollTo(0,Math.max(0,r.top-(top+Math.max(0,(bottom-top-r.height)/2))));
+    }
+  }
+  function build(route){
+    const frame=document.createElement('iframe');frame.title='Ansichtsvorschau';frame.tabIndex=-1;frame.setAttribute('aria-hidden','true');frame.setAttribute('sandbox','allow-same-origin');frame.inert=true;
+    const entry={frame,route,ready:false};frames.set(route,entry);
+    const root=document.documentElement,styles=[...document.querySelectorAll('link[rel="stylesheet"]')].map(e=>e.outerHTML).join('');
+    const vars=['--app-header-height','--v1-content-top','--v1-games-left','--v1-games-width','--v1-games-controls-height'].map(k=>k+':'+getComputedStyle(root).getPropertyValue(k)).join(';');
+    const isCurrent=route===(location.hash||'#home'),bodyClass=isCurrent?document.body.className:route==='#home'?'immersive':route==='#season/games'?'games-mode':'';
+    const markup=route===(location.hash||'#home')?app.innerHTML:mainTabPreviewMarkup(route);
+    const theme=root.dataset.theme==='light'?'light':'dark';
+    frame.addEventListener('load',()=>{try{entry.ready=true;align(entry,route===(location.hash||'#home'));}catch{entry.ready=false;}});
+    frame.srcdoc=`<!doctype html><html lang="de-CH" class="${isCurrent?root.className:''}" data-theme="${theme}" data-club="${activeClub}" style="${vars}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><base href="${location.href.split('#')[0]}">${styles}<style>html{scroll-snap-type:none!important;scroll-behavior:auto!important}*{animation:none!important;transition:none!important}.season-header,.game-control-bar,.story-dots{visibility:hidden!important}body{pointer-events:none}</style></head><body class="${bodyClass}"><main id="app">${markup}</main></body></html>`;
+    host.append(frame);
+  }
+  function prepare(){
+    if(drag||committing||reduced())return;
+    const route=location.hash||'#home',index=mainTabSwipeRoutes.indexOf(route);
+    if(index<0)return;
+    for(const entry of frames.values())entry.frame.remove();frames=new Map();key=signature();
+    for(const target of mainTabSwipeRoutes.slice(Math.max(0,index-1),index+2))build(target);
+  }
+  function schedule(){clearTimeout(timer);timer=setTimeout(prepare,100);}
+  if(typeof MutationObserver!=='undefined'){
+    new MutationObserver(()=>{if(drag&&!drag.target?.isConnected)cancel();schedule();}).observe(app,{childList:true});
+    new MutationObserver(records=>{if(records.some(r=>r.oldValue!==r.target.getAttribute(r.attributeName)))cancel();}).observe(document.documentElement,{attributes:true,attributeOldValue:true,attributeFilter:['data-theme','data-club']});
+  }
+  window.addEventListener('resize',cancel);schedule();
+  return {
+    begin(route){
+      if(reduced())return false;
+      if(key!==signature()){prepare();return false;}
+      const current=frames.get(route);if(!current?.ready)return false;
+      stop();align(current,true);drag={route,width:innerWidth,dx:0,current,target:app.firstElementChild};host.classList.add('is-dragging');current.frame.style.visibility='visible';return true;
+    },
+    move(dx){
+      if(!drag)return;
+      const index=mainTabSwipeRoutes.indexOf(drag.route),direction=dx<0?1:-1,next=frames.get(mainTabSwipeRoutes[index+direction]);
+      const offset=next?.ready?Math.max(-drag.width,Math.min(drag.width,dx)):Math.max(-drag.width*.15,Math.min(drag.width*.15,dx*.22));
+      for(const entry of frames.values())if(entry!==drag.current)entry.frame.style.visibility='hidden';
+      drag.dx=offset;drag.next=next?.ready?next:null;drag.direction=direction;
+      drag.current.frame.style.transform=`translateX(${offset}px)`;
+      if(drag.next){align(drag.next);drag.next.frame.style.visibility='visible';drag.next.frame.style.transform=`translateX(${offset+direction*drag.width}px)`;}
+    },
+    async finish(next){
+      if(!drag||reduced())return true;
+      const state=drag,commit=next&&state.next?.route===next;
+      if(next&&!commit){cancel();return true;}
+      const destinations=[[state.current,commit?-state.direction*state.width:0]];
+      if(state.next)destinations.push([state.next,commit?0:state.direction*state.width]);
+      const token=generation;
+      animations=destinations.map(([entry,x])=>entry.frame.animate([{transform:entry.frame.style.transform},{transform:`translateX(${x}px)`}],{duration:commit?220:180,easing:'cubic-bezier(.23,1,.32,1)',fill:'forwards'}));
+      await Promise.all(animations.map(a=>a.finished.catch(()=>{})));
+      if(token!==generation)return false;
+      if(commit){committing=next;drag=null;}else{drag=null;hide();schedule();}
+      return !!commit;
+    },
+    routeChanged(){
+      if(committing===(location.hash||'#home'))requestAnimationFrame(()=>requestAnimationFrame(()=>{stop();committing=null;hide();schedule();}));
+      else cancel();
+    },
+    cancel
+  };
 }
