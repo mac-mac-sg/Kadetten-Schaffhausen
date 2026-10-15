@@ -29,6 +29,7 @@ function handleRouteChange() {
 window.addEventListener('hashchange',handleRouteChange);
 window.addEventListener('popstate',handleRouteChange);
 render();
+setupMainTabSwipe();
 if (!location.hash || location.hash === '#home') window.scrollTo({top: 0, behavior: 'instant'});
 Promise.all(['kadetten','otmar'].map(club=>loadCurrentData(club))).finally(updateClubDot);
 loadFcsgData().finally(updateClubDot);

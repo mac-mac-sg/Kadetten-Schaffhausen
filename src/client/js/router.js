@@ -312,3 +312,57 @@ function measureAppChrome() {
     if(season)appChromeObserver.observe(season);
   }
 }
+
+/* Touch navigation is limited to V1's four primary routes. Native scrolling stays in charge. */
+const mainTabSwipeRoutes=['#home','#season/games','#season/table','#season/squad'];
+function mainTabSwipeTarget(route,dx,dy,duration,width) {
+  const index=mainTabSwipeRoutes.indexOf(route||'#home');
+  const distance=Math.max(64,Math.min(96,width*.18));
+  if(index<0||duration<0||duration>800||Math.abs(dx)<distance||Math.abs(dy)>48||Math.abs(dx)<Math.abs(dy)*1.8)return null;
+  return mainTabSwipeRoutes[Math.max(0,Math.min(mainTabSwipeRoutes.length-1,index+(dx<0?1:-1)))];
+}
+function setupMainTabSwipe() {
+  const root=document.documentElement,app=document.getElementById('app');
+  if(root.dataset.design==='v2'||!app)return;
+  let gesture=null,pending=null;
+  const blocked=()=>!!document.querySelector('dialog[open],[role="dialog"][aria-modal="true"],#compact-club-menu:not([hidden])')||window.getSelection?.()?.isCollapsed===false;
+  const ownsGesture=target=>{
+    if(target.closest('button,input,select,textarea,summary,[contenteditable]:not([contenteditable="false"]),[role="slider"],[data-swipe-ignore],.calendar-panel,.match-calendar,.calendar,.week-calendar'))return true;
+    for(let e=target;e&&e!==app;e=e.parentElement){
+      if(e.scrollWidth>e.clientWidth+2&&/auto|scroll/.test(getComputedStyle(e).overflowX))return true;
+    }
+    return false;
+  };
+  app.addEventListener('touchstart',event=>{
+    gesture=null;
+    if(root.dataset.design==='v2'||event.touches.length!==1||blocked()||!mainTabSwipeRoutes.includes(location.hash||'#home')||ownsGesture(event.target))return;
+    const t=event.touches[0];
+    if(t.clientX<24||t.clientX>window.innerWidth-24)return;
+    gesture={id:t.identifier,x:t.clientX,y:t.clientY,at:Date.now(),url:location.href,target:event.target};
+  },{passive:true});
+  app.addEventListener('touchmove',event=>{
+    if(!gesture)return;
+    const t=event.touches[0];
+    if(event.touches.length!==1||t.identifier!==gesture.id||blocked()){gesture=null;return;}
+    const dx=Math.abs(t.clientX-gesture.x),dy=Math.abs(t.clientY-gesture.y);
+    if(dy>12&&dy>dx/1.3)gesture=null;
+  },{passive:true});
+  app.addEventListener('touchcancel',()=>{gesture=null;},{passive:true});
+  app.addEventListener('touchend',event=>{
+    const start=gesture;gesture=null;
+    if(!start||event.touches.length||location.href!==start.url||!start.target.isConnected||blocked())return;
+    const t=Array.from(event.changedTouches).find(t=>t.identifier===start.id);if(!t)return;
+    const route=location.hash||'#home',next=mainTabSwipeTarget(route,t.clientX-start.x,t.clientY-start.y,Date.now()-start.at,window.innerWidth);
+    if(!next)return;
+    if(event.cancelable)event.preventDefault();
+    if(next===route)return;
+    if(next==='#season/games'){mode='list';competition='Alle';}
+    pending=next;location.hash=next;
+  },{passive:false});
+  window.addEventListener('hashchange',()=>{
+    const target=pending;pending=null;
+    if(!target||location.hash!==target||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    // Opacity keeps pinned controls in place; transforming #app would move its fixed children.
+    app.animate?.([{opacity:.9},{opacity:1}],{duration:140,easing:'cubic-bezier(.23,1,.32,1)'});
+  });
+}
