@@ -759,3 +759,19 @@ test('V1 removes the repeated disclaimer and timestamp footer; V2 retains its fo
  try{assert.match(run('footer()'),/footer-updated/);assert.match(run('fcsgFooter()'),/nicht-kommerzielles Fan-Projekt/);}
  finally{delete context.document.documentElement.dataset.design;}
 });
+
+test('V1 fixture dividers sit directly above and below the current game; no jump buttons remain',()=>{
+ for(const club of ['kadetten','fcsg','otmar']){
+  run("activeClub='"+club+"';mode='list';competition='Alle';document.documentElement.dataset.design='v1'");
+  const doc=parseHTML(view(club==='fcsg'?'fcsgGames()':'gameList()')).document,current=doc.querySelector('.current-game');
+  assert.equal(doc.querySelector('[data-game-jump],.game-jumps'),null,club);
+  if(current){if(current.previousElementSibling)assert.equal(current.previousElementSibling.dataset.gamePeriod,'past',club);if(current.nextElementSibling)assert.equal(current.nextElementSibling.dataset.gamePeriod,'upcoming',club);}
+ }
+ run("document.documentElement.dataset.design='v1'");
+ const make=list=>{context.sample=list;return parseHTML(view("gameTimelineCards(sample,sample.find(g=>g.id==='current'),g=>'<article class=\"game-card\">'+g.id+'</article>')")).document;};
+ assert.equal(make([{id:'current'}]).querySelectorAll('.game-list-divider').length,0);
+ let doc=make([{id:'current'},{id:'future'}]);assert.equal(doc.querySelectorAll('.game-list-divider').length,1);assert.equal(doc.querySelector('[data-game-period="past"]'),null);assert.equal(doc.querySelector('[data-game-period="upcoming"]').textContent,'Kommend');
+ doc=make([{id:'past'},{id:'current'}]);assert.equal(doc.querySelectorAll('.game-list-divider').length,1);assert.equal(doc.querySelector('[data-game-period="past"]').textContent,'Vergangen');
+ assert.equal(make([{id:'past'},{id:'future'}]).querySelectorAll('.game-list-divider').length,0);
+ run("document.documentElement.dataset.design='v2'");assert.equal(make([{id:'past'},{id:'current'},{id:'future'}]).querySelectorAll('.game-list-divider').length,0);
+});

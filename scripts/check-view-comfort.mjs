@@ -24,13 +24,11 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   const current=page.locator('.game-timeline .current-game');assert.equal(await current.count(),1);
   const original=await page.evaluate(()=>scrollY);assert.ok(original>0,'First visit centres next game');
   await page.evaluate(()=>scrollTo(0,300));await nav('#season/table');await nav('#season/games');assert.ok(Math.abs(await page.evaluate(()=>scrollY)-300)<2,club+' list returns to saved position');
-  // Jump controls stay in content; use the actual button handler without scrolling the page first.
-  await page.locator('[data-game-jump="current"]').evaluate(e=>e.click());await page.waitForTimeout(600);
-  const rect=await current.boundingBox();assert.ok(rect.y>100&&rect.y+rect.height<780,club+' current game fully visible '+JSON.stringify(rect));
-  await page.locator('[data-game-jump="past"]').evaluate(e=>e.click());await page.waitForTimeout(600);
-  const past=await page.locator('.game-timeline .finished').last().boundingBox();assert.ok(past.y>100&&past.y<760,club+' jumps to most recent result');
-  if(await page.locator('[data-game-jump="upcoming"]').isEnabled()){await page.locator('[data-game-jump="upcoming"]').evaluate(e=>e.click());await page.waitForTimeout(600);const future=await current.evaluate(e=>e.nextElementSibling.getBoundingClientRect().toJSON());assert.ok(future.y>100&&future.y<760,club+' jumps beyond current game');}
+  assert.equal(await page.locator('[data-game-jump],.game-jumps').count(),0,club+' removes jump buttons');
+  const markers=await current.evaluate(e=>({before:e.previousElementSibling?.dataset.gamePeriod,after:e.nextElementSibling?.dataset.gamePeriod}));assert.deepEqual(markers,{before:'past',after:'upcoming'},club+' dividers surround current game');
   await page.evaluate(()=>scrollTo(0,0));await pause();assert.equal(await page.locator('#return-current-game').isVisible(),true);await page.locator('#return-current-game').click();await page.waitForTimeout(600);
+  const rect=await current.boundingBox();assert.ok(rect.y>100&&rect.y+rect.height<780,club+' current game remains fully visible');
+  if(process.env.GAME_DIVIDER_SCREENSHOT&&club==='kadetten')await page.screenshot({path:process.env.GAME_DIVIDER_SCREENSHOT});
   await page.locator('[data-mode="calendar"]').click();await page.locator('#next-month').click();const month=await page.locator('.calendar-head h2').textContent();
   await nav('#season/table');await nav('#season/games');assert.equal(await page.locator('[data-mode="calendar"]').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.calendar-head h2').textContent(),month);
   await page.locator('[data-mode="list"]').click();await page.locator('#competition').selectOption({index:1});const league=await page.locator('#competition').inputValue();await nav('#season/squad');await nav('#season/games');assert.equal(await page.locator('#competition').inputValue(),league);
