@@ -323,7 +323,7 @@ html[data-design='v2']:not(.snap-profile) { scroll-snap-type:none!important; }
 .v2-club-back { margin:4px 0 18px; font-size:13px; }
 .v2-club-back a { display:inline-flex; align-items:center; min-height:44px; }
 .v2-club-name { margin:0 0 14px; font-size:12px; color:var(--muted); }
-.v2-club-deck { --card-height:clamp(280px,43svh,390px); position:relative; height:calc(var(--card-height) + 112px); isolation:isolate; }
+.v2-club-deck { --card-height:clamp(440px,64svh,620px); position:relative; height:calc(var(--card-height) + 112px); isolation:isolate; }
 .v2-club-card { position:absolute; inset:0 16px auto 0; height:var(--card-height); transform:translate(calc(var(--rank)*8px),calc(var(--rank)*56px)); z-index:calc(3 - var(--rank)); border-radius:22px; background:#53674e; color:#fff; box-shadow:0 2px 6px #1021170a; overflow:hidden; }
 .v2-club-card--achievements { background:#e8d6b7; color:#293127; }
 .v2-club-card--venue { background:#805a3b; color:#fff; }

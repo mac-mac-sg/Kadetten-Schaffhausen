@@ -61,10 +61,11 @@ try {
     }
     if(route==='club'){
       assert.equal(await page.locator('.v2-club-card').count(),3);
-      const geometry=await page.locator('.v2-club-card').evaluateAll(cards=>cards.map(card=>{const r=card.getBoundingClientRect(),css=getComputedStyle(card);return {top:r.top,bottom:r.bottom,right:r.right,corner:parseFloat(css.borderTopRightRadius)};}));
+      const geometry=await page.locator('.v2-club-card').evaluateAll(cards=>cards.map(card=>{const r=card.getBoundingClientRect(),css=getComputedStyle(card);return {top:r.top,bottom:r.bottom,right:r.right,width:r.width,height:r.height,corner:parseFloat(css.borderTopRightRadius)};}));
       assert.ok(geometry[1].top>geometry[0].top&&geometry[1].top<geometry[0].bottom-100,'complete card continues behind front');
       assert.ok(geometry[1].right>geometry[0].right&&geometry[2].right>geometry[1].right,'side edges visible');
       assert.ok(geometry.every(card=>card.corner>=20),'all cards have rounded upper edges');
+      assert.ok(geometry.every(card=>card.height>=440&&card.height/card.width>=1.35),'chapter cards have a generous portrait format');
       for(const tab of await page.locator('.v2-club-tab:visible').all())assert.ok((await tab.boundingBox()).height>=44);
     }
     if(process.env.MOBILE_QA_SCREENSHOTS&&width===390)await page.screenshot({path:path.join(process.env.MOBILE_QA_SCREENSHOTS,club+'-'+theme+'-'+route.replace('/','-')+'.png')});
