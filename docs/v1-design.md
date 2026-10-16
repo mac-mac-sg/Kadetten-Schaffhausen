@@ -45,3 +45,19 @@ Jahreszahlen der Vereins-Timeline und Kennzahlen bleiben eigenständige Rollen.
 Ansichten pro Verein und Modus, prüft News-Kartenfläche und Schriftfamilie,
 Beschriftungsbreite, Kontraste und bestehende Navigation. Gemeinsame Regeln
 müssen im hellen und dunklen Modus sowie bei allen drei Vereinen geprüft werden.
+
+## Abstände und Formen
+
+Inhaltsflächen, News und Abschnittstitel verwenden 20 px Seitenabstand,
+unter 360 px 16 px und ab 800 px 32 px. Die maximale Inhaltsbreite bleibt
+1180 px; Lesetexte behalten ihre schmalere Spalte. Die feste Vereinsauswahl
+und Spielsteuerung behalten gemeinsam 14 px Rand, die Timeline ihre eigene
+Geometrie. Der Einstieg in Tabelle und Kader bleibt gleich gross.
+
+Kleine Rasterabstände betragen 12 px, Karteninnenabstände 16 px,
+Abschnittsabstände 32 px. Normale Karten verwenden 18 px Rundung, eingezogene
+Unterflächen 12 px, Dialoge 24 px. Karten teilen eine feine Kontur und einen
+zurückhaltenden Schatten je Modus; Unterflächen verzichten auf Schatten.
+Dialoge erhalten einen gemeinsamen stärkeren Schatten. Glasnavigation,
+Ergebnisstreifen, aktuelles Spiel, Vollbild-PDF und inszenierte Bildflächen
+behalten ihre eigenen Rollen.
