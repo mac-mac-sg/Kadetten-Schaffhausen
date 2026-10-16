@@ -419,3 +419,31 @@ html:not([data-design='v2'])[data-theme] :is(.club-settings-dialog,.app-disclaim
 @media(max-width:640px) {
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team { box-shadow:inset 3px 0 var(--accent),var(--v1-card-shadow); }
 }
+
+
+/* One touch vocabulary. Large cards stay stable; compact controls compress gently. */
+:root:not([data-design='v2']) { --v1-touch-size:44px; --v1-press-opacity:.82; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a) {
+ min-height:var(--v1-touch-size); touch-action:manipulation; cursor:pointer;
+ transition:transform 140ms var(--ease-ui),opacity 140ms var(--ease-ui),background-color 140ms ease,color 140ms ease,border-color 140ms ease;
+}
+html:not([data-design='v2'])[data-theme] :is(.button,.club-intro-actions button) { border-radius:var(--v1-radius-inset); font:600 14px/1.4 var(--font-text); gap:8px; }
+html:not([data-design='v2'])[data-theme] .button { padding:10px 16px; }
+html:not([data-design='v2'])[data-theme] :is(.header-button,.calendar-head button,.match-compact-back):not([hidden]) { display:inline-flex; align-items:center; justify-content:center; width:44px; min-width:44px; height:44px; padding:10px; border-radius:var(--v1-radius-inset); }
+html:not([data-design='v2'])[data-theme] :is(.v1-action-icon,.back-link > svg,.header-button > svg,.calendar-head button > svg,.match-compact-back > svg) { flex:none; width:20px; height:20px; stroke-width:1.7; }
+html:not([data-design='v2'])[data-theme] .settings-info-row .v1-action-icon { width:16px; height:16px; }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-link,.player-card,.live-match,.v1-match-action,.game-timeline .game-card) { touch-action:manipulation; transition:opacity 140ms var(--ease-ui); }
+/* Override floating hover motion, including sticky touch-hover on phones. */
+html:not([data-design='v2'])[data-theme] :is(.button,.club-trophy):hover { transform:none; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { opacity:var(--v1-press-opacity); transform:scale(.98); }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-link,.player-card,.live-match,.v1-match-action):active,
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:has(.actions a:active) { opacity:var(--v1-press-opacity); }
+/* The stretched fixture link must keep its complete hit area during a press. */
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions .button { transform:none; opacity:1; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a,.v1-news-link,.player-card,.live-match,.v1-match-action):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2'])[data-theme] :is(button,.button):is(:disabled,[aria-disabled='true']) { cursor:default; opacity:.5; transform:none; }
+html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a,.v1-news-link,.player-card,.live-match,.v1-match-action) { transition:none; }
+html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { transform:none; }
+@media(prefers-reduced-motion:reduce) {
+ html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { transform:none; }
+}
