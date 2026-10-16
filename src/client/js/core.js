@@ -83,9 +83,16 @@ function photoUrl(name) {
   return (value.startsWith('assets/') ? value : 'assets/' + value).replace(/\.(png|jpe?g)$/i, '.webp');
 }
 
+/* V1 controls share one decorative line-icon vocabulary; V2 keeps its markup. */
+function v1ActionIcon(name, fallback) {
+  if (document.documentElement?.dataset?.design === 'v2') return fallback;
+  const paths={back:'M19 12H5m6-6-6 6 6 6',close:'m6 6 12 12M18 6 6 18',previous:'m15 6-6 6 6 6',next:'m9 6 6 6-6 6',external:'M7 17 17 7M7 7h10v10'};
+  return `<svg class="v1-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${paths[name]}"/></svg>`;
+}
+
 /* Gemeinsame Navigation für Detailseiten. */
 function backLink(href, label, placement = '') {
-  return `<a href="${liveEscape(href)}" class="back-link ${placement}"><span aria-hidden="true">←</span>${liveEscape(label)}</a>`;
+  return `<a href="${liveEscape(href)}" class="back-link ${placement}">${v1ActionIcon('back','<span aria-hidden="true">←</span>')}${liveEscape(label)}</a>`;
 }
 
 function sourceNoticeText(key) {

@@ -44,7 +44,7 @@ function gameList() {
   return `<p class="muted">Saison 2026/27 · ${games.length} im Vereins-Matchcenter veröffentlichte Partien</p>${mode === 'calendar' ? calendar() : `<div class="games game-timeline">${gameTimelineCards(ordered,next,card)}</div>${handballClub()==='otmar'?'':`<aside class="notice"><strong>Weiterer Saisonverlauf</strong><p>Für die Zeit nach Dezember sind im Vereins-Matchcenter noch keine weiteren konkreten Paarungen veröffentlicht. Weitere Liga-, Cup- und Europacuppartien werden ergänzt, sobald Gegner und Termine feststehen. Datenstand: 02.10.2026.</p></aside>`}`}`;
 }
 function calendarNavigation() {
-  return `<div class="calendar-head"><button id="prev-month" aria-label="Vorheriger Monat">‹</button><h2>${new Date(calendarYear, month, 1).toLocaleDateString('de-CH', {month: 'long', year: 'numeric'})}</h2><button id="next-month" aria-label="Nächster Monat">›</button></div>`;
+  return `<div class="calendar-head"><button id="prev-month" aria-label="Vorheriger Monat">${v1ActionIcon('previous','‹')}</button><h2>${new Date(calendarYear, month, 1).toLocaleDateString('de-CH', {month: 'long', year: 'numeric'})}</h2><button id="next-month" aria-label="Nächster Monat">${v1ActionIcon('next','›')}</button></div>`;
 }
 function calendar() {
   return calendarGrid(day => games.filter(g => g.date === day && (competition === 'Alle' || g.league === competition)).map(g => {

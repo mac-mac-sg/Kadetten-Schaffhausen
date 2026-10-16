@@ -61,3 +61,17 @@ zurückhaltenden Schatten je Modus; Unterflächen verzichten auf Schatten.
 Dialoge erhalten einen gemeinsamen stärkeren Schatten. Glasnavigation,
 Ergebnisstreifen, aktuelles Spiel, Vollbild-PDF und inszenierte Bildflächen
 behalten ihre eigenen Rollen.
+
+## Touch und Aktionen
+
+Buttons und Zurück-Links haben mindestens 44 px Höhe. Reine Icon-Aktionen
+verwenden 44 × 44 px, 20 px Linien-Icons und 12 px Rundung; im kompakten
+Disclaimer-Link bleibt das Symbol 16 px. Textbuttons verwenden 14 px und
+Gewicht 600. Die grossen Navigations- und Bildkarten behalten ihre Form.
+
+Eine kurze Druckreaktion dauert 140 ms: kompakte Aktionen skalieren auf .98,
+grosse Karten ändern nur ihre Deckkraft. Die vollständig klickbare Spielkarte
+reagiert als Ganzes, ohne ihre gestreckte Linkfläche zu verschieben. Alle
+Aktionen teilen einen sichtbaren Tastaturfokus. Tastaturbedienung und reduzierte
+Bewegung verzichten auf die Skalierung; deaktivierte Buttons reagieren nicht.
+Zurück, Schliessen und Monatswechsel nutzen dieselbe Linien-Icon-Sprache.
