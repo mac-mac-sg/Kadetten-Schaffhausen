@@ -815,3 +815,25 @@ test('Spieler-Ranglisten verwenden Vereinsfotos statt vereinsübergreifender Tri
   assert.equal(parseHTML(view('seasonPlayerLeaders()')).document.querySelector('.player-leader img').getAttribute('src'),'assets/player-13.webp');
  }finally{context.__leaderSaved=saved;run('activeClub=__leaderSaved.club;updateState=__leaderSaved.state;players=__leaderSaved.players;tableLeague=__leaderSaved.league');}
 });
+
+test('V1 failed media preserves a labelled slot without substituting another portrait',()=>{
+ context.document.documentElement.dataset.design='v1';
+ const doc=parseHTML('<html><body><a class="player-card"><img alt="Carl Löfström" src="missing.webp"></a><div class="v1-news-image"><img src="missing-news.webp" alt=""></div></body></html>').document;
+ for(const img of [...doc.querySelectorAll('img')]){context.__failedImage=img;run('handleV1ImageError({target:__failedImage})');}
+ assert.equal(doc.querySelectorAll('img').length,0);
+ assert.equal(doc.querySelector('.player-card > span').textContent,'Kein Foto');
+ assert.equal(doc.querySelector('.player-card > span').getAttribute('aria-label'),'Carl Löfström – Bild nicht verfügbar');
+ assert.equal(doc.querySelector('.v1-news-image > span').textContent,'Bild nicht verfügbar');
+ context.document.documentElement.dataset.design='v2';
+ const img=doc.createElement('img');img.className='crest';doc.body.append(img);context.__failedImage=img;
+ run('handleV1ImageError({target:__failedImage})');assert.ok(doc.querySelector('img.crest'));
+ delete context.document.documentElement.dataset.design;
+});
+test('article retry retains existing content and exposes its loading state',()=>{
+ context.document.documentElement.dataset.design='v1';
+ const doc=parseHTML('<div id="body"><p>Letzter lesbarer Inhalt</p><button id="retry-article">Erneut laden</button></div>').document;
+ context.__articleTarget=doc.querySelector('#body');run('markArticleLoading(__articleTarget)');
+ assert.equal(context.__articleTarget.getAttribute('aria-busy'),'true');
+ assert.equal(context.__articleTarget.querySelector('p').textContent,'Letzter lesbarer Inhalt');
+ assert.equal(context.__articleTarget.querySelector('button').disabled,true);
+});

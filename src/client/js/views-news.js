@@ -154,6 +154,7 @@ async function loadFullArticle() {
     target = document.getElementById('article-body');
   if (!n || !target || articleMemory.has(articleKey(n))) return;
   const key = articleKey(n);
+  markArticleLoading(target);
   try {
     let pending = articleRequests.get(key);
     if (!pending) {

@@ -174,3 +174,26 @@ function setupMatchdayOrbit() {
   if(matchdayOrbitCard!==slot){matchdayOrbitObserver?.disconnect();matchdayOrbitCard=null;}
   if(activeClub==='fcsg')updateFcsgPulse();else updateMatchPulse();
 }
+
+// Failed media keeps its original slot and an honest text alternative, without retry loops.
+function handleV1ImageError(event) {
+  if(document.documentElement.dataset.design==='v2')return;
+  const img=event.target;
+  if(!img?.matches?.('.v1-news-image > img,.player-card > img,img.crest,img.article-photo,.related-story > img'))return;
+  const replacement=document.createElement('span');
+  replacement.className=img.className+' v1-image-fallback';
+  const name=img.getAttribute('alt')||'';
+  const portrait=!!img.closest('.player-card');
+  const crest=img.matches('.crest');
+  replacement.textContent=crest?name.split(/\s+/).map(word=>word[0]).slice(0,3).join(''):portrait?'Kein Foto':'Bild nicht verfügbar';
+  replacement.setAttribute('role','img');
+  replacement.setAttribute('aria-label',name?name+' – Bild nicht verfügbar':'Bild nicht verfügbar');
+  img.replaceWith(replacement);
+}
+
+function markArticleLoading(target) {
+  if(document.documentElement.dataset.design==='v2')return;
+  target.setAttribute('aria-busy','true');
+  const retry=target.querySelector('#retry-article,#fcsg-retry-article');
+  if(retry){retry.disabled=true;retry.textContent='Wird geladen …';}
+}
