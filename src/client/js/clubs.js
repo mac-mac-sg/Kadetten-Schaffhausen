@@ -179,6 +179,8 @@ document.addEventListener('click',event=>{
   if(document.documentElement.dataset.design==='v2')return;
   if(event.target.closest('[data-compact-clubs]'))openCompactClubMenu();
   else if(!event.target.closest('.compact-club-menu'))closeCompactClubMenu();
+  const hint=event.target.closest('.club-match-hint');
+  if(hint&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey&&event.button===0){event.preventDefault();applyClubChange(hint.dataset.hintClub,new URL(hint.href).hash,true);}
   const pick=event.target.closest('[data-compact-pick]');
   if(pick){closeCompactClubMenu(true);applyClubChange(pick.dataset.compactPick,clubSwitchRoute(location.hash),true);}
   if(event.target.closest('[data-compact-manage]')){closeCompactClubMenu();openClubSettings();}
@@ -222,8 +224,55 @@ function syncMatchdayNavigation() {
   badge.classList.toggle('is-matchday',matchday);
   badge.setAttribute('aria-label',matchday?'Spiele · Heute · Matchday':'Spiele');
 }
+/* Other selected clubs remain visible without opening the club switcher. */
+function otherClubMatchHints(today=swissToday()) {
+  if(document.documentElement.dataset.design==='v2')return [];
+  const entries=typeof weekFixtures==='function'?weekFixtures(selectedClubs.filter(id=>id!==activeClub)):[];
+  return entries.filter(entry=>entry.game.date===today).flatMap(entry=>entry.references.map(reference=>{
+    const club=reference.club,game=entry.game,state=entry.state;
+    const stale=!!state?.failed || !!state?.checkedAt&&Date.now()-Date.parse(state.checkedAt)>120000;
+    const score=entry.live?(game.liveScore||game.score):game.score;
+    const valid=Array.isArray(score)&&score.length===2&&score.every(n=>Number.isInteger(n)&&n>=0);
+    const status=entry.live?(stale?'Zuletzt live':'Live')+(valid?' · '+score.join(':'):''):valid?score.join(':')+' · Ende':game.confirmed===false||!game.time?'Zeit offen':game.time+' Uhr';
+    const url=new URL(location.href);url.searchParams.set('club',club);url.hash='#match/'+encodeURIComponent(reference.id)+'/overview';
+    return {club,game,status,live:entry.live&&!stale,url:url.href};
+  }));
+}
+function syncOtherClubMatchHints() {
+  if(document.documentElement.dataset.design==='v2')return;
+  const top=document.querySelector('body > .top');if(!top)return;
+  let nav=top.querySelector('.club-match-hints');const entries=otherClubMatchHints();
+  if(!nav&&!entries.length)return;
+  if(!nav){nav=document.createElement('nav');nav.className='club-match-hints';nav.setAttribute('aria-label','Heute bei deinen anderen Vereinen');top.append(nav);}
+  nav.hidden=!entries.length;
+  const html=entries.map(({club,game,status,live,url})=>`<a class="club-match-hint" data-hint-club="${club}" data-live="${live}" href="${liveEscape(url)}" aria-label="${liveEscape(fanClubs[club].name+' · Heute · '+game.home+' gegen '+game.away+' · '+status)}"><img src="${fanClubs[club].logo}" alt="" width="20" height="24"><span><strong>${liveEscape(fanClubs[club].short)}</strong><small>${liveEscape(status)}</small></span>${live?'<i aria-hidden="true"></i>':''}</a>`).join('');
+  // Keep focused links and their current hit area stable as scores update.
+  if(nav.innerHTML!==html&&!nav.contains(document.activeElement))nav.innerHTML=html;
+  refreshOtherClubHintLive();
+}
+const otherClubHintChecks=new Map();let otherClubHintBusy=false;
+async function refreshOtherClubHintLive() {
+  if(otherClubHintBusy||document.hidden||!navigator.onLine)return;
+  const clubs=[...new Set(otherClubMatchHints().map(e=>e.club))].filter(id=>Date.now()-(otherClubHintChecks.get(id)||0)>=30000);
+  if(!clubs.length)return;otherClubHintBusy=true;
+  await Promise.all(clubs.map(async club=>{
+    otherClubHintChecks.set(club,Date.now());const previous=weekLive.get(club);
+    try {
+      const response=await apiFetch(club==='fcsg'?'/api/fcsg/live':handballApiPath('/api/live',club),{cache:'no-store',signal:AbortSignal.timeout(20000)}),data=await response.json();
+      if(!response.ok||!data.ok||!Number.isFinite(Date.parse(data.checkedAt)))throw Error('Live unavailable');
+      const current=data.match||data.finished||previous?.data?.match||previous?.data?.finished;
+      const source=current&&club!=='fcsg'?(current.league==='QHL'?'SHV':'EHF'):null;
+      if(source?data.sources?.[source]?.ok===false:Object.values(data.sources||{}).some(s=>s.ok===false))throw Error('Live source unavailable');
+      for(const match of [data.match,data.finished].filter(Boolean))if(!match.home||!match.away||!/^\d{4}-\d{2}-\d{2}$/.test(match.date))throw Error('Invalid match');
+      weekLive.set(club,{data,checkedAt:data.checkedAt,failed:false});
+      if(club==='fcsg'){for(const [id,g] of fcsgLiveGames)if(g.live&&String(id)!==String(data.match?.id))fcsgLiveGames.delete(id);if(data.match)fcsgLiveGames.set(String(data.match.id),data.match);}
+    }catch{weekLive.set(club,{...previous,failed:true});}
+  }));
+  otherClubHintBusy=false;syncOtherClubMatchHints();
+}
 function updateClubDot() {
   syncMatchdayNavigation();
+  syncOtherClubMatchHints();
   const today=swissToday();
   const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
   const minutes=Number(parts.find(p=>p.type==='hour').value)*60+Number(parts.find(p=>p.type==='minute').value);

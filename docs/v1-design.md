@@ -75,3 +75,14 @@ reagiert als Ganzes, ohne ihre gestreckte Linkfläche zu verschieben. Alle
 Aktionen teilen einen sichtbaren Tastaturfokus. Tastaturbedienung und reduzierte
 Bewegung verzichten auf die Skalierung; deaktivierte Buttons reagieren nicht.
 Zurück, Schliessen und Monatswechsel nutzen dieselbe Linien-Icon-Sprache.
+
+## Spieltag-Hinweise
+
+«Heute» steht innerhalb der unteren Glasnavigation neben dem Spiele-Icon,
+mit Platz für beide Elemente bei 320 px Breite. Die Glaskante bleibt beschnitten.
+Im oberen Vereinsbalken erscheinen nur heutige Spiele anderer ausgewählter
+Vereine, mit Wappen, Anspielzeit, bestätigtem Live-Stand oder Endresultat.
+Der Link öffnet direkt das jeweilige Matchcenter. Ohne entsprechende Partien
+entfällt die Zeile. Die vorhandene Header-Messung berücksichtigt ihre Höhe.
+Live-Daten anderer Vereine werden bei sichtbarer App alle 30 Sekunden abgefragt;
+fehlgeschlagene Quellen erhalten den letzten Stand und kennzeichnen «Zuletzt live».
