@@ -72,6 +72,11 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   assert.ok(compact.length>0,label+': compact fixtures present');
   assert.ok(compact.every(e=>e.link?.startsWith('#match/')),label+': every fixture still opens its match');
   if(current)assert.ok(compact.every(e=>e.height<current.height*.75),label+': compact fixtures leave more room than the current game');
+  const preview=page.locator('.game-timeline .game-card:not(.current-game):not(.fcsg-game-live):not(.finished)').first();
+  if(await preview.count()){
+   assert.equal(await preview.locator('.scoreline small').isVisible(),false,label+': no duplicate preview caption');
+   assert.equal(await preview.locator('.scoreline > strong').evaluate(e=>getComputedStyle(e).fontSize),'18px');
+  }
   const card=page.locator('.game-timeline .game-card:not(.current-game):not(.fcsg-game-live)').first();
   await card.scrollIntoViewIfNeeded();
   const href=await card.locator('.actions a').getAttribute('href');
@@ -212,7 +217,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
    await page.setViewportSize({width,height:844});await page.goto(origin+'/?club='+club+'#home');
    await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);await page.evaluate(async()=>document.fonts.ready);
    await page.addScriptTag({content:axe});
-   const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
+   const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));
    assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
    for(const selected of [false,true]){
     await page.locator('[data-nav="games"]').evaluate((e,selected)=>{e.classList.add('is-matchday');e.classList.toggle('active',selected);},selected);
@@ -249,7 +254,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
    const hints=await page.locator('.club-match-hint').evaluateAll(nodes=>nodes.map(e=>({club:e.dataset.hintClub,text:e.textContent,height:e.getBoundingClientRect().height,overflow:e.scrollWidth>e.clientWidth})));
    assert.equal(hints.length,2);assert.ok(hints.every(h=>h.club!==club&&h.height>=44&&!h.overflow));
    for(const hint of hints){if(hint.club==='fcsg')assert.match(hint.text,/Live · 1:0/);if(hint.club==='otmar')assert.match(hint.text,/32:29 · Ende/);}
-   await page.addScriptTag({content:axe});const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
+   await page.addScriptTag({content:axe});const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));
    assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
    if(process.env.V1_THEME_SCREENSHOTS&&club==='kadetten'&&width===390)await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'other-club-hints-'+theme+'.png')});
    const link=page.locator('.club-match-hint').first(),target=await link.getAttribute('href');await link.click();
@@ -260,7 +265,15 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   for(const d of data)for(const g of d.games)g.date='2026-10-15';await page.locator('#club-settings').click();for(const club of ['fcsg','otmar'])await page.locator('[data-club-choice="'+club+'"]').check();await page.locator('[data-close-clubs]').click();await page.reload();await page.waitForTimeout(300);assert.equal(await page.locator('.club-match-hint').count(),0,'No extra row without fixtures today');
   console.log('18 other-club hint layouts, direct links, pinned controls and empty states passed.');
  }
- async function audit(label){await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await checkTouchActions(label);await checkGeometryRoles(label);await checkConsistentRoles(label);await checkExpandedClubHistory(label);await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);await checkHandballRankingPhotos(label);if(label.includes('home'))await compareUnderlayWithV2();await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
+ async function checkFailedMedia(label){
+  if(!label.endsWith('home'))return;
+  const img=page.locator('.v1-news-image > img').first();if(!await img.count())return;
+  const slot=page.locator('.v1-news-image').first(),before=await slot.boundingBox();
+  await img.evaluate(e=>e.dispatchEvent(new Event('error')));
+  assert.equal(await slot.locator('.v1-image-fallback').textContent(),'Bild nicht verfügbar');
+  const after=await slot.boundingBox();assert.ok(Math.abs(before.height-after.height)<1,'Failed news image keeps its height');
+ }
+ async function audit(label){await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await checkFailedMedia(label);await checkTouchActions(label);await checkGeometryRoles(label);await checkConsistentRoles(label);await checkExpandedClubHistory(label);await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);await checkHandballRankingPhotos(label);if(label.includes('home'))await compareUnderlayWithV2();await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
  if(process.env.V1_THEME_HINTS_ONLY){await checkOtherClubHints();assert.deepEqual(errors,[]);await ctx.close();}else if(process.env.V1_THEME_BADGE_ONLY){await checkMatchdayBadge();assert.deepEqual(errors,[]);await ctx.close();}else if(process.env.V1_THEME_INTERACTIONS_ONLY){await checkPressFeedback();assert.deepEqual(errors,[]);console.log('Pointer, keyboard and reduced-motion interaction checks passed.');await ctx.close();}else{
  await page.goto(origin+'/?club=kadetten#home');await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').check();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');await audit('kadetten settings');await checkDisclaimerPopup('light disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.reload();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
  for(let i=0;i<clubs.length;i++){const club=clubs[i],d=data[i],player=club==='fcsg'?d.players[0].id:club==='otmar'?d.roster[0].number:6,game=d.games.filter(g=>g.score).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||d.games[0],story=d.stories[0];

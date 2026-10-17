@@ -86,3 +86,8 @@ Der Link öffnet direkt das jeweilige Matchcenter. Ohne entsprechende Partien
 entfällt die Zeile. Die vorhandene Header-Messung berücksichtigt ihre Höhe.
 Live-Daten anderer Vereine werden bei sichtbarer App alle 30 Sekunden abgefragt;
 fehlgeschlagene Quellen erhalten den letzten Stand und kennzeichnen «Zuletzt live».
+
+## Feinschliff: leichte Leseflächen
+Normale Spielkarten haben kleinere Innenabstände und eine zurückhaltende VS-Anzeige; der doppelte Vorschau-Text im Spielstand entfällt. Teams bleiben 14 px, Metadaten 13 px. Aktuelle und laufende Spiele behalten ihre hervorgehobene Darstellung. Newsüberschriften erhalten eine ruhigere Gewichtung. Statistik- und Bento-Kacheln bleiben vollständig erhalten; nur Hinweise in Artikeln, der Titel-Detailbereich der Vereinsseite und die kleinen Spielhinweise verzichten auf zusätzliche Boxflächen.
+
+Der Glas-Dock behält seine scharfe, geglättete Kontur und erhält einen leiseren Schatten sowie eine zurückhaltendere Auswahlfläche. Bildflächen in News und Artikeln sind vorab reserviert. Fehlende Newsbilder, Wappen und Kaderfotos erhalten einen beschrifteten Ersatz an derselben Stelle, niemals ein fremdes Spielerfoto. Artikel-Wiederholungen behalten lesbaren Inhalt, sperren den Wiederholungsbutton während der Anfrage und melden den Ladezustand. Geladener Artikeltext blendet kurz ein; reduzierte Bewegung verzichtet darauf. V2 und Datendienst bleiben unverändert.
