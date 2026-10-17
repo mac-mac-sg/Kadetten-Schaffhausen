@@ -84,7 +84,7 @@ html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table .o
 html:not([data-design='v2'])[data-theme='light'] .fcsg-match-dashboard { --match-green:var(--accent); --match-opponent:#68776e; }
 html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { --match-green:#a9e877; }
 /* Diagram ink and grid lines need their own light contrast, independently of text. */
-html:not([data-design='v2'])[data-theme='light'] .report-score-card { --score-orange:#a94d13; --score-purple:#7042a0; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-card { --score-orange:#a94d13; --score-purple:var(--v1-stat-opponent); }
 html:not([data-design='v2'])[data-theme='light'] .report-score-chart text { fill:var(--muted); }
 html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-grid { stroke:#25312a1c; }
 html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-half { stroke:#25312a40; }
@@ -513,10 +513,10 @@ html:not([data-design='v2']) .related-story > .v1-image-fallback { flex:none; wi
 
 /* Match statistics belong to the app's existing card family. Colour is a light accent, never glass. */
 :root:not([data-design='v2']) {
- --v1-stat-own:var(--accent-soft); --v1-stat-opponent:#b79aff;
+ --v1-stat-own:var(--accent-soft); --v1-stat-opponent:#a4b8c8;
  --v1-stat-wash:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--v1-stat-own) 6%,transparent),transparent 65%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--v1-stat-opponent) 4%,transparent),transparent 65%);
 }
-:root:not([data-design='v2'])[data-theme='light'] { --v1-stat-own:var(--accent); --v1-stat-opponent:#7042a0; }
+:root:not([data-design='v2'])[data-theme='light'] { --v1-stat-own:var(--accent); --v1-stat-opponent:#496579; }
 html:not([data-design='v2'])[data-theme] .finished-match-stats { --v1-stat-home:var(--v1-stat-own); --v1-stat-away:var(--v1-stat-opponent); }
 html:not([data-design='v2'])[data-theme] .finished-match-stats[data-own-side='away'] { --v1-stat-home:var(--v1-stat-opponent); --v1-stat-away:var(--v1-stat-own); }
 html:not([data-design='v2'])[data-theme] .finished-match-stats > :is(.report-comparison,.panel,.report-player-section),
