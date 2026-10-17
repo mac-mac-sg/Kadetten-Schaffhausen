@@ -105,3 +105,5 @@ Mannschaftsauswahl und Spielerwerte stehen in einer gemeinsamen Karte. Torhüter
 
 ## Textorientierter Rückblick
 Abgeschlossene Handballspiele in V1 beginnen unter den Laschen direkt mit dem konkreten Matchbericht: kleine Kennzeichnung, Berichtsüberschrift als Seitenüberschrift, erster Absatz als Einleitung und der vollständige Text. Das allgemeine Mannschaftsfoto, Slogans und die zusätzliche Überschrift «Der Rückblick» entfallen. Die kompakte Liste danach enthält Datum, Wettbewerb, den verlinkten Spielort und – wenn bestätigt – die Zuschauerzahl. Danach folgen die Spielereignisse. Ein ausstehender Bericht zeigt zunächst den bestätigten Endstand mit einem Hinweis. Vorschauen und V2 behalten ihre bisherigen Einstiege. Bericht-Quellen unterscheiden SHV und EHF anhand der gespeicherten Quellenangaben.
+
+Die FCSG-Spielstatistik nutzt dieselbe blaugraue Gegnerfarbe wie Handball. Vergleichsbalken sowie Linien und Flächen der Torgefährlichkeit übernehmen die Theme-Farbrollen auch bei Auswärtsspielen. Grün bleibt die FCSG-Farbe; V2 behält seine bestehende Palette.

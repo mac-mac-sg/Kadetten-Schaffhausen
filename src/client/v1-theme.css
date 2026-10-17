@@ -81,7 +81,7 @@ html:not([data-design='v2'])[data-theme='light'] .club-history .club-eyebrow { c
 html:not([data-design='v2'])[data-theme='light'] .profile-back.back-link { color:#fff9f0; background:#172119b3; }
 html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table tbody tr.our-team { background:color-mix(in srgb,var(--v1-selection) 30%,white); }
 html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table .our-team :is(th,td) { background:transparent; }
-html:not([data-design='v2'])[data-theme='light'] .fcsg-match-dashboard { --match-green:var(--accent); --match-opponent:#68776e; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-match-dashboard { --match-green:var(--accent); }
 html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { --match-green:#a9e877; }
 /* Diagram ink and grid lines need their own light contrast, independently of text. */
 html:not([data-design='v2'])[data-theme='light'] .report-score-card { --score-orange:#a94d13; --score-purple:var(--v1-stat-opponent); }
@@ -588,3 +588,6 @@ html:not([data-design='v2'])[data-theme='light'] .match-recap-details a { color:
 html:not([data-design='v2'])[data-theme] .match-recap .report-history { margin-top:24px; }
 
 html:not([data-design='v2'])[data-theme] .match-recap .report-feed > summary { min-height:44px; font:600 var(--v1-section-size)/1.4 var(--font-text); }
+
+/* FCSG shares the same neutral opponent role as handball. */
+html:not([data-design='v2']) :is(.fcsg-match-dashboard,.fcsg-lineup-dashboard) { --match-opponent:var(--v1-stat-opponent); }
