@@ -297,26 +297,28 @@ function reportScoreCurve(points) {
   return ` C${n(a.x+dx)} ${n(a.y+tangent(i)*dx)} ${n(p.x-dx)} ${n(p.y-tangent(i+1)*dx)} ${p.x} ${p.y}`;
  }).join('');
 }
-function reportScoreChart(g, r) {
+function reportScoreChart(g, r, progress=null) {
  const scores=(r.events||[]).filter(e=>Number.isFinite(e.seconds)&&e.seconds>=0&&Array.isArray(e.score)&&e.score.length===2&&e.score.every(v=>Number.isInteger(v)&&v>=0)).sort((a,b)=>a.seconds-b.seconds||a.id-b.id);
  if(!scores.length)return '';
  const maximum=Math.ceil(Math.max(...r.score,...scores.flatMap(e=>e.score),1)/10)*10;
- const end=Math.max(3600,...scores.map(e=>e.seconds)), left=36, right=380, top=22, bottom=182;
+ const end=Math.max(3600,progress?.seconds||0,...scores.map(e=>e.seconds)), left=36, right=380, top=22, bottom=182;
  const x=sec=>+(left+sec/end*(right-left)).toFixed(2), y=value=>+(bottom-value/maximum*(bottom-top)).toFixed(2);
  const last=scores.at(-1), complete=last.score.every((v,i)=>v===r.score[i]);
+ const drawnUntil=progress?Math.max(last.seconds,progress.seconds||0):end;
+ const finalX=x(complete?drawnUntil:last.seconds);
  const path=side=>{
   const points=[{x:left,y:bottom}];
   // Other-team goals are not additional anchors for this team's interpolated curve.
   for(const e of scores)if(y(e.score[side])!==points.at(-1).y)points.push({x:x(e.seconds),y:y(e.score[side])});
-  const final={x:complete?right:x(last.seconds),y:y(last.score[side])};
+  const final={x:finalX,y:y(last.score[side])};
   if(final.x!==points.at(-1).x)points.push(final);
   return reportScoreCurve(points);
  };
- const finalX=complete?right:x(last.seconds), id='report-score-'+String(g.id).replace(/[^a-zA-Z0-9_-]/g,'');
+ const id='report-score-'+String(g.id).replace(/[^a-zA-Z0-9_-]/g,'');
  const colour=side=>r.teams[side].id===handballTeamId()?'kadetten':'opponent';
  const grid=[0,maximum/2,maximum].map(v=>`<path class="chart-grid" d="M${left} ${y(v)}H${right}"/><text x="26" y="${y(v)+4}" text-anchor="end">${v}</text>`).join('');
  const times=[...Array.from({length:Math.floor(end/600)+1},(_,i)=>i*600),end].filter((v,i,list)=>v<=end&&list.indexOf(v)===i).map(sec=>`<text x="${x(sec)}" y="${sec===1800?210:204}" text-anchor="${sec===0?'start':sec===end?'end':'middle'}">${sec===1800?'30′ · Pause':Math.round(sec/60)+'′'}</text>`).join('');
- return `<figure class="report-score-card"><figcaption><div><p class="eyebrow">Das Spiel im Verlauf</p><h2>Torverlauf</h2></div><span class="report-score-status">Beendet</span></figcaption><div class="report-score-legend">${[g.home,g.away].map((name,side)=>`<div class="report-score-team is-${colour(side)}"><span><i aria-hidden="true"></i>${liveEscape(name)}</span><strong>${r.score[side]}<small>Tore</small></strong></div>`).join('')}</div><svg class="report-score-chart" viewBox="0 0 400 224" role="img" aria-label="Torverlauf: ${liveEscape(g.home)} ${r.score[0]}, ${liveEscape(g.away)} ${r.score[1]}. Geglättete Darstellung zwischen gesicherten Torständen. Zeit in Spielminuten, Anzahl Tore. Einzelereignisse stehen in der Lasche Rückblick."><defs>${[0,1].map(side=>{const kadetten=colour(side)==='kadetten',base=kadetten?'#ff7a24':'#a78bfa',light=kadetten?'#ffb15b':'#d0baff';return `<linearGradient id="${id}-${side}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${base}" stop-opacity=".38"/><stop offset="55%" stop-color="${base}" stop-opacity=".14"/><stop offset="100%" stop-color="${base}" stop-opacity="0"/></linearGradient><linearGradient id="${id}-line-${side}" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="${base}"/><stop offset="100%" stop-color="${light}"/></linearGradient>`;}).join('')}</defs>${grid}<path class="chart-half" d="M${x(1800)} ${top}V${bottom}"/>${[0,1].map(side=>`<path class="chart-area" fill="url(#${id}-${side})" d="${path(side)} V${bottom} H${left}Z"/>`).join('')}${[0,1].map(side=>`<path class="chart-line chart-${colour(side)}" style="stroke:url(#${id}-line-${side})" d="${path(side)}"/><circle class="chart-end chart-${colour(side)}" cx="${finalX}" cy="${y(last.score[side])}" r="4"/>`).join('')}${times}</svg><p class="report-score-caption">Spielminuten · Geglätteter Verlauf${complete?'':' · Torfolge unvollständig'}</p></figure>`;
+ return `<figure class="report-score-card"><figcaption><div><p class="eyebrow">Das Spiel im Verlauf</p><h2>Torverlauf</h2></div><span class="report-score-status">${progress?'Live'+(progress.clock?' · '+liveEscape(progress.clock):''):'Beendet'}</span></figcaption><div class="report-score-legend">${[g.home,g.away].map((name,side)=>`<div class="report-score-team is-${colour(side)}"><span><i aria-hidden="true"></i>${liveEscape(name)}</span><strong>${r.score[side]}<small>Tore</small></strong></div>`).join('')}</div><svg class="report-score-chart" viewBox="0 0 400 224" role="img" aria-label="Torverlauf: ${liveEscape(g.home)} ${r.score[0]}, ${liveEscape(g.away)} ${r.score[1]}. Geglättete Darstellung zwischen gesicherten Torständen. Zeit in Spielminuten, Anzahl Tore. ${progress?'Einzelereignisse folgen unter der Grafik.':'Einzelereignisse stehen in der Lasche Rückblick.'}"><defs>${[0,1].map(side=>{const kadetten=colour(side)==='kadetten',base=kadetten?'#ff7a24':'#a78bfa',light=kadetten?'#ffb15b':'#d0baff';return `<linearGradient id="${id}-${side}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${base}" stop-opacity=".38"/><stop offset="55%" stop-color="${base}" stop-opacity=".14"/><stop offset="100%" stop-color="${base}" stop-opacity="0"/></linearGradient><linearGradient id="${id}-line-${side}" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="${base}"/><stop offset="100%" stop-color="${light}"/></linearGradient>`;}).join('')}</defs>${grid}<path class="chart-half" d="M${x(1800)} ${top}V${bottom}"/>${[0,1].map(side=>`<path class="chart-area" fill="url(#${id}-${side})" d="${path(side)} V${bottom} H${left}Z"/>`).join('')}${[0,1].map(side=>`<path class="chart-line chart-${colour(side)}" style="stroke:url(#${id}-line-${side})" d="${path(side)}"/><circle class="chart-end chart-${colour(side)}" cx="${finalX}" cy="${y(last.score[side])}" r="4"/>`).join('')}${times}</svg><p class="report-score-caption">Spielminuten · Geglätteter Verlauf${complete?'':' · Torfolge unvollständig'}</p></figure>`;
 }
 function reportHistory(g) {
  const r=verifiedReport(g);

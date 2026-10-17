@@ -855,3 +855,20 @@ test('Confirmed finish switches immediately to completed tabs and keeps live sta
   assert.match(view('match(finishFixture,"stats")'),/live-match-page/);
  }finally{run(`liveState=null;lastLiveMatch=null;lastLiveDate=null;delete ehfArchive['finish-now']`);}
 });
+
+test('Live score chart grows only to confirmed game time above a single event feed',()=>{
+ run(`globalThis.curveLive={id:'curve-live',home:'Kadetten Schaffhausen',away:'RTV 1879 Basel',status:'live',clock:'20:00',score:[10,8],details:{events:[{id:1,seconds:300,time:'05:00',score:[4,3],action:'Tor',homePlayer:'Spieler A'},{id:2,seconds:1200,time:'20:00',score:[10,8],action:'Tor',homePlayer:'Spieler B'}]}}`);
+ const markup=view('liveEventFeed(curveLive,null)'),doc=parseHTML(markup).document;
+ assert.equal(doc.querySelectorAll('.report-score-chart').length,1);
+ assert.ok(markup.indexOf('report-score-chart')<markup.indexOf('<h2>Spielverlauf</h2>'));
+ assert.match(doc.querySelector('.report-score-status').textContent,/Live · 20:00/);
+ assert.equal(doc.querySelectorAll('.live-events').length,1);assert.doesNotMatch(markup,/Alle Spielereignisse|live-all-events/);
+ const x=Number(doc.querySelector('.chart-end').getAttribute('cx'));assert.ok(x>36&&x<200,'Curve stops at minute 20 rather than projecting through minute 60');
+ const before=doc.querySelector('.chart-line').getAttribute('d');
+ run(`curveLive.clock='25:00';curveLive.score=[12,9];curveLive.details.events.push({id:3,seconds:1500,time:'25:00',score:[12,9],action:'Tor',homePlayer:'Spieler A'})`);
+ const next=parseHTML(view('liveEventFeed(curveLive,null)')).document;
+ assert.ok(Number(next.querySelector('.chart-end').getAttribute('cx'))>x);assert.notEqual(next.querySelector('.chart-line').getAttribute('d'),before);
+ assert.match(next.querySelector('.report-score-legend').textContent,/12Tore/);
+ run(`curveLive.details.events=[]`);assert.equal(run('liveScoreChart(curveLive)'),'','No invented curve without confirmed goal events');
+ run(`curveLive.status='finished'`);assert.equal(run('liveScoreChart(curveLive)'),'','Completed charts remain in the statistics tab');
+});

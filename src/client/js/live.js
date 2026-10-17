@@ -124,6 +124,12 @@ function liveMatchContent(g, tab) {
  const updated=lastLiveAt?new Date(lastLiveAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',second:'2-digit'}):null;
  return `<h1 class="live-sr-context">${liveEscape(live.home)} gegen ${liveEscape(live.away)}</h1><header class="live-match-header${resultClass}"><p class="eyebrow">${liveEscape(live.league)} · ${live.status==='finished'?'Spiel beendet':'Live-Spiel'}</p><p class="live-status ${active?'is-current':''}" role="status" aria-atomic="true">${status}<span class="live-sr-context"> · ${liveEscape(live.home)} ${live.score?live.score.join(' : '):'– : –'}</span></p><div class="matchup"><div class="matchup-team">${badge(live.home)}<span>${liveEscape(live.home)}</span></div><strong>${live.score?live.score.join(' : '):'– : –'}</strong><div class="matchup-team">${badge(live.away)}<span>${liveEscape(live.away)}</span></div></div><p>${[live.phase,live.clock].filter(Boolean).map(liveEscape).join(' · ')}</p>${live.half&&(live.status==='finished'||/2\.|zweite|2nd/i.test(live.phase||''))?`<small>Halbzeit ${live.half.join(' : ')}</small>`:''}<small class="live-checked">${updated?'Stand '+updated+' Uhr · ':''}Aktualisierung alle 30 Sekunden</small></header><nav class="segments match-tabs" aria-label="Live-Spielbereich">${[['stats','Statistiken'],['report','Liveticker']].map(([id,label])=>`<a href="#match/${encodeURIComponent(g.id)}/${id}" class="${tab===id?'selected':''}">${label}</a>`).join('')}</nav><div class="content narrow live-match-body">${details?.ok===false?`<p class="notice">${details.updatedAt?'Statistiken momentan nicht aktualisierbar · Stand '+new Date(details.updatedAt).toLocaleTimeString('de-CH',{timeZone:'Europe/Zurich'})+' Uhr.':'Weitere Live-Statistiken sind momentan nicht verfügbar.'}</p>`:''}${tab==='stats'?(verifiedReport(g)?reportStats(g):livePlayerStats(live,archive)):liveEventFeed(live,archive)}<div class="actions">${ext(live.url,'Offiziellen Liveticker öffnen','text-link')}</div></div>`;
 }
+function liveScoreChart(live) {
+ if(live.status==='finished'||!Array.isArray(live.score)||live.score.length!==2||!live.score.every(v=>Number.isInteger(v)&&v>=0))return '';
+ const clock=/^(\d+):(\d{2})$/.exec(String(live.clock||''));
+ const seconds=clock?Number(clock[1])*60+Number(clock[2]):null;
+ return reportScoreChart(live,{score:live.score,events:live.details?.events,teams:[live.home,live.away].map(name=>({id:isOwnHandballTeam(name)?handballTeamId():-1}))},{seconds,clock:clock?live.clock:null});
+}
 function liveEventFeed(live,archive,compact=false) {
  const events=live.details?.events;
  if(!events&&live.league==='European League'){
@@ -131,11 +137,11 @@ function liveEventFeed(live,archive,compact=false) {
   return '<h2>Spielverlauf</h2><p class="notice">'+(live.status==='finished'?'Der KI-Matchbericht und die Torfolge erscheinen kurz nach dem Spielende an dieser Stelle.':'Für Spiele der European League liefert die EHF während des Spiels keinen Ereignisverlauf. Nach dem Schlusspfiff erscheinen hier ein KI-Matchbericht und die Torfolge; Spielstand und Spielzeit werden live angezeigt, die Statistiken findest du unter «Statistiken».')+'</p>';
  }
  if(!events)return '<h2>Spielverlauf</h2><p class="notice">Für dieses Spiel ist noch kein Ereignisverlauf verfügbar.</p>';
- // Goals and disciplinary decisions form the readable feed; all source events remain expandable.
+ // Goals and disciplinary decisions form one readable feed without a duplicate event list.
  const highlights=events.filter(e=>/tor|zeitstrafe|verwarn|disqual|time.?out/i.test(e.action));
  const markup=list=>list.map(e=>`<li class="live-event"><time>${liveEscape(e.time||'–')}</time><div><strong>${liveEscape(e.action)}${e.score?' · '+e.score.join(' : '):''}</strong>${e.homePlayer?`<span>${liveEscape(e.homePlayer)} <small>${liveEscape(live.home)}</small></span>`:''}${e.awayPlayer?`<span>${liveEscape(e.awayPlayer)} <small>${liveEscape(live.away)}</small></span>`:''}</div></li>`).join('');
  if(compact)return `<details class="report-feed"><summary>Spielverlauf</summary><p class="muted">Neueste Ereignisse zuerst</p>${events.length?`<ol class="live-events">${markup(highlights)}</ol>`:'<p class="muted">Noch keine Ereignisse gemeldet.</p>'}</details>`;
- return `${archive?.report?ehfReportBlock(archive):''}<h2>Spielverlauf</h2><p class="muted">Neueste Ereignisse zuerst</p>${events.length?`<ol class="live-events">${markup(highlights)}</ol><details class="live-all-events"><summary>Alle Spielereignisse (${events.length})</summary><ol class="live-events">${markup(events)}</ol></details>`:'<p class="muted">Noch keine Ereignisse gemeldet.</p>'}`;
+ return `${archive?.report?ehfReportBlock(archive):''}${liveScoreChart(live)}<h2>Spielverlauf</h2><p class="muted">Neueste Ereignisse zuerst</p>${events.length?`<ol class="live-events">${markup(highlights)}</ol>`:'<p class="muted">Noch keine Ereignisse gemeldet.</p>'}`;
 }
 // Gesicherter Endstand eines European-League-Spiels (Actions → KV → /api/ehf-reports/<Spiel>): Matchbericht, Torfolge, Statistik.
 let ehfArchive={};
@@ -270,11 +276,10 @@ function refreshLiveViews() {
   const container=document.getElementById('live-detail-content');
   if(container&&liveForFixture(g)?.status==='finished'){render();return;}
   if(container){
-   const open=container.querySelector('.live-all-events')?.open, focused=document.activeElement?.dataset?.statsTeam;
+   const focused=document.activeElement?.dataset?.statsTeam;
    if(container.contains(document.activeElement)&&!focused)return;
    const html=liveMatchContent(g,tab);
    if((liveDetailSourceHTML.get(container)??container.innerHTML)!==html){container.innerHTML=html;liveDetailSourceHTML.set(container,html);setupCollapsingMatchHeader();if(focused)container.querySelector('[data-stats-team="'+focused+'"]')?.focus();}
-   if(open&&container.querySelector('.live-all-events'))container.querySelector('.live-all-events').open=true;
   } else if(liveForFixture(g)&&liveForFixture(g).status!=='finished'&&!(g.league==='EHL'&&verifiedReport(g)))render();
  }
  if(page==='season'&&id==='games')document.querySelectorAll('[data-game-card]').forEach(el=>{
