@@ -220,7 +220,7 @@ function syncMatchdayNavigation() {
   const badge=document.querySelector('[data-nav="games"]');
   if(!badge)return;
   const list=activeClub==='fcsg'?fcsgData.games:typeof games!=='undefined'?games:[];
-  const matchday=list.some(g=>g.date===swissToday());
+  const matchday=document.documentElement.dataset.design==='v2'&&list.some(g=>g.date===swissToday());
   badge.classList.toggle('is-matchday',matchday);
   badge.setAttribute('aria-label',matchday?'Spiele · Heute · Matchday':'Spiele');
 }

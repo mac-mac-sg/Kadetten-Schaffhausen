@@ -216,27 +216,14 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   for(const width of [320,375,390,1280])for(const theme of ['light','dark'])for(const club of clubs){
    await page.setViewportSize({width,height:844});await page.goto(origin+'/?club='+club+'#home');
    await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);await page.evaluate(async()=>document.fonts.ready);
-   await page.addScriptTag({content:axe});
-   const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));
-   assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
+   const link=page.locator('[data-nav="games"]');assert.equal(await link.getAttribute('aria-label'),'Spiele');
    for(const selected of [false,true]){
-    await page.locator('[data-nav="games"]').evaluate((e,selected)=>{e.classList.add('is-matchday');e.classList.toggle('active',selected);},selected);
-    const box=await page.locator('[data-nav="games"]').evaluate(e=>{
-     const b=e.getBoundingClientRect(),dock=e.closest('.dock').getBoundingClientRect(),icon=e.querySelector('svg').getBoundingClientRect(),s=getComputedStyle(e,'::after');
-     const x=b.x+parseFloat(s.left),y=b.y+parseFloat(s.top),w=parseFloat(s.width)+(s.boxSizing==='border-box'?0:parseFloat(s.paddingLeft)+parseFloat(s.paddingRight)+parseFloat(s.borderLeftWidth)+parseFloat(s.borderRightWidth)),h=parseFloat(s.height)+(s.boxSizing==='border-box'?0:parseFloat(s.paddingTop)+parseFloat(s.paddingBottom)+parseFloat(s.borderTopWidth)+parseFloat(s.borderBottomWidth));
-     const range=document.createRange();range.selectNodeContents(e.lastChild);const text=range.getBoundingClientRect();const canvas=document.createElement('canvas'),c=canvas.getContext('2d');c.font=s.font;const textWidth=c.measureText('Heute').width,innerWidth=w-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)-parseFloat(s.borderLeftWidth)-parseFloat(s.borderRightWidth);
-     return {x,y,w,h,textWidth,innerWidth,b:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},dock:{x:dock.x,y:dock.y,right:dock.right,bottom:dock.bottom},icon:{right:icon.right,top:icon.top,bottom:icon.bottom},textTop:text.top,clip:getComputedStyle(e.closest('.dock')).overflow};
-    });
-    const label=[club,theme,width,selected?'active':'inactive'].join(' ');
-    assert.equal(box.clip,'hidden',label+': glass keeps its smooth clipped edge');assert.ok(box.textWidth<=box.innerWidth+.5,label+': Heute text fits completely inside its pill');
-    assert.ok(box.x>=box.b.x&&box.y>=box.b.y&&box.x+box.w<=box.b.right&&box.y+box.h<=box.b.bottom,label+': complete Heute label stays inside its tab '+JSON.stringify(box));
-    assert.ok(box.x>=box.dock.x&&box.y>=box.dock.y&&box.x+box.w<=box.dock.right&&box.y+box.h<=box.dock.bottom,label+': complete Heute label stays inside the glass');
-    assert.ok(box.x>=box.icon.right+1,label+': Heute does not overlap the games icon');
-    assert.ok(box.y+box.h<=box.textTop,label+': Heute does not cover Spiele');
-    if(process.env.V1_THEME_SCREENSHOTS&&club==='kadetten'&&width===390&&!selected)await page.locator('.dock').screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'matchday-badge-'+theme+'.png')});
+    await link.evaluate((e,selected)=>e.classList.toggle('active',selected),selected);
+    const state=await link.evaluate(e=>({matchday:e.classList.contains('is-matchday'),content:getComputedStyle(e,'::after').content,icon:getComputedStyle(e.querySelector('.nav-icon')).transform}));assert.equal(state.matchday,false);assert.ok(['none','normal','""'].includes(state.content));assert.equal(state.icon,'none');
    }
+   await page.addScriptTag({content:axe});const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
   }
-  console.log('48 matchday badge layouts passed.');
+  console.log('Games navigation has no Today badge or shifted icon for all clubs, light/dark at 320/375/390/1280px.');
  }
  async function checkOtherClubHints(){
   const own=['Kadetten Schaffhausen','FC St.Gallen 1879','TSV St. Otmar St. Gallen'];
