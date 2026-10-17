@@ -270,7 +270,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   data[0].games=[fixture];let finished=false,ready=false,liveUpdated=false;
   const details={ok:true,events:[{id:1,seconds:3600,time:'60:00',score:[42,26],action:'Tor',homePlayer:'Testspieler'}],players:[{id:1,name:'Testspieler',home:true,goals:8,shots:10,seven:0,sevenShots:0,yellow:0,twoMinutes:0,red:0}],teamStats:null};
   await ctx.route('**/api/live',r=>{const score=finished?[42,26]:liveUpdated?[41,26]:[40,26],clock=finished?'60:00':liveUpdated?'49:00':'48:00';const game={...fixture,status:finished?'finished':'live',score,half:[19,11],clock,details:{...details,events:details.events.map(e=>({...e,seconds:finished?3600:liveUpdated?2940:2880,time:clock,score}))}};return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,checkedAt:now,match:finished?null:game,finished:finished?game:null})});});
-  await ctx.route('**/api/match-reports/finish-now',r=>r.fulfill({status:ready?200:404,contentType:'application/json',body:JSON.stringify(ready?{report:{score:[42,26],players:[],report:{headline:'Bericht nach dem Schlusspfiff',paragraphs:['Testbericht aus gesicherten Werten.'],generator:'daten',generatedAt:now},source:{url:'https://example.test/'}}}:{})}));
+  await ctx.route('**/api/match-reports/finish-now',r=>r.fulfill({status:ready?200:404,contentType:'application/json',body:JSON.stringify(ready?{report:{score:[42,26],players:[],report:{headline:'Kadetten entscheiden die Partie früh',paragraphs:['Die Kadetten Schaffhausen gewinnen gegen den RTV 1879 Basel mit 42:26. Bereits zur Pause führen sie mit 19:11.','Auch nach dem Seitenwechsel behalten die Kadetten die Führung. Die zweite Halbzeit endet mit 23:15.'],generator:'ki',generatedAt:now},source:{url:'https://example.test/'}}}:{})}));
   for(const width of [390,1280])for(const theme of ['light','dark']){
    finished=false;ready=false;liveUpdated=false;await page.setViewportSize({width,height:844});await page.goto(origin+'/?club=kadetten&finishCase='+width+theme+'#match/finish-now/stats');await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
    await page.locator('.live-match-page').waitFor();
@@ -292,7 +292,13 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
    assert.equal(await page.locator('.report-score-card + .report-player-section > h2').textContent(),'Spielerstatistiken');
    await page.locator('a[href="#match/finish-now/report"]').click();await page.locator('.report-feed').waitFor();assert.equal(await page.locator('.ai-match-report').count(),0);
    ready=true;await page.evaluate(()=>{Date.now=()=>new Date('2026-10-14T12:33:00Z').getTime();document.dispatchEvent(new Event('visibilitychange'));});
-   await page.locator('.ai-match-report').waitFor();assert.ok((await page.locator('.ai-match-report').textContent()).includes('Bericht nach dem Schlusspfiff'));
+   await page.locator('.ai-match-report').waitFor();assert.ok((await page.locator('.ai-match-report').textContent()).includes('Kadetten entscheiden die Partie früh'));
+   assert.equal(await page.locator('.match-recap .ai-match-report > h1').count(),1);
+   assert.equal(await page.locator('.match-recap img,.match-hero').count(),0);
+   assert.ok(await page.locator('.match-recap > .ai-match-report:first-child').count());
+   assert.ok((await page.locator('.match-recap-details').textContent()).includes('Datum'));
+   if(process.env.V1_THEME_SCREENSHOTS){await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(120);await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'recap-'+theme+'-'+width+'.png')});}
+
    await page.addScriptTag({content:axe});const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
    assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
   }

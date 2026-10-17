@@ -565,3 +565,26 @@ html:not([data-design='v2'])[data-theme] .report-player-section :is(.ehf-zone b,
 html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel > h2 { margin:0 0 16px; font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
 html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:first-child { color:var(--v1-stat-home); }
 html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:last-child { color:var(--v1-stat-away); }
+
+/* A completed recap is a reading surface: the concrete match report starts immediately. */
+html:not([data-design='v2'])[data-theme] .match-recap { padding-top:24px; padding-bottom:32px; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report { margin:0 0 24px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > h1 { margin:8px 0 20px; font:600 clamp(28px,5vw,40px)/1.2 var(--font-text); letter-spacing:-.025em; text-wrap:balance; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > p:not(.eyebrow) { max-width:68ch; margin:0 0 20px; font-size:16px; line-height:1.75; color:var(--text); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > h1 + p { font-size:18px; line-height:1.65; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > .eyebrow { margin:0; font-size:12px; font-weight:500; letter-spacing:.04em; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report details { margin-top:16px; font-size:13px; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report summary { min-height:44px; display:list-item; padding:10px 0; line-height:1.5; color:var(--muted); cursor:pointer; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report details a { color:var(--accent-soft); text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2'])[data-theme='light'] .match-recap .ai-match-report details a { color:var(--accent); }
+html:not([data-design='v2'])[data-theme] .match-recap-waiting > .lead { margin:0 0 16px; font-size:18px; line-height:1.6; }
+html:not([data-design='v2'])[data-theme] .match-recap-waiting .notice { margin:0; border:0; padding:0; background:transparent; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap-details { display:grid; gap:0; margin:24px 0; padding:12px 0; border-block:1px solid var(--line); }
+html:not([data-design='v2'])[data-theme] .match-recap-details > div { display:grid; grid-template-columns:88px minmax(0,1fr); align-items:baseline; gap:12px; padding:8px 0; }
+html:not([data-design='v2'])[data-theme] .match-recap-details dt { color:var(--muted); font-size:13px; }
+html:not([data-design='v2'])[data-theme] .match-recap-details dd { margin:0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+html:not([data-design='v2'])[data-theme] .match-recap-details a { display:inline-flex; align-items:center; min-height:44px; color:var(--accent-soft); text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2'])[data-theme='light'] .match-recap-details a { color:var(--accent); }
+html:not([data-design='v2'])[data-theme] .match-recap .report-history { margin-top:24px; }
+
+html:not([data-design='v2'])[data-theme] .match-recap .report-feed > summary { min-height:44px; font:600 var(--v1-section-size)/1.4 var(--font-text); }
