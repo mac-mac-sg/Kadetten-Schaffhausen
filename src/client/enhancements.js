@@ -257,7 +257,7 @@ function reportStats(g) {
       .join('')}</div>` : ''}`;
   };
   const shots=g.league==='EHL' && r.ehf ? r.shotStats : null;
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div>` : ''}${ehfShotComparison(shots)}${reportScoreChart(g,r)}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => ehfShotTeam(shots,k)+team(r.teams[k === 'home' ? 0 : 1]))}`;
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div>` : ''}${ehfShotComparison(shots)}${reportScoreChart(g,{...r,events:r.events?.length?r.events:liveForFixture(g)?.details?.events})}<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => ehfShotTeam(shots,k)+team(r.teams[k === 'home' ? 0 : 1]))}`;
 }
 
 function reportComparison(g,r) {
@@ -320,6 +320,9 @@ function reportScoreChart(g, r) {
 }
 function reportHistory(g) {
  const r=verifiedReport(g);
- if(!r?.events)return '';
+ if(!r?.events?.length){
+  const ended=liveForFixture(g);
+  return ended?.status==='finished'&&ended.details?.events?`<section class="report-history">${liveEventFeed(ended,null,true)}</section>`:'';
+ }
  return `<section class="report-history">${liveEventFeed({home:g.home,away:g.away,details:{events:r.events}},null,true)}</section>`;
 }
