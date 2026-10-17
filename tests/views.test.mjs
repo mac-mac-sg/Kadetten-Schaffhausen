@@ -405,8 +405,9 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
  run(`globalThis.reportFixture=games.find(g=>g.id==='stgallen'); gameReports.stgallen={gameId:508367,score:reportFixture.score,half:[12,16],checkedAt:'2026-10-04T00:00:00Z',spectators:null,referees:[],source:'https://www.handball.ch/de/matchcenter/spiele/508367',teams:[{id:41571,name:reportFixture.home,shots:48,saves:6,turnovers:9,throwPercentage:52,savePercentage:17,twoMinutes:2,warnings:0,timeouts:3,players:[{id:1,name:'A & B',keeper:false,goals:null,shots:4,seven:0,sevenShots:0,twoMinutes:0,warnings:0,redCards:0}]},{id:41473,name:reportFixture.away,shots:40,saves:14,turnovers:13,throwPercentage:78,savePercentage:36,twoMinutes:3,warnings:0,timeouts:2,players:[{id:2,name:'C',keeper:false,goals:31,shots:40,seven:5,sevenShots:7,twoMinutes:3,warnings:0,redCards:0}]}],events:[{id:1,seconds:90,time:'01:30',score:[1,0],action:'Tor',homePlayer:'A & B'}]};`);
  try{
   const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/data-stats-team="home"/);assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);assert.doesNotMatch(stats,/Zwischen den Pfosten/);
-  const history=view('reportHistory(reportFixture)');assert.match(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
-  assert.match(view("matchOverview(reportFixture)"),/Torverlauf/);
+  assert.match(stats,/report-score-chart/);assert.ok(stats.indexOf('report-score-chart')<stats.indexOf('<h2>Spielerstatistiken</h2>'));
+  const history=view('reportHistory(reportFixture)');assert.doesNotMatch(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
+  assert.doesNotMatch(view("matchOverview(reportFixture)"),/Torverlauf/);
   assert.match(history,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);assert.doesNotMatch(history,/Alle Spielereignisse/);assert.doesNotMatch(history,/<details class="report-feed" open/);
   const overview=view("matchOverview(reportFixture)");
   assert.match(overview,/match-preview-facts/);assert.match(overview,/<span>Spieldatum<\/span>/);assert.match(overview,/<span>Anspielzeit<\/span><strong>[^<]*Beendet<\/strong>/);assert.match(overview,/venue-preview/);
@@ -467,7 +468,7 @@ test('European League: gesicherter Endstand erscheint wie ein abgeschlossenes QH
   const report=run('match(__g,"report")');
   assert.match(report,/KI-Matchbericht/);assert.match(report,/Kadetten ziehen früh davon/);
   assert.match(report,/match-preview-facts/);assert.match(report,/<span>Zuschauer<\/span><strong>1[’'.,]?145<\/strong>/);assert.doesNotMatch(report,/Offizieller Spielplan|Schiedsrichter/);
-  assert.match(report,/Torverlauf/);assert.match(report,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);
+  assert.doesNotMatch(report,/Torverlauf/);assert.match(stats,/Torverlauf/);assert.ok(stats.indexOf('report-score-chart')<stats.indexOf('<h2>Spielerstatistiken</h2>'));assert.match(report,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);
   assert.match(report,/Zeitstrafe/);assert.match(report,/Mihael Bebek/);assert.match(report,/Time-out/);assert.match(report,/Tor \(Siebenmeter\)/);
   assert.doesNotMatch(report,/Torfolge \(/);
   // Auch am Spieltag ersetzt die Blueprint-Ansicht die Live-Seite, sobald der Eintrag da ist.
@@ -814,4 +815,26 @@ test('Spieler-Ranglisten verwenden Vereinsfotos statt vereinsübergreifender Tri
   run("activeClub='kadetten';players=[[13,'Kadetten-Spieler','Rückraum']];updateState={playerSeason:{season:'2026/27',competition:'QHL',teamGames:1,players:{13:{goals:5,twoMinutes:1}}}}");
   assert.equal(parseHTML(view('seasonPlayerLeaders()')).document.querySelector('.player-leader img').getAttribute('src'),'assets/player-13.webp');
  }finally{context.__leaderSaved=saved;run('activeClub=__leaderSaved.club;updateState=__leaderSaved.state;players=__leaderSaved.players;tableLeague=__leaderSaved.league');}
+});
+
+test('V1 failed media preserves a labelled slot without substituting another portrait',()=>{
+ context.document.documentElement.dataset.design='v1';
+ const doc=parseHTML('<html><body><a class="player-card"><img alt="Carl Löfström" src="missing.webp"></a><div class="v1-news-image"><img src="missing-news.webp" alt=""></div></body></html>').document;
+ for(const img of [...doc.querySelectorAll('img')]){context.__failedImage=img;run('handleV1ImageError({target:__failedImage})');}
+ assert.equal(doc.querySelectorAll('img').length,0);
+ assert.equal(doc.querySelector('.player-card > span').textContent,'Kein Foto');
+ assert.equal(doc.querySelector('.player-card > span').getAttribute('aria-label'),'Carl Löfström – Bild nicht verfügbar');
+ assert.equal(doc.querySelector('.v1-news-image > span').textContent,'Bild nicht verfügbar');
+ context.document.documentElement.dataset.design='v2';
+ const img=doc.createElement('img');img.className='crest';doc.body.append(img);context.__failedImage=img;
+ run('handleV1ImageError({target:__failedImage})');assert.ok(doc.querySelector('img.crest'));
+ delete context.document.documentElement.dataset.design;
+});
+test('article retry retains existing content and exposes its loading state',()=>{
+ context.document.documentElement.dataset.design='v1';
+ const doc=parseHTML('<div id="body"><p>Letzter lesbarer Inhalt</p><button id="retry-article">Erneut laden</button></div>').document;
+ context.__articleTarget=doc.querySelector('#body');run('markArticleLoading(__articleTarget)');
+ assert.equal(context.__articleTarget.getAttribute('aria-busy'),'true');
+ assert.equal(context.__articleTarget.querySelector('p').textContent,'Letzter lesbarer Inhalt');
+ assert.equal(context.__articleTarget.querySelector('button').disabled,true);
 });
