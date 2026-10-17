@@ -43,6 +43,11 @@ test('Unchanged FCSG live check keeps preview DOM and expanded sources',async()=
  a.game.venue='Neues Stadion';a.advance(300000);await a.c.loadFcsgLive(true);
  assert.match(panel.textContent,/Geändert/);assert.equal(a.counts()[1],1);
 });
+test('FCSG tab changes in place from Liveticker to Rückblick when a live game finishes',()=>{
+ const a=liveApp(),link=a.document.createElement('a');link.setAttribute('data-fcsg-ticker-tab','');link.href='#match/42/ticker';link.textContent='Liveticker';a.document.body.append(link);
+ load(a.c,'js/fcsg-match.js');a.game.live=true;a.c.updateFcsgLiveView();assert.equal(link.textContent,'Liveticker');
+ a.game.live=false;a.game.score=[0,0];a.c.updateFcsgLiveView();assert.equal(link.textContent,'Rückblick');assert.equal(a.document.querySelector('[data-fcsg-ticker-tab]'),link);assert.equal(link.getAttribute('href'),'#match/42/ticker');
+});
 test('FCSG polls live matches fast and future/finished matches less often',async()=>{
  const a=liveApp();await a.c.loadFcsgLive();a.advance(45000);await a.c.loadFcsgLive(true);assert.equal(a.counts()[0],1);
  a.advance(255000);await a.c.loadFcsgLive(true);assert.equal(a.counts()[0],2);
