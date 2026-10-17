@@ -239,10 +239,11 @@ function playerTables(list,team,seven) {
  return `${scorers.length?`<h3>Toptorschützen</h3><div class="scorers">${scorers.map(p=>`<div><span>${liveEscape(p.name)}</span><strong>${p.goals} <small>Tore</small></strong></div>`).join('')}</div>`:''}${fieldTable}${keeperTable}`||'<p class="notice">Noch keine Spielerwerte gemeldet.</p>';
 }
 // src: {id, home, away, teamStats, players}; je eine Tabellengruppe pro Mannschaft, umschaltbar ohne neue Abfrage.
-function statsView(src,chart='') {
- const teamPart=src.teamStats?liveTeamStats(src):'';
+function statsView(src,chart='',finished=false) {
+ const teamContent=src.teamStats?liveTeamStats(src):'';
+ const teamPart=finished&&document.documentElement.dataset.design!=='v2'&&teamContent?`<section class="panel">${teamContent}</section>`:teamContent;
  if(!src.players?.length)return (teamPart+chart)||'<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
- return teamPart+ehfShotComparison(src.shotStats)+chart+statsPlayers(src);
+ return teamPart+ehfShotComparison(src.shotStats)+chart+(finished?matchPlayerSection(statsPlayers(src)):statsPlayers(src));
 }
 // Mannschaftsumschalter mit je einem Bereich pro Mannschaft; beide Bereiche stehen im Dokument, das Umschalten braucht keine Abfrage.
 function teamSwitchMarkup(id,home,away,panel) {
@@ -256,7 +257,7 @@ function statsPlayers(src) {
 }
 function livePlayerStats(live,archive,chart='') {
  const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home||live.home,away:archive.away||live.away,teamStats:archive.teamStats||d?.teamStats,players:archive.players?.length?archive.players:d?.players,shotStats:archive.shotStats}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};
- return statsView(src,chart);
+ return statsView(src,chart,live.status==='finished');
 }
 // Umschalten der Mannschaft: Die Tabellen beider Mannschaften sind schon im Dokument; es wird nur gewechselt.
 document.addEventListener('click',e=>{

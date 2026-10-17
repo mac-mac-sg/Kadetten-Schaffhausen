@@ -510,3 +510,58 @@ html:not([data-design='v2']) .article-fulltext[aria-busy='true'] { min-height:18
 }
 
 html:not([data-design='v2']) .related-story > .v1-image-fallback { flex:none; width:100px; height:85px; border-radius:10px; }
+
+/* Match statistics belong to the app's existing card family. Colour is a light accent, never glass. */
+:root:not([data-design='v2']) {
+ --v1-stat-own:var(--accent-soft); --v1-stat-opponent:#b79aff;
+ --v1-stat-wash:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--v1-stat-own) 6%,transparent),transparent 65%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--v1-stat-opponent) 4%,transparent),transparent 65%);
+}
+:root:not([data-design='v2'])[data-theme='light'] { --v1-stat-own:var(--accent); --v1-stat-opponent:#7042a0; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats { --v1-stat-home:var(--v1-stat-own); --v1-stat-away:var(--v1-stat-opponent); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats[data-own-side='away'] { --v1-stat-home:var(--v1-stat-opponent); --v1-stat-away:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > :is(.report-comparison,.panel,.report-player-section),
+html:not([data-design='v2'])[data-theme] .match .report-score-card {
+ min-width:0; margin:24px 0; padding:var(--v1-space-card); border:1px solid var(--line); border-radius:var(--v1-radius-card);
+ background:var(--v1-stat-wash),var(--v1-card-surface); box-shadow:var(--v1-card-shadow);
+}
+html:not([data-design='v2'])[data-theme] .match .report-score-card {
+ --score-orange:var(--v1-stat-own); --score-purple:var(--v1-stat-opponent);
+ background:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--v1-stat-own) 9%,transparent),transparent 65%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--v1-stat-opponent) 6%,transparent),transparent 65%),var(--v1-card-surface);
+}
+html:not([data-design='v2'])[data-theme] .report-score-card .eyebrow { display:none; }
+html:not([data-design='v2'])[data-theme] :is(.finished-match-stats > h2,.report-player-section > h2,.report-score-card h2) { margin:0 0 16px; font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .report-score-card h2 { margin:0; }
+html:not([data-design='v2'])[data-theme] .report-score-status { font-size:12px; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-score-caption { margin-top:8px; font-size:var(--v1-meta-size); line-height:1.5; }
+html:not([data-design='v2'])[data-theme] .report-score-chart text { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme] .report-score-chart :is(.chart-grid,.chart-half) { stroke:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-score-chart :is(.chart-kadetten,.chart-opponent) { filter:none; }
+html:not([data-design='v2'])[data-theme] .report-score-chart .chart-end { fill:var(--v1-card-surface); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row { padding:16px 0; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong { font-size:16px; font-weight:600; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong:first-child,
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong:first-child { color:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong:last-child,
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong:last-child { color:var(--v1-stat-away); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-bars i { background:var(--v1-stat-opponent); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-bars .is-kadetten i { background:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison { padding:16px 0; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong { font-size:28px; font-weight:600; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats :is(.comparison span,.report-comparison-row > div > span) { color:var(--muted); font-size:var(--v1-meta-size); }
+html:not([data-design='v2'])[data-theme] .report-player-section > .team-switch { margin:0 0 24px; }
+html:not([data-design='v2'])[data-theme] .report-player-section .live-team-stats > h3 { font:600 var(--v1-card-heading-size)/1.35 var(--font-text); margin:24px 0 12px; }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.report-table-wrap,.report-table,.report-table th,.report-table td) { background:transparent; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-player-section .report-table thead th { color:var(--muted); font-weight:500; }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts { gap:12px; margin:16px 0 0; }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts > div { min-width:0; padding:16px; border:1px solid var(--line); border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts strong { font-size:22px; font-weight:600; color:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .report-player-section [data-stats-panel='home'] { --v1-stat-team:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .report-player-section [data-stats-panel='away'] { --v1-stat-team:var(--v1-stat-away); }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts strong { color:var(--v1-stat-team,var(--v1-stat-own)); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .ehf-shot-results > h2 { font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.ehf-shot-map,.ehf-keeper-zones) { padding:16px; border-color:var(--line); border-radius:var(--v1-radius-inset); background:transparent; box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .report-player-section .ehf-zone { border-color:var(--line); border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.ehf-zone b,.ehf-keeper-zones summary strong) { color:var(--v1-stat-team,var(--v1-stat-own)); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel > h2 { margin:0 0 16px; font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:first-child { color:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:last-child { color:var(--v1-stat-away); }

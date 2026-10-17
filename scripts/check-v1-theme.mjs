@@ -289,7 +289,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
    await page.waitForFunction(()=>!document.querySelector('.live-match-page')&&document.querySelector('.report-score-chart'));
    assert.equal(await page.locator('.match-tabs a').allTextContents().then(t=>t.join('/')),'Statistiken/Rückblick');
    assert.ok((await page.locator('#app').textContent()).includes('Testspieler'));
-   assert.equal(await page.locator('.report-score-card + h2').textContent(),'Spielerstatistiken');
+   assert.equal(await page.locator('.report-score-card + .report-player-section > h2').textContent(),'Spielerstatistiken');
    await page.locator('a[href="#match/finish-now/report"]').click();await page.locator('.report-feed').waitFor();assert.equal(await page.locator('.ai-match-report').count(),0);
    ready=true;await page.evaluate(()=>{Date.now=()=>new Date('2026-10-14T12:33:00Z').getTime();document.dispatchEvent(new Event('visibilitychange'));});
    await page.locator('.ai-match-report').waitFor();assert.ok((await page.locator('.ai-match-report').textContent()).includes('Bericht nach dem Schlusspfiff'));
@@ -300,19 +300,34 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  }
  async function checkFinishedScorePlacement(){
   const stored=JSON.parse(fs.readFileSync(path.join(root,'src/client/assets/game-reports.json'),'utf8')).reports.stgallen;
+  data[2].games=[{...data[0].games.find(g=>g.id==='stgallen')}];
   const report={...stored,events:[{id:1,seconds:90,time:'01:30',score:[1,0],action:'Tor',homePlayer:'Testspieler'},{id:2,seconds:3600,time:'60:00',score:stored.score,action:'Tor'}]};
   await ctx.route('**/api/reports/stgallen',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({report})}));
-  for(const width of [390,1280])for(const theme of ['light','dark']){
-   await page.setViewportSize({width,height:844});await page.goto(origin+'/?club=kadetten#match/stgallen/stats');
+  await ctx.route('**/api/otmar/reports/stgallen',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({report})}));
+  for(const club of ['kadetten','otmar'])for(const width of [390,1280])for(const theme of ['light','dark']){
+   await page.setViewportSize({width,height:844});await page.goto(origin+'/?club='+club+'#match/stgallen/stats');
    await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
    await page.locator('.report-score-chart').waitFor();
-   assert.equal(await page.locator('.report-score-card + h2').textContent(),'Spielerstatistiken');
+   assert.equal(await page.locator('.report-score-card + .report-player-section > h2').textContent(),'Spielerstatistiken');
    assert.equal(await page.locator('.report-score-card').count(),1);
+   const family=await page.evaluate(()=>{
+    const root=document.querySelector('.finished-match-stats'),style=e=>{const s=getComputedStyle(e);return {radius:s.borderRadius,padding:s.paddingLeft,border:s.borderTopColor,shadow:s.boxShadow,background:s.backgroundColor,gradient:s.backgroundImage,glass:s.backdropFilter};};
+    const probe=document.createElement('span');probe.style.color='var(--v1-stat-own)';root.append(probe);const own=getComputedStyle(probe).color;probe.remove();
+    const side=root.dataset.ownSide==='home'?'first-child':'last-child';
+    return {cards:[...root.querySelectorAll(':scope > .report-comparison,:scope > .panel,:scope > .report-score-card,:scope > .report-player-section')].map(style),own,chart:getComputedStyle(root.querySelector('.report-score-team.is-kadetten')).color,bar:getComputedStyle(root.querySelector('.report-bars .is-kadetten i')).backgroundColor,half:getComputedStyle(root.querySelector('.comparison strong:'+side)).color,svg:getComputedStyle(root.querySelector('linearGradient[id$="-line-'+(root.dataset.ownSide==='home'?0:1)+'"] stop')).stopColor,heading:getComputedStyle(root.querySelector('.report-player-section > h2')).fontSize};
+   });
+   assert.equal(family.cards.length,4);for(const card of family.cards){assert.equal(card.radius,'18px');assert.equal(card.padding,'16px');assert.equal(card.glass,'none');assert.ok(card.gradient.includes('radial-gradient'),JSON.stringify(family));assert.equal(card.border,family.cards[0].border);assert.equal(card.shadow,family.cards[0].shadow);assert.equal(card.background,family.cards[0].background);}
+   assert.equal(family.heading,'22px');for(const part of ['chart','bar','half','svg'])assert.equal(family[part],family.own,club+' '+theme+': '+part+' uses the same own-team colour');
+
    await page.locator('.report-score-card').scrollIntoViewIfNeeded();
    await page.addScriptTag({content:axe});
    const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
    assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
-   if(process.env.V1_THEME_SCREENSHOTS)await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'finished-score-'+theme+'-'+width+'.png')});
+   if(process.env.V1_THEME_SCREENSHOTS)await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'finished-score-'+club+'-'+theme+'-'+width+'.png')});
+   const selected=page.locator('.report-player-section [data-stats-panel]:not([hidden])');
+   assert.equal(await selected.count(),1);
+   const other=page.locator('.report-player-section .team-switch button[aria-pressed="false"]');await other.click();assert.equal(await page.locator('.report-player-section [data-stats-panel]:not([hidden])').count(),1);
+   if(process.env.V1_THEME_SCREENSHOTS&&width===390){await page.locator('.report-player-section').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'players-'+club+'-'+theme+'.png')});}
    await page.locator('a[href="#match/stgallen/report"]').click();await page.waitForTimeout(150);
    assert.equal(await page.locator('.report-score-chart').count(),0);assert.equal(await page.locator('.report-feed').count(),1);
   }
