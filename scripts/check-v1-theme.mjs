@@ -298,6 +298,7 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
    await ctx.route('**/api/fcsg/matches/'+base.id,r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,checkedAt:now,match})}));
    for(const width of [390,1280])for(const theme of ['light','dark']){
     await page.setViewportSize({width,height:844});await page.goto(origin+'/?club=fcsg&colourcase='+ownHome+'-'+theme+'-'+width+'#match/'+base.id+'/stats');await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);await page.locator('.fcsg-momentum svg').waitFor();await page.waitForFunction(home=>document.querySelector('.fcsg-stat-legend span')?.textContent.startsWith(home),match.home);
+    assert.equal(await page.locator('[data-fcsg-ticker-tab]').textContent(),'Rückblick');
     const colours=await page.locator('.fcsg-match-dashboard').evaluate((root,ownHome)=>{
      const bar=root.querySelector('.fcsg-stat-bar'),svg=root.querySelector('.fcsg-momentum svg');
      return {opponent:getComputedStyle(bar.children[ownHome?1:0]).backgroundColor,own:getComputedStyle(bar.children[ownHome?0:1]).backgroundColor,line:getComputedStyle(svg.querySelectorAll('path[stroke-width]')[ownHome?1:0]).stroke,fill:[...svg.querySelectorAll(ownHome?'#fcsg-momentum-bottom stop':'#fcsg-momentum-top stop')].map(e=>getComputedStyle(e).stopColor)};

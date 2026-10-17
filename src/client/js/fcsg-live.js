@@ -32,6 +32,8 @@ function updateFcsgLiveView() {
   if(header){const template=document.createElement('template');template.innerHTML=fcsgMatchHeader(g);const next=template.content.firstElementChild;header.innerHTML=next.innerHTML;header.className=next.className;}
   document.querySelectorAll('[data-fcsg-score]').forEach(e=>{if(e.dataset.fcsgScore===id)e.textContent=fcsgDisplayScore(g)});
   document.querySelectorAll('[data-fcsg-phase]').forEach(e=>{if(e.dataset.fcsgPhase===id)e.textContent=fcsgLiveState(g)});
+  const tickerTab=document.querySelector('[data-fcsg-ticker-tab]');
+  if(tickerTab)tickerTab.textContent=fcsgTickerTabLabel(g);
   const panel=document.getElementById('fcsg-live-panel');
   if(panel){if(!fcsgPanelSignatures.has(panel))fcsgPanelSignatures.set(panel,panel.dataset.signature);const changed=updateFcsgPanel(panel,fcsgMatchTickerSignature(g),()=>fcsgMatchTicker(g));if(changed&&fcsgMatchStage(g)==='preview')loadMatchPreview();}
   const stats=document.getElementById('fcsg-team-stats');updateFcsgPanel(stats,JSON.stringify([fcsgMatchStage(g),g.homeStats,g.awayStats,g.momentum]),()=>fcsgTeamStats(g));

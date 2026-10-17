@@ -44,6 +44,7 @@ document.addEventListener('click',event=>{
 });
 
 function fcsgMatchStage(g) { return g.live ? 'live' : g.score ? 'finished' : 'preview'; }
+function fcsgTickerTabLabel(g) { return fcsgMatchStage(g)==='finished'?'Rückblick':'Liveticker'; }
 function fcsgReport(g) {
  const r=g.report||fcsgData.games.find(x=>x.id===g.id)?.report;
  if(!r||JSON.stringify(r.score)!==JSON.stringify(g.score)||!Array.isArray(r.paragraphs))return '<p class="notice">Der kurze Match-Rückblick wird nach dem nächsten Datenlauf ergänzt.</p>';
@@ -62,7 +63,7 @@ function fcsgMatchHeader(g) {
 function fcsgMatch(id,tab) {
  const g=fcsgGame(id);if(!g)return notFound();
  const selected=['squad','stats'].includes(tab)?tab:'ticker';
- return `<section class="match fcsg-match-page"><div class="content narrow">${backLink('#season/games','Zurück zu den Spielen')}<h1 class="live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</h1>${fcsgMatchHeader(g)}${sourceNotice('games')}<nav class="segments match-tabs fcsg-match-tabs" aria-label="Spielbereich">${[['ticker','Liveticker'],['squad','Aufstellung'],['stats','Statistiken']].map(([key,label])=>`<a class="${selected===key?'selected':''}"${selected===key?' aria-current="page"':''} href="#match/${g.id}/${key}">${label}</a>`).join('')}</nav>${selected==='ticker'?`<section id="fcsg-live-panel" data-stage="${fcsgMatchStage(g)}" data-signature="${liveEscape(fcsgMatchTickerSignature(g))}">${fcsgMatchTicker(g)}</section>`:selected==='squad'?`<section id="fcsg-lineups">${fcsgLineups(g)}</section>`:`<section id="fcsg-team-stats">${fcsgTeamStats(g)}</section>`}<p>${ext(g.url,'Offizielles Matchcenter','news-link')}</p></div></section>${fcsgFooter('games')}`;
+ return `<section class="match fcsg-match-page"><div class="content narrow">${backLink('#season/games','Zurück zu den Spielen')}<h1 class="live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</h1>${fcsgMatchHeader(g)}${sourceNotice('games')}<nav class="segments match-tabs fcsg-match-tabs" aria-label="Spielbereich">${[['ticker',fcsgTickerTabLabel(g)],['squad','Aufstellung'],['stats','Statistiken']].map(([key,label])=>`<a${key==='ticker'?' data-fcsg-ticker-tab':''} class="${selected===key?'selected':''}"${selected===key?' aria-current="page"':''} href="#match/${g.id}/${key}">${label}</a>`).join('')}</nav>${selected==='ticker'?`<section id="fcsg-live-panel" data-stage="${fcsgMatchStage(g)}" data-signature="${liveEscape(fcsgMatchTickerSignature(g))}">${fcsgMatchTicker(g)}</section>`:selected==='squad'?`<section id="fcsg-lineups">${fcsgLineups(g)}</section>`:`<section id="fcsg-team-stats">${fcsgTeamStats(g)}</section>`}<p>${ext(g.url,'Offizielles Matchcenter','news-link')}</p></div></section>${fcsgFooter('games')}`;
 }
 function fcsgPreviewStats(g) {
  const all=fcsgData.games.filter(x=>x.score&&x.id!==g.id&&x.date<g.date).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
