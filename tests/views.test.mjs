@@ -410,7 +410,7 @@ test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne feh
   assert.doesNotMatch(view("matchOverview(reportFixture)"),/Torverlauf/);
   assert.match(history,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);assert.doesNotMatch(history,/Alle Spielereignisse/);assert.doesNotMatch(history,/<details class="report-feed" open/);
   const overview=view("matchOverview(reportFixture)");
-  assert.match(overview,/match-preview-facts/);assert.match(overview,/<span>Spieldatum<\/span>/);assert.match(overview,/<span>Anspielzeit<\/span><strong>[^<]*Beendet<\/strong>/);assert.match(overview,/venue-preview/);
+  assert.match(overview,/match-recap-details/);assert.match(overview,/<dt>Datum<\/dt>/);assert.doesNotMatch(overview,/match-hero|venue-preview|venue-thumb/);
   assert.doesNotMatch(overview,/Offizieller Spielplan|Originalbericht lesen/);
   assert.doesNotMatch(overview,/Schiedsrichter/);
   assert.doesNotMatch(view("matchOverview({...reportFixture,home:'Kadetten Schaffhausen'})"),/data-match-programme/);assert.match(view("matchOverview({...reportFixture,home:'Kadetten Schaffhausen',score:null})"),/data-match-programme/);
@@ -467,7 +467,7 @@ test('European League: gesicherter Endstand erscheint wie ein abgeschlossenes QH
   assert.doesNotMatch(stats,/Quelle & Datenstand|Zweite Halbzeit aus/);
   const report=run('match(__g,"report")');
   assert.match(report,/KI-Matchbericht/);assert.match(report,/Kadetten ziehen früh davon/);
-  assert.match(report,/match-preview-facts/);assert.match(report,/<span>Zuschauer<\/span><strong>1[’'.,]?145<\/strong>/);assert.doesNotMatch(report,/Offizieller Spielplan|Schiedsrichter/);
+  assert.match(report,/match-recap-details/);assert.match(report,/<dt>Zuschauer<\/dt><dd>1[’'.,]?145<\/dd>/);assert.doesNotMatch(report,/Offizieller Spielplan|Schiedsrichter/);
   assert.doesNotMatch(report,/Torverlauf/);assert.match(stats,/Torverlauf/);assert.ok(stats.indexOf('report-score-chart')<stats.indexOf('<h2>Spielerstatistiken</h2>'));assert.match(report,/<details class="report-feed"><summary>Spielverlauf<\/summary>/);
   assert.match(report,/Zeitstrafe/);assert.match(report,/Mihael Bebek/);assert.match(report,/Time-out/);assert.match(report,/Tor \(Siebenmeter\)/);
   assert.doesNotMatch(report,/Torfolge \(/);
@@ -508,7 +508,7 @@ test('Beendete QHL-Spiele: Statistik zuerst, Rückblick im zweiten Tab',()=>{
  const open=run('match(__q,"overview")');
  assert.match(open,/Endresultat/);assert.ok(open.indexOf('>Statistik<')<open.indexOf('>Rückblick<'));
  assert.match(open,/#match\/qhl-test\/report/);assert.doesNotMatch(open,/Aufgebot/);assert.match(run('match(__q,"squad")'),/Endresultat/);
- assert.match(run('match(__q,"report")'),/Der Rückblick/);
+ assert.match(run('match(__q,"report")'),/match-recap/);assert.doesNotMatch(run('match(__q,"report")'),/Der Rückblick|match-hero/);
  run('globalThis.__q.score=null');
  assert.match(run('match(__q,"overview")'),/>Vorschau</);
 });
@@ -871,4 +871,24 @@ test('Live score chart grows only to confirmed game time above a single event fe
  assert.match(next.querySelector('.report-score-legend').textContent,/12Tore/);
  run(`curveLive.details.events=[]`);assert.equal(run('liveScoreChart(curveLive)'),'','No invented curve without confirmed goal events');
  run(`curveLive.status='finished'`);assert.equal(run('liveScoreChart(curveLive)'),'','Completed charts remain in the statistics tab');
+});
+
+
+test('Completed V1 recap starts with the concrete report and has compact details without photos',()=>{
+ const design=context.document.documentElement.dataset.design;
+ run(`globalThis.recapFixture={id:'recap-test',date:'2026-10-17',time:'18:00',league:'QHL',home:'Kadetten Schaffhausen',away:'RTV 1879 Basel',score:[42,26],venue:'BBC Arena',image:'team.jpg'};ehfArchive['recap-test']={score:[42,26],spectators:1234,source:{label:'SHV Spielbericht',url:'https://www.handball.ch/de/matchcenter/spiele/123'},report:{headline:'Kadetten gewinnen klar',paragraphs:['Die Kadetten gewinnen 42:26.','Der zweite Absatz bleibt vollständig erhalten.'],generator:'ki',generatedAt:'2026-10-17T19:20:00Z'}}`);
+ try{
+  context.document.documentElement.dataset.design='v1';
+  const markup=view('matchOverview(recapFixture)'),doc=parseHTML(markup).document;
+  assert.equal(doc.querySelectorAll('h1').length,1);assert.equal(doc.querySelector('h1').textContent,'Kadetten gewinnen klar');
+  assert.equal(doc.querySelectorAll('img').length,0);assert.doesNotMatch(markup,/match-hero|venue-thumb|ZUSAMMEN|Der Rückblick/);
+  assert.ok(markup.indexOf('ai-match-report')<markup.indexOf('match-recap-details'));
+  assert.equal(doc.querySelector('.match-recap-details dd time').getAttribute('datetime'),'2026-10-17');
+  assert.match(doc.querySelector('.match-recap-details').textContent,/BBC Arena/);assert.match(doc.querySelector('.match-recap-details').textContent,/1[’'.,]?234/);
+  assert.match(markup,/bestätigten Spieldaten der SHV/);assert.doesNotMatch(markup,/Spieldaten der EHF/);
+  run(`delete ehfArchive['recap-test']`);const waiting=parseHTML(view('matchOverview(recapFixture)')).document;
+  assert.equal(waiting.querySelectorAll('h1').length,1);assert.ok(waiting.querySelector('[role="status"]'));assert.match(waiting.querySelector('.match-recap-waiting').textContent,/42 : 26/);
+  assert.match(view('matchOverview({...recapFixture,score:null})'),/match-hero/);
+  context.document.documentElement.dataset.design='v2';assert.match(view('matchOverview(recapFixture)'),/match-hero/);
+ }finally{context.document.documentElement.dataset.design=design;run(`delete ehfArchive['recap-test']`);}
 });
