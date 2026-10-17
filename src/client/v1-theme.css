@@ -449,14 +449,6 @@ html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back
 }
 
 
-/* Keep the matchday label inside the clipped glass, alongside the games icon. */
-html:not([data-design='v2']) .dock .is-matchday .nav-icon { transform:translateX(-19px); }
-html:not([data-design='v2']) .dock .is-matchday::after {
- top:7px; left:calc(50% - 3px); right:auto;
- box-sizing:border-box; width:38px; padding:2px 2px; font-size:9px; text-align:center; white-space:nowrap; pointer-events:none;
- background:var(--v1-control-fill); color:var(--v1-control-ink); border-color:transparent;
-}
-
 /* An optional second row, measured with the club bar by the pinned controls. */
 html:not([data-design='v2']) .top.v1-compact-header:has(.club-match-hints:not([hidden])) { flex-wrap:wrap; }
 html:not([data-design='v2']) .club-match-hints { flex:0 0 100%; order:10; display:flex; gap:8px; margin-top:6px; padding-top:6px; border-top:1px solid var(--line); }
@@ -470,7 +462,6 @@ html:not([data-design='v2']) .club-match-hint i { width:6px; height:6px; border-
 html:not([data-design='v2']) .club-match-hint:active { opacity:.82; }
 html:not([data-design='v2']) .club-match-hint:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 
-@media(max-width:359px) { html:not([data-design='v2']) .dock .is-matchday::after { width:35px; padding-inline:1px; } }
 
 /* Light-touch polish: ordinary fixtures recede; live/current games and statistic tiles keep their emphasis. */
 html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { padding:12px 14px 4px; gap:4px 10px; box-shadow:none; }
