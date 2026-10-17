@@ -146,7 +146,7 @@ function ehfArchiveFor(g) {
 }
 async function loadEhfArchive() {
  const [page,id]=location.hash.slice(1).split('/'), g=games.find(x=>x.id===id);
- if(page!=='match'||!g?.score||!['EHL','QHL'].includes(g.league)||ehfArchive[id]||Date.now()-(ehfArchiveAttempts.get(id)||0)<120000)return;
+ if(page!=='match'||!g?.score||!['EHL','QHL'].includes(g.league)||ehfArchive[id]?.report||Date.now()-(ehfArchiveAttempts.get(id)||0)<120000)return;
  ehfArchiveAttempts.set(id,Date.now());
  try{
   const response=await apiFetch((g.league==='QHL'?handballApiPath('/api/match-reports/'):'/api/ehf-reports/')+encodeURIComponent(id));if(!response.ok)return;
@@ -165,7 +165,7 @@ function ehfReportSlot(g) {
  const a=ehfArchiveFor(g);
  if(a?.report)return ehfReportBlock(a);
  const days=(Date.parse(swissToday())-Date.parse(g.date))/86400000;
- return days<=3?'<p class="notice" role="status">Der KI-Matchbericht erscheint kurz nach dem Spielende an dieser Stelle.</p>':'';
+ return days<=3?'<p class="notice" role="status">Der Matchbericht wird mit der nächsten Datenaktualisierung ergänzt. Endresultat und verfügbare Statistiken sind bereits sichtbar.</p>':'';
 }
 // Gesicherter EHF-Eintrag -> Spielbericht in der Form des SHV-Berichts, damit die Ansichten der abgeschlossenen QHL-Spiele ihn unverändert zeigen.
 function ehfAsReport(a) {
@@ -233,10 +233,10 @@ function playerTables(list,team,seven) {
  return `${scorers.length?`<h3>Toptorschützen</h3><div class="scorers">${scorers.map(p=>`<div><span>${liveEscape(p.name)}</span><strong>${p.goals} <small>Tore</small></strong></div>`).join('')}</div>`:''}${fieldTable}${keeperTable}`||'<p class="notice">Noch keine Spielerwerte gemeldet.</p>';
 }
 // src: {id, home, away, teamStats, players}; je eine Tabellengruppe pro Mannschaft, umschaltbar ohne neue Abfrage.
-function statsView(src) {
+function statsView(src,chart='') {
  const teamPart=src.teamStats?liveTeamStats(src):'';
- if(!src.players?.length)return teamPart||'<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
- return teamPart+ehfShotComparison(src.shotStats)+statsPlayers(src);
+ if(!src.players?.length)return (teamPart+chart)||'<h2>Spielerstatistiken</h2><p class="notice">Für dieses Spiel sind noch keine Spielerstatistiken verfügbar.</p>';
+ return teamPart+ehfShotComparison(src.shotStats)+chart+statsPlayers(src);
 }
 // Mannschaftsumschalter mit je einem Bereich pro Mannschaft; beide Bereiche stehen im Dokument, das Umschalten braucht keine Abfrage.
 function teamSwitchMarkup(id,home,away,panel) {
@@ -248,9 +248,9 @@ function statsPlayers(src) {
  const seven=src.players.some(p=>p.seven!==null&&p.seven!==undefined);
  return `<h2>Spielerstatistiken</h2>${teamSwitchMarkup(src.id,src.home,src.away,(k,name)=>ehfShotTeam(src.shotStats,k)+playerTables(src.players.filter(p=>p.home===(k==='home')),name,seven))}<p class="muted">YC: Gelbe Karte · 2M: 2-Minuten-Strafe · RC: Rote Karte · S: Würfe · G: Tore · SV: Paraden · SH: erhaltene Würfe · SV%: Fangquote${seven?' · 7 m: Siebenmeter-Tore/Würfe':''} · –: Wert nicht verfügbar</p>`;
 }
-function livePlayerStats(live,archive) {
- const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home,away:archive.away,teamStats:archive.teamStats,players:archive.players,shotStats:archive.shotStats}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};
- return statsView(src);
+function livePlayerStats(live,archive,chart='') {
+ const d=live.details, src=archive?{id:String(archive.fixtureId||live.id),home:archive.home||live.home,away:archive.away||live.away,teamStats:archive.teamStats||d?.teamStats,players:archive.players?.length?archive.players:d?.players,shotStats:archive.shotStats}:{id:String(live.id),home:live.home,away:live.away,teamStats:d?.teamStats,players:d?.players};
+ return statsView(src,chart);
 }
 // Umschalten der Mannschaft: Die Tabellen beider Mannschaften sind schon im Dokument; es wird nur gewechselt.
 document.addEventListener('click',e=>{
@@ -268,13 +268,14 @@ function refreshLiveViews() {
   if(!g)return;
   loadEhfArchive();
   const container=document.getElementById('live-detail-content');
+  if(container&&liveForFixture(g)?.status==='finished'){render();return;}
   if(container){
    const open=container.querySelector('.live-all-events')?.open, focused=document.activeElement?.dataset?.statsTeam;
    if(container.contains(document.activeElement)&&!focused)return;
    const html=liveMatchContent(g,tab);
    if((liveDetailSourceHTML.get(container)??container.innerHTML)!==html){container.innerHTML=html;liveDetailSourceHTML.set(container,html);setupCollapsingMatchHeader();if(focused)container.querySelector('[data-stats-team="'+focused+'"]')?.focus();}
    if(open&&container.querySelector('.live-all-events'))container.querySelector('.live-all-events').open=true;
-  } else if(liveForFixture(g)&&!(g.league==='EHL'&&verifiedReport(g)))render();
+  } else if(liveForFixture(g)&&liveForFixture(g).status!=='finished'&&!(g.league==='EHL'&&verifiedReport(g)))render();
  }
  if(page==='season'&&id==='games')document.querySelectorAll('[data-game-card]').forEach(el=>{
   if(el.contains(document.activeElement))return;

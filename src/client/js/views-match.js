@@ -21,7 +21,9 @@ function blueprintGame(g) {
 }
 function match(g, tab) {
   // Liegt zu einem beendeten EHL-Spiel der gesicherte Eintrag vor, ersetzt die Blueprint-Ansicht die Live-Seite.
-  if (liveForFixture(g) && !(g.league === 'EHL' && verifiedReport(g))) return liveMatchPage(g, tab);
+  const live=liveForFixture(g);
+  if (live && live.status!=='finished' && !(g.league === 'EHL' && verifiedReport(g))) return liveMatchPage(g, tab);
+  if(live?.status==='finished')g={...g,score:live.score,half:live.half||g.half};
   const ehfDone = ['QHL', 'EHL'].includes(g.league) && !!g.score;
   if (ehfDone && (tab === 'overview' || tab === 'squad')) tab = 'stats'; // QHL und European League: zuerst die Statistiken, der Bericht liegt im Tab «report»
   const detail = verifiedReport(g);
@@ -310,6 +312,11 @@ function metric(label, a, b) {
 }
 function matchStats(g) {
   if (verifiedReport(g)) return reportStats(g);
+  const ended=liveForFixture(g);
+  if(ended?.status==='finished'){
+    const chart=reportScoreChart(g,{score:ended.score,events:ended.details?.events||[],teams:[g.home,g.away].map(name=>({id:isOwnHandballTeam(name)?handballTeamId():-1}))});
+    return livePlayerStats(ended,ehfArchiveFor(g),chart);
+  }
   if (g.id === 'bukarest')
     return `<h2>Das Spiel in Zahlen</h2><div class="panel">${statTeams(g)}${metric('Tore', 39, 32)}${metric('1. Halbzeit', 16, 16)}${metric('2. Halbzeit', 23, 16)}${metric('Strafminuten', 4, 4)}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p><h2 class="subhead">Torschützen der Kadetten</h2><div class="scorers">${players
       .filter(p => goals[p[0]] > 0)

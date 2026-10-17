@@ -475,9 +475,9 @@ test('European League: gesicherter Endstand erscheint wie ein abgeschlossenes QH
   run(`liveState={ok:true,checkedAt:new Date().toISOString(),match:null,finished:{id:'202711020901029',home:'Kadetten Schaffhausen',away:'HC Izvidac',league:'European League',score:[42,30],status:'finished',date:swissToday(),url:'https://x',details:{ok:true,teamStats:null,players:null}}};lastLiveMatch=liveState.finished;lastLiveAt=liveState.checkedAt;lastLiveDate=swissToday();__g.date=swissToday()`);
   assert.doesNotMatch(run('match(__g,"stats")'),/live-match-page/);
   run('delete gameReports.izvidac');
-  assert.match(run('match(__g,"stats")'),/live-match-page/);
+  assert.doesNotMatch(run('match(__g,"stats")'),/live-match-page/);
   // Abweichender Endstand: der gesicherte Eintrag wird nicht verwendet.
-  run('gameReports.izvidac=ehfAsReport(ehfArchive.izvidac);__g.score=[41,30]');
+  run('liveState=null;lastLiveMatch=null;gameReports.izvidac=ehfAsReport(ehfArchive.izvidac);__g.score=[41,30]');
   assert.doesNotMatch(run('match(__g,"report")'),/Kadetten ziehen früh davon/);
  }finally{run('liveState=null;lastLiveMatch=null;lastLiveAt=null;lastLiveDate=null;delete gameReports.izvidac;ehfArchive={};liveStatsTeam=null');}
 });
@@ -837,4 +837,21 @@ test('article retry retains existing content and exposes its loading state',()=>
  assert.equal(context.__articleTarget.getAttribute('aria-busy'),'true');
  assert.equal(context.__articleTarget.querySelector('p').textContent,'Letzter lesbarer Inhalt');
  assert.equal(context.__articleTarget.querySelector('button').disabled,true);
+});
+
+
+test('Confirmed finish switches immediately to completed tabs and keeps live statistics until the report arrives',()=>{
+ run(`globalThis.finishFixture={id:'finish-now',date:swissToday(),league:'QHL',home:'Kadetten Schaffhausen',away:'RTV 1879 Basel',time:'18:00',venue:'BBC Arena',url:'https://example.test/',image:'team.jpg'};lastLiveDate=swissToday();lastLiveMatch={...finishFixture,status:'finished',score:[42,26],half:[19,11],details:{events:[{id:1,seconds:3600,time:'60:00',score:[42,26],action:'Tor',homePlayer:'Testspieler'}],players:[{id:1,name:'Testspieler',home:true,goals:8,shots:10,seven:0,sevenShots:0,yellow:0,twoMinutes:0,red:0}],teamStats:null}};liveState=null;`);
+ try{
+  const stats=view('match(finishFixture,"stats")');
+  assert.doesNotMatch(stats,/live-match-page|>Liveticker<|Aktualisierung alle 30 Sekunden/);
+  assert.match(stats,/>Statistiken<.*>Rückblick</s);assert.match(stats,/42 : 26/);assert.match(stats,/Testspieler/);
+  assert.ok(stats.indexOf('report-score-chart')<stats.indexOf('<h2>Spielerstatistiken</h2>'));
+  const report=view('match(finishFixture,"report")');assert.match(report,/nächsten Datenaktualisierung/);assert.match(report,/60:00/);assert.doesNotMatch(report,/report-score-chart/);
+  run(`finishFixture.score=[42,26];ehfArchive['finish-now']={score:[42,26],report:{headline:'Testbericht nach dem Schlusspfiff',paragraphs:['Gesicherter Bericht.'],generator:'ki'},source:{url:'https://example.test/'}}`);
+  assert.match(view('match(finishFixture,"report")'),/Testbericht nach dem Schlusspfiff/);
+  assert.match(view('match(finishFixture,"stats")'),/Testspieler/,'A text-only archive must not erase the confirmed player values');
+  run(`lastLiveMatch={...lastLiveMatch,status:'live'};liveState={ok:true,checkedAt:new Date().toISOString(),match:lastLiveMatch}`);
+  assert.match(view('match(finishFixture,"stats")'),/live-match-page/);
+ }finally{run(`liveState=null;lastLiveMatch=null;lastLiveDate=null;delete ehfArchive['finish-now']`);}
 });

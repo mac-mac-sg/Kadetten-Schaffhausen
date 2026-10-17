@@ -28,7 +28,7 @@ test('V2 and routes outside the match centre do not receive a compact header',()
 
 test('An unchanged handball live poll preserves the enhanced header and its tabs',()=>{
  const a=harness(),section=a.document.querySelector('.match'),container=a.document.createElement('div');container.id='live-detail-content';container.append(...section.childNodes);section.append(container);
- a.c.games=[{id:'a'}];a.c.liveSource=container.innerHTML;vm.runInContext(fs.readFileSync('src/client/js/live.js','utf8'),a.c);a.run('liveMatchContent=()=>liveSource;loadEhfArchive=()=>{};setupCollapsingMatchHeader()');a.flush();a.scroll(250);
+ a.c.games=[{id:'a'}];a.c.liveSource=container.innerHTML;vm.runInContext(fs.readFileSync('src/client/js/live.js','utf8'),a.c);a.run('liveMatchContent=()=>liveSource;liveForFixture=()=>null;loadEhfArchive=()=>{};setupCollapsingMatchHeader()');a.flush();a.scroll(250);
  const bar=container.querySelector('.match-sticky-bar');a.run('refreshLiveViews()');assert.equal(container.querySelector('.match-sticky-bar'),bar,'An unchanged response must not rebuild the enhanced DOM');
  a.c.liveSource=a.c.liveSource.replace('>VS<','>23 : 21<');a.run('refreshLiveViews()');a.flush();assert.match(container.querySelector('.match-compact-detail').textContent,/23 : 21/);assert.equal(container.querySelectorAll('.match-sticky-bar').length,1);assert.equal(a.window.scrollY,250,'Changed live data keeps the reading position');const updated=container.querySelector('.match-sticky-bar');a.run('refreshLiveViews()');assert.equal(container.querySelector('.match-sticky-bar'),updated);
 });
