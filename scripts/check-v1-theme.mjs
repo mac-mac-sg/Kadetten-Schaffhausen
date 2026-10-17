@@ -207,8 +207,61 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   await page.mouse.move(card.x+card.width/2,Math.min(card.y+card.height/2,600));await page.mouse.down();await page.waitForTimeout(170);
   assert.ok(Math.abs(Number(await news.evaluate(e=>getComputedStyle(e).opacity))-.82)<.01,'Whole news card confirms a press');await release(news);
  }
+ async function checkMatchdayBadge(){
+  for(const width of [320,375,390,1280])for(const theme of ['light','dark'])for(const club of clubs){
+   await page.setViewportSize({width,height:844});await page.goto(origin+'/?club='+club+'#home');
+   await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);await page.evaluate(async()=>document.fonts.ready);
+   await page.addScriptTag({content:axe});
+   const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
+   assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
+   for(const selected of [false,true]){
+    await page.locator('[data-nav="games"]').evaluate((e,selected)=>{e.classList.add('is-matchday');e.classList.toggle('active',selected);},selected);
+    const box=await page.locator('[data-nav="games"]').evaluate(e=>{
+     const b=e.getBoundingClientRect(),dock=e.closest('.dock').getBoundingClientRect(),icon=e.querySelector('svg').getBoundingClientRect(),s=getComputedStyle(e,'::after');
+     const x=b.x+parseFloat(s.left),y=b.y+parseFloat(s.top),w=parseFloat(s.width)+(s.boxSizing==='border-box'?0:parseFloat(s.paddingLeft)+parseFloat(s.paddingRight)+parseFloat(s.borderLeftWidth)+parseFloat(s.borderRightWidth)),h=parseFloat(s.height)+(s.boxSizing==='border-box'?0:parseFloat(s.paddingTop)+parseFloat(s.paddingBottom)+parseFloat(s.borderTopWidth)+parseFloat(s.borderBottomWidth));
+     const range=document.createRange();range.selectNodeContents(e.lastChild);const text=range.getBoundingClientRect();const canvas=document.createElement('canvas'),c=canvas.getContext('2d');c.font=s.font;const textWidth=c.measureText('Heute').width,innerWidth=w-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)-parseFloat(s.borderLeftWidth)-parseFloat(s.borderRightWidth);
+     return {x,y,w,h,textWidth,innerWidth,b:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},dock:{x:dock.x,y:dock.y,right:dock.right,bottom:dock.bottom},icon:{right:icon.right,top:icon.top,bottom:icon.bottom},textTop:text.top,clip:getComputedStyle(e.closest('.dock')).overflow};
+    });
+    const label=[club,theme,width,selected?'active':'inactive'].join(' ');
+    assert.equal(box.clip,'hidden',label+': glass keeps its smooth clipped edge');assert.ok(box.textWidth<=box.innerWidth+.5,label+': Heute text fits completely inside its pill');
+    assert.ok(box.x>=box.b.x&&box.y>=box.b.y&&box.x+box.w<=box.b.right&&box.y+box.h<=box.b.bottom,label+': complete Heute label stays inside its tab '+JSON.stringify(box));
+    assert.ok(box.x>=box.dock.x&&box.y>=box.dock.y&&box.x+box.w<=box.dock.right&&box.y+box.h<=box.dock.bottom,label+': complete Heute label stays inside the glass');
+    assert.ok(box.x>=box.icon.right+1,label+': Heute does not overlap the games icon');
+    assert.ok(box.y+box.h<=box.textTop,label+': Heute does not cover Spiele');
+    if(process.env.V1_THEME_SCREENSHOTS&&club==='kadetten'&&width===390&&!selected)await page.locator('.dock').screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'matchday-badge-'+theme+'.png')});
+   }
+  }
+  console.log('48 matchday badge layouts passed.');
+ }
+ async function checkOtherClubHints(){
+  const own=['Kadetten Schaffhausen','FC St.Gallen 1879','TSV St. Otmar St. Gallen'];
+  for(let i=0;i<3;i++)data[i].games=[{...data[i].games[0],id:'hint-'+clubs[i],date:'2026-10-14',time:'18:00',home:own[i],away:i===1?'FC Sion':'BSV Bern',score:null,confirmed:true,live:false,league:i===1?'Super League':'QHL'}];
+  await ctx.route(/\/api\/(?:fcsg\/|otmar\/)?live(?:\?|$)/,async r=>{
+   const url=new URL(r.request().url()),i=url.pathname.includes('fcsg')?1:url.pathname.includes('otmar')?2:0;
+   const game=data[i].games[0],match=i===1?{...game,live:true,liveScore:[1,0]}:null,finished=i===2?{...game,status:'finished',score:[32,29]}:null;
+   await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,checkedAt:now,match,finished})});
+  });
+  for(const width of [320,390,1280])for(const theme of ['light','dark'])for(const club of clubs){
+   await page.setViewportSize({width,height:844});await page.goto(origin+'/?club='+club+'#home');
+   await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);
+   await page.waitForFunction(()=>document.querySelectorAll('.club-match-hint').length===2);
+   await page.waitForTimeout(180);
+   const hints=await page.locator('.club-match-hint').evaluateAll(nodes=>nodes.map(e=>({club:e.dataset.hintClub,text:e.textContent,height:e.getBoundingClientRect().height,overflow:e.scrollWidth>e.clientWidth})));
+   assert.equal(hints.length,2);assert.ok(hints.every(h=>h.club!==club&&h.height>=44&&!h.overflow));
+   for(const hint of hints){if(hint.club==='fcsg')assert.match(hint.text,/Live · 1:0/);if(hint.club==='otmar')assert.match(hint.text,/32:29 · Ende/);}
+   await page.addScriptTag({content:axe});const health=await page.evaluate(async()=>({h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>v.id)}));
+   assert.equal(health.h1,1);assert.equal(health.overflow,false);assert.deepEqual(health.violations,[]);
+   if(process.env.V1_THEME_SCREENSHOTS&&club==='kadetten'&&width===390)await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,'other-club-hints-'+theme+'.png')});
+   const link=page.locator('.club-match-hint').first(),target=await link.getAttribute('href');await link.click();
+   assert.equal(new URL(page.url()).hash,new URL(target).hash);assert.equal(new URL(page.url()).searchParams.get('club'),new URL(target).searchParams.get('club'));
+   await page.goto(origin+'/?club='+club+'#season/games');await page.locator('[data-mode="list"]').click();if(width>=375)await checkGamesHeaderAlignment(club+' games-list');else{const aligned=await page.locator('.game-control-bar').evaluate(e=>{const b=e.getBoundingClientRect(),h=document.querySelector('body > .top').getBoundingClientRect();return Math.abs(b.width-h.width)<.5&&b.y>=h.bottom;});assert.ok(aligned,'Narrow game controls remain aligned below the taller header');}
+  }
+  await page.goto(origin+'/?club=kadetten#home');await page.locator('#club-settings').click();for(const club of ['fcsg','otmar'])await page.locator('[data-club-choice="'+club+'"]').uncheck();await page.locator('[data-close-clubs]').click();assert.equal(await page.locator('.club-match-hints').isVisible(),false,'No hints for unselected clubs');
+  for(const d of data)for(const g of d.games)g.date='2026-10-15';await page.locator('#club-settings').click();for(const club of ['fcsg','otmar'])await page.locator('[data-club-choice="'+club+'"]').check();await page.locator('[data-close-clubs]').click();await page.reload();await page.waitForTimeout(300);assert.equal(await page.locator('.club-match-hint').count(),0,'No extra row without fixtures today');
+  console.log('18 other-club hint layouts, direct links, pinned controls and empty states passed.');
+ }
  async function audit(label){await page.waitForTimeout(120);await page.evaluate(async()=>document.fonts.ready);await checkTouchActions(label);await checkGeometryRoles(label);await checkConsistentRoles(label);await checkExpandedClubHistory(label);await checkCompactGames(label);await checkLightSurfaceHierarchy(label);await checkGamesHeaderAlignment(label);await compareTableSpacing(label);await checkLeagueButtons(label);await checkHandballRankingPhotos(label);if(label.includes('home'))await compareUnderlayWithV2();await page.addScriptTag({content:axe});const r=await page.evaluate(async()=>({theme:document.documentElement.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:document.documentElement.scrollWidth>innerWidth,violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({html:n.html,why:n.failureSummary}))}))}));reports.push({label,...r});console.log(JSON.stringify({label,violations:r.violations.length}));if(process.env.V1_THEME_SCREENSHOTS&&/kadetten (home|settings|games-list|table|player)/.test(label))await page.screenshot({path:path.join(process.env.V1_THEME_SCREENSHOTS,label.replaceAll(' ','-')+'.png')});}
- if(process.env.V1_THEME_INTERACTIONS_ONLY){await checkPressFeedback();assert.deepEqual(errors,[]);console.log('Pointer, keyboard and reduced-motion interaction checks passed.');await ctx.close();}else{
+ if(process.env.V1_THEME_HINTS_ONLY){await checkOtherClubHints();assert.deepEqual(errors,[]);await ctx.close();}else if(process.env.V1_THEME_BADGE_ONLY){await checkMatchdayBadge();assert.deepEqual(errors,[]);await ctx.close();}else if(process.env.V1_THEME_INTERACTIONS_ONLY){await checkPressFeedback();assert.deepEqual(errors,[]);console.log('Pointer, keyboard and reduced-motion interaction checks passed.');await ctx.close();}else{
  await page.goto(origin+'/?club=kadetten#home');await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').check();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');await audit('kadetten settings');await checkDisclaimerPopup('light disclaimer');await page.locator('.club-settings-dialog [data-close-clubs]').click();await page.reload();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
  for(let i=0;i<clubs.length;i++){const club=clubs[i],d=data[i],player=club==='fcsg'?d.players[0].id:club==='otmar'?d.roster[0].number:6,game=d.games.filter(g=>g.score).sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||d.games[0],story=d.stories[0];
   const routes=[['home','home'],['season/games','games-list'],['season/games','calendar'],['season/table','table'],['season/squad','squad'],['player/'+player,'player'],['club','club'],['news/'+story.id,'article'],['match/'+game.id+'/stats','match-stats'],['match/'+game.id+'/squad','lineup'],['match/'+game.id+'/overview','ticker']];

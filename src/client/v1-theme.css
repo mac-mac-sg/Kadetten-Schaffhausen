@@ -447,3 +447,27 @@ html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back
 @media(prefers-reduced-motion:reduce) {
  html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { transform:none; }
 }
+
+
+/* Keep the matchday label inside the clipped glass, alongside the games icon. */
+html:not([data-design='v2']) .dock .is-matchday .nav-icon { transform:translateX(-19px); }
+html:not([data-design='v2']) .dock .is-matchday::after {
+ top:7px; left:calc(50% - 3px); right:auto;
+ box-sizing:border-box; width:38px; padding:2px 2px; font-size:9px; text-align:center; white-space:nowrap; pointer-events:none;
+ background:var(--v1-control-fill); color:var(--v1-control-ink); border-color:transparent;
+}
+
+/* An optional second row, measured with the club bar by the pinned controls. */
+html:not([data-design='v2']) .top.v1-compact-header:has(.club-match-hints:not([hidden])) { flex-wrap:wrap; }
+html:not([data-design='v2']) .club-match-hints { flex:0 0 100%; order:10; display:flex; gap:8px; margin-top:6px; padding-top:6px; border-top:1px solid var(--line); }
+html:not([data-design='v2']) .club-match-hints[hidden] { display:none; }
+html:not([data-design='v2']) .club-match-hint { flex:1; min-width:0; min-height:44px; display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:12px; color:var(--text); background:color-mix(in srgb,var(--text) 5%,transparent); touch-action:manipulation; transition:opacity 140ms var(--ease-ui); }
+html:not([data-design='v2']) .club-match-hint img { flex:none; object-fit:contain; }
+html:not([data-design='v2']) .club-match-hint > span { min-width:0; }
+html:not([data-design='v2']) .club-match-hint strong { display:block; font:600 12px/1.4 var(--font-text); }
+html:not([data-design='v2']) .club-match-hint small { display:block; font:400 11px/1.4 var(--font-text); color:var(--muted); }
+html:not([data-design='v2']) .club-match-hint i { width:6px; height:6px; border-radius:50%; background:#dd4747; flex:none; margin-left:auto; }
+html:not([data-design='v2']) .club-match-hint:active { opacity:.82; }
+html:not([data-design='v2']) .club-match-hint:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+@media(max-width:359px) { html:not([data-design='v2']) .dock .is-matchday::after { width:35px; padding-inline:1px; } }

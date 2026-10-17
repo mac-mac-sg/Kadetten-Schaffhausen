@@ -26,7 +26,7 @@ function app(url, saved, storageFails = false) {
   const location = {href: url, hash: new URL(url).hash};
   const store = new Map([['fan-app-active-club-v1', saved]]);
   let renders = 0, polls = 0;
-  const context = vm.createContext({document, location, URL, setInterval() {}, navigator:{onLine:true}, apiFetch:()=>Promise.reject(Error("offline")), AbortSignal, liveEscape:s=>String(s), safeUrl:s=>s, v1ActionIcon:(_name,fallback)=>fallback, backLink:(url,label)=>`<a href="${url}">${label}</a>`, Date, swissToday:()=>"2026-10-04", date:g=>g.date, mode:"list", calendarYear:2026, month:9, localStorage: {
+  const context = vm.createContext({handballSnapshots:new Map(), document, location, URL, setInterval() {}, navigator:{onLine:true}, apiFetch:()=>Promise.reject(Error("offline")), AbortSignal, liveEscape:s=>String(s), safeUrl:s=>s, v1ActionIcon:(_name,fallback)=>fallback, backLink:(url,label)=>`<a href="${url}">${label}</a>`, Date, swissToday:()=>"2026-10-04", date:g=>g.date, mode:"list", calendarYear:2026, month:9, localStorage: {
     getItem: key => { if (storageFails) throw Error('unavailable'); return store.get(key); },
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
@@ -330,4 +330,20 @@ test('V1 reading size persists and restores independently of the theme',()=>{
  const a=app('https://example.test/');a.run("setV1TextSize('large')");assert.equal(a.document.documentElement.dataset.textSize,'large');assert.equal(a.store.get('fan-v1-text-size'),'large');a.document.documentElement.dataset.textSize='standard';a.run('restoreV1TextSize()');assert.equal(a.document.documentElement.dataset.textSize,'large');a.run("setV1TextSize('invalid')");assert.equal(a.document.documentElement.dataset.textSize,'standard');
  const unavailable=app('https://example.test/',null,true);unavailable.run("setV1TextSize('large');restoreV1TextSize()");assert.equal(unavailable.document.documentElement.dataset.textSize,'standard');
  const v2=app('https://example.test/v2/');v2.document.documentElement.dataset.design='v2';v2.run("setV1TextSize('large')");assert.equal(v2.document.documentElement.dataset.textSize,undefined);
+});
+
+test('V1 other-club hints show only selected clubs today, with confirmed live and final states',()=>{
+ const a=app('https://example.test/?club=kadetten');
+ a.run(`fcsgData.games=[{id:'football',date:'2026-10-04',time:'18:00',home:'FC St.Gallen 1879',away:'FC Sion',confirmed:true}];handballSnapshots.set('otmar',{games:[{id:'handball',date:'2026-10-04',time:'19:00',home:'TSV St. Otmar St. Gallen',away:'BSV Bern'}]});`);
+ let hints=JSON.parse(a.run("JSON.stringify(otherClubMatchHints('2026-10-04'))"));
+ assert.deepEqual(hints.map(e=>e.club),['fcsg','otmar']);assert.equal(hints[0].status,'18:00 Uhr');assert.equal(hints[0].live,false);
+ assert.match(hints[0].url,/club=fcsg#match\/football\/overview$/);
+ a.run(`weekLive.set('fcsg',{checkedAt:new Date().toISOString(),data:{match:{...fcsgData.games[0],live:true,liveScore:[1,0]}}});`);
+ hints=JSON.parse(a.run("JSON.stringify(otherClubMatchHints('2026-10-04'))"));assert.equal(hints[0].status,'Live · 1:0');assert.equal(hints[0].live,true);
+ a.run(`weekLive.get('fcsg').failed=true`);hints=JSON.parse(a.run("JSON.stringify(otherClubMatchHints('2026-10-04'))"));assert.equal(hints[0].status,'Zuletzt live · 1:0');assert.equal(hints[0].live,false);
+ a.run(`weekLive.set('fcsg',{checkedAt:new Date().toISOString(),data:{finished:{...fcsgData.games[0],status:'finished',score:[2,1]}}});selectedClubs=['kadetten','fcsg'];`);
+ hints=JSON.parse(a.run("JSON.stringify(otherClubMatchHints('2026-10-04'))"));assert.equal(hints.length,1);assert.equal(hints[0].status,'2:1 · Ende');
+ assert.equal(a.run("otherClubMatchHints('2026-10-05').length"),0);
+ a.run("selectedClubs=['kadetten']");assert.equal(a.run("otherClubMatchHints('2026-10-04').length"),0);
+ a.document.documentElement.dataset.design='v2';assert.equal(a.run("otherClubMatchHints('2026-10-04').length"),0);
 });
