@@ -44,7 +44,7 @@ document.addEventListener('click',event=>{
 });
 
 function fcsgMatchStage(g) { return g.live ? 'live' : g.score ? 'finished' : 'preview'; }
-function fcsgTickerTabLabel(g) { return fcsgMatchStage(g)==='finished'?'Rückblick':'Liveticker'; }
+function fcsgTickerTabLabel(g) { return {preview:'Vorschau',live:'Liveticker',finished:'Rückblick'}[fcsgMatchStage(g)]; }
 function fcsgReport(g) {
  const r=g.report||fcsgData.games.find(x=>x.id===g.id)?.report;
  if(!r||JSON.stringify(r.score)!==JSON.stringify(g.score)||!Array.isArray(r.paragraphs))return '<p class="notice">Der kurze Match-Rückblick wird nach dem nächsten Datenlauf ergänzt.</p>';

@@ -721,8 +721,9 @@ test('FCSG uses three stable tabs and switches contents only on confirmed match 
  run("activeClub='fcsg';globalThis.__match={...fcsgData.games.find(g=>g.id==='458'),score:null,live:false};fcsgLiveGames.set('458',__match)");
  try{
   const preview=parseHTML(view("fcsgMatch('458','overview')")).document;
-  assert.deepEqual([...preview.querySelectorAll('.match-tabs a')].map(a=>a.textContent),['Liveticker','Aufstellung','Statistiken']);
+  assert.deepEqual([...preview.querySelectorAll('.match-tabs a')].map(a=>a.textContent),['Vorschau','Aufstellung','Statistiken']);
   assert.equal(preview.querySelectorAll('h1').length,1);assert.ok(preview.querySelector('[data-match-preview]'));assert.match(view("fcsgMatch('458','stats')"),/Formkurve & letzte Spiele/);assert.doesNotMatch(view("fcsgMatch('458','stats')"),/Hauptstatistiken/);
+  for(const tab of ['ticker','stats','squad'])assert.equal(parseHTML(view(`fcsgMatch('458','${tab}')`)).document.querySelector('[data-fcsg-ticker-tab]').textContent,'Vorschau');
   run("__match.live=true;__match.homeStats={totalScoringAtt:0};__match.awayStats={totalScoringAtt:3};__match.momentum=[{period:1,minute:1,value:.1},{period:1,minute:2,value:-.1}];__match.ticker=[{id:'a',minute:'20',title:'Im Spiel',html:'<p>Live-Meldung</p>'}]");
   const live=view("fcsgMatch('458','ticker')");assert.equal(parseHTML(live).document.querySelector('[data-fcsg-ticker-tab]').textContent,'Liveticker');assert.match(live,/Live-Meldung/);assert.doesNotMatch(live,/data-match-preview|Match-Rückblick/);
   const stats=view("fcsgMatch('458','stats')");assert.match(stats,/Torgefährlichkeit/);assert.match(stats,/Hauptstatistiken/);assert.match(stats,/Blockierte Schüsse/);assert.doesNotMatch(stats,/Formkurve & letzte Spiele/);assert.match(stats,/<strong>0<\/strong>/);assert.match(stats,/<strong>–<\/strong>/);
