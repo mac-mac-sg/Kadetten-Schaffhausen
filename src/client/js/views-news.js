@@ -142,6 +142,19 @@ function sanitiseArticle(html, source) {
   // Leere Layout-Hüllen und reine Abstandshalter aus dem Seitenersteller entfernen.
   for (const el of [...out.querySelectorAll('div,p')].reverse())
     if (!el.textContent.trim() && !el.querySelector('img,hr,table')) el.remove();
+  // Some match blocks put both logos and all score parts into one builder column.
+  // Normalise only unambiguous pairs; keep other article content as supplied.
+  for (const row of out.querySelectorAll('.article-logo-row')) {
+    const images = [...row.querySelectorAll('img')];
+    if (images.length !== 2) continue;
+    const text = row.textContent.trim(), score = text.match(/^(\d{1,3})\s*(?:VS\.?|:|[-–])\s*(?:\(\s*(\d{1,3}\s*:\s*\d{1,3})\s*\)\s*)?(\d{1,3})$/i);
+    if (!score && !/^VS\.?$/i.test(text)) continue;
+    const middle = document.createElement('div');middle.className = 'article-fixture-score';
+    const result = document.createElement('strong');result.textContent = score ? score[1] + ' : ' + score[3] : 'VS';middle.append(result);
+    if (score?.[2]) {const half = document.createElement('small');half.textContent = 'Halbzeit ' + score[2].replace(/\s/g,'');middle.append(half);}
+    const logos = images.map(img => img.closest('a') || img);
+    row.replaceChildren(logos[0], middle, logos[1]);row.classList.add('article-fixture-row');
+  }
   const lead = [...out.querySelectorAll('p')].find(p =>
     !p.classList.contains('article-byline') && !p.closest('figure,blockquote,.article-logo-row') && p.textContent.trim().length > 100);
   lead?.classList.add('article-lead');
@@ -195,7 +208,7 @@ async function loadFullArticle() {
 function article(id) {
   const n = stories.find(n => n.id === id);
   if (!n) return notFound();
-  return `<article class="news-article"><div class="article-bar">${backLink('#home', 'Zurück zu den News', 'back')}<button class="share button subtle">Teilen</button></div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1>${sourceNotice('news')}<div id="article-body" class="article-fulltext" aria-busy="${!articleMemory.has(articleKey(n))}">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, handballClub()==='otmar'?'Originalartikel bei St. Otmar':'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
+  return `<article class="news-article"><div class="article-bar">${backLink('#home', 'Zurück zu den News', 'back')}</div><img class="article-photo" src="${liveEscape(photoUrl(n.image))}" alt="${n.title}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${n.title}</h1>${sourceNotice('news')}<div id="article-body" class="article-fulltext" aria-busy="${!articleMemory.has(articleKey(n))}">${articleContentMarkup(n)}</div>${n.id === 'bukarest' ? '<a class="button" href="#match/bukarest/stats">Spielstatistiken</a>' : ''}<p>${ext(n.url, handballClub()==='otmar'?'Originalartikel bei St. Otmar':'Originalartikel bei den Kadetten', 'news-link')}</p><h2>Mehr News</h2>${stories
     .filter(x => x.id !== id)
     .slice(0, 4)
     .map(

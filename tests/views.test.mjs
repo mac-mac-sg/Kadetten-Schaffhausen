@@ -896,3 +896,8 @@ test('Completed V1 recap starts with the concrete report and has compact details
   context.document.documentElement.dataset.design='v2';assert.match(view('matchOverview(recapFixture)'),/match-hero/);
  }finally{context.document.documentElement.dataset.design=design;run(`delete ehfArchive['recap-test']`);}
 });
+
+test('Newsartikel aller Vereine behalten den Zurück-Link ohne Teilen-Schaltfläche',()=>{
+ for(const club of ['kadetten','otmar']){run(`activeClub='${club}'`);const id=run('stories[0].id');context.__newsId=id;const doc=parseHTML(view('article(__newsId)')).document;assert.equal(doc.querySelector('.share'),null);assert.match(doc.querySelector('.article-bar').textContent,/Zurück zu den News/);}
+ run("activeClub='fcsg'");context.__newsId=run('fcsgData.stories[0].id');const doc=parseHTML(view('fcsgArticle(__newsId)')).document;assert.equal(doc.querySelector('.share'),null);assert.match(doc.querySelector('.article-bar').textContent,/Zurück zu den News/);run("activeClub='kadetten'");
+});
