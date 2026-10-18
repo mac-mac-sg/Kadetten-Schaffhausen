@@ -114,17 +114,7 @@ function setupViews() {
       newsFeed.querySelectorAll('.story-screen').forEach(story => newsRegionObserver.observe(story));
     } else newsDots.hidden = false;
   }
-  $('.share')?.addEventListener('click', async e => {
-    try {
-      if (navigator.share) await navigator.share({title: document.title, url: location.href});
-      else {
-        await navigator.clipboard.writeText(location.href);
-        e.target.textContent = 'Link kopiert';
-      }
-    } catch {
-      e.target.textContent = 'Link aus Adresszeile teilen';
-    }
-  });
+
 }
 function notFound() {
   return '<section class="content"><h1>Hier geht’s zurück aufs Feld.</h1><a class="button" href="#home">Zur Startseite</a></section>';

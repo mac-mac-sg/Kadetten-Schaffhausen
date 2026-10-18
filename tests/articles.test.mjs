@@ -48,3 +48,9 @@ test('Unsichere oder fehlende Bildadressen werden nicht als Artikelbilder ausgeg
   assert.equal(d.querySelectorAll('img').length,1);
   assert.equal(d.querySelector('img').getAttribute('loading'),'lazy');
 });
+
+test('Verschachtelte Artikel-Paarung zeigt beide Logos und Resultat mit bestätigter Halbzeit in drei Zellen',()=>{
+ const d=clean('<div class="x-row-inner"><div><div><span><img src="/Kadetten-Logo.jpg"></span><div class="x-text">42</div><div><div>VS.</div><div>(19:11)</div></div><div class="x-text">26</div><span><img src="/rtv.png" width="960" height="831"></span></div></div></div><p>Bericht bleibt erhalten.</p>');
+ const row=d.querySelector('.article-fixture-row');assert.equal(row.children.length,3);assert.equal(row.children[0].tagName,'IMG');assert.equal(row.children[2].tagName,'IMG');assert.equal(row.querySelector('strong').textContent,'42 : 26');assert.equal(row.querySelector('small').textContent,'Halbzeit 19:11');assert.match(d.body.textContent,/Bericht bleibt erhalten/);
+ const unknown=clean('<div class="x-row-inner"><img src="/logo-a.png"><p>Weitere Vereinsinformationen</p><img src="/logo-b.png"></div>');assert.equal(unknown.querySelector('.article-fixture-row'),null);assert.match(unknown.body.textContent,/Weitere Vereinsinformationen/);
+});

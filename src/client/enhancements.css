@@ -1409,6 +1409,12 @@ body.calendar-mode {
 }
 .article-logo-row > div { flex: 1; min-width: 0; }
 .article-logo-row p { margin-bottom: 0; }
+.article-fulltext .article-fixture-row { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:12px; padding:20px 0; border-color:var(--line); }
+.article-fulltext .article-fixture-row .article-image-logo { box-sizing:border-box; width:64px; height:72px; max-width:100%; padding:6px; margin:0 auto; }
+.article-fixture-row > a { min-width:0; }
+.article-fixture-score { display:flex; flex-direction:column; gap:4px; }
+.article-fixture-score strong { font-size:clamp(24px,6vw,32px); line-height:1.2; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--text); }
+.article-fixture-score small { font-size:12px; line-height:1.5; color:var(--muted); white-space:nowrap; }
 .article-fulltext figure { margin: 28px 0; }
 .article-fulltext figure img { margin-bottom: 0; }
 .article-fulltext figcaption {
