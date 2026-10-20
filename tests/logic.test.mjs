@@ -195,3 +195,11 @@ test('Rim contour preserves unequal corners, handles zero/oversized radii and ne
  const oversized=l.matchdayOrbitPath(40,20,Array(4).fill({x:100,y:100}),1);assert.doesNotMatch(oversized,/NaN|Infinity/);assert.match(oversized,/A9 9/);
  assert.equal(l.matchdayOrbitPath(0,20,Array(4).fill({x:8,y:8})), '');
 });
+
+test('Gemeinsame Vorschau nutzt Zürcher Kalendertage und volle Termine mit Jahr',()=>{
+ const l=logic('2026-10-20T09:00:00Z');
+ assert.equal(l.matchPreviewLabel(game('2026-10-24','18:00')),'Nächstes Spiel · in 4 Tagen');
+ assert.equal(l.matchPreviewLabel(game('2026-10-21','19:15')),'Nächstes Spiel · morgen');assert.equal(l.matchPreviewLabel(game('2026-10-20','18:00')),'Spieltag · heute');
+ assert.equal(l.matchPreviewSchedule(game('2026-10-24','18:00')),'Samstag, 24.10.2026 · 18:00 Uhr');assert.equal(l.matchPreviewSchedule(game('2026-10-24','18:00'),false),'Samstag, 24.10.2026 · Zeit noch offen');assert.equal(l.matchPreviewSchedule(game('2026-10-24','')),'Samstag, 24.10.2026 · Zeit noch offen');
+ assert.equal(logic('2026-10-24T22:30:00Z').matchPreviewLabel(game('2026-10-26','18:00')),'Nächstes Spiel · morgen');assert.equal(logic('2026-10-25T22:30:00Z').matchPreviewLabel(game('2026-10-26','18:00')),'Nächstes Spiel · morgen');assert.equal(logic('2026-12-31T23:15:00Z').matchPreviewLabel(game('2027-01-02','18:00')),'Nächstes Spiel · morgen');
+});
