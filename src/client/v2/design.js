@@ -35,3 +35,17 @@ const v2SharedClubPage=clubPage;
 clubPage=function(...args){return v2ClubPage(v2SharedClubPage(...args));};
 const v2SharedFcsgClubPage=fcsgClubPage;
 fcsgClubPage=function(...args){return v2ClubPage(v2SharedFcsgClubPage(...args));};
+
+/* PDF dialogs mount outside the route. Keep their existing link and label intact. */
+function v2DecorateForwardLinks(root) {
+  root.querySelectorAll('.programme-tools > a').forEach(link=>{
+    if(link.querySelector('.v2-forward-arrow'))return;
+    const text=link.lastChild;
+    if(text?.nodeType!==3||!text.textContent.trimEnd().endsWith('↗'))return;
+    text.textContent=text.textContent.trimEnd().slice(0,-1).trimEnd();
+    const arrow=document.createElement('span');arrow.className='v2-forward-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='↗';link.append(arrow);
+  });
+}
+if(typeof MutationObserver!=='undefined')new MutationObserver(records=>{
+  for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1)v2DecorateForwardLinks(node);
+}).observe(document.body,{childList:true});

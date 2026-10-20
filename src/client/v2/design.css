@@ -64,3 +64,18 @@ html[data-preview='v2'] .v2-club-page .club-credits { padding:28px 22px; font-si
  html[data-preview='v2'] .v2-club-entry { max-width:560px; }
  html[data-preview='v2'] .v2-club-hero { margin-inline:22px; }
 }
+
+/* Decorative forward-link arrows share the club tile's fine circular outline. */
+html[data-preview='v2'][data-theme] :is(.v1-news-arrow,.v1-match-action > svg,.settings-info-row > .v1-action-icon,.club-text-button[data-club-jump] > span[aria-hidden],.v2-forward-arrow) {
+ box-sizing:border-box; flex:none; width:42px; height:42px; min-width:42px; min-height:42px;
+ border:1px solid currentColor; border-radius:50%; background:transparent; margin:0;
+}
+html[data-preview='v2'][data-theme] :is(.v1-news-arrow,.club-text-button[data-club-jump] > span[aria-hidden],.v2-forward-arrow) { display:inline-grid; place-items:center; font:400 24px/1 var(--font-text); }
+html[data-preview='v2'][data-theme] .v1-news-arrow svg { display:block; width:22px; height:22px; }
+html[data-preview='v2'][data-theme] .v1-news-copy h2 { grid-template-columns:minmax(0,1fr) 42px; gap:12px; }
+html[data-preview='v2'][data-theme] :is(.v1-match-action > svg,.settings-info-row > .v1-action-icon) { padding:10px; }
+html[data-preview='v2'][data-theme] .v1-match-stack { padding-bottom:70px; }
+html[data-preview='v2'][data-theme] .v1-match-action { align-items:flex-end; padding-bottom:14px; }
+html[data-preview='v2'][data-theme] .v1-match-action > span { display:flex; align-items:center; min-height:42px; }
+html[data-preview='v2'][data-theme] .club-text-button[data-club-jump] { display:inline-flex; align-items:center; gap:12px; padding-block:0; }
+html[data-preview='v2'][data-theme] .programme-tools > a { display:inline-flex; align-items:center; gap:10px; }
