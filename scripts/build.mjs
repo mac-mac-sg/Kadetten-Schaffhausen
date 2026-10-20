@@ -17,9 +17,12 @@ let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(v2){
   shellFiles.push('v2/design.css','v2/design.js');
+  html=html.replace('<html lang="de-CH">','<html lang="de-CH" data-preview="v2">').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
   html=html.replace('</head>','<link rel="stylesheet" href="v2/design.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/design.js"></script><script src="js/main.js"></script>');
+  const themeInit=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
+  html=html.replace("script-src 'self'","script-src 'self' 'sha256-"+createHash('sha256').update(themeInit).digest('base64')+"'");
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
-  Object.assign(manifest,{name:'Meine Vereine · V2 Test',short_name:'Vereine V2',description:'Separate Design-Testversion der Vereins-App',background_color:'#f5f2eb',theme_color:'#f5f2eb'});
+  Object.assign(manifest,{name:'Meine Vereine · V2 Test',short_name:'Vereine V2',description:'Separate Design-Testversion der Vereins-App'});
   fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
 }
 let sw=fs.readFileSync('dist/client/sw.js','utf8').replace("const API_ORIGIN='';",'const API_ORIGIN='+JSON.stringify(apiOrigin)+';').replace(/const CACHE='[^']+';/,"const CACHE='kadetten-offline-build';").replace(/\?v=[a-f0-9]+/g,'');
