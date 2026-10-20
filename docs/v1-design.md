@@ -36,7 +36,7 @@ werden durch diese Rollen nicht umgebaut.
 News-Kartentitel 24 px, Abschnittstitel 22 px, Statistikblock-Titel 20 px,
 Untertitel 18 px. Diese Titel verwenden Gewicht 600.
 Zusatzinformationen verwenden `--v1-meta-size` (13 px) und `--muted`.
-Artikeltext behält 17 px bzw. 20 px bei grosser Leseschrift. Die grossen
+Artikeltext verwendet in V1 immer die Standardgrösse von 17 px. Die grossen
 Jahreszahlen der Vereins-Timeline und Kennzahlen bleiben eigenständige Rollen.
 
 ## Prüfung
@@ -111,3 +111,6 @@ Die FCSG-Spielstatistik nutzt dieselbe blaugraue Gegnerfarbe wie Handball. Vergl
 In der unteren V1-Navigation bleibt der Eintrag «Spiele» auch am Spieltag ohne «Heute»-Zusatz; das Icon bleibt zentriert. Die Spieltagskarte und Hinweise auf Spiele anderer ausgewählter Vereine bleiben erhalten.
 
 Die Vorschau im Spieltagsblock nutzt für alle Vereine dieselbe Beschriftung: «Nächstes Spiel · in x Tagen», «Nächstes Spiel · morgen» oder «Spieltag · heute». Darunter steht Wochentag, Datum mit Jahr und bestätigte Anspielzeit, z. B. «Samstag, 24.10.2026 · 18:00 Uhr»; eine offene Uhrzeit heisst «Zeit noch offen». Die Tageszählung verwendet Zürcher Kalendertage. Eine gleich hohe Kopfzeile erlaubt zweizeilige Hinweise ohne Überlagerungen und ohne springende Karten beim Vereinswechsel. V2 und Live-/Ergebnisinhalte behalten ihre bisherigen Texte.
+
+### Leseschrift (20. Oktober 2026)
+V1 verwendet immer die Standard-Leseschrift. Die Auswahl in den Einstellungen entfällt; zuvor gespeicherte Vergrösserungen werden beim Start entfernt. Die separate V2-Testversion behält ihre eigene Auswahl.

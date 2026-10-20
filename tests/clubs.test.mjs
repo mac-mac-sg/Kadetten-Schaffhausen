@@ -28,6 +28,7 @@ function app(url, saved, storageFails = false) {
   let renders = 0, polls = 0;
   const context = vm.createContext({handballSnapshots:new Map(), document, location, URL, setInterval() {}, navigator:{onLine:true}, apiFetch:()=>Promise.reject(Error("offline")), AbortSignal, liveEscape:s=>String(s), safeUrl:s=>s, v1ActionIcon:(_name,fallback)=>fallback, backLink:(url,label)=>`<a href="${url}">${label}</a>`, Date, swissToday:()=>"2026-10-04", date:g=>g.date, mode:"list", calendarYear:2026, month:9, localStorage: {
     getItem: key => { if (storageFails) throw Error('unavailable'); return store.get(key); },
+    removeItem: key => { if (storageFails) throw Error('unavailable'); store.delete(key); },
     setItem: (key, value) => { if (storageFails) throw Error('unavailable'); store.set(key, value); }
   }, history: {replaceState: (_, __, href) => {location.href = href; location.hash = new URL(href).hash;}},
     liveTimer: 0, dayTimer: 0, highlightObserver: null, clearTimeout() {}, clearInterval() {}, competition: 'QHL', sourceNotice:()=>'', render() {renders++;}, window: {innerWidth: 375, innerHeight: 812, scrollTo() {}},
@@ -327,10 +328,17 @@ test('V1 settings use clear groups and one close action while choices save immed
  assert.equal(dialog.hasAttribute('open'),false);assert.equal(a.run('window.introOpened'),true);
 });
 
-test('V1 reading size persists and restores independently of the theme',()=>{
- const a=app('https://example.test/');a.run("setV1TextSize('large')");assert.equal(a.document.documentElement.dataset.textSize,'large');assert.equal(a.store.get('fan-v1-text-size'),'large');a.document.documentElement.dataset.textSize='standard';a.run('restoreV1TextSize()');assert.equal(a.document.documentElement.dataset.textSize,'large');a.run("setV1TextSize('invalid')");assert.equal(a.document.documentElement.dataset.textSize,'standard');
+test('V1 always restores standard reading size and removes the retired setting',()=>{
+ const a=app('https://example.test/');a.store.set('fan-v1-text-size','large');a.document.documentElement.dataset.textSize='large';a.run('restoreV1TextSize()');
+ assert.equal(a.document.documentElement.dataset.textSize,'standard');assert.equal(a.store.has('fan-v1-text-size'),false);
+ a.run("setV1TextSize('large')");assert.equal(a.document.documentElement.dataset.textSize,'standard');
+ const create=a.document.createElement.bind(a.document);a.document.createElement=tag=>{const el=create(tag);if(tag==='dialog'){el.showModal=()=>el.setAttribute('open','');el.close=()=>el.removeAttribute('open');}return el;};
+ a.run('openClubSettings()');assert.equal(a.document.querySelector('[data-v1-text-size]'),null);assert.ok(a.document.querySelector('[data-v1-light-mode]'));
  const unavailable=app('https://example.test/',null,true);unavailable.run("setV1TextSize('large');restoreV1TextSize()");assert.equal(unavailable.document.documentElement.dataset.textSize,'standard');
- const v2=app('https://example.test/v2/');v2.document.documentElement.dataset.design='v2';v2.run("setV1TextSize('large')");assert.equal(v2.document.documentElement.dataset.textSize,undefined);
+});
+test('V2 preview keeps its independent reading size choice',()=>{
+ const a=app('https://example.test/v2/');a.document.documentElement.dataset.preview='v2';a.run("setV1TextSize('large')");assert.equal(a.document.documentElement.dataset.textSize,'large');assert.equal(a.store.get('fan-v1-text-size'),'large');
+ a.document.documentElement.dataset.textSize='standard';a.run('restoreV1TextSize()');assert.equal(a.document.documentElement.dataset.textSize,'large');
 });
 
 test('V1 other-club hints show only selected clubs today, with confirmed live and final states',()=>{
