@@ -12,7 +12,15 @@ GAMES_AXE_SCRIPT=/pfad/zu/axe.min.js node scripts/check-v2-mobile.mjs
 
 Ein installiertes Playwright mit Chromium ist erforderlich. `GAMES_PLAYWRIGHT_MODULE` und `GAMES_CHROMIUM_EXECUTABLE` erlauben vorhandene Laufzeitinstallationen. `MOBILE_QA_SCREENSHOTS` kann auf einen bestehenden Ausgabeordner zeigen. Diese optionalen Browserwerkzeuge werden nicht als App-Abhängigkeiten ausgeliefert.
 
-## Umfang und Befunde am 13. Oktober 2026
+## Aktueller Prüfstand ab 20. Oktober 2026
+
+V2 wurde auf die aktuelle V1 zurückgesetzt. Der aktuelle Browserlauf vergleicht 60 Ansichten (390/1280 px × drei Vereine × Hell/Dunkel × fünf Hauptrouten) direkt mit V1. Er prüft identische Inhalte, Geometrie und Farben, eine Hauptüberschrift, keinen Überlauf, keine Skriptfehler und keine neuen axe-core-Verstösse gegenüber V1. Dazu kommen Kalender → Liste und isolierte Themen-Einstellungen mit erneutem Laden. Der frühere Kartenstapel-Test verweist jetzt auf diesen Lauf.
+
+Ergebnis des Baseline-Laufs: 60/60 Ansichten stimmen mit V1 überein; keine Skriptfehler oder Überläufe, eine Hauptüberschrift, Kalender-Rückweg und getrennte Themen-Speicherung erfolgreich. Bei 390 px keine axe-core-Verstösse. Ein bereits in V1 vorhandener Kontrasthinweis betrifft bei 1280 px den Bilanztext der Kadetten-Zeile in der dunklen Tabelle (`.our-team .record-text`); V2 übernimmt diesen Stand unverändert. Keine neuen Verstösse.
+
+Zusätzlich wurden V1-HTML, Stylesheet, Skriptbündel, Service Worker und Manifest gegen einen Build des vorherigen Main-Commits verglichen: bytegleich.
+
+## Historischer Prüfstand vor dem Zurücksetzen (13. Oktober 2026)
 
 120 Ansichten: 360/375/390/430 CSS-px × Kadetten/FCSG/St. Otmar × Hell/Dunkel × News/Spiele/Tabelle/Kader/Verein. Jede Ansicht wird auf horizontalen Überlauf, genau eine Hauptüberschrift und axe-core-Verstösse (WCAG 2 A/AA und 2.1 AA) geprüft. Die V2-Testwerkzeuge und News-Leselinks müssen mindestens 44 px hoch sein. Drei Touch-Abläufe prüfen auf der Vereinsseite die Scrollleiste über Foto/Inhalt und den Vereinswechsel mit Rückkehr nach oben, danach Liste/Kalender/Meine Woche sowie Einstellungen. Die wiederhergestellte erste V2-Startseite verwendet grosse Newsbilder ohne kompakte News oder zusätzliche Scrollleiste.
 
