@@ -48,3 +48,12 @@ test('V2 rounds the dynamic PDF arrow once without changing its link or adding a
  assert.equal(link.firstChild.textContent,'PDF extern öffnen');assert.equal(link.querySelectorAll('.v2-forward-arrow').length,1);assert.equal(link.querySelector('.v2-forward-arrow').getAttribute('aria-hidden'),'true');assert.equal(link.querySelectorAll('a,button').length,0);
  assert.equal(document.querySelector('.back-link').innerHTML,'← Zurück');
 });
+test('V2 forward arrows use a shared diagonal SVG and news metadata keeps the full-width title',()=>{
+ const {document}=parseHTML('<html><body><a class="v1-news-link" href="#news/test" aria-labelledby="title"><div class="v1-news-copy"><p>20.10.2026</p><h2 id="title"><span>Ein sehr langer Titel mit mehreren Zeilen</span><span class="v1-news-arrow" aria-hidden="true"><svg></svg></span></h2></div></a><a class="v1-match-action" href="#match/test"><span>Spielvorschau</span><svg aria-hidden="true"></svg></a><button class="club-text-button" data-club-jump="club-history-test">Diesen Moment entdecken <span aria-hidden="true">↗</span></button></body></html>');
+ const original=()=>'',context=vm.createContext({document,squad:original,fcsgSquad:original,clubPage:original,fcsgClubPage:original});
+ vm.runInContext(fs.readFileSync('src/client/v2/design.js','utf8'),context);
+ context.v2DecorateForwardLinks(document.body);context.v2DecorateForwardLinks(document.body);
+ const meta=document.querySelector('.v2-news-meta');assert.equal(document.querySelectorAll('.v2-news-meta').length,1);assert.equal(meta.querySelector('p').textContent,'20.10.2026');assert.equal(meta.querySelectorAll('.v1-news-arrow').length,1);assert.equal(document.querySelector('h2').textContent,'Ein sehr langer Titel mit mehreren Zeilen');assert.equal(document.querySelector('.v1-news-link').getAttribute('aria-labelledby'),'title');
+ assert.equal(document.querySelector('.v1-match-action').getAttribute('href'),'#match/test');assert.equal(document.querySelector('.v1-match-action > span').textContent,'Spielvorschau');assert.equal(document.querySelectorAll('.v1-match-action .v2-forward-arrow').length,1);
+ const icons=document.querySelectorAll('.v2-arrow-glyph');assert.equal(icons.length,3);for(const icon of icons)assert.equal(icon.querySelector('path').getAttribute('d'),'M7 17 17 7M7 7h10v10');
+});

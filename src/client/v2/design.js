@@ -13,7 +13,7 @@ function v2ClubCurve() {
 }
 function v2ClubEntry() {
   const club=v2ClubIdentity();
-  return `<a class="v2-club-entry" href="#club" aria-label="Unser Verein · ${liveEscape(club.name)}: Geschichte, Erfolge und Heimat"><img class="v2-club-entry-photo" src="${club.photo}" alt="" width="800" height="530" decoding="async"><div class="v2-club-entry-copy">${v2ClubCurve()}<div><h2>Unser Verein</h2><p>Geschichte, Erfolge und Heimat</p></div><span class="v2-club-arrow" aria-hidden="true">↗</span></div></a>`;
+  return `<a class="v2-club-entry" href="#club" aria-label="Unser Verein · ${liveEscape(club.name)}: Geschichte, Erfolge und Heimat"><img class="v2-club-entry-photo" src="${club.photo}" alt="" width="800" height="530" decoding="async"><div class="v2-club-entry-copy">${v2ClubCurve()}<div><h2>Unser Verein</h2><p>Geschichte, Erfolge und Heimat</p></div><span class="v2-club-arrow" aria-hidden="true">${v2ArrowSvg()}</span></div></a>`;
 }
 const v2SharedSquad=squad;
 squad=function(...args){return v2ClubEntry()+v2SharedSquad(...args);};
@@ -36,16 +36,35 @@ clubPage=function(...args){return v2ClubPage(v2SharedClubPage(...args));};
 const v2SharedFcsgClubPage=fcsgClubPage;
 fcsgClubPage=function(...args){return v2ClubPage(v2SharedFcsgClubPage(...args));};
 
-/* PDF dialogs mount outside the route. Keep their existing link and label intact. */
+/* One decorative arrow for every forward link, including dynamically mounted dialogs. */
+function v2ArrowSvg() {
+  return '<svg class="v2-arrow-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>';
+}
+function v2ArrowTargets(root,selector) {
+  return [...(root.matches?.(selector)?[root]:[]),...root.querySelectorAll(selector)];
+}
 function v2DecorateForwardLinks(root) {
-  root.querySelectorAll('.programme-tools > a').forEach(link=>{
+  v2ArrowTargets(root,'.v1-news-copy').forEach(copy=>{
+    if(copy.querySelector('.v2-news-meta'))return;
+    const date=copy.querySelector('p'),arrow=copy.querySelector('.v1-news-arrow');
+    if(!date||!arrow)return;
+    const meta=document.createElement('div');meta.className='v2-news-meta';
+    date.before(meta);meta.append(date,arrow);
+  });
+  v2ArrowTargets(root,'.v1-match-action > svg').forEach(svg=>{
+    const arrow=document.createElement('span');arrow.className='v2-forward-arrow';arrow.setAttribute('aria-hidden','true');svg.replaceWith(arrow);
+  });
+  v2ArrowTargets(root,'.programme-tools > a').forEach(link=>{
     if(link.querySelector('.v2-forward-arrow'))return;
     const text=link.lastChild;
     if(text?.nodeType!==3||!text.textContent.trimEnd().endsWith('↗'))return;
     text.textContent=text.textContent.trimEnd().slice(0,-1).trimEnd();
-    const arrow=document.createElement('span');arrow.className='v2-forward-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='↗';link.append(arrow);
+    const arrow=document.createElement('span');arrow.className='v2-forward-arrow';arrow.setAttribute('aria-hidden','true');link.append(arrow);
+  });
+  v2ArrowTargets(root,'.v1-news-arrow,.v2-forward-arrow,.club-text-button[data-club-jump] > span[aria-hidden]').forEach(arrow=>{
+    if(!arrow.querySelector('.v2-arrow-glyph'))arrow.innerHTML=v2ArrowSvg();
   });
 }
 if(typeof MutationObserver!=='undefined')new MutationObserver(records=>{
   for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1)v2DecorateForwardLinks(node);
-}).observe(document.body,{childList:true});
+}).observe(document.body,{childList:true,subtree:true});
