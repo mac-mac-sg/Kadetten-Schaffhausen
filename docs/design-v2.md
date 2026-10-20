@@ -1,6 +1,6 @@
 # V2: aktuelle V1 als Design-Testbasis
 
-Seit 20. Oktober 2026 startet die bestehende Testversion unter https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/ mit der vollständigen aktuellen V1-Oberfläche. News, Spiele, Liste/Kalender/Wettbewerb, Tabelle, Kader, Vereinsgeschichte, Einstellungen und Matchansichten verwenden dieselben Renderer und Styles. Die früheren V2-Experimente sind zurückgesetzt und über den Git-Verlauf vor dieser Änderung wiederherstellbar.
+Seit 20. Oktober 2026 startet die bestehende Testversion unter https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/ mit der vollständigen aktuellen V1-Oberfläche. News, Spiele, Liste/Kalender/Wettbewerb, Tabelle, Einstellungen und Matchansichten verwenden dieselben Renderer und Styles. Kader und Vereinsseite erhalten ausschliesslich in V2 die unten beschriebene Erweiterung. Die früheren V2-Experimente sind zurückgesetzt und über den Git-Verlauf vor dieser Änderung wiederherstellbar.
 
 V1 bleibt unter der bisherigen Startadresse unverändert. Beide Builds lesen dieselben öffentlichen Cloudflare-Daten; es gibt keine zusätzlichen Datenjobs oder Schreibzugänge. Aktuelle gemeinsame Fehlerkorrekturen erreichen beide Versionen.
 
@@ -12,6 +12,14 @@ V2 behält die eigene Manifest-Bezeichnung, relative PWA-ID und Scope sowie `v2:
 
 ## Prüfung
 
-`npm run verify` prüft den unveränderten V1-Start, die fehlenden Renderer-Overrides, identische erzeugte Stylesheets, isolierte Speicherung und PWA-Pfade. `node scripts/check-v2-mobile.mjs` vergleicht beide Oberflächen bei identischen Daten für alle drei Vereine, Hell/Dunkel und Smartphone/Desktop: Inhalte, Geometrie, Farben, Einstellungen, Kalender-Rückweg, eine Hauptüberschrift, kein horizontaler Überlauf, keine Skriptfehler und keine neuen axe-core-Verstösse gegenüber V1. Browser-/axe-Pfade können wie bisher über GAMES_PLAYWRIGHT_MODULE, GAMES_CHROMIUM_EXECUTABLE und GAMES_AXE_SCRIPT gesetzt werden.
+`npm run verify` prüft den unveränderten V1-Start, die unveränderten übrigen Renderer, ausschliesslich in V2 enthaltene Vereins-Styles, isolierte Speicherung und PWA-Pfade. `node scripts/check-v2-mobile.mjs` vergleicht die unveränderten Ansichten beider Oberflächen und prüft die neue Vereinsansicht bei identischen Daten für alle drei Vereine, Hell/Dunkel und Smartphone/Desktop: Inhalte, Geometrie, Farben, Einstellungen, Kalender-Rückweg, eine Hauptüberschrift, kein horizontaler Überlauf, keine Skriptfehler und keine neuen axe-core-Verstösse gegenüber V1. Browser-/axe-Pfade können wie bisher über GAMES_PLAYWRIGHT_MODULE, GAMES_CHROMIUM_EXECUTABLE und GAMES_AXE_SCRIPT gesetzt werden.
 
-Die neuen Vorschläge aus den App-Referenzen sind in diesem Schritt noch nicht umgesetzt. V2 dient zunächst als aktuelle, vergleichbare Ausgangsbasis.
+## Vereinsansicht: geschwungener Bildauftakt
+
+Im Kader steht vor der ersten Spielergruppe eine vollständig verlinkte Kachel «Unser Verein» mit lokal vorhandenem Arenabild, ruhiger asymmetrischer Kurve und Vereinsfarbe. Die Kachel ist rund 240 px hoch. Sie öffnet die bestehende Route #club; Browserhistorie und Zurück zum Kader bleiben nutzbar.
+
+Die Vereinsseite übernimmt das vorhandene Archiv-Titelbild samt Originalbeschriftung. Ein statischer SVG-Bogen führt in eine gedeckte Farbfläche mit Vereinsname und kurzem Vereinssatz über. Hellmodus: Pastellorange, Grün oder Gelb; Dunkelmodus: tiefe entsprechende Töne. Keine animierte Welle, keine verschachtelten Kachelebenen.
+
+Darunter folgen «Unsere Erfolge» mit unveränderten Titelkategorien, Titeljahren und historischen Verknüpfungen sowie «Unsere Geschichte» als normal scrollende Zeitleiste mit schmalem Jahresstrahl links. Alle Chroniktexte, Archivbilder, Bildnachweise und Quellen bleiben erhalten. Archivbilder werden bei Quellenfehlern wie bisher ausgeblendet, ohne eine andere Aufnahme als historisches Original auszugeben.
+
+V2 umschliesst nur squad/fcsgSquad und clubPage/fcsgClubPage. Tests prüfen den vollständigen Erhalt aller Spieler und aller Erfolgs-/Chronik-/Quelleninhalte. Die Browserprüfung deckt die Einstiegskachel, Tastaturöffnung, Titelwahl, historische Sprünge, Browser-Zurück und isolierte Theme-Speicherung ab.
