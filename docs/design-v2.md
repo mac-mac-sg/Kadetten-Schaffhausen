@@ -23,3 +23,7 @@ Die Vereinsseite übernimmt das vorhandene Archiv-Titelbild samt Originalbeschri
 Darunter folgen «Unsere Erfolge» mit unveränderten Titelkategorien, Titeljahren und historischen Verknüpfungen sowie «Unsere Geschichte» als normal scrollende Zeitleiste mit schmalem Jahresstrahl links. Alle Chroniktexte, Archivbilder, Bildnachweise und Quellen bleiben erhalten. Archivbilder werden bei Quellenfehlern wie bisher ausgeblendet, ohne eine andere Aufnahme als historisches Original auszugeben.
 
 V2 umschliesst nur squad/fcsgSquad und clubPage/fcsgClubPage. Tests prüfen den vollständigen Erhalt aller Spieler und aller Erfolgs-/Chronik-/Quelleninhalte. Die Browserprüfung deckt die Einstiegskachel, Tastaturöffnung, Titelwahl, historische Sprünge, Browser-Zurück und isolierte Theme-Speicherung ab.
+
+## Runde Absprung-Pfeile
+
+Vorwärts-Absprünge übernehmen den feinen 42-px-Kreis der Vereins-Kachel: News, Spielvorschau/Live/Rückblick, historische Momente, Disclaimer und externes PDF. Die vorhandene Pfeilrichtung und die komplette ursprüngliche Klickfläche bleiben erhalten. Zurück-Pfeile, Monatsnavigation, Aufklapp-Pfeile und Vereinswahl bleiben funktionale Steuerungssymbole ohne diesen Rahmen. Der PDF-Dialog wird beim Einfügen einmal dekoriert, ohne Linkziel oder Beschriftung zu ersetzen.

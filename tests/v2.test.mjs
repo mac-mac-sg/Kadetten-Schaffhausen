@@ -38,3 +38,13 @@ test('V2 club entry is one whole link before every player group and preserves th
   assert.equal(page.querySelector('.v2-club-hero-media figcaption').textContent,baseline[club].page.querySelector('.club-intro-caption').textContent);
  }
 });
+test('V2 rounds the dynamic PDF arrow once without changing its link or adding a control',()=>{
+ const {document}=parseHTML('<html><body><div class="programme-tools"><a href="https://example.test/match.pdf" target="_blank" rel="noopener noreferrer">PDF extern öffnen ↗</a></div><a class="back-link" href="#home">← Zurück</a></body></html>');
+ const original=()=>'',context=vm.createContext({document,squad:original,fcsgSquad:original,clubPage:original,fcsgClubPage:original});
+ vm.runInContext(fs.readFileSync('src/client/v2/design.js','utf8'),context);
+ context.v2DecorateForwardLinks(document.body);context.v2DecorateForwardLinks(document.body);
+ const link=document.querySelector('.programme-tools a');
+ assert.equal(link.getAttribute('href'),'https://example.test/match.pdf');assert.equal(link.getAttribute('target'),'_blank');assert.equal(link.getAttribute('rel'),'noopener noreferrer');
+ assert.equal(link.firstChild.textContent,'PDF extern öffnen');assert.equal(link.querySelectorAll('.v2-forward-arrow').length,1);assert.equal(link.querySelector('.v2-forward-arrow').getAttribute('aria-hidden'),'true');assert.equal(link.querySelectorAll('a,button').length,0);
+ assert.equal(document.querySelector('.back-link').innerHTML,'← Zurück');
+});

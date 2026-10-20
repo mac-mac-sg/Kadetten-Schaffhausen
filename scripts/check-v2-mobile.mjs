@@ -25,15 +25,19 @@ try{
  const pages=await Promise.all([context.newPage(),context.newPage()]);for(const p of pages)p.on('pageerror',e=>errors.push(e.message));
  const axe=fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8');
  const fingerprint=()=>{
-  const root=document.documentElement;return {theme:root.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:root.scrollWidth>innerWidth,text:document.querySelector('main').textContent,controls:[...document.querySelectorAll('.top button,.dock a,.game-control-bar button,.game-control-bar select')].map(e=>({text:e.textContent,aria:e.getAttribute('aria-label')})),surfaces:[...document.querySelectorAll('.top,.dock,.story-screen,.game-card,.game-control-bar,.standings-table,.player-card,.club-intro')].slice(0,12).map(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {class:e.className,width:Math.round(r.width),height:Math.round(r.height),background:s.background,color:s.color,border:s.borderRadius,font:s.font};})};
+  const root=document.documentElement;return {theme:root.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:root.scrollWidth>innerWidth,text:(()=>{const copy=document.querySelector('main').cloneNode(true);copy.querySelectorAll('.v1-image-fallback').forEach(e=>e.remove());return copy.textContent;})(),controls:[...document.querySelectorAll('.top button,.dock a,.game-control-bar button,.game-control-bar select')].map(e=>({text:e.textContent,aria:e.getAttribute('aria-label')})),surfaces:[...document.querySelectorAll('.top,.dock,.story-screen,.game-card,.game-control-bar,.standings-table,.player-card,.club-intro')].slice(0,12).map(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {class:e.className,width:Math.round(r.width),height:Math.round(r.height),background:s.background,color:s.color,border:s.borderRadius,font:s.font};})};
  };
  for(const width of [360,390,430,1280])for(const club of clubs)for(const theme of ['light','dark']){
   for(const p of pages){await p.setViewportSize({width,height:844});await p.goto(origin+'/');await p.evaluate(t=>{for(const prefix of ['','v2:'])localStorage.setItem(prefix+'fan-v1-theme',t);},theme);}
   for(const route of ['home','season/games','season/table','season/squad','club']){
    for(let i=0;i<2;i++){const p=pages[i];await p.goto(origin+(i?'/v2/':'/')+'?club='+club+'&qa='+width+theme+'#'+route);await p.locator('.v1-compact-header').waitFor();await p.evaluate(async()=>document.fonts.ready);}
    assert.equal(await pages[1].locator('html').getAttribute('data-preview'),'v2');assert.equal(await pages[1].locator('html').getAttribute('data-design'),null);
-   const a=await pages[0].evaluate(fingerprint),b=await pages[1].evaluate(fingerprint);if(!['season/squad','club'].includes(route))assert.deepEqual(b,a,club+' '+theme+' '+route+' '+width);
-   else if(route==='season/squad'){
+   const a=await pages[0].evaluate(fingerprint),b=await pages[1].evaluate(fingerprint);if(!['home','season/squad','club'].includes(route))assert.deepEqual(b,a,club+' '+theme+' '+route+' '+width);
+   else if(route==='home'){
+    assert.equal(b.text,a.text,'News and match labels stay intact independently of decorative image fallback timing');
+    for(const arrow of await pages[1].locator('.v1-news-arrow,.v1-match-action > svg').all()){const style=await arrow.evaluate(e=>{const s=getComputedStyle(e);return {width:s.width,height:s.height,radius:s.borderRadius,border:s.borderTopWidth};});assert.deepEqual(style,{width:'42px',height:'42px',radius:'50%',border:'1px'});}
+    const back=await pages[1].evaluate(()=>getComputedStyle(document.querySelector('.top .header-button svg')).borderTopWidth);assert.equal(back,'0px','Unrelated icons remain unframed');
+   }else if(route==='season/squad'){
     const entry=pages[1].locator('a.v2-club-entry');assert.equal(await entry.count(),1);assert.equal(await entry.locator('a,button').count(),0);assert.equal(await entry.locator('h2').textContent(),'Unser Verein');
     const box=await entry.boundingBox();assert.ok(box.height>=200&&box.height<=260,'Compact club entry');
     assert.equal(await pages[1].locator('.player-card').count(),await pages[0].locator('.player-card').count());
@@ -53,6 +57,7 @@ try{
  for(const club of clubs){
   await p.setViewportSize({width:390,height:844});await p.goto(origin+'/v2/?club='+club+'#season/squad');
   await p.locator('.v2-club-entry').focus();await p.keyboard.press('Enter');await p.locator('.v2-club-hero').waitFor();
+  const forward=p.locator('.club-text-button[data-club-jump] > span').first();if(await forward.count())assert.equal(await forward.evaluate(e=>getComputedStyle(e).borderRadius),'50%');
   await p.locator('.club-trophy').last().click();assert.equal(await p.locator('.club-trophy').last().getAttribute('aria-pressed'),'true');
   await p.locator('.club-title-years button').last().click();assert.equal(await p.locator('.club-title-years button').last().getAttribute('aria-pressed'),'true');
   const moment=p.locator('[data-club-jump^="club-history-"]').first();if(await moment.count()){await moment.click();await p.waitForTimeout(100);assert.ok(await p.evaluate(()=>scrollY>0));}
@@ -60,8 +65,13 @@ try{
   if(process.env.V2_CLUB_SCREENSHOTS)await p.screenshot({path:path.join(process.env.V2_CLUB_SCREENSHOTS,club+'-entry.png')});
   await p.locator('.v2-club-entry img').click();await p.locator('.v2-club-hero').waitFor();await p.goBack();await p.locator('.v2-club-entry').waitFor();
  }
+ await p.evaluate(()=>{const host=document.createElement('section');host.id='qa-pdf-tools';host.innerHTML='<div class="programme-tools"><a href="https://example.test/match.pdf" target="_blank" rel="noopener noreferrer">PDF extern öffnen ↗</a></div>';document.body.append(host);});
+ await p.locator('#qa-pdf-tools .v2-forward-arrow').waitFor();
+ assert.equal(await p.locator('#qa-pdf-tools .v2-forward-arrow').evaluate(e=>getComputedStyle(e).borderRadius),'50%');
+ assert.equal(await p.locator('#qa-pdf-tools a').getAttribute('href'),'https://example.test/match.pdf');
+ await p.evaluate(()=>document.getElementById('qa-pdf-tools').remove());
  await p.goto(origin+'/v2/?club=kadetten#season/games');await p.getByRole('button',{name:'Kalender',exact:true}).click();await p.locator('.match-calendar').waitFor();await p.getByRole('button',{name:'Liste',exact:true}).click();await p.locator('.game-timeline').waitFor();
- await p.locator('#club-settings').click();await p.locator('[data-v1-light-mode]').waitFor();await p.locator('[data-v1-light-mode]').uncheck();
+ await p.locator('#club-settings').click();await p.locator('[data-v1-light-mode]').waitFor();assert.equal(await p.locator('.settings-info-row > .v1-action-icon').evaluate(e=>getComputedStyle(e).borderRadius),'50%');await p.locator('[data-v1-light-mode]').uncheck();
  assert.deepEqual(await p.evaluate(()=>[localStorage.getItem('fan-v1-theme'),localStorage.getItem('v2:fan-v1-theme')]),['dark','dark']);
  await p.locator('[data-v1-light-mode]').check();assert.deepEqual(await p.evaluate(()=>[localStorage.getItem('fan-v1-theme'),localStorage.getItem('v2:fan-v1-theme')]),['dark','light']);
  await p.reload();assert.equal(await p.locator('html').getAttribute('data-theme'),'light');
