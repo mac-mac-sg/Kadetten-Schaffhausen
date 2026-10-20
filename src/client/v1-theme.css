@@ -582,3 +582,9 @@ html:not([data-design='v2'])[data-theme] .match-recap .report-feed > summary { m
 
 /* FCSG shares the same neutral opponent role as handball. */
 html:not([data-design='v2']) :is(.fcsg-match-dashboard,.fcsg-lineup-dashboard) { --match-opponent:var(--v1-stat-opponent); }
+
+/* Matchday previews share a two-line heading slot, independently of club/league length. */
+html:not([data-design='v2']) .home-matchday .live-match:not([hidden]) { grid-template-rows:2.5rem 4.125rem 2.25rem 1.5rem; }
+html:not([data-design='v2']) .home-matchday .live-heading { align-items:center; gap:8px; }
+html:not([data-design='v2']) .home-matchday .live-heading > span { flex:0 1 auto; min-width:0; max-width:65%; white-space:normal; line-height:1.2; }
+html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-width:0; text-align:right; overflow-wrap:anywhere; }

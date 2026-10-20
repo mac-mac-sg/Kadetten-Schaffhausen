@@ -109,6 +109,18 @@ function relativeDay(dateStr, now = new Date()) {
   return n >= 3 && n <= 30 ? `in ${n} Tagen` : '';
 }
 
+// Shared V1 matchday preview: Swiss calendar days above, full appointment below.
+function matchPreviewLabel(g, now = new Date()) {
+  const days = daysUntil(g.date, now);
+  return days === 0 ? 'Spieltag · heute' : days === 1 ? 'Nächstes Spiel · morgen' : days > 1 ? `Nächstes Spiel · in ${days} Tagen` : 'Nächstes Spiel';
+}
+function matchPreviewSchedule(g, confirmed = true) {
+  const day = new Date(g.date + 'T12:00:00Z');
+  if (!Number.isFinite(day.getTime())) return 'Termin noch offen';
+  const weekday = day.toLocaleDateString('de-CH', {timeZone:'Europe/Zurich',weekday:'long'});
+  return `${weekday}, ${g.date.split('-').reverse().join('.')} · ${confirmed && g.time ? g.time + ' Uhr' : 'Zeit noch offen'}`;
+}
+
 // Planmässige Snapshot-Läufe in Zürich, mit 45 Minuten Spielraum für den Import.
 function snapshotDelayed(stamp, now = new Date()) {
   const updated = Date.parse(stamp);

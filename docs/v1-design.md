@@ -109,3 +109,5 @@ Abgeschlossene Handballspiele in V1 beginnen unter den Laschen direkt mit dem ko
 Die FCSG-Spielstatistik nutzt dieselbe blaugraue Gegnerfarbe wie Handball. Vergleichsbalken sowie Linien und Flächen der Torgefährlichkeit übernehmen die Theme-Farbrollen auch bei Auswärtsspielen. Grün bleibt die FCSG-Farbe; V2 behält seine bestehende Palette.
 
 In der unteren V1-Navigation bleibt der Eintrag «Spiele» auch am Spieltag ohne «Heute»-Zusatz; das Icon bleibt zentriert. Die Spieltagskarte und Hinweise auf Spiele anderer ausgewählter Vereine bleiben erhalten.
+
+Die Vorschau im Spieltagsblock nutzt für alle Vereine dieselbe Beschriftung: «Nächstes Spiel · in x Tagen», «Nächstes Spiel · morgen» oder «Spieltag · heute». Darunter steht Wochentag, Datum mit Jahr und bestätigte Anspielzeit, z. B. «Samstag, 24.10.2026 · 18:00 Uhr»; eine offene Uhrzeit heisst «Zeit noch offen». Die Tageszählung verwendet Zürcher Kalendertage. Eine gleich hohe Kopfzeile erlaubt zweizeilige Hinweise ohne Überlagerungen und ohne springende Karten beim Vereinswechsel. V2 und Live-/Ergebnisinhalte behalten ihre bisherigen Texte.
