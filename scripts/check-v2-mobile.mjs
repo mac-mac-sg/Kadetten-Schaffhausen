@@ -29,7 +29,7 @@ try{
  };
  for(const width of [360,390,430,1280])for(const club of clubs)for(const theme of ['light','dark']){
   for(const p of pages){await p.setViewportSize({width,height:844});await p.goto(origin+'/',{waitUntil:'domcontentloaded'});await p.evaluate(t=>{for(const prefix of ['','v2:'])localStorage.setItem(prefix+'fan-v1-theme',t);},theme);}
-  for(const route of process.env.V2_QA_FOCUS==='arrows'?(width===390?['home','club']:['home']):['home','season/games','season/table','season/squad','club']){
+  for(const route of process.env.V2_QA_FOCUS==='home'?['home']:process.env.V2_QA_FOCUS==='arrows'?(width===390?['home','club']:['home']):['home','season/games','season/table','season/squad','club']){
    for(let i=0;i<2;i++){const p=pages[i];await p.goto(origin+(i?'/v2/':'/')+'?club='+club+'&qa='+width+theme+'#'+route,{waitUntil:'domcontentloaded'});await p.locator('.v1-compact-header').waitFor();await p.evaluate(async()=>document.fonts.ready);}
    assert.equal(await pages[1].locator('html').getAttribute('data-preview'),'v2');assert.equal(await pages[1].locator('html').getAttribute('data-design'),null);
    const a=await pages[0].evaluate(fingerprint),b=await pages[1].evaluate(fingerprint);if(!['home','season/squad','club'].includes(route))assert.deepEqual(b,a,club+' '+theme+' '+route+' '+width);
@@ -37,7 +37,11 @@ try{
     assert.equal(b.text,a.text,'News and match labels stay intact independently of decorative image fallback timing');
     for(const arrow of await pages[1].locator('.v1-news-arrow,.v1-match-action > .v2-forward-arrow').all()){const style=await arrow.evaluate(e=>{const s=getComputedStyle(e);return {width:s.width,height:s.height,radius:s.borderRadius,border:s.borderTopWidth};});assert.deepEqual(style,{width:'32px',height:'32px',radius:'50%',border:'1px'});}
     assert.equal(await pages[1].locator('.v1-news-copy h2 .v1-news-arrow').count(),0);
-    const meta=pages[1].locator('.v2-news-meta').first();assert.ok(await meta.evaluate(e=>{const a=e.querySelector('p').getBoundingClientRect(),b=e.querySelector('.v1-news-arrow').getBoundingClientRect();return Math.abs(a.y+a.height/2-b.y-b.height/2)<1;}),'Date and arrow share a fixed row');
+    const copies=pages[1].locator('.v1-news-copy');
+    for(const copy of await copies.all())assert.ok(await copy.evaluate(e=>{const arrow=e.querySelector(':scope > .v1-news-arrow').getBoundingClientRect(),title=e.querySelector('h2').getBoundingClientRect(),box=e.getBoundingClientRect(),s=getComputedStyle(e);return arrow.top>=title.bottom+11&&Math.abs(arrow.right-(box.right-parseFloat(s.paddingRight)))<1&&Math.abs(arrow.bottom-(box.bottom-parseFloat(s.paddingBottom)))<1;}),'Every news arrow is below the title at the bottom right');
+    const front=pages[1].locator('.home-front-page .live-match:not([hidden])'),oldFront=pages[0].locator('.home-front-page .live-match:not([hidden])');
+    if(await front.count()&&await oldFront.count()){const h=(await front.boundingBox()).height,old=(await oldFront.boundingBox()).height;assert.ok(h<old-16&&h>old-36,'Home match card saves about 22px while preserving team rows');}
+
     assert.equal(await pages[1].locator('.v1-news-arrow .v2-arrow-glyph path').first().getAttribute('d'),'M7 17 17 7M7 7h10v10');
     const action=pages[1].locator('.v1-match-action:not([hidden])');if(await action.count()){
      const row=await action.evaluate(e=>{const front=e.closest('.v1-match-stack').querySelector('.live-match').getBoundingClientRect(),r=e.getBoundingClientRect(),a=e.querySelector('.v2-forward-arrow').getBoundingClientRect(),t=e.firstElementChild.getBoundingClientRect();return {height:r.bottom-front.bottom,center:a.y+a.height/2-(front.bottom+(r.bottom-front.bottom)/2),label:t.y+t.height/2-(a.y+a.height/2)};});
