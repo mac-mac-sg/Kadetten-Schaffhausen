@@ -114,3 +114,8 @@ Die Vorschau im Spieltagsblock nutzt für alle Vereine dieselbe Beschriftung: «
 
 ### Leseschrift (20. Oktober 2026)
 V1 verwendet immer die Standard-Leseschrift. Die Auswahl in den Einstellungen entfällt; zuvor gespeicherte Vergrösserungen werden beim Start entfernt. Die separate V2-Testversion behält ihre eigene Auswahl.
+
+### Kompakte Tabelle (21. Oktober 2026)
+Auf Smartphones zeigen alle drei Vereine Rang, kleineres Wappen, Teamname mit 4-px-Bilanzbalken sowie Tore und Punkte in einer kompakten Zeile. Die Mindesthöhe beträgt 60 px, der Abstand 6 px. Lange Teamnamen dürfen vollständig umbrechen. Die bisherigen Zusatzzeilen mit Bilanz, Spielanzahl und Tordifferenz bleiben für assistive Technik erhalten. Der eigene Verein behält seine farbige Markierung. Saison- und Spielerstatistik-Kacheln folgen unter der Tabelle wie bisher. Auf breiten Ansichten bleiben sämtliche Tabellenspalten sichtbar; der Bilanztext des eigenen Teams erhält ausreichenden Kontrast.
+
+Browserprüfung: `node scripts/check-standings-layout.mjs` nach `npm run build:pages` mit den vorhandenen Browser-/axe-Umgebungsvariablen. Optional `STANDINGS_SCREENSHOTS` für Bilder und `STANDINGS_CLIENT_DIR` für einen Vergleichsbuild.
