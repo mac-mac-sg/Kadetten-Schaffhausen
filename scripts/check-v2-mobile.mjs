@@ -27,7 +27,7 @@ try{
  const fingerprint=()=>{
   const root=document.documentElement;return {theme:root.dataset.theme,h1:document.querySelectorAll('h1').length,overflow:root.scrollWidth>innerWidth,text:(()=>{const copy=document.querySelector('main').cloneNode(true);copy.querySelectorAll('.v1-image-fallback').forEach(e=>e.remove());return copy.textContent;})(),controls:[...document.querySelectorAll('.top button,.dock a,.game-control-bar button,.game-control-bar select')].map(e=>({text:e.textContent,aria:e.getAttribute('aria-label')})),surfaces:[...document.querySelectorAll('.top,.dock,.story-screen,.game-card,.game-control-bar,.standings-table,.player-card,.club-intro,.v1-news-copy,.v2-club-entry,.v2-club-hero')].slice(0,12).map(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {class:e.className,width:Math.round(r.width),height:Math.round(r.height),background:s.background,color:s.color,border:s.borderRadius,font:s.font};})};
  };
- for(const width of (process.env.V2_QA_WIDTHS?process.env.V2_QA_WIDTHS.split(',').map(Number):[360,390,430,1280]))for(const club of clubs)for(const theme of ['light','dark']){
+ for(const width of (process.env.V2_QA_FOCUS==='interaction'?[]:process.env.V2_QA_WIDTHS?process.env.V2_QA_WIDTHS.split(',').map(Number):[360,390,430,1280]))for(const club of clubs)for(const theme of ['light','dark']){
   for(const p of pages){await p.setViewportSize({width,height:844});await p.goto(origin+'/',{waitUntil:'domcontentloaded'});await p.evaluate(t=>{for(const prefix of ['','v2:'])localStorage.setItem(prefix+'fan-v1-theme',t);},theme);}
   for(const route of process.env.V2_QA_FOCUS==='home'?['home']:process.env.V2_QA_FOCUS==='arrows'?(width===390?['home','club']:['home']):['home','season/games','season/table','season/squad','club']){
    for(let i=0;i<2;i++){const p=pages[i];await p.goto(origin+(i?'/v2/':'/')+'?club='+club+'&qa='+width+theme+'#'+route,{waitUntil:'domcontentloaded'});await p.locator('.v1-compact-header').waitFor();await p.evaluate(async()=>document.fonts.ready);}
@@ -67,10 +67,13 @@ try{
    results.push({width,club,theme,route});
   }
  }
+ console.log(JSON.stringify({phase:'views',views:results.length,inherited,errors}));
  for(const p of pages){
+ const base=origin+(p===pages[0]?'/':'/v2/');
+ await p.setViewportSize({width:390,height:844});await p.goto(base,{waitUntil:'domcontentloaded'});
  await p.evaluate(()=>{for(const prefix of ['','v2:'])localStorage.setItem(prefix+'fan-v1-theme','dark');});
  for(const club of clubs){
-  await p.setViewportSize({width:390,height:844});await p.goto(origin+'/v2/?club='+club+'#season/squad',{waitUntil:'domcontentloaded'});
+  await p.setViewportSize({width:390,height:844});await p.goto(base+'?club='+club+'#season/squad',{waitUntil:'domcontentloaded'});
   await p.locator('.v2-club-entry').focus();await p.keyboard.press('Enter');await p.locator('.v2-club-hero').waitFor();
   const forward=p.locator('.club-text-button[data-club-jump] > span').first();if(await forward.count())assert.equal(await forward.evaluate(e=>getComputedStyle(e).borderRadius),'50%');
   await p.locator('.club-trophy').last().click();assert.equal(await p.locator('.club-trophy').last().getAttribute('aria-pressed'),'true');
@@ -85,7 +88,7 @@ try{
  assert.equal(await p.locator('#qa-pdf-tools .v2-forward-arrow').evaluate(e=>getComputedStyle(e).borderRadius),'50%');
  assert.equal(await p.locator('#qa-pdf-tools a').getAttribute('href'),'https://example.test/match.pdf');
  await p.evaluate(()=>document.getElementById('qa-pdf-tools').remove());
- await p.goto(origin+'/v2/?club=kadetten#season/games',{waitUntil:'domcontentloaded'});await p.getByRole('button',{name:'Kalender',exact:true}).click();await p.locator('.match-calendar').waitFor();await p.getByRole('button',{name:'Liste',exact:true}).click();await p.locator('.game-timeline').waitFor();
+ await p.goto(base+'?club=kadetten#season/games',{waitUntil:'domcontentloaded'});await p.getByRole('button',{name:'Kalender',exact:true}).click();await p.locator('.match-calendar').waitFor();await p.getByRole('button',{name:'Liste',exact:true}).click();await p.locator('.game-timeline').waitFor();
  await p.locator('#club-settings').click();await p.locator('[data-v1-light-mode]').waitFor();assert.equal(await p.locator('.settings-info-row > .v1-action-icon').evaluate(e=>getComputedStyle(e).borderRadius),'50%');await p.locator('[data-v1-light-mode]').uncheck();
  assert.deepEqual(await p.evaluate(()=>[localStorage.getItem('fan-v1-theme'),localStorage.getItem('v2:fan-v1-theme')]),['dark','dark']);
  await p.locator('[data-v1-light-mode]').check();assert.deepEqual(await p.evaluate(()=>[localStorage.getItem('fan-v1-theme'),localStorage.getItem('v2:fan-v1-theme')]),p===pages[0]?['light','dark']:['dark','light']);
