@@ -1,5 +1,5 @@
-/* V2-only club experiment on the shared V1 baseline. */
-document.documentElement.dataset.preview = 'v2';
+/* Shared club layout, promoted from the approved V2 design. */
+document.documentElement.dataset.clubLayout = 'modern';
 function v2ClubIdentity() {
   const club = activeClub === 'fcsg' ? 'fcsg' : activeClub === 'otmar' ? 'otmar' : 'kadetten';
   return {

@@ -12,13 +12,11 @@ fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JS
 
 // Content-version the complete shell on every build, including future UI edits.
 const {createHash}=await import('node:crypto');
-const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','pwa.js','manifest.webmanifest','assets/anton.ttf','assets/bbc-arena-hall.webp','assets/fcsg-stadium.jpg','assets/otmar-kreuzbleiche.webp'];
+const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/club-design.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','club-design.css','pwa.js','manifest.webmanifest','assets/anton.ttf','assets/bbc-arena-hall.webp','assets/fcsg-stadium.jpg','assets/otmar-kreuzbleiche.webp'];
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(v2){
-  shellFiles.push('v2/design.css','v2/design.js');
-  html=html.replace('<html lang="de-CH">','<html lang="de-CH" data-preview="v2">').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
-  html=html.replace('</head>','<link rel="stylesheet" href="v2/design.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/design.js"></script><script src="js/main.js"></script>');
+  html=html.replace('<html lang="de-CH"', '<html data-preview="v2" lang="de-CH"').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
   const themeInit=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
   html=html.replace("script-src 'self'","script-src 'self' 'sha256-"+createHash('sha256').update(themeInit).digest('base64')+"'");
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));

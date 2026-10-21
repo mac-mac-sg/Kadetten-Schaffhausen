@@ -311,7 +311,7 @@ test('Vereinsseite: alle Stationen, nachvollziehbare Quellen und gültige Sprung
   for (const [, target] of out.matchAll(/data-club-jump="([^"]+)"/g)) assert.ok(out.includes(`id="${target}"`), target);
   assert.match(out, /Finalist/);
   assert.match(out, /noch nicht die des Handballteams/);
-  assert.match(out, /Quellen & Bildnachweise/);
+  assert.match(parseHTML(out).document.querySelector('.club-credits').textContent, /Quellen & Bildnachweise/);
   assert.match(html, /href="#club" class="club-entry" aria-label="Unser Verein: Geschichte und Erfolge"/);
 });
 
@@ -433,7 +433,7 @@ test('FCSG: alle News-, Saison-, Spiel- und Spieleransichten ohne Kadetten-Werte
 });
 
 test('FCSG club history reuses the trophy controls with its own years and chapter anchors',()=>{
- run("activeClub='fcsg'");const out=run('fcsgClubPage()');assert.ok(out.includes('Grün-Weisse'));assert.ok(out.includes('Cupsieg 2026'));assert.ok(!out.includes('Kadetten'));
+ run("activeClub='fcsg'");const out=run('fcsgClubPage()');assert.equal(parseHTML(out).document.querySelector('h1').textContent,'FC St.Gallen 1879');assert.ok(out.includes('St. Gallen. Fussball. Seit 1879.'));assert.ok(out.includes('Cupsieg 2026'));assert.ok(!out.includes('Kadetten'));
  for(const c of run('fcsgHistory'))assert.ok(out.includes(`id="club-history-${c.id}"`));
  for(const t of run('fcsgTrophies'))for(const year of t.years){const panel=run(`fcsgTrophyYears('${t.id}',${year})`);assert.ok(panel.includes(`aria-pressed="true">${year}</button>`));assert.ok(panel.includes('Diesen Moment entdecken'));}
  run("activeClub='kadetten'");
