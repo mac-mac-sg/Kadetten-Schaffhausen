@@ -16,7 +16,11 @@ const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squa
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(v2){
+  shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css');
+  html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="js/main.js"></script>');
+  html=html.replace("connect-src 'self'", "connect-src 'self' https://tiles.openfreemap.org");
   html=html.replace('<html lang="de-CH"', '<html data-preview="v2" lang="de-CH"').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
+  html=html.replace("img-src 'self' https: data:", "img-src 'self' https: data: blob:");
   const themeInit=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
   html=html.replace("script-src 'self'","script-src 'self' 'sha256-"+createHash('sha256').update(themeInit).digest('base64')+"'");
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
@@ -38,6 +42,7 @@ const emittedShell=['platform-config.js','js/app.js','app.css','manifest.webmani
 sw=sw.replace(/const SHELL=\[[^\]]*\]/,'const SHELL='+JSON.stringify(['./',...emittedShell]));
 const hash=createHash('sha256').update(html).update(sw);
 for(const file of shellFiles)hash.update(fs.readFileSync('dist/client/'+file));
+if(v2)for(const file of fs.readdirSync('dist/client/assets/maplibre-6.15.0'))hash.update(fs.readFileSync('dist/client/assets/maplibre-6.15.0/'+file));
 for(const file of ['js/app.js','app.css'])hash.update(fs.readFileSync('dist/client/'+file));
 const version=hash.digest('hex').slice(0,16);
 for(const file of emittedShell.filter(f=>!f.startsWith('assets/'))){html=html.replaceAll('"'+file+'"','"'+file+'?v='+version+'"');sw=sw.replaceAll(JSON.stringify(file),JSON.stringify(file+'?v='+version));}
