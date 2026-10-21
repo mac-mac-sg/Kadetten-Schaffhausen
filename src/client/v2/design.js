@@ -49,7 +49,7 @@ function v2DecorateForwardLinks(root) {
     const date=copy.querySelector('p'),arrow=copy.querySelector('.v1-news-arrow');
     if(!date||!arrow)return;
     const meta=document.createElement('div');meta.className='v2-news-meta';
-    date.before(meta);meta.append(date,arrow);
+    date.before(meta);meta.append(date);copy.append(arrow);
   });
   v2ArrowTargets(root,'.v1-match-action > svg').forEach(svg=>{
     const arrow=document.createElement('span');arrow.className='v2-forward-arrow';arrow.setAttribute('aria-hidden','true');svg.replaceWith(arrow);
