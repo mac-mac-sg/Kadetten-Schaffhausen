@@ -625,3 +625,17 @@ html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-wi
 /* Season balance numbers use the readable result palette on light cards. */
 html:not([data-design='v2'])[data-theme='light'] .season-balance-values .win strong { color:var(--win); }
 html:not([data-design='v2'])[data-theme='light'] .season-balance-values .draw strong { color:var(--draw); }
+
+/* Nested season charts keep their content clear of the card edge. */
+html:not([data-design='v2'])[data-theme] .season-goal-stats .goal-difference-chart {
+ min-width:0; padding:var(--v1-space-card); border:1px solid var(--line);
+ border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); box-shadow:none;
+}
+/* Match the value's optical inset to the centred rank at the left edge. */
+html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader {
+ min-width:0; grid-template-columns:20px 38px minmax(0,1fr) minmax(44px,max-content);
+}
+html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader > strong { padding-right:6px; }
+@media(max-width:400px) {
+ html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader { grid-template-columns:18px 32px minmax(0,1fr) minmax(40px,max-content); }
+}
