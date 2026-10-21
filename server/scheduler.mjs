@@ -12,7 +12,7 @@ export const SWISS_HOURS = [6, 9, 12, 15, 18, 21, 22];
 export const zurichHour = date =>
   Number(new Intl.DateTimeFormat('en-GB', {hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Zurich'}).format(date));
 
-export const isUpdateTime = date => SWISS_HOURS.includes(zurichHour(date));
+export const isUpdateTime = date => date.getUTCMinutes() === 20 && SWISS_HOURS.includes(zurichHour(date));
 
 // Löst den Workflow aus. Rückgabe ohne Zugangsdaten: {ok, status?, reason?}.
 export async function dispatchUpdate(env, scheduledTime = Date.now(), fetchFn = fetch) {
