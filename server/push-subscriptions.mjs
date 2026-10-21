@@ -18,7 +18,7 @@ async function bodyJson(request) {
  while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>6000){await reader.cancel();throw Error('body')}text+=decoder.decode(value,{stream:true})}
  return JSON.parse(text+decoder.decode());
 }
-export async function pushRoute(request, env, url) {
+async function handlePush(request, env, url) {
  if(request.headers.get('Origin')!==PUSH_ORIGIN)return new Response('Origin rejected',{status:403});
  if(request.method==='OPTIONS')return reply(null,204);
  if(url.pathname==='/api/push/config'&&request.method==='GET')return reply({enabled:!!(env.DATA&&env.PUSH_PUBLIC_KEY&&env.PUSH_PRIVATE_JWK),publicKey:env.PUSH_PUBLIC_KEY||null});
@@ -51,4 +51,13 @@ export async function pushRoute(request, env, url) {
  }
  await env.DATA.put(key,JSON.stringify({owner,subscription:{endpoint:input.subscription.endpoint,keys:input.subscription.keys},clubs:[...new Set(input.clubs)],types:[...new Set(input.types)],createdAt:previous?.createdAt||Date.now(),updatedAt:Date.now()}),{expirationTtl:180*86400});
  return reply({ok:true});
+}
+
+// Keep exceptions readable by the V2 client without granting CORS to other origins.
+export async function pushRoute(request,env,url) {
+ try {return await handlePush(request,env,url)}
+ catch {
+  if(request.headers.get('Origin')!==PUSH_ORIGIN)return new Response('Origin rejected',{status:403});
+  return reply({error:'Der Benachrichtigungsdienst ist gerade nicht erreichbar. Bitte in einer Minute erneut versuchen.'},503);
+ }
 }
