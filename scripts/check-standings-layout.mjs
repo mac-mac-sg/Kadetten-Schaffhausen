@@ -24,8 +24,9 @@ try{
  },{now,snapshots});
  const pages=await Promise.all([context.newPage(),context.newPage()]);for(const p of pages)p.on('pageerror',e=>errors.push(e.message));
  const axe=fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8');
+ const balanceOnly=process.env.STANDINGS_QA_FOCUS==='balance';
  const page=pages[0],measure=()=>[...document.querySelectorAll('.standings-table tbody tr')].map(e=>{const r=e.getBoundingClientRect(),cells=[...e.children].filter(c=>getComputedStyle(c).display!=='none').map(c=>c.getBoundingClientRect());return {height:r.height,name:e.querySelector('.standing-name').textContent,overlap:cells.some((c,i)=>i&&c.left<cells[i-1].right-1),overflow:e.scrollWidth>e.clientWidth+1};});
- for(const width of [320,375,390,430,1280])for(const club of clubs)for(const theme of ['light','dark']){
+ for(const width of (balanceOnly?[390,1280]:[320,375,390,430,1280]))for(const club of clubs)for(const theme of ['light','dark']){
   await page.setViewportSize({width,height:844});await page.goto(origin+'/');await page.evaluate(t=>localStorage.setItem('fan-v1-theme',t),theme);
   await page.goto(origin+'/?club='+club+'&qa='+width+theme+'#season/table');await page.locator('.standings-table tbody tr').first().waitFor();await page.evaluate(async()=>document.fonts.ready);
   const check=async(label)=>{
@@ -37,7 +38,14 @@ try{
    if(process.env.STANDINGS_SCREENSHOTS&&width===390){await page.screenshot({path:path.join(process.env.STANDINGS_SCREENSHOTS,label+'-'+theme+'.png')});}
   };
   await check(club+'-qhl');
-  if(club==='kadetten'){await page.locator('[data-league="EHL"]').click();await check(club+'-ehl');}
+  const balance=page.locator('.season-balance-values');
+  if(await balance.count()){
+   await balance.scrollIntoViewIfNeeded();
+   if(theme==='light')for(const state of ['win','draw','loss'])assert.equal(await balance.locator('.'+state+' strong').evaluate((e,state)=>{const probe=document.createElement('span');probe.style.color='var(--'+state+')';e.append(probe);const expected=getComputedStyle(probe).color;probe.remove();return getComputedStyle(e).color===expected;},state),true,club+' '+state+' uses the readable light result colour');
+   await page.evaluate(axe);assert.deepEqual(await page.evaluate(async()=>(await axe.run(document.querySelector('.season-overview'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))),[],club+' '+theme+' visible season balance');
+  }
+
+  if(club==='kadetten'&&!balanceOnly){await page.locator('[data-league="EHL"]').click();await check(club+'-ehl');}
  }
  // Browser zoom/text enlargement: full team names can wrap without clipping.
  await page.setViewportSize({width:390,height:844});await page.goto(origin+'/?club=fcsg#season/table');await page.evaluate(()=>{document.querySelectorAll('.standing-name').forEach(e=>e.style.fontSize='20px');});assert.ok((await page.evaluate(measure)).every(r=>!r.overlap&&!r.overflow));
