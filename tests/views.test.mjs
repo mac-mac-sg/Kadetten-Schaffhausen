@@ -901,3 +901,17 @@ test('Newsartikel aller Vereine behalten den Zurück-Link ohne Teilen-Schaltflä
  for(const club of ['kadetten','otmar']){run(`activeClub='${club}'`);const id=run('stories[0].id');context.__newsId=id;const doc=parseHTML(view('article(__newsId)')).document;assert.equal(doc.querySelector('.share'),null);assert.match(doc.querySelector('.article-bar').textContent,/Zurück zu den News/);}
  run("activeClub='fcsg'");context.__newsId=run('fcsgData.stories[0].id');const doc=parseHTML(view('fcsgArticle(__newsId)')).document;assert.equal(doc.querySelector('.share'),null);assert.match(doc.querySelector('.article-bar').textContent,/Zurück zu den News/);run("activeClub='kadetten'");
 });
+
+test('Handball live cards accept API matches without a fixture date and update the score',()=>{
+ const previous=run('activeClub');context.__liveSlot=testDocument.createElement('a');
+ try{
+  for(const club of ['kadetten','otmar']){
+   const own=club==='kadetten'?'Kadetten Schaffhausen':'TSV St. Otmar St. Gallen';
+   context.__liveOwn=own;
+   run(`activeClub='${club}';offlineData=false;liveRequestFailed=false;liveState={ok:true,checkedAt:new Date().toISOString(),match:{id:508384,home:'Wacker Thun',away:__liveOwn,score:[15,18],league:'QHL',clock:'30:00',phase:'2. Halbzeit'}}`);
+   assert.doesNotThrow(()=>run('paintHandballMatchday(__liveSlot,true)'));
+   assert.match(context.__liveSlot.textContent,/JETZT LIVE/);assert.match(context.__liveSlot.textContent,/15 : 18/);assert.ok(context.__liveSlot.classList.contains('is-live'));
+   run('liveState.match.score=[16,19];paintHandballMatchday(__liveSlot,true)');assert.match(context.__liveSlot.textContent,/16 : 19/);
+  }
+ }finally{run(`activeClub='${previous}';liveState=null;lastLiveMatch=null;lastLiveDate=null`);delete context.__liveSlot;delete context.__liveOwn;}
+});
