@@ -119,3 +119,6 @@ V1 verwendet immer die Standard-Leseschrift. Die Auswahl in den Einstellungen en
 Auf Smartphones zeigen alle drei Vereine Rang, kleineres Wappen, Teamname mit 4-px-Bilanzbalken sowie Tore und Punkte in einer kompakten Zeile. Die Mindesthöhe beträgt 60 px, der Abstand 6 px. Lange Teamnamen dürfen vollständig umbrechen. Die bisherigen Zusatzzeilen mit Bilanz, Spielanzahl und Tordifferenz bleiben für assistive Technik erhalten. Der eigene Verein behält seine farbige Markierung. Saison- und Spielerstatistik-Kacheln folgen unter der Tabelle wie bisher. Auf breiten Ansichten bleiben sämtliche Tabellenspalten sichtbar; der Bilanztext des eigenen Teams erhält ausreichenden Kontrast.
 
 Browserprüfung: `node scripts/check-standings-layout.mjs` nach `npm run build:pages` mit den vorhandenen Browser-/axe-Umgebungsvariablen. Optional `STANDINGS_SCREENSHOTS` für Bilder und `STANDINGS_CLIENT_DIR` für einen Vergleichsbuild.
+
+### Lesbare Saisonbilanz im hellen Modus
+Die Anzahl Siege und Unentschieden verwendet auf hellen Kacheln die dunkleren Ergebnisfarben `--win` und `--draw`. Die festen hellen Farben gelten weiterhin für den dunklen Modus. Prüfung: `STANDINGS_QA_FOCUS=balance node scripts/check-standings-layout.mjs`.

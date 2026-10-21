@@ -621,3 +621,7 @@ html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-wi
 @media(min-width:641px) {
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team .table-team .record-text { color:var(--text); }
 }
+
+/* Season balance numbers use the readable result palette on light cards. */
+html:not([data-design='v2'])[data-theme='light'] .season-balance-values .win strong { color:var(--win); }
+html:not([data-design='v2'])[data-theme='light'] .season-balance-values .draw strong { color:var(--draw); }
