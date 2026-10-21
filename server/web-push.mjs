@@ -29,5 +29,7 @@ export async function sendPush(env, subscription, payload, fetchFn=fetch) {
  const claims=b64url(enc.encode(JSON.stringify({aud:audience,exp:Math.floor(Date.now()/1000)+3600,sub:'https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/'})));
  const key=await crypto.subtle.importKey('jwk',JSON.parse(env.PUSH_PRIVATE_JWK),{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
  const signature=b64url(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},key,enc.encode(header+'.'+claims)));
- return fetchFn(subscription.endpoint,{method:'POST',redirect:'error',headers:{Authorization:`vapid t=${header}.${claims}.${signature}, k=${env.PUSH_PUBLIC_KEY}`,'Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream',TTL:'300',Urgency:'high'},body:await encryptPush(subscription,payload),signal:AbortSignal.timeout(10000)});
+ // Workers at our compatibility date reject redirect:'error'. Manual never forwards the
+ // VAPID credential to a redirect destination; a 3xx is a failed delivery (Response.ok=false).
+ return fetchFn(subscription.endpoint,{method:'POST',redirect:'manual',headers:{Authorization:`vapid t=${header}.${claims}.${signature}, k=${env.PUSH_PUBLIC_KEY}`,'Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream',TTL:'300',Urgency:'high'},body:await encryptPush(subscription,payload),signal:AbortSignal.timeout(10000)});
 }

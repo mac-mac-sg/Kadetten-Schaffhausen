@@ -21,7 +21,7 @@ test('Encrypted push decrypts independently with Node ECDH/HKDF/AES-GCM; VAPID s
  const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
  const privateJwk=await crypto.subtle.exportKey('jwk',pair.privateKey),publicJwk=await crypto.subtle.exportKey('jwk',pair.publicKey);
  await sendPush({PUSH_PRIVATE_JWK:JSON.stringify(privateJwk),PUSH_PUBLIC_KEY:'public'},s,payload,async(url,options)=>{
-  assert.equal(url,s.endpoint);assert.equal(options.redirect,'error');assert.equal(options.headers.TTL,'300');
+  assert.equal(url,s.endpoint);assert.equal(options.redirect,'manual');assert.equal(options.headers.TTL,'300');
   const jwt=options.headers.Authorization.match(/t=(.+), k=/)[1],parts=jwt.split('.');
   assert.equal(JSON.parse(Buffer.from(parts[1],'base64url')).aud,'https://fcm.googleapis.com');
   assert.ok(verify('sha256',Buffer.from(parts[0]+'.'+parts[1]),{key:createPublicKey({key:publicJwk,format:'jwk'}),dsaEncoding:'ieee-p1363'},Buffer.from(parts[2],'base64url')));
@@ -120,4 +120,21 @@ test('A derby produces one notification for a device subscribed to both clubs',a
  for(const club of ['kadetten','otmar'])await DATA.put(club+'/current.json',JSON.stringify({games:[fixture]}));
  await DATA.put(PUSH_PREFIX+'both',JSON.stringify({subscription:s,clubs:['kadetten','otmar'],types:['reminder'],createdAt:kickoff-3600000}));
  let sent=0;await monitorPush(env,kickoff-30*60000,{send:async()=>{sent++;return new Response(null,{status:201})}});assert.equal(sent,1);
+});
+
+test('Worker returns readable, origin-scoped push errors when storage or transport throws',async()=>{
+ const s=subscription().subscription,token='a'.repeat(43),DATA=memoryKV(),env={DATA,PUSH_PRIVATE_JWK:'configured',PUSH_PUBLIC_KEY:'configured'};
+ const id=await digest(s.endpoint);
+ await DATA.put(PUSH_PREFIX+id,JSON.stringify({owner:await digest(token),subscription:s,clubs:['kadetten'],types:[]}));
+ const request=origin=>new Request('https://api.test/api/push/test',{method:'POST',headers:{Origin:origin,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({subscription:s})});
+ // The configured fixture is intentionally not a signing key: this used to escape to
+ // the generic Worker catch without CORS, hiding the actual HTTP error as Failed to fetch.
+ const response=await worker.fetch(request(PUSH_ORIGIN),env);
+ assert.equal(response.status,503);assert.equal(response.headers.get('Access-Control-Allow-Origin'),PUSH_ORIGIN);
+ assert.match((await response.json()).error,/Benachrichtigungsdienst/);
+ DATA.get=async()=>{throw Error('storage failure contains private details')};
+ const unavailable=await worker.fetch(request(PUSH_ORIGIN),env);
+ assert.equal(unavailable.status,503);assert.equal(unavailable.headers.get('Access-Control-Allow-Origin'),PUSH_ORIGIN);assert.doesNotMatch(await unavailable.text(),/private details/);
+ const rejected=await worker.fetch(request('https://evil.test'),env);
+ assert.equal(rejected.status,403);assert.equal(rejected.headers.get('Access-Control-Allow-Origin'),null);
 });
