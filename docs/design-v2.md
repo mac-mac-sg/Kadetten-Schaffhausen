@@ -1,18 +1,18 @@
-# V2: aktuelle V1 als Design-Testbasis
+# Gemeinsamer App-Stand von V1 und V2
 
-Seit 20. Oktober 2026 startet die bestehende Testversion unter https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/ mit der vollständigen aktuellen V1-Oberfläche. News, Spiele, Liste/Kalender/Wettbewerb, Tabelle, Einstellungen und Matchansichten verwenden dieselben Renderer und Styles. Kader und Vereinsseite erhalten ausschliesslich in V2 die unten beschriebene Erweiterung. Die früheren V2-Experimente sind zurückgesetzt und über den Git-Verlauf vor dieser Änderung wiederherstellbar.
+Seit 21. Oktober 2026 übernimmt die normale App den freigegebenen V2-Stand: Vereins-Kachel im Kader, Vereinsseite mit geschwungenem Bildauftakt, Erfolge und Chronik, runde diagonale Absprung-Pfeile, unten bündige News-Titel/Pfeile sowie die flachere Mannschaftskachel. Beide Oberflächen verwenden dieselben Renderer und Styles.
 
-V1 bleibt unter der bisherigen Startadresse unverändert. Beide Builds lesen dieselben öffentlichen Cloudflare-Daten; es gibt keine zusätzlichen Datenjobs oder Schreibzugänge. Aktuelle gemeinsame Fehlerkorrekturen erreichen beide Versionen.
+## Gemeinsame Basis und weitere Experimente
 
-## Trennung und weitere Experimente
+`src/client/js/club-design.js` und `src/client/club-design.css` enthalten die freigegebenen Erweiterungen und werden von der normalen Quellhülle vor dem Startcode geladen. `data-club-layout="modern"` aktiviert sie in beiden Versionen; die bestehenden `v2-`-Klassennamen bleiben als interne Selektoren erhalten. Beide Dateien gehören zur Offline-Hülle und zum Build-Hash.
 
-`scripts/build-pages.mjs` erstellt beide Fassungen. Nur V2 lädt zusätzlich `v2/design.js` und `v2/design.css`. Das Skript markiert `data-preview="v2"`, setzt aber ausdrücklich nicht `data-design="v2"`: damit bleiben sämtliche aktuellen V1-Styles und Verhaltenszweige aktiv. Neue Designversuche werden auf `html[data-preview="v2"]` begrenzt und ändern die öffentliche V1 nicht.
+`scripts/build-pages.mjs` erzeugt weiterhin die normale App und die separate Testversion unter `/v2/`. Nur deren Hülle erhält `data-preview="v2"`. Weitere Designversuche können auf dieses Merkmal begrenzt werden. V2 behält die eigene Manifest-Bezeichnung, relative PWA-ID und Scope sowie `v2:` vor Browser-Speicherschlüsseln. V1 verwendet seine bestehenden Schlüssel; Einstellungen und Daten werden nicht umkopiert. Die ausschliesslich in V2 vorhandene Leseschrift-Einstellung bleibt getrennt.
 
-V2 behält die eigene Manifest-Bezeichnung, relative PWA-ID und Scope sowie `v2:` vor allen Browser-Speicherschlüsseln. Auch der frühe Themenstart liest ausschliesslich den V2-Schlüssel. Vorhandene V2-Vereinsauswahl und Daten bleiben erhalten, V1-Einstellungen werden nicht überschrieben. Die Testversion kann unabhängig installiert und offline verwendet werden. Der Haupt-Service-Worker lässt den V2-Pfad passieren.
+Beide Builds lesen dieselben öffentlichen Cloudflare-Daten. Datenjobs und Schreibzugänge ändern sich nicht. Der Haupt-Service-Worker lässt den V2-Pfad passieren.
 
 ## Prüfung
 
-`npm run verify` prüft den unveränderten V1-Start, die unveränderten übrigen Renderer, ausschliesslich in V2 enthaltene Vereins-Styles, isolierte Speicherung und PWA-Pfade. `node scripts/check-v2-mobile.mjs` vergleicht die unveränderten Ansichten beider Oberflächen und prüft die neue Vereinsansicht bei identischen Daten für alle drei Vereine, Hell/Dunkel und Smartphone/Desktop: Inhalte, Geometrie, Farben, Einstellungen, Kalender-Rückweg, eine Hauptüberschrift, kein horizontaler Überlauf, keine Skriptfehler und keine neuen axe-core-Verstösse gegenüber V1. Browser-/axe-Pfade können wie bisher über GAMES_PLAYWRIGHT_MODULE, GAMES_CHROMIUM_EXECUTABLE und GAMES_AXE_SCRIPT gesetzt werden.
+`npm run verify` prüft die gemeinsame Quellhülle, vollständige Archiv- und Spielerinhalte, isolierte Speicherung und PWA-Pfade. `node scripts/check-v2-mobile.mjs` vergleicht alle fünf Hauptansichten beider Oberflächen bei identischen Daten für drei Vereine, Hell/Dunkel und Smartphone/Desktop. Geprüft werden Inhalte und Gestaltung, News-Pfeil-Geometrie, Vereinsnavigation auf beiden Versionen, Kalender-Rückweg, Theme-Speichertrennung, eine Hauptüberschrift, kein horizontaler Überlauf, keine Skriptfehler und axe-core. Browser-/axe-Pfade können wie bisher über GAMES_PLAYWRIGHT_MODULE, GAMES_CHROMIUM_EXECUTABLE und GAMES_AXE_SCRIPT gesetzt werden.
 
 ## Vereinsansicht: geschwungener Bildauftakt
 
@@ -22,7 +22,7 @@ Die Vereinsseite übernimmt das vorhandene Archiv-Titelbild samt Originalbeschri
 
 Darunter folgen «Unsere Erfolge» mit unveränderten Titelkategorien, Titeljahren und historischen Verknüpfungen sowie «Unsere Geschichte» als normal scrollende Zeitleiste mit schmalem Jahresstrahl links. Alle Chroniktexte, Archivbilder, Bildnachweise und Quellen bleiben erhalten. Archivbilder werden bei Quellenfehlern wie bisher ausgeblendet, ohne eine andere Aufnahme als historisches Original auszugeben.
 
-V2 umschliesst nur squad/fcsgSquad und clubPage/fcsgClubPage. Tests prüfen den vollständigen Erhalt aller Spieler und aller Erfolgs-/Chronik-/Quelleninhalte. Die Browserprüfung deckt die Einstiegskachel, Tastaturöffnung, Titelwahl, historische Sprünge, Browser-Zurück und isolierte Theme-Speicherung ab.
+Die gemeinsame Gestaltung umschliesst squad/fcsgSquad und clubPage/fcsgClubPage. Tests prüfen den vollständigen Erhalt aller Spieler und aller Erfolgs-/Chronik-/Quelleninhalte. Die Browserprüfung deckt die Einstiegskachel, Tastaturöffnung, Titelwahl, historische Sprünge, Browser-Zurück und isolierte Theme-Speicherung ab.
 
 ## Runde Absprung-Pfeile
 
