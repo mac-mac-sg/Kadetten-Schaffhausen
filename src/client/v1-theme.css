@@ -639,3 +639,12 @@ html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader > s
 @media(max-width:400px) {
  html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader { grid-template-columns:18px 32px minmax(0,1fr) minmax(40px,max-content); }
 }
+/* V2 device notification preferences use the existing settings surface and switches. */
+[data-preview='v2'] .push-settings-dialog .push-intro { margin:0 0 10px; font-size:15px; line-height:1.5; }
+[data-preview='v2'] .push-clubs,[data-preview='v2'] .push-note { color:var(--muted); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+[data-preview='v2'] .push-types { margin:20px 0 12px; padding:0; }
+[data-preview='v2'] .push-types .theme-setting + .theme-setting { border-top:1px solid var(--line); }
+[data-preview='v2'] .push-status { min-height:24px; font-size:14px; line-height:1.5; }
+[data-preview='v2'] .push-actions { display:flex; gap:10px; flex-wrap:wrap; }
+[data-preview='v2'] .push-actions .button { min-height:44px; white-space:normal; }
+[data-preview='v2'] .push-actions [hidden] { display:none; }

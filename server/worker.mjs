@@ -11,6 +11,8 @@ import seed from './seed.json' with {type: 'json'};
 import {runRefresh} from './refresh-run.mjs';
 import {kvStore} from './kv-store.mjs';
 import {dispatchUpdate} from './scheduler.mjs';
+import {pushRoute} from './push-subscriptions.mjs';
+import {monitorPush} from './push-monitor.mjs';
 
 const json = (x, status = 200) =>
   new Response(JSON.stringify(x), {status, headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}});
@@ -220,6 +222,7 @@ async function otmarData(request,env,u) {
   return json({error:'Not found'},404);
 }
 const routes = [
+  [isUnder('/api/push/'),pushRoute],
   [isUnder('/api/otmar/'),otmarData],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],
@@ -257,8 +260,8 @@ export default {
   },
   // Cron-Trigger (cloudflare/api/wrangler.toml): löst die Datenaktualisierung in GitHub Actions aus.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(dispatchUpdate(env, event.scheduledTime).then(result => {
+    ctx.waitUntil(Promise.all([monitorPush(env,event.scheduledTime).catch(()=>console.error('Push: Prüfung fehlgeschlagen')),dispatchUpdate(env, event.scheduledTime).then(result => {
       if (!result.ok) console.error('Zeitplan: Aktualisierung nicht ausgelöst', result.status || '', result.reason || '');
-    }));
+    })]));
   }
 };

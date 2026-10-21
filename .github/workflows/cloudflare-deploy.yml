@@ -55,10 +55,12 @@ jobs:
         id: deploy
         shell: bash
         run: |
-          npx --yes "wrangler@${WRANGLER_VERSION}" deploy -c cloudflare/api/wrangler.toml | tee deploy.log
+          npx --yes "wrangler@${WRANGLER_VERSION}" deploy -c cloudflare/api/wrangler.toml --triggers "* * * * *" | tee deploy.log
           url=$(grep -Eo 'https://kadetten-api\.[a-z0-9-]+\.workers\.dev' deploy.log | head -1)
           [ -n "$url" ] || { echo "::error::Die workers.dev-Adresse wurde in der Ausgabe nicht gefunden."; exit 1; }
           echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Stabile Push-Schlüssel einrichten
+        run: node scripts/setup-push-secrets.mjs
       - name: Automationsschlüssel setzen (nur der Digest verlässt GitHub)
         shell: bash
         run: |

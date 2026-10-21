@@ -11,6 +11,7 @@ test('Schweizer Stunde: Sommer- und Winterzeit, nur die sieben Aktualisierungsst
   assert.equal(zurichHour(new Date('2026-12-01T17:20:00Z')), 18);
   assert.ok(isUpdateTime(new Date('2026-10-06T16:20:00Z')), '18:20 Schweizer Zeit im Sommer');
   assert.ok(isUpdateTime(new Date('2026-12-01T17:20:00Z')), '18:20 Schweizer Zeit im Winter');
+  assert.ok(!isUpdateTime(new Date('2026-10-06T16:21:00Z')), 'Minuten-Push-Cron darf keinen zusätzlichen Snapshot-Lauf auslösen');
   assert.ok(!isUpdateTime(new Date('2026-10-06T17:20:00Z')), '19:20 Schweizer Zeit im Sommer');
   assert.ok(!isUpdateTime(new Date('2026-12-01T16:20:00Z')), '17:20 Schweizer Zeit im Winter');
 });

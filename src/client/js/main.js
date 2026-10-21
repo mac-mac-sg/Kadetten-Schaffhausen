@@ -44,3 +44,5 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 checkLiveMatch();
+
+if(typeof pushPreview==='function'&&pushPreview()&&pushSupported()&&Notification.permission==='granted'&&readPushDevice())updatePushPreferences().catch(()=>{});
