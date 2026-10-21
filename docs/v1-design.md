@@ -122,3 +122,6 @@ Browserprüfung: `node scripts/check-standings-layout.mjs` nach `npm run build:p
 
 ### Lesbare Saisonbilanz im hellen Modus
 Die Anzahl Siege und Unentschieden verwendet auf hellen Kacheln die dunkleren Ergebnisfarben `--win` und `--draw`. Die festen hellen Farben gelten weiterhin für den dunklen Modus. Prüfung: `STANDINGS_QA_FOCUS=balance node scripts/check-standings-layout.mjs`.
+
+### Innenabstände der Saisonstatistik
+Der eingebettete Block «Tordifferenz pro Spiel» erhält rundum den Karten-Innenabstand (16 px), einen vollständigen Rahmen und den gemeinsamen Radius für innere Flächen. Spieler-Ranglisten gleichen den sichtbaren rechten Zahlenabstand an den links zentrierten Rang an; die Wertespalte wächst bei dreistelligen Zahlen mit. Prüfung: `STANDINGS_QA_FOCUS=insets node scripts/check-standings-layout.mjs` (inklusive aufgeklappter Spielhistorie und Spieler-Testdaten).

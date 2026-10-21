@@ -8,6 +8,8 @@ const {chromium}=await import(process.env.GAMES_PLAYWRIGHT_MODULE||'playwright')
 const dir=path.resolve(process.env.STANDINGS_CLIENT_DIR||'dist/client'),seed=vm.createContext({}),clubs=['kadetten','fcsg','otmar'];
 for(const f of ['fallback','fcsg-fallback','otmar-fallback'])vm.runInContext(fs.readFileSync('src/client/data/'+f+'.js','utf8'),seed);
 const snapshots=vm.runInContext('[{games,tables,teamRecords,stories,clubLogos},fcsgData,otmarFallback]',seed),now='2026-10-20T12:00:00Z';
+// Stable synthetic player fixture exercises three-digit values in the layout audit.
+if(process.env.STANDINGS_QA_FOCUS==='insets'){snapshots[0].playerSeason=structuredClone(snapshots[2].playerSeason);snapshots[0].playerSeason.players[6]={goals:123,twoMinutes:6};}
 for(const d of snapshots){d.checkedAt=now;for(const s of Object.values(d.status||{})){s.ok=true;s.updatedAt=now;}}
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.ttf':'font/ttf','.webmanifest':'application/manifest+json'};
 const server=http.createServer((req,res)=>{try{const f=path.resolve(dir,'.'+new URL(req.url,'http://local').pathname.replace(/\/$/,'/index.html'));if(!f.startsWith(dir+path.sep))throw Error();const content=fs.readFileSync(f);res.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream'});res.end(content);}catch{res.writeHead(404);res.end();}});
@@ -24,9 +26,9 @@ try{
  },{now,snapshots});
  const pages=await Promise.all([context.newPage(),context.newPage()]);for(const p of pages)p.on('pageerror',e=>errors.push(e.message));
  const axe=fs.readFileSync(process.env.GAMES_AXE_SCRIPT,'utf8');
- const balanceOnly=process.env.STANDINGS_QA_FOCUS==='balance';
+ const balanceOnly=process.env.STANDINGS_QA_FOCUS==='balance',insetsOnly=process.env.STANDINGS_QA_FOCUS==='insets';
  const page=pages[0],measure=()=>[...document.querySelectorAll('.standings-table tbody tr')].map(e=>{const r=e.getBoundingClientRect(),cells=[...e.children].filter(c=>getComputedStyle(c).display!=='none').map(c=>c.getBoundingClientRect());return {height:r.height,name:e.querySelector('.standing-name').textContent,overlap:cells.some((c,i)=>i&&c.left<cells[i-1].right-1),overflow:e.scrollWidth>e.clientWidth+1};});
- for(const width of (balanceOnly?[390,1280]:[320,375,390,430,1280]))for(const club of clubs)for(const theme of ['light','dark']){
+ for(const width of (balanceOnly?[390,1280]:insetsOnly?[320,390,430,1280]:[320,375,390,430,1280]))for(const club of clubs)for(const theme of ['light','dark']){
   await page.setViewportSize({width,height:844});await page.goto(origin+'/');await page.evaluate(t=>localStorage.setItem('fan-v1-theme',t),theme);
   await page.goto(origin+'/?club='+club+'&qa='+width+theme+'#season/table');await page.locator('.standings-table tbody tr').first().waitFor();await page.evaluate(async()=>document.fonts.ready);
   const check=async(label)=>{
@@ -45,7 +47,20 @@ try{
    await page.evaluate(axe);assert.deepEqual(await page.evaluate(async()=>(await axe.run(document.querySelector('.season-overview'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))),[],club+' '+theme+' visible season balance');
   }
 
-  if(club==='kadetten'&&!balanceOnly){await page.locator('[data-league="EHL"]').click();await check(club+'-ehl');}
+  if(insetsOnly){
+   const chart=page.locator('.season-goal-stats .goal-difference-chart');await chart.scrollIntoViewIfNeeded();
+   const inset=await chart.evaluate(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {left:parseFloat(s.paddingLeft),right:parseFloat(s.paddingRight),top:parseFloat(s.paddingTop),bottom:parseFloat(s.paddingBottom),overflow:e.scrollWidth>e.clientWidth+1,headingLeft:e.querySelector('h4').getBoundingClientRect().left-r.left};});
+   assert.ok(inset.left>=16&&inset.left===inset.right&&inset.top===inset.bottom&&!inset.overflow&&inset.headingLeft>=16,JSON.stringify({club,width,theme,inset}));
+   if(await chart.locator('summary').count()){await chart.locator('summary').click();assert.equal(await chart.locator('details').getAttribute('open'),'');}
+   const ranking=page.locator('.season-player-stats');if(await ranking.count()){
+    await ranking.scrollIntoViewIfNeeded();assert.ok(await ranking.locator('.player-leader').count()>0,'Fixture must exercise player rows');
+    const rows=await ranking.locator('.player-leader').evaluateAll(nodes=>nodes.map(e=>{const card=e.closest('.stats-block').getBoundingClientRect(),r=e.getBoundingClientRect(),rank=e.querySelector('.leader-rank'),value=e.querySelector(':scope > strong');const range=document.createRange();range.selectNodeContents(rank);const a=range.getBoundingClientRect();range.selectNode(value.firstChild);const b=range.getBoundingClientRect();const name=e.querySelector('.leader-name').getBoundingClientRect();return {left:a.left-card.left,right:card.right-b.right,inside:r.left>=card.left&&r.right<=card.right,overflow:e.scrollWidth>e.clientWidth+1,overlap:name.right>value.getBoundingClientRect().left+1};}));
+    assert.ok(rows.every(r=>r.inside&&!r.overflow&&!r.overlap&&Math.abs(r.left-r.right)<=4),JSON.stringify({club,width,theme,rows}));
+   }
+   await page.evaluate(axe);assert.deepEqual(await page.evaluate(async()=>(await axe.run(document.querySelector('.season-numbers'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.failureSummary)}))),[],club+' '+theme+' season chart and rankings');
+   if(process.env.STANDINGS_SCREENSHOTS&&width===390){await chart.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(process.env.STANDINGS_SCREENSHOTS,club+'-'+theme+'-chart.png')});}
+  }
+  if(club==='kadetten'&&!balanceOnly&&!insetsOnly){await page.locator('[data-league="EHL"]').click();await check(club+'-ehl');}
  }
  // Browser zoom/text enlargement: full team names can wrap without clipping.
  await page.setViewportSize({width:390,height:844});await page.goto(origin+'/?club=fcsg#season/table');await page.evaluate(()=>{document.querySelectorAll('.standing-name').forEach(e=>e.style.fontSize='20px');});assert.ok((await page.evaluate(measure)).every(r=>!r.overlap&&!r.overflow));
