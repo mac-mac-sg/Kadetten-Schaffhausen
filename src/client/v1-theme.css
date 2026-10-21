@@ -588,3 +588,36 @@ html:not([data-design='v2']) .home-matchday .live-match:not([hidden]) { grid-tem
 html:not([data-design='v2']) .home-matchday .live-heading { align-items:center; gap:8px; }
 html:not([data-design='v2']) .home-matchday .live-heading > span { flex:0 1 auto; min-width:0; max-width:65%; white-space:normal; line-height:1.2; }
 html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-width:0; text-align:right; overflow-wrap:anywhere; }
+
+/* Compact mobile standings: rank, crest/name + record, goals and points. */
+@media(max-width:640px) {
+ html:not([data-design='v2'])[data-theme] .standings-table tbody { gap:6px; }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr {
+  grid-template-columns:20px minmax(0,1fr) 50px 30px; gap:8px;
+  min-height:60px; padding:10px; border-radius:var(--v1-radius-inset);
+  box-shadow:none;
+ }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team { box-shadow:inset 3px 0 var(--accent); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:first-child { font-size:16px; line-height:1.25; color:var(--text); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:nth-child(4) { font-size:12px; color:var(--muted); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:last-child { font-size:24px; line-height:1.1; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team { gap:8px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > .crest { flex:none; width:28px; height:32px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > div { min-width:0; font-size:14px; line-height:1.25; }
+ html:not([data-design='v2'])[data-theme] .standings-table .standing-name { overflow-wrap:anywhere; font-weight:600; }
+ html:not([data-design='v2'])[data-theme] .standings-table .record-bar { height:4px; margin-top:6px; }
+ /* Keep the numerical balance and match count available to assistive technology. */
+ html:not([data-design='v2'])[data-theme] .standings-table :is(.record-text,.standing-meta) {
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+ }
+}
+@media(max-width:359px) {
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr { grid-template-columns:18px minmax(0,1fr) 46px 26px; gap:6px; padding-inline:8px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team { gap:6px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > .crest { width:24px; height:30px; }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:last-child { font-size:22px; }
+}
+@media(min-width:641px) {
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team .table-team .record-text { color:var(--text); }
+}
