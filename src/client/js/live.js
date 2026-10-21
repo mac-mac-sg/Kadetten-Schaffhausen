@@ -50,8 +50,8 @@ function paintHandballMatchday(slot,preview=false) {
       });
   const result = ended ? teamResult(g, handballTeamName()) : null;
   const sharedPreview = document.documentElement.dataset.design !== 'v2';
-  const previewLabel = sharedPreview ? liveEscape(matchPreviewLabel(g)) : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL';
-  const previewSchedule = sharedPreview ? liveEscape(matchPreviewSchedule(g)) : (relativeDay(g.date) ? relativeDay(g.date) + ' · ' : '') + matchDate + (g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen');
+  const previewLabel = live || ended ? '' : sharedPreview ? liveEscape(matchPreviewLabel(g)) : today ? '<i aria-hidden="true"></i>MATCHDAY' : 'NÄCHSTES SPIEL';
+  const previewSchedule = live || ended ? '' : sharedPreview ? liveEscape(matchPreviewSchedule(g)) : (relativeDay(g.date) ? relativeDay(g.date) + ' · ' : '') + matchDate + (g.time ? ' · ' + liveEscape(g.time) + ' Uhr' : ' · Anspielzeit noch offen');
   const html = `<div class="live-heading"><span>${live ? '<i aria-hidden="true"></i>JETZT LIVE' : ended ? 'HEUTE GESPIELT' : previewLabel}</span><small>${liveEscape(g.league)}${live && g.phase ? ' · ' + liveEscape(g.phase) : ''}${live && g.clock ? ' · ' + liveEscape(g.clock) : ''}</small></div><div class="live-score"><span class="${isOwnHandballTeam(teamName(g.home)) ? 'arena-team' : ''}">${badge(g.home)}<b>${liveEscape(g.home)}</b></span><strong>${live || ended ? (g.score ? g.score.join(' : ') : '– : –') : 'VS'}</strong><span class="${isOwnHandballTeam(teamName(g.away)) ? 'arena-team' : ''}">${badge(g.away)}<b>${liveEscape(g.away)}</b></span></div>${live ? '<span class="live-link">Spiel live verfolgen</span>' : ended ? `<p class="match-preview-time">${result.label} · Zum Resultat und Rückblick</p>` : `<p class="match-preview-time">${previewSchedule}</p>${today ? `<p class="home-countdown${countdownSoon(g) ? ' is-soon' : ''}" data-countdown="${g.id}">${countdownText(g)}</p>` : ''}`}`;
   slot.href = live ? liveMatchHref(live) : '#match/' + encodeURIComponent(g.id) + '/overview';
   slot.removeAttribute('target');
