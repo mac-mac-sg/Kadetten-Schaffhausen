@@ -24,14 +24,19 @@ assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.
 assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
 for(const base of ['dist/client','dist/client/v2']) {
  const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
- assert.equal(appManifest.name,'Meine Vereine');assert.equal(appManifest.short_name,base==='dist/client'?'Vereine':'Meine Vereine');
+ const appName=base==='dist/client'?'Matchday':'Meine Vereine';
+ assert.equal(appManifest.name,appName);assert.equal(appManifest.short_name,appName);
  const html=fs.readFileSync(base+'/index.html','utf8');
- assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+(base==='dist/client'?'Vereine':'Meine Vereine')+'"'),'Installed app label must stay isolated per version');
+ assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+appName+'"'),'Installed app label must stay isolated per version');
+ assert.ok(html.includes('<title>'+appName+' ·'),'Browser title must use the version-specific app name');
+ const bundle=fs.readFileSync(base+'/js/app.js','utf8');
+ assert.ok(bundle.includes(appName+' wurde installiert.'));
+ assert.ok(bundle.includes((base==='dist/client'?'Matchday':'Deine Vereine')+' auf dem Startbildschirm'));
  assert.match(html,/data-club-layout="modern"/);
  if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
  for(const [,file] of html.matchAll(/(?:src|href)="((?:assets|js)\/[^"?#]+|app.css|platform-config.js|manifest.webmanifest)/g))assert.ok(fs.existsSync(base+'/'+file),'Missing asset: '+base+'/'+file);
  const csp=html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
  if(base.endsWith('/v2'))for(const [,code] of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)){if(code)assert.ok(csp.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"),'V2 inline script blocked by CSP');}
- const sw=fs.readFileSync(base+'/sw.js','utf8');assert.ok(sw.includes('encodeURIComponent(BASE.pathname)'),'Worker cache scope missing');
+ const sw=fs.readFileSync(base+'/sw.js','utf8');assert.ok(sw.includes('<h1>'+appName+'</h1>'));assert.ok(sw.includes(appName+' · Offline'));assert.ok(sw.includes('encodeURIComponent(BASE.pathname)'),'Worker cache scope missing');
 }
 console.log('Original/V2 isolation, PWA scopes, cache namespaces and assets verified.');
