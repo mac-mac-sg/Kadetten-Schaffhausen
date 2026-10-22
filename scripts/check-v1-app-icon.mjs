@@ -24,9 +24,10 @@ try{
   const intro=page.locator('.install-intro[open]');await intro.waitFor();
   assert.equal(await intro.locator('h2').textContent(),'Matchday auf dem Startbildschirm');
   await page.evaluate(()=>window.dispatchEvent(new Event('appinstalled')));assert.equal(await page.locator('#app-feedback').textContent(),'Matchday wurde installiert.');
-  const img=intro.locator('img');assert.equal(await img.getAttribute('src'),'assets/app-v1-scarf-192.png');await img.evaluate(el=>el.decode());assert.equal(await img.evaluate(el=>el.naturalWidth),192);
-  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'assets/app-v1-scarf-favicon-64.png');assert.equal(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'assets/app-v1-scarf-apple-180.png');
+  const img=intro.locator('img');assert.equal(await img.getAttribute('src'),'assets/app-v1-scarf-glow-192.png');await img.evaluate(el=>el.decode());assert.equal(await img.evaluate(el=>el.naturalWidth),192);
+  assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'assets/app-v1-scarf-glow-favicon-64.png');assert.equal(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),'assets/app-v1-scarf-glow-apple-180.png');
   const manifest=await (await page.request.get(origin+'/'+await page.locator('link[rel="manifest"]').getAttribute('href'))).json();assert.equal(manifest.name,'Matchday');assert.equal(manifest.short_name,'Matchday');assert.equal(await page.locator('meta[name="apple-mobile-web-app-title"]').getAttribute('content'),'Matchday');assert.ok(manifest.icons.every(icon=>icon.src.includes('app-v1-scarf')));
+  for(const icon of manifest.icons)assert.equal(await page.evaluate(async src=>{const image=new Image();image.src=src;await image.decode();return image.naturalWidth;},icon.src),Number(icon.sizes.split('x')[0]));
   await page.evaluate(axe);let audit=await page.evaluate(()=>axe.run());assert.deepEqual(audit.violations.map(v=>v.id),[],JSON.stringify(audit.violations));
   if(process.env.APP_ICON_SCREENSHOT&&width===390)await page.screenshot({path:process.env.APP_ICON_SCREENSHOT+'-'+theme+'.png'});
   await intro.locator('[data-later]').click();await page.locator('#app h1').waitFor();

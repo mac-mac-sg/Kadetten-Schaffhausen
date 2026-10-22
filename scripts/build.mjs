@@ -17,9 +17,9 @@ let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(!v2){
   // App identity is separate from the club crests and is changed only in V1.
-  const icons=['app-v1-scarf-192.png','app-v1-scarf-512.png','app-v1-scarf-maskable-512.png','app-v1-scarf-apple-180.png','app-v1-scarf-favicon-64.png'];
+  const icons=['app-v1-scarf-glow-192.png','app-v1-scarf-glow-512.png','app-v1-scarf-glow-maskable-512.png','app-v1-scarf-glow-apple-180.png','app-v1-scarf-glow-favicon-64.png'];
   shellFiles.push(...icons.map(name=>'assets/'+name));
-  html=html.replace('href="assets/apple-touch-icon.png"','href="assets/app-v1-scarf-apple-180.png"').replace('rel="icon" href="assets/logo.png"','rel="icon" type="image/png" sizes="64x64" href="assets/app-v1-scarf-favicon-64.png"');
+  html=html.replace('href="assets/apple-touch-icon.png"','href="assets/app-v1-scarf-glow-apple-180.png"').replace('rel="icon" href="assets/logo.png"','rel="icon" type="image/png" sizes="64x64" href="assets/app-v1-scarf-glow-favicon-64.png"');
   html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Matchday"').replace('<title>Meine Vereine ·', '<title>Matchday ·');
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
   manifest.name='Matchday';
@@ -45,7 +45,7 @@ if(!v2)sw=sw.replaceAll('Meine Vereine · Offline','Matchday · Offline').replac
 const scripts=[...html.matchAll(/<script src="([^"?]+)"[^>]*><\/script>/g)].map(m=>m[1]).filter(file=>file!=='platform-config.js');
 const styles=[...html.matchAll(/<link rel="stylesheet" href="([^"?]+)"[^>]*>/g)].map(m=>m[1]);
 fs.mkdirSync('dist/client/js',{recursive:true});
-await build({stdin:{contents:(v2?`const v2Storage={getItem:k=>window.localStorage.getItem('v2:'+k),setItem:(k,v)=>window.localStorage.setItem('v2:'+k,v),removeItem:k=>window.localStorage.removeItem('v2:'+k)};\n`:'')+scripts.map(file=>{let text=fs.readFileSync('dist/client/'+file,'utf8');if(!v2&&file==='pwa.js')text=text.replace('assets/icon-192.png','assets/app-v1-scarf-192.png').replace('Deine Vereine auf dem Startbildschirm','Matchday auf dem Startbildschirm').replace('Meine Vereine wurde installiert.','Matchday wurde installiert.');return v2?text.replace(/\blocalStorage\b/g,'v2Storage'):text;}).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
+await build({stdin:{contents:(v2?`const v2Storage={getItem:k=>window.localStorage.getItem('v2:'+k),setItem:(k,v)=>window.localStorage.setItem('v2:'+k,v),removeItem:k=>window.localStorage.removeItem('v2:'+k)};\n`:'')+scripts.map(file=>{let text=fs.readFileSync('dist/client/'+file,'utf8');if(!v2&&file==='pwa.js')text=text.replace('assets/icon-192.png','assets/app-v1-scarf-glow-192.png').replace('Deine Vereine auf dem Startbildschirm','Matchday auf dem Startbildschirm').replace('Meine Vereine wurde installiert.','Matchday wurde installiert.');return v2?text.replace(/\blocalStorage\b/g,'v2Storage'):text;}).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
 const {transform}=await import('esbuild');
 const css=await transform(styles.map(file=>fs.readFileSync('dist/client/'+file,'utf8')).join('\n'),{loader:'css',target:'es2022',minify:true,legalComments:'none'});
 fs.writeFileSync('dist/client/app.css',css.code);
