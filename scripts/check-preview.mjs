@@ -24,8 +24,9 @@ assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.
 assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
 for(const base of ['dist/client','dist/client/v2']) {
  const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
- assert.equal(appManifest.name,'Meine Vereine');assert.equal(appManifest.short_name,'Meine Vereine');
+ assert.equal(appManifest.name,'Meine Vereine');assert.equal(appManifest.short_name,base==='dist/client'?'Vereine':'Meine Vereine');
  const html=fs.readFileSync(base+'/index.html','utf8');
+ assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+(base==='dist/client'?'Vereine':'Meine Vereine')+'"'),'Installed app label must stay isolated per version');
  assert.match(html,/data-club-layout="modern"/);
  if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
  for(const [,file] of html.matchAll(/(?:src|href)="((?:assets|js)\/[^"?#]+|app.css|platform-config.js|manifest.webmanifest)/g))assert.ok(fs.existsSync(base+'/'+file),'Missing asset: '+base+'/'+file);

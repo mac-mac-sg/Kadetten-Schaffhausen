@@ -108,3 +108,5 @@ Das Verhalten gilt für Handball- und FCSG-Spielseiten in V1. Ein Laschenwechsel
 ## App-Symbol V1
 
 Der Pages-Build setzt ausschliesslich für V1 das freigegebene Fanschal-Symbol ein: `assets/app-v1-scarf-*` in 192/512 px, mit zusätzlicher Maskable-Version, Apple-Touch-Icon (180 px) und Favicon (64 px). Die Grafik wurde aus dem genehmigten Bildentwurf abgeleitet und für die Icon-Grössen verkleinert. Das Maskable-Symbol hat zusätzliche Randreserve. Neue Dateinamen lösen die Erkennung einer Icon-Änderung durch installierte Browser-Apps aus. Der Build hasht und speichert die Symbole in der Offline-Hülle. Vereinswappen unter `assets/logo.png` und die V2-Installationssymbole bleiben erhalten. `scripts/check-preview.mjs` prüft diese Grenze. Der lokale ungebündelte Entwicklungsserver nutzt weiterhin die ursprüngliche Hülle; das installierbare V1-Paket entsteht durch `npm run build:pages`.
+
+V1 verwendet für den Startbildschirm den Kurznamen «Vereine» (`short_name` und Apple-Web-App-Titel), damit die Beschriftung unter dem Symbol weniger Platz braucht. Der vollständige App-Name bleibt «Meine Vereine». Diese Änderung erfolgt ausschliesslich im V1-Build.
