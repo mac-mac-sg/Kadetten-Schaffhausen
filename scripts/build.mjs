@@ -20,7 +20,9 @@ if(!v2){
   const icons=['app-v1-scarf-192.png','app-v1-scarf-512.png','app-v1-scarf-maskable-512.png','app-v1-scarf-apple-180.png','app-v1-scarf-favicon-64.png'];
   shellFiles.push(...icons.map(name=>'assets/'+name));
   html=html.replace('href="assets/apple-touch-icon.png"','href="assets/app-v1-scarf-apple-180.png"').replace('rel="icon" href="assets/logo.png"','rel="icon" type="image/png" sizes="64x64" href="assets/app-v1-scarf-favicon-64.png"');
+  html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Vereine"');
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
+  manifest.short_name='Vereine';
   manifest.icons=manifest.icons.map(icon=>({...icon,src:'assets/'+({'assets/icon-192.png':icons[0],'assets/icon-512.png':icons[1],'assets/icon-maskable-512.png':icons[2]}[icon.src]||icon.src.replace('assets/',''))}));
   fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
 }
