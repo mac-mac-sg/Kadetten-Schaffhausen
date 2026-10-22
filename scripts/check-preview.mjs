@@ -15,8 +15,10 @@ assert.doesNotMatch(previewHtml,/data-design="v2"/);
 assert.match(previewHtml,/localStorage.getItem\('v2:fan-v1-theme'\)/,'Early theme must use isolated V2 preference');
 assert.ok(preview.includes('v2:'),'V2 storage namespace missing');
 const manifest=JSON.parse(fs.readFileSync('dist/client/v2/manifest.webmanifest','utf8'));
-assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.short_name,'Vereine V2');
+assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Meine Vereine');assert.equal(manifest.short_name,'Meine Vereine');
 for(const base of ['dist/client','dist/client/v2']) {
+ const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
+ assert.equal(appManifest.name,'Meine Vereine');assert.equal(appManifest.short_name,'Meine Vereine');
  const html=fs.readFileSync(base+'/index.html','utf8');
  assert.match(html,/data-club-layout="modern"/);
  if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
