@@ -16,6 +16,12 @@ assert.match(previewHtml,/localStorage.getItem\('v2:fan-v1-theme'\)/,'Early them
 assert.ok(preview.includes('v2:'),'V2 storage namespace missing');
 const manifest=JSON.parse(fs.readFileSync('dist/client/v2/manifest.webmanifest','utf8'));
 assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Meine Vereine');assert.equal(manifest.short_name,'Meine Vereine');
+const v1Manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
+assert.deepEqual(v1Manifest.icons.map(i=>i.src),['assets/app-v1-scarf-192.png','assets/app-v1-scarf-512.png','assets/app-v1-scarf-maskable-512.png']);
+assert.deepEqual(manifest.icons.map(i=>i.src),['assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'],'V2 app identity must stay unchanged');
+assert.ok(original.includes('assets/app-v1-scarf-192.png')&&!preview.includes('assets/app-v1-scarf-192.png'),'Install introduction must use the new app icon only in V1');
+assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.png"/);
+assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
 for(const base of ['dist/client','dist/client/v2']) {
  const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
  assert.equal(appManifest.name,'Meine Vereine');assert.equal(appManifest.short_name,'Meine Vereine');
