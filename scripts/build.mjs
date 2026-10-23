@@ -12,13 +12,14 @@ fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JS
 
 // Content-version the complete shell on every build, including future UI edits.
 const {createHash}=await import('node:crypto');
-const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/push-settings.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/club-design.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','club-design.css','pwa.js','manifest.webmanifest','assets/anton.ttf','assets/bbc-arena-hall.webp','assets/fcsg-stadium.jpg','assets/otmar-kreuzbleiche.webp'];
+const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/push-settings.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/club-design.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','club-design.css','pwa.js','manifest.webmanifest','assets/anton.woff2','assets/bbc-arena-hall.webp','assets/fcsg-stadium.webp','assets/otmar-kreuzbleiche.webp'];
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(!v2){
   // App identity is separate from the club crests and is changed only in V1.
   const icons=['app-v1-scarf-glow-192.png','app-v1-scarf-glow-512.png','app-v1-scarf-glow-maskable-512.png','app-v1-scarf-glow-apple-180.png','app-v1-scarf-glow-favicon-64.png'];
-  shellFiles.push(...icons.map(name=>'assets/'+name));
+  // Die 512-px-Icons braucht nur das Betriebssystem beim Installieren; sie werden nicht offline vorgeladen.
+  shellFiles.push(...icons.filter(name=>!name.includes('-512')).map(name=>'assets/'+name));
   html=html.replace('href="assets/apple-touch-icon.png"','href="assets/app-v1-scarf-glow-apple-180.png"').replace('rel="icon" href="assets/logo.png"','rel="icon" type="image/png" sizes="64x64" href="assets/app-v1-scarf-glow-favicon-64.png"');
   html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Matchday"').replace('<title>Meine Vereine ·', '<title>Matchday ·');
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));

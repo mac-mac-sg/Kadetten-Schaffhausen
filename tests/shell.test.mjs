@@ -46,7 +46,7 @@ test('Alle drei Arena-Hintergründe sind lokal verfügbar und gehören zur Offli
   const css = fs.readFileSync('src/client/enhancements.css', 'utf8');
   const shell = list(sw, /const SHELL=\[([^\]]*)\]/);
   const hashed = list(build, /const shellFiles=\[([^\]]*)\]/);
-  for (const asset of ['assets/bbc-arena-hall.webp', 'assets/fcsg-stadium.jpg', 'assets/otmar-kreuzbleiche.webp']) {
+  for (const asset of ['assets/bbc-arena-hall.webp', 'assets/fcsg-stadium.webp', 'assets/otmar-kreuzbleiche.webp']) {
     assert.ok(css.includes("url('" + asset + "')"), 'Arena-Foto fehlt in der Kopfzeile: ' + asset);
     assert.ok(fs.statSync('src/client/' + asset).size > 1000, 'Arena-Datei fehlt oder ist leer: ' + asset);
     assert.ok(shell.includes(asset), 'Arena-Foto fehlt offline: ' + asset);

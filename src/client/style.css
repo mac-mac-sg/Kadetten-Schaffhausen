@@ -1,6 +1,6 @@
 @font-face {
   font-family: Anton;
-  src: url('assets/anton.ttf') format('truetype');
+  src: url('assets/anton.woff2') format('woff2');
   font-display: swap;
 }
 /* Gestaltungswerte: Farben und Schriften nur hier ändern. */
