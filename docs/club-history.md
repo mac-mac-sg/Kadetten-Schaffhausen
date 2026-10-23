@@ -16,3 +16,9 @@ Die öffentlich erreichbaren Originalbilder werden direkt vom Vereinsarchiv gela
 Titelkategorien und Titeljahre sind native Buttons mit gedrücktem Zustand; Ereignisdelegation funktioniert auch nach dem Austausch der Jahresauswahl. Historische Titel führen direkt in den Trophäenschrank und zurück ins passende Kapitel. Der feine vertikale Jahresstrahl links folgt der aktuell sichtbaren Station und scrollt bei Bedarf innerhalb seiner eigenen Leiste mit. Die gesamte Zeitreise ist frei scrollbar, ohne Einrastpunkte oder Scroll-Lock. Direkte Sprünge über die Jahresbuttons setzen den Tastaturfokus auf die Überschrift. Animationen sind bei reduzierter Bewegung deaktiviert. Ohne IntersectionObserver bleiben alle Inhalte und Sprungbuttons zugänglich.
 
 Die historische Redaktion ist bewusst statisch. Neue Titel müssen in `data/club.js` nach einer Prüfung der offiziellen Quellen ergänzt werden; die Zweistunden- und Live-Aktualisierung für News und Spiele bleibt bestehen.
+
+## V1: Bildsprache in News und Geschichte (23. Oktober 2026)
+
+Die erste News erhält ein grösseres Aufmacherfoto mit Titel darunter (auf Desktop daneben). Weitere Meldungen erscheinen als kompakte Zeilen mit Bild, vollständigem Titel, Datum und dem bestehenden Pfeil. Reihenfolge und Datenquellen bleiben bestehen; weitere Bilder laden verzögert.
+
+In der Geschichte stehen Jahr und Titel unmittelbar vor dem zugehörigen Archivfoto. Originale Bildausschnitte und Nachweise bleiben erhalten. Kapitel ohne Foto erhalten keine wiederholte Wappen-Jahresgrafik. Die offizielle Otmar-Chronik enthält derzeit nur das bereits eingebundene Einstiegsfoto, keine zuordenbaren historischen Kapitelbilder; es werden keine aktuellen Fotos als historische Aufnahmen ausgegeben. Als visueller Abschluss folgt bei allen drei Vereinen die vorhandene Aufnahme ihrer heutigen Heimstätte, ausdrücklich so beschriftet. V2 bleibt bei der bisherigen Darstellung.

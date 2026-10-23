@@ -29,6 +29,25 @@ function v2ClubPage(markup) {
   intro.innerHTML=`<figure class="v2-club-hero-media">${photo?.outerHTML||''}${caption?`<figcaption>${caption.innerHTML}</figcaption>`:''}</figure><div class="v2-club-hero-copy">${v2ClubCurve()}<p class="v2-club-label">Unser Verein</p><h1 id="club-title">${liveEscape(club.name)}</h1><p>${liveEscape(club.line)}</p></div>`;
   shell.querySelector('#club-cabinet-title').textContent='Unsere Erfolge';
   shell.querySelector('#club-history-title').textContent='Unsere Geschichte';
+  if(document.documentElement.dataset.preview!=='v2'&&document.documentElement.dataset.design!=='v2') {
+    root.classList.add('club-editorial');
+    root.querySelectorAll('.club-chapter').forEach(chapter=>{
+      const copy=chapter.querySelector('.club-chapter-copy');
+      const heading=document.createElement('header');heading.className='club-chapter-heading';
+      heading.append(copy.querySelector('.club-chapter-year'),copy.querySelector('h3'));
+      chapter.prepend(heading);
+      chapter.querySelector('.fcsg-history-mark')?.remove();
+    });
+    const home={
+      kadetten:{name:'BBC Arena, Schaffhausen',alt:'Innenraum der BBC Arena in Schaffhausen'},
+      fcsg:{name:'Stadion in St. Gallen',alt:'Blick auf das Stadion des FC St. Gallen'},
+      otmar:{name:'Kreuzbleiche, St. Gallen',alt:'Handballhalle Kreuzbleiche in St. Gallen'}
+    }[activeClub==='fcsg'?'fcsg':activeClub==='otmar'?'otmar':'kadetten'];
+    const today=document.createElement('section');today.className='club-home-photo';
+    today.setAttribute('aria-labelledby','club-home-title');
+    today.innerHTML=`<p class="club-eyebrow">Geschichte lebt weiter</p><h2 id="club-home-title">Hier sind wir zuhause.</h2><figure><img src="${club.photo}" alt="${liveEscape(home.alt)}" loading="lazy" decoding="async"><figcaption>${liveEscape(home.name)} · Unsere heutige Heimstätte</figcaption></figure>`;
+    root.querySelector('.club-credits').before(today);
+  }
   return shell.innerHTML;
 }
 const v2SharedClubPage=clubPage;
