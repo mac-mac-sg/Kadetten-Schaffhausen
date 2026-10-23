@@ -24,6 +24,7 @@ test('Production shell loads the approved shared design before main',()=>{
 test('V2 club entry is one whole link before every player group and preserves the full club archive',()=>{
  const {document}=parseHTML('<html><body></body></html>'),noop=()=>{},fake=()=>({classList:{toggle:noop,add:noop,remove:noop},style:{},dataset:{},setAttribute:noop});
  const context=vm.createContext({document:{hidden:false,createElement:tag=>document.createElement(tag),createTextNode:t=>document.createTextNode(t),body:fake(),documentElement:fake(),querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:noop},location:{hash:'#season/squad',href:'https://example.test/v2/'},navigator:{onLine:true},window:{addEventListener:noop,scrollTo:noop},localStorage:{getItem:()=>null,setItem:noop},setInterval:()=>0,setTimeout:()=>0,clearTimeout:noop,clearInterval:noop,requestAnimationFrame:noop,cancelAnimationFrame:noop,fetch:()=>Promise.reject(Error('offline')),apiFetch:()=>Promise.reject(Error('offline')),console});
+ context.document.documentElement.dataset.preview='v2';
  const scripts=[...fs.readFileSync('src/client/index.html','utf8').matchAll(/<script src="([^"?]+)/g)].map(m=>m[1]).filter(s=>(s.startsWith('js/')||s.startsWith('data/')||s==='enhancements.js')&&s!=='js/main.js'&&s!=='js/club-design.js');
  for(const file of scripts)vm.runInContext(fs.readFileSync('src/client/'+file,'utf8'),context,{filename:file});
  const run=code=>vm.runInContext(code,context),parse=html=>{const root=document.createElement('div');root.innerHTML=html;return root;};

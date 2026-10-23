@@ -931,3 +931,33 @@ test('Handball live cards accept API matches without a fixture date and update t
   }
  }finally{context.document.documentElement.dataset.design=design;run("activeClub='kadetten'");}
  });
+
+test('V1 gewichtet den Newsaufmacher und ordnet Archivfotos ihrem Kapitel zu; V2 bleibt erhalten',()=>{
+ for(const club of ['kadetten','fcsg','otmar']){
+  run(`activeClub='${club}'`);
+  try {
+   const news=parseHTML(view(club==='fcsg'?'fcsgHome()':'home()')).document;
+   assert.equal(news.querySelectorAll('.news-featured').length,1);
+   assert.equal(news.querySelector('.news-featured').id,'story-0');
+   assert.equal(news.querySelectorAll('.news-compact').length,news.querySelectorAll('.v1-news-card').length-1);
+   const history=parseHTML(view(club==='fcsg'?'fcsgClubPage()':'clubPage()')).document;
+   assert.equal(history.querySelectorAll('h1').length,1);
+   assert.equal(history.querySelector('.fcsg-history-mark'),null);
+   for(const chapter of history.querySelectorAll('.club-chapter')){
+    assert.ok(chapter.firstElementChild.matches('.club-chapter-heading'));
+    assert.equal(chapter.querySelectorAll('h3').length,1);
+    assert.ok(chapter.querySelector('.club-chapter-copy > p'));
+    if(chapter.querySelector('figure'))assert.ok(chapter.querySelector('figcaption').textContent);
+   }
+   assert.match(history.querySelector('.club-home-photo figcaption').textContent,/heutige Heimstätte/);
+   assert.ok(history.querySelector('.club-home-photo img').getAttribute('alt'));
+   for(const marker of ['preview','design']){
+    context.document.documentElement.dataset[marker]='v2';
+    try {
+     assert.doesNotMatch(view(club==='fcsg'?'fcsgHome()':'home()'),/news-featured|news-compact/);
+     assert.doesNotMatch(view(club==='fcsg'?'fcsgClubPage()':'clubPage()'),/club-editorial|club-home-photo|club-chapter-heading/);
+    } finally {delete context.document.documentElement.dataset[marker];}
+   }
+  } finally {run("activeClub='kadetten'");}
+ }
+});
