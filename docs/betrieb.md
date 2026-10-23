@@ -12,7 +12,7 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 | Datenaktualisierung | GitHub Actions: Workflow «Cloudflare-Datenaktualisierung» (`cloudflare-update.yml`), Zeitplan Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20 (ausgelöst ausschliesslich vom Cron-Trigger des Workers), jederzeit auch manuell | Holt Quellen, rechnet, schreibt Datenstand, Artikel, Berichte, FCSG, Matchprogramm des nächsten Heimspiels und die Match-Vorschauen |
 | Match-Vorschauen | im selben Lauf; KI von Cloudflare Workers AI (Mistral Small 3.1) mit sachlichem Text als Rückfall, Details [vorschauen.md](vorschauen.md) | Abschaltbar mit der Repository-Variable `KI_VORSCHAU` = `aus` |
 | Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/`. Liest vom Cloudflare-Datendienst (`WidgetRepository.java`), wie die App. Bereits installierte ältere APKs benötigen die neue Widget-Version. |
-| Bisheriger Sites-Dienst | ChatGPT Sites, https://kadetten.ma-ra10.chatgpt.site | Wird von App und Aktualisierung nicht mehr gelesen. Im Repository ist Phase 4 umgesetzt (Import und Live-Routen-Prüfung entfernt, am 23. Oktober 2026). Das Abschalten des Dienstes selbst erledigt der Eigentümer bei ChatGPT Sites; bereits installierte ältere Widget-APKs lesen bis dahin noch dort |
+| Bisheriger Sites-Dienst | ChatGPT Sites, https://kadetten.ma-ra10.chatgpt.site | **Abgeschaltet** vom Eigentümer am 23. Oktober 2026 (Phase 4). Import und Live-Routen-Prüfung sind aus dem Repository entfernt. Ältere Widget-APKs, die noch dort lasen, zeigen keine Daten mehr und benötigen die neue Widget-Version |
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - **GitHub-Secrets:** `CLOUDFLARE_API_TOKEN` (Cloudflare-Token mit den Berechtigungen für Workers-Skripte, Workers KV Storage: Edit und Workers AI: Edit) und `CLOUDFLARE_ACCOUNT_ID`. Optional `KADETTEN_UPDATE_KEY`: wird nur gebraucht, wenn Dritte per `POST` in den Datendienst schreiben sollen; im Regelbetrieb nicht eingerichtet.
@@ -40,7 +40,7 @@ Der Schreiblauf von `cloudflare-update.yml` sichert am Spieltag und am Folgetag 
 - [x] Wie wird der Datendienst neu bereitgestellt? Workflow «Cloudflare-Datendienst bereitstellen» (automatisch bei Serveränderungen, zusätzlich manuell).
 - [ ] Ist Branchschutz auf `main` eingerichtet (README sagt: noch nicht)?
 - [ ] Wer ist Ansprechperson bei den Vereinen für Bild- und Textrechte?
-- [ ] Bisherigen Sites-Dienst bei ChatGPT Sites abschalten (Phase 4, Repository-Seite erledigt). Zuvor prüfen, ob noch ältere Widget-APKs im Umlauf sind.
+- [x] Bisheriger Sites-Dienst abgeschaltet (Phase 4, 23. Oktober 2026).
 
 ## Verfügbarkeit und Rückfall
 Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand. Quellenfehler beim Aktualisieren behalten den letzten gültigen Stand je Quelle.
