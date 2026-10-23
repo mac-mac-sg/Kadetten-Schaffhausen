@@ -892,7 +892,8 @@ test('Completed V1 recap starts with the concrete report and has compact details
   assert.match(markup,/bestätigten Spieldaten der SHV/);assert.doesNotMatch(markup,/Spieldaten der EHF/);
   run(`delete ehfArchive['recap-test']`);const waiting=parseHTML(view('matchOverview(recapFixture)')).document;
   assert.equal(waiting.querySelectorAll('h1').length,1);assert.ok(waiting.querySelector('[role="status"]'));assert.match(waiting.querySelector('.match-recap-waiting').textContent,/42 : 26/);
-  assert.match(view('matchOverview({...recapFixture,score:null})'),/match-hero/);
+  const preview=parseHTML(view('matchOverview({...recapFixture,score:null})')).document;
+  assert.equal(preview.querySelector('.match-hero'),null);assert.equal(preview.querySelectorAll('h1').length,1);assert.ok(preview.querySelector('[data-match-preview]'));
   context.document.documentElement.dataset.design='v2';assert.match(view('matchOverview(recapFixture)'),/match-hero/);
  }finally{context.document.documentElement.dataset.design=design;run(`delete ehfArchive['recap-test']`);}
 });
@@ -915,3 +916,18 @@ test('Handball live cards accept API matches without a fixture date and update t
   }
  }finally{run(`activeClub='${previous}';liveState=null;lastLiveMatch=null;lastLiveDate=null`);delete context.__liveSlot;delete context.__liveOwn;}
 });
+
+ test('V1-Handballvorschau beginnt bei beiden Vereinen direkt mit Inhalt, V2 behält das Foto',()=>{
+ const design=context.document.documentElement.dataset.design;
+ try{
+  for(const club of ['kadetten','otmar']){
+   run(`activeClub='${club}'`);context.document.documentElement.dataset.design='';
+   run("globalThis.previewNoHero=(activeClub==='otmar'?otmarFallback.games:games).find(g=>!g.score)");
+   const markup=view('match(previewNoHero,"overview")'),doc=parseHTML(markup).document;
+   assert.equal(doc.querySelector('.match-hero'),null);assert.doesNotMatch(markup,/ZUSAMMEN|FÜR ORANGE|ZÄMÄSTOH/);
+   assert.equal(doc.querySelectorAll('h1').length,1);assert.ok(doc.querySelector('[data-match-preview]'));assert.ok(doc.querySelector('.facts'));assert.ok(doc.querySelector('.match-tabs'));
+   context.document.documentElement.dataset.design='v2';assert.ok(parseHTML(view('matchOverview(previewNoHero)')).document.querySelector('.match-hero'));
+   context.document.documentElement.dataset.design='';context.document.documentElement.dataset.preview='v2';assert.ok(parseHTML(view('matchOverview(previewNoHero)')).document.querySelector('.match-hero'));delete context.document.documentElement.dataset.preview;
+  }
+ }finally{context.document.documentElement.dataset.design=design;run("activeClub='kadetten'");}
+ });

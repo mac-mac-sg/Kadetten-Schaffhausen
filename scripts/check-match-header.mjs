@@ -23,7 +23,8 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
   await page.locator('#club-settings').click();await page.locator('[data-v1-light-mode]').setChecked(theme==='light');await page.locator('[data-close-clubs]').click();
   const bar=page.locator('.match-sticky-bar');assert.equal(await bar.count(),1);assert.equal(await bar.evaluate(e=>e.classList.contains('is-collapsed')),false,club+' starts expanded');
   const fullHeight=await page.locator('[data-match-full]').evaluate(e=>e.getBoundingClientRect().height);assert.ok(fullHeight>100);
-  const content=page.locator(club==='fcsg'?'#fcsg-live-panel':'.match-hero');const before=await content.evaluate(e=>e.getBoundingClientRect().top+scrollY);
+  const content=page.locator(club==='fcsg'?'#fcsg-live-panel':'.match > .content');if(club!=='fcsg'){assert.equal(await page.locator('.match-hero').count(),0);assert.equal(await content.locator('h1').count(),1);}
+  const before=await content.evaluate(e=>e.getBoundingClientRect().top+scrollY);
   await page.evaluate(()=>scrollTo({top:500,behavior:'instant'}));await pause();
   assert.equal(await bar.evaluate(e=>e.classList.contains('is-collapsed')),true,club+' collapses');
   const after=await content.evaluate(e=>e.getBoundingClientRect().top+scrollY);assert.ok(Math.abs(before-after)<1,club+' has no layout jump');
@@ -39,6 +40,6 @@ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://12
  await page.setViewportSize({width:390,height:844});const game=matches.find(m=>m.club==='fcsg').game;await page.goto(origin+'/?club=fcsg#match/'+game.id+'/ticker');await page.waitForTimeout(500);await page.evaluate(()=>scrollTo({top:500,behavior:'instant'}));await pause();
  await page.locator('.fcsg-match-header .matchup > strong').evaluate(e=>e.textContent='2 : 1');await page.locator('.fcsg-match-header [data-fcsg-phase]').evaluate(e=>e.textContent='JETZT LIVE · 63′');await pause();assert.match(await page.locator('.match-compact-detail').textContent(),/2 : 1.*63/);
  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.match-compact-header').evaluate(e=>getComputedStyle(e).transitionDuration),'0s');
- await page.goto(origin+'/v2/?club=kadetten#match/'+matches[0].game.id+'/overview');await page.waitForTimeout(300);assert.equal(await page.locator('.match-sticky-bar').count(),0);
+ await page.goto(origin+'/v2/?club=kadetten#match/'+matches[0].game.id+'/overview');await page.waitForTimeout(300);assert.equal(await page.locator('.match-hero').count(),1);
  assert.deepEqual(errors,[]);if(process.env.MATCH_HEADER_REPORT)fs.writeFileSync(process.env.MATCH_HEADER_REPORT,JSON.stringify({reports,errors},null,2));console.log(reports.length+' collapsing-header accessibility checks passed.');await ctx.close();
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
