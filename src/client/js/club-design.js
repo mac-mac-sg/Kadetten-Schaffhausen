@@ -4,7 +4,7 @@ function v2ClubIdentity() {
   const club = activeClub === 'fcsg' ? 'fcsg' : activeClub === 'otmar' ? 'otmar' : 'kadetten';
   return {
     kadetten: {name:'Kadetten Schaffhausen',line:'Schaffhausen. Handball. Leidenschaft.',photo:'assets/bbc-arena-hall.webp'},
-    fcsg: {name:'FC St.Gallen 1879',line:'St. Gallen. Fussball. Seit 1879.',photo:'assets/fcsg-stadium.jpg'},
+    fcsg: {name:'FC St.Gallen 1879',line:'St. Gallen. Fussball. Seit 1879.',photo:'assets/fcsg-stadium.webp'},
     otmar: {name:'TSV St. Otmar St. Gallen',line:'St. Gallen. Handball. Zämästoh.',photo:'assets/otmar-kreuzbleiche.webp'}
   }[club];
 }

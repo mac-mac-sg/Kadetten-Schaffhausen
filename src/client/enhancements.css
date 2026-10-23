@@ -1697,7 +1697,7 @@ html.snap-news {
     linear-gradient(180deg, #080b09b8, #080b0999 60%, var(--surface));
 }
 [data-club='fcsg'] .home-title-zone::before {
-  background-image: url('assets/fcsg-stadium.jpg');
+  background-image: url('assets/fcsg-stadium.webp');
   background-position: center 40%;
 }
 [data-club='fcsg'] .home-title-zone::after {

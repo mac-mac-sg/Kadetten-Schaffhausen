@@ -34,7 +34,7 @@ Die drei Vereine verwenden lokal ausgelieferte Fotos hinter Kopfzeile und Spielt
 
 Bildquellen:
 - Kadetten: BBC Arena, bestehendes Foto `assets/bbc-arena-hall.webp`.
-- FCSG: FC St.Gallen 1879, Berit Sitterstadion, https://www.fcsg.ch/pages/beritklinik; Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/berit-sitterstadion.jpg?v=1782912949&width=1200; lokale Datei `assets/fcsg-stadium.jpg`.
+- FCSG: FC St.Gallen 1879, Berit Sitterstadion, https://www.fcsg.ch/pages/beritklinik; Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/berit-sitterstadion.jpg?v=1782912949&width=1200; lokale Datei `assets/fcsg-stadium.webp`.
 - St. Otmar: TSV St.Otmar, Kreuzbleiche-Tribüne, https://otmar.ch/; Bild https://data.otmar.ch/data/home/_headerSplashScreen/70186/Kreuzbleiche-Tribuene-Herobanner.webp; lokale Datei `assets/otmar-kreuzbleiche.webp`.
 
 ### Einführung & Tipps
