@@ -7,7 +7,7 @@ name: Cloudflare-Datenaktualisierung
 # 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20 per workflow_dispatch aus (Modus «schreiben»).
 # Match-Vorschauen: KI von Cloudflare Workers AI mit Rückfall auf den sachlichen Text; abschaltbar mit der Repository-Variable KI_VORSCHAU = aus.
 # Schreibläufe speichern zusätzlich das Matchprogramm des nächsten Heimspiels (PDF von kadettensh.ch, Phase 2b).
-# Der Import (cloudflare-import.yml) darf nach dem ersten Schreiblauf nicht mehr ausgeführt werden.
+# Der frühere Import aus dem ChatGPT-Sites-Dienst wurde mit Phase 4 entfernt.
 on:
   workflow_dispatch:
     inputs:
