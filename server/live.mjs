@@ -242,6 +242,6 @@ export async function archiveCompletedReports(bucket,club='kadetten') {
     await bucket.put(key,JSON.stringify(report));return {id:g.objectId,ok:true,stored:true};
    } catch { return {id:g.objectId,ok:false}; }
   }));
-  return {ok:results.every(r=>r.ok),reports:results};
+  return {ok:results.every(r=>r.ok),reports:results,finished:completed.map(g=>parseFinishedMatch({...g,gameId:g.objectId},teamId))};
  } catch {return {ok:false,reports:[]};}
 }

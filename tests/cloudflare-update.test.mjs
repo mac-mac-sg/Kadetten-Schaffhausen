@@ -122,3 +122,22 @@ test('Workflow chooses exactly one read-only or writing update step',()=>{
   assert.equal(chosen[0][3].includes('--schreiben'),mode==='schreiben');
  }
 });
+
+test('Schreiblauf sichert SHV-Endstand trotz ausstehendem Vereins-Spielplan und fehlgeschlagenen Detailstatistiken',async()=>{
+ const original=globalThis.fetch,mem=new Map();
+ const previous=structuredClone(seed),fixture={id:'508386',date:'2026-10-24',time:'18:00',home:'Kadetten Schaffhausen',away:'GC Amicitia Zürich',league:'QHL'};
+ previous.games=[fixture];
+ globalThis.fetch=async(url,options={})=>{
+  const request=options.body?JSON.parse(options.body):null;
+  if(request?.query?.includes('games(teamId:')&&request.variables?.teamId===41473)return Response.json({data:{games:[{objectId:508386,isLive:false,gameStatusId:2,seasonId:2026,gameDateTime:'2026-10-24T18:00:00',homeTeamId:41473,homeTeamName:fixture.home,homeTeamScore:37,awayTeamId:41479,awayTeamName:fixture.away,awayTeamScore:26,leagueShortName:'QHL'}]}});
+  throw Error('Quelle momentan nicht verfügbar');
+ };
+ const bucket={get:async key=>mem.has(key)?{json:async()=>JSON.parse(mem.get(key))}:null,put:async(key,value)=>mem.set(key,value)};
+ try{
+  const result=await runRefresh(bucket,{previous,hadPrevious:true,supplied:{posts:posts()}});
+  assert.equal(result.written,true);assert.deepEqual(result.next.games[0].score,[37,26]);
+  assert.deepEqual(JSON.parse(mem.get('kadetten/current.json')).games[0].score,[37,26]);
+  assert.equal(result.reports.ok,false,'Fehlende Details verhindern die Sicherung des bestätigten Endstands nicht');
+  assert.equal(JSON.parse(mem.get('kadetten/previous.json')).games[0].score,undefined);
+ }finally{globalThis.fetch=original;}
+});
