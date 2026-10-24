@@ -22,3 +22,15 @@ test('News import rejects permanent failures and repeated pages instead of accep
  let calls=0;await assert.rejects(fetchNewsPosts(async()=>{calls++;return new Response('',{status:403});}),/HTTP 403/);assert.equal(calls,1);
  await assert.rejects(fetchNewsPosts(async()=>new Response(JSON.stringify(Array.from({length:20},(_,i)=>({id:i+1}))),{headers:{'X-WP-TotalPages':'2'}})),/Duplicated news/);
 });
+
+test('Bestätigte Endresultate ergänzen den Saisonplan nach Mitternacht und bleiben bei leerem Vereinsresultat erhalten',async()=>{
+ const {mergeConfirmedResults}=await import('../server/update.mjs');
+ const fixture={id:'508386',date:'2026-10-24',home:'Kadetten Schaffhausen',away:'GC Amicitia Zürich',league:'QHL'};
+ const final={...fixture,status:'finished',score:[37,26]};
+ const merged=mergeConfirmedResults([fixture],[final]);assert.deepEqual(merged[0].score,[37,26]);assert.equal(fixture.score,undefined);
+ for(const change of [{status:'live'},{date:'2026-10-25'},{home:'Fremder Verein'},{away:'Anderer Gegner'},{league:'EHL'},{score:[37,null]}])assert.equal(mergeConfirmedResults([fixture],[{...final,...change}])[0].score,undefined);
+ const html=Array.from({length:18},(_,i)=>`<tr class="mc-row" data-gameid="${508386+i}" data-date="2026-10-24T18:00" data-home="Kadetten Schaffhausen" data-away="GC Amicitia Zürich" data-league="QHL" data-venue="BBC Arena" data-city="Schaffhausen"><td>VS</td></tr>`).join('');
+ assert.deepEqual(parseGames(html,merged)[0].score,[37,26]);
+ assert.equal(parseGames(html.replaceAll('2026-10-24','2026-10-25'),merged)[0].score,undefined,'Verschobene Partie übernimmt kein altes Ergebnis');
+ assert.deepEqual(parseGames(html.replaceAll('<td>VS</td>','<td>38:26</td>'),merged)[0].score,[38,26],'Offizielle Korrektur bleibt möglich');
+});
