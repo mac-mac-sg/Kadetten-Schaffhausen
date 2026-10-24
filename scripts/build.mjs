@@ -28,9 +28,10 @@ if(!v2){
   manifest.icons=manifest.icons.map(icon=>({...icon,src:'assets/'+({'assets/icon-192.png':icons[0],'assets/icon-512.png':icons[1],'assets/icon-maskable-512.png':icons[2]}[icon.src]||icon.src.replace('assets/',''))}));
   fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
 }
+// V2-Designentwurf «Matchday» (v2/matchday.*): eigene Stile und Verhalten, nur in der Testversion unter /v2/.
 if(v2){
-  shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css');
-  html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="js/main.js"></script>');
+  shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css','v2/matchday.css','v2/matchday.js');
+  html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"><link rel="stylesheet" href="v2/matchday.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="v2/matchday.js"></script><script src="js/main.js"></script>');
   html=html.replace("connect-src 'self'", "connect-src 'self' https://tiles.openfreemap.org");
   html=html.replace('<html lang="de-CH"', '<html data-preview="v2" lang="de-CH"').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
   html=html.replace("img-src 'self' https: data:", "img-src 'self' https: data: blob:");
