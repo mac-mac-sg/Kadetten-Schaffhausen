@@ -114,3 +114,9 @@ V1 heisst «Matchday»: Manifest-Name und Kurzname, Apple-Web-App-Titel, initial
 ## V1: Spielvorschau ohne Aufmacherfoto
 
 Die Handball-Spielvorschau bei Kadetten und St. Otmar beginnt direkt unter den Spielbereich-Laschen mit dem Inhalt. Das grosse Mannschaftsfoto und der dekorative Slogan entfallen; die Paarung bildet die Seitenüberschrift im gleichen Schriftstil wie die Statistiküberschriften. Vorschautext, Matchprogramm und Spieldetails bleiben erhalten. Der einklappende Spielkopf funktioniert weiter. V2 bleibt unverändert.
+
+## V1: Handball-Statistiken in der FCSG-Kachelsprache
+
+Kadetten und St. Otmar verwenden für abgeschlossene Spiele und verfügbare Live-Teamwerte dieselben Vergleichszeilen wie das FCSG-Matchcenter. Durchgehende Balken zeigen die Anteile beider Mannschaften; Vereinsfarben folgen auch bei Auswärtsspielen der eigenen Mannschaft, Gegner bleiben blaugrau. Kacheln, Torverlauf und Spielerbereiche erhalten einen gemeinsamen dezenten Verlauf (Orange/Gold, im hellen Modus sehr leicht).
+
+Die führende Zahl wird zurückhaltend hinterlegt: höhere Tore/Quoten/Paraden, weniger Fehler/Strafen; Würfe und Auszeiten sind bei Live-Teamwerten neutral. Gleichstände und fehlende Werte erhalten keine Hervorhebung. Fehlende Vergleichswerte bleiben als Strich mit leerem Balken erhalten. Daten, Reihenfolge und Mannschaftsumschalter bleiben bestehen. V2 und FCSG sind nicht verändert.

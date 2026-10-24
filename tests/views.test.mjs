@@ -404,7 +404,7 @@ test('Live fixture uses the shared matchday ticker and confirmed completion upda
 test('Archivierter Rückblick zeigt Balken, Spielerwerte und Torverlauf ohne fehlende Werte als Null zu deuten',()=>{
  run(`globalThis.reportFixture=games.find(g=>g.id==='stgallen'); gameReports.stgallen={gameId:508367,score:reportFixture.score,half:[12,16],checkedAt:'2026-10-04T00:00:00Z',spectators:null,referees:[],source:'https://www.handball.ch/de/matchcenter/spiele/508367',teams:[{id:41571,name:reportFixture.home,shots:48,saves:6,turnovers:9,throwPercentage:52,savePercentage:17,twoMinutes:2,warnings:0,timeouts:3,players:[{id:1,name:'A & B',keeper:false,goals:null,shots:4,seven:0,sevenShots:0,twoMinutes:0,warnings:0,redCards:0}]},{id:41473,name:reportFixture.away,shots:40,saves:14,turnovers:13,throwPercentage:78,savePercentage:36,twoMinutes:3,warnings:0,timeouts:2,players:[{id:2,name:'C',keeper:false,goals:31,shots:40,seven:5,sevenShots:7,twoMinutes:3,warnings:0,redCards:0}]}],events:[{id:1,seconds:90,time:'01:30',score:[1,0],action:'Tor',homePlayer:'A & B'}]};`);
  try{
-  const stats=view('reportStats(reportFixture)');assert.match(stats,/report-bars/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/data-stats-team="home"/);assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);assert.doesNotMatch(stats,/Zwischen den Pfosten/);
+  const stats=view('reportStats(reportFixture)');assert.match(stats,/fcsg-stat-bar/);assert.match(stats,/Technische Fehler/);assert.match(stats,/A &amp; B/);assert.match(stats,/data-stats-team="home"/);assert.match(stats,/<h3>Feldspieler<\/h3>/);assert.doesNotMatch(stats,/<h3>Torhüter<\/h3>/);assert.doesNotMatch(stats,/Zwischen den Pfosten/);
   assert.match(stats,/report-score-chart/);assert.ok(stats.indexOf('report-score-chart')<stats.indexOf('<h2>Spielerstatistiken</h2>'));
   const history=view('reportHistory(reportFixture)');assert.doesNotMatch(history,/report-score-chart/);assert.match(history,/01:30/);assert.match(history,/Spielverlauf/);
   assert.doesNotMatch(view("matchOverview(reportFixture)"),/Torverlauf/);
@@ -959,5 +959,28 @@ test('V1 gewichtet den Newsaufmacher und ordnet Archivfotos ihrem Kapitel zu; V2
     } finally {delete context.document.documentElement.dataset[marker];}
    }
   } finally {run("activeClub='kadetten'");}
+ }
+});
+
+test('Handballvergleich: korrekte Führung, fehlende Werte und Heim-/Auswärtsfarben in V1',()=>{
+ const row=(...args)=>parseHTML(run(`handballStatRow(...${JSON.stringify(args)})`)).document;
+ assert.equal(row('Tore',12,8).querySelector('.is-leading').textContent,'12');
+ assert.equal(row('Technische Fehler',3,7,true,3,7,'lower').querySelector('.is-leading').textContent,'3');
+ assert.equal(row('Auszeiten',3,2,true,3,2,'none').querySelector('.is-leading'),null);
+ for(const values of [[5,5],[null,5],[0,0]])assert.equal(row('Tore',...values).querySelector('.is-leading'),null);
+ assert.ok(row('Tore',12,8,false).querySelector('.fcsg-away'));
+ assert.equal(row('Tore',null,8).querySelector('strong').textContent,'–');
+ assert.ok(row('Tore',null,8).querySelector('.is-empty'));
+ assert.match(row('Tore',12,8).querySelector('i').getAttribute('style'),/60.00%/);
+ const source={home:'Kadetten Schaffhausen',away:'Gegner',teamStats:{home:{goals:12,efficiency:null,technicalFaults:3},guest:{goals:8,efficiency:50,technicalFaults:7}}};
+ const html=run(`liveTeamStats(${JSON.stringify(source)})`),doc=parseHTML(html).document;
+ assert.ok(doc.querySelector('.handball-stat-card'));
+ assert.equal(doc.querySelectorAll('.handball-stat-row').length,9);
+ const quota=[...doc.querySelectorAll('.handball-stat-row')].find(e=>e.textContent.includes('Wurfquote'));
+ assert.equal(quota.querySelector('strong').textContent,'–');assert.equal(quota.querySelector('.is-leading'),null);
+ for(const key of ['preview','design']){
+  context.document.documentElement.dataset[key]='v2';
+  try{assert.equal(run('handballStatsDesign()'),false);assert.doesNotMatch(run(`liveTeamStats(${JSON.stringify(source)})`),/handball-stat-card/);}
+  finally{delete context.document.documentElement.dataset[key];}
  }
 });
