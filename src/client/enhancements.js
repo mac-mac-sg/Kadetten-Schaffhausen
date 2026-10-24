@@ -260,9 +260,20 @@ function reportStats(g) {
       .join('')}</div>` : ''}`;
   };
   const shots=g.league==='EHL' && r.ehf ? r.shotStats : null;
-  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${metric('1. Halbzeit', ...r.half)}${metric('2. Halbzeit', r.score[0] - r.half[0], r.score[1] - r.half[1])}</div>` : ''}${ehfShotComparison(shots)}${reportScoreChart(g,{...r,events:r.events?.length?r.events:liveForFixture(g)?.details?.events})}${matchPlayerSection(`<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => ehfShotTeam(shots,k)+team(r.teams[k === 'home' ? 0 : 1]))}`)}`;
+  return `<h2>Das Spiel in Zahlen</h2>${reportComparison(g,r)}${r.half.every(Number.isInteger) ? `<div class="panel">${handballStatsDesign()?handballStatRow('1. Halbzeit',...r.half,isOwnHandballTeam(g.home)):metric('1. Halbzeit',...r.half)}${handballStatsDesign()?handballStatRow('2. Halbzeit',r.score[0]-r.half[0],r.score[1]-r.half[1],isOwnHandballTeam(g.home)):metric('2. Halbzeit',r.score[0]-r.half[0],r.score[1]-r.half[1])}</div>` : ''}${ehfShotComparison(shots,isOwnHandballTeam(g.home))}${reportScoreChart(g,{...r,events:r.events?.length?r.events:liveForFixture(g)?.details?.events})}${matchPlayerSection(`<h2>Spielerstatistiken</h2>${teamSwitchMarkup(String(g.id), r.teams[0].name, r.teams[1].name, (k, name) => ehfShotTeam(shots,k)+team(r.teams[k === 'home' ? 0 : 1]))}`)}`;
 }
 
+// V1 shares the football comparison layout; unavailable values never get a winning state.
+function handballStatsDesign() {
+ return document.documentElement.dataset.design!=='v2'&&document.documentElement.dataset.preview!=='v2';
+}
+function handballStatRow(label,home,away,ownHome=true,left=home??'–',right=away??'–',direction='higher') {
+ const valid=Number.isFinite(home)&&Number.isFinite(away),total=valid?home+away:0;
+ const share=total>0?home/total*100:0;
+ const lead=valid&&home!==away&&direction!=='none'?(direction==='lower'?(home<away?'home':'away'):(home>away?'home':'away')):null;
+ const value=(text,side)=>`<strong${lead===side?' class="is-leading"':''}>${liveEscape(text)}</strong>`;
+ return `<div class="fcsg-stat-row handball-stat-row${String(left).length>5||String(right).length>5?' handball-stat-compound':''}"><div class="fcsg-stat-values">${value(left,'home')}<span>${liveEscape(label)}</span>${value(right,'away')}</div><div class="fcsg-stat-bar ${ownHome?'fcsg-home':'fcsg-away'}${!total?' is-empty':''}" aria-hidden="true"><i style="width:${share.toFixed(2)}%"></i><i style="width:${(total>0?100-share:0).toFixed(2)}%"></i></div></div>`;
+}
 function reportComparison(g,r) {
  const [h,a]=r.teams, value=v=>v??'–', percentage=v=>v===null||v===undefined?'–':v+' %';
  const total=(t,key)=>t.players.length&&t.players.every(p=>Number.isInteger(p[key]))?t.players.reduce((n,p)=>n+p[key],0):null;
@@ -279,10 +290,11 @@ function reportComparison(g,r) {
  ];
  const markup=rows.map(([label,x,y,l=value(x),rr=value(y)])=>{
   if(x===undefined&&y===undefined)return '';
+  if(handballStatsDesign())return handballStatRow(label,x,y,isOwnHandballTeam(g.home),l,rr,['2-Minuten-Strafen','Gelbe Karten','Technische Fehler'].includes(label)?'lower':label==='Auszeiten'?'none':'higher');
   const valid=Number.isFinite(x)&&Number.isFinite(y), scale=valid?Math.max(x,y,1):1;
   return `<div class="report-comparison-row"><div><strong>${liveEscape(l)}</strong><span>${label}</span><strong>${liveEscape(rr)}</strong></div><div class="report-bars" aria-hidden="true"><span class="${h.id===handballTeamId()?'is-kadetten':''}"><i style="width:${valid?x/scale*100:0}%"></i></span><span class="${a.id===handballTeamId()?'is-kadetten':''}"><i style="width:${valid?y/scale*100:0}%"></i></span></div></div>`;
  }).join('');
- return `<section class="report-comparison" aria-label="Teamvergleich">${statTeams(g)}${markup}</section>`;
+ return `<section class="report-comparison${handballStatsDesign()?' handball-stat-card':''}" aria-label="Teamvergleich">${statTeams(g)}${markup}</section>`;
 }
 // Cubic controls stay within each pair of confirmed values, so the curve cannot overshoot.
 function reportScoreCurve(points) {

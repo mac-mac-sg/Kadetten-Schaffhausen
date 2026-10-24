@@ -648,3 +648,32 @@ html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader > s
 [data-preview='v2'] .push-actions { display:flex; gap:10px; flex-wrap:wrap; }
 [data-preview='v2'] .push-actions .button { min-height:44px; white-space:normal; }
 [data-preview='v2'] .push-actions [hidden] { display:none; }
+
+/* V1 handball match statistics use the FCSG card/row language in club colours. */
+html:not([data-preview='v2']):not([data-design='v2'])[data-club='kadetten'] {
+ --hb-stat-surface:linear-gradient(150deg,#a64e1d50,#422315ad),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-club='otmar'] {
+ --hb-stat-surface:linear-gradient(150deg,#91802350,#343011ad),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme='light']:is([data-club='kadetten'],[data-club='otmar']) {
+ --hb-stat-surface:linear-gradient(150deg,color-mix(in srgb,var(--accent) 11%,transparent),color-mix(in srgb,var(--accent) 3%,transparent)),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .match {
+ --match-green:var(--v1-stat-own); --match-opponent:var(--v1-stat-opponent);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats { --v1-stat-home:var(--v1-stat-own); --v1-stat-away:var(--v1-stat-opponent); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats[data-own-side='away'] { --v1-stat-home:var(--v1-stat-opponent); --v1-stat-away:var(--v1-stat-own); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .match :is(.handball-stat-card,.finished-match-stats > .panel,.handball-match-stats > .panel,.report-score-card,.report-player-section) {
+ min-width:0; margin:24px 0; padding:var(--v1-space-card); border:1px solid var(--line); border-radius:var(--v1-radius-card);
+ background:var(--hb-stat-surface); box-shadow:var(--v1-card-shadow);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-card > h2 { margin:0 0 20px; font:600 var(--v1-heading-size)/1.25 var(--font-text); text-align:center; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-values { grid-template-columns:minmax(48px,1fr) minmax(0,2fr) minmax(48px,1fr); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-values strong { color:var(--text); text-align:center; font-weight:600; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-compound .fcsg-stat-values strong { font-size:16px; overflow-wrap:anywhere; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .is-leading { background:color-mix(in srgb,var(--text) 9%,transparent); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme='light'] .handball-stat-row .is-leading { background:color-mix(in srgb,var(--accent) 12%,white); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-bar { height:4px; margin-top:14px; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section :is(.report-table,.report-table th,.report-table td) { background:transparent; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section .scorers strong { color:var(--v1-stat-team,var(--v1-stat-own)); }
