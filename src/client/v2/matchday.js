@@ -81,67 +81,58 @@ function v2MatchState(c) {
   return {state: 'everyday', game: next};
 }
 
-function v2Tile(href, label, body, note, extra = '') {
-  return `<a class="v2-tile ${extra}" href="${href}"><span class="v2-tile-label">${label}</span>${body}<small>${note}</small></a>`;
+/* Ein einziges Match-Ticket: Zeit/Resultat links, Mannschaften rechts. */
+function v2TicketMarkup(c, info) {
+  const g = info.game;
+  if (!g) return '<p class="v2-ticket-empty">Noch kein nächstes Spiel veröffentlicht.</p>';
+  const live = info.state === 'live', finished = info.state === 'post';
+  const score = live ? c.score(c.fixture.live) : finished ? c.score(g) : null;
+  const time = !c.football || g.confirmed ? g.time : null;
+  const value = live || finished ? (score ? score.join(':') : '–:–') : time || 'Offen';
+  const day = new Date(g.date + 'T12:00:00Z').toLocaleDateString('de-CH', {
+    timeZone: 'Europe/Zurich', weekday: 'short', day: '2-digit', month: '2-digit'
+  });
+  const phase = live ? [c.fixture.live.phase, c.fixture.live.clock].filter(Boolean).join(' · ') : '';
+  const stale = c.football ? fcsgLiveErrors.has(g.id) || fcsgLiveErrors.has('latest') : liveRequestFailed;
+  const where = c.isOwn(g.home) ? 'Heimspiel' : 'Auswärtsspiel';
+  const note = live ? phase || 'Spiel läuft' : finished ? 'Endresultat' : where;
+  const action = live ? 'Live verfolgen' : finished ? 'Rückblick und Statistiken öffnen' : 'Spielvorschau öffnen';
+  const href = live ? c.liveHref(c.fixture.live) : c.matchHref(g, finished);
+  const result = finished ? c.result(g)?.state || '' : '';
+  return `<a id="v2-match-ticket" class="v2-match-ticket${live ? ' is-live' : ''}" href="${liveEscape(href)}" data-result="${result}">
+    <span class="v2-ticket-time"><span class="v2-ticket-day">${live ? 'Jetzt live' : liveEscape(day)}</span><strong data-v2-score>${liveEscape(value)}</strong><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
+    <span class="v2-ticket-teams"><span class="v2-ticket-team">${c.crestOf(g, true)}<b>${liveEscape(g.home)}</b></span><span class="v2-ticket-team">${c.crestOf(g, false)}<b>${liveEscape(g.away)}</b></span><span class="v2-ticket-footer"><span>${liveEscape(note)}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span><span class="v2-ticket-arrow" aria-hidden="true">${v2ArrowSvg()}</span></span></span>
+    <span class="live-sr-context">${g.date.slice(0, 4)} · ${action}</span>
+  </a>`;
 }
-function v2LastTile(c, last) {
-  const r = c.result(last), score = c.score(last);
-  return v2Tile(c.matchHref(last, true), 'Zuletzt', `<div class="v2-mini-score">${c.crestOf(last, true)}<b class="v2-num">${score.join(':')}</b>${c.crestOf(last, false)}</div>`, `${r ? r.label + ' · ' : ''}${liveEscape(last.league || '')} · ${v2ShortDate(last.date)}`, 'v2-result-' + (r?.state || 'none'));
-}
-function v2TableTile(c) {
-  const rows = c.table, own = rows.find(row => c.isOwn(row.name));
-  if (!own) return '';
-  const above = rows.find(row => row.rank === own.rank - 1), leader = rows[0];
-  const shortName = name => liveEscape(String(name).replace(/^(FC|HC|BSC|TSV|HSC|RTV|BSV|SC) /, '').split(/[ -]/)[0]);
-  const gap = own.rank === 1
-    ? (rows[1] ? `${own.points - rows[1].points} Punkte Vorsprung` : 'Leader')
-    : (above?.points ?? leader.points) === own.points
-      ? `punktgleich mit ${shortName(above?.name || leader.name)}`
-      : `${(above?.points ?? leader.points) - own.points} hinter ${shortName(above?.name || leader.name)}`;
-  return v2Tile('#season/table', 'Tabelle', `<b class="v2-num v2-rank">${own.rank}.</b>`, `${own.points} Punkte · ${gap}`);
-}
-function v2CountdownTile(g, mins) {
-  const count = mins > 0 ? `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}` : 'Anpfiff';
-  const where = g.venue ? ' · ' + liveEscape(g.venue.split(',')[0]) : '';
-  return `<div class="v2-countdown"><span class="v2-tile-label">Vorfreude</span><b class="v2-num" data-v2-countdown>${count}</b><small>${mins > 0 ? 'Stunden bis Anpfiff' : 'Resultat folgt'}${where}</small></div>`;
-}
-function v2ShareTile(g, r) {
-  return `<button type="button" class="v2-tile v2-share-tile v2-result-${r?.state || 'none'}" data-v2-share="${liveEscape(String(g.id))}"><span class="v2-tile-label">Nach dem Spiel</span><b class="v2-tile-title">Resultat teilen</b><small>Als Bild für Chat und Story</small></button>`;
-}
-/* Kacheln ergänzen die Spieltag-Karte, ohne ihre Aktion zu wiederholen. */
-function v2GlanceMarkup(c, info) {
-  const last = v2LastResult(c), table = v2TableTile(c), tiles = [];
-  if (info.state === 'live') return '';
-  if (info.state === 'post') {
-    tiles.push(v2ShareTile(info.game, c.result(info.game)), table);
-  } else if (info.state === 'pre' && info.game.date !== c.today && info.mins !== null) {
-    tiles.push(v2CountdownTile(info.game, info.mins), last ? v2LastTile(c, last) : table);
-  } else {
-    tiles.push(last ? v2LastTile(c, last) : '', table);
-  }
-  const html = tiles.filter(Boolean).join('');
-  return html ? `<section class="v2-glance v2-glance-${info.state}" aria-label="Auf einen Blick">${html}</section>` : '';
+function v2Home(football = false) {
+  const c = v2Club(), info = v2MatchState(c);
+  return homeNewsLayout(football ? fcsgData.stories : stories,
+    `<section class="v2-ticket-section" aria-label="Aktuelles Spiel">${v2TicketMarkup(c, info)}</section>`, football);
 }
 function v2SyncHome() {
-  const [page] = v2Page();
-  const zone = document.querySelector('#app .home-title-zone');
-  if (page !== 'home' || !zone) return;
-  const c = v2Club(), info = v2MatchState(c);
+  if (v2Page()[0] !== 'home') return;
+  const section = document.querySelector('#app .v2-ticket-section');
+  if (!section) return;
+  const c = v2Club(), info = v2MatchState(c), html = v2TicketMarkup(c, info);
   document.documentElement.dataset.v2State = info.state;
-  const html = v2GlanceMarkup(c, info);
-  let glance = zone.querySelector(':scope > .v2-glance');
-  if (glance?.dataset.source === html) return;
-  if (!html) { glance?.remove(); return; }
+  if (section.dataset.source === html) return;
   const holder = document.createElement('div');
   holder.innerHTML = html;
-  const next = holder.firstElementChild;
-  next.dataset.source = html;
-  if (glance) glance.replaceWith(next);
-  else zone.querySelector('.home-news-heading')?.before(next);
+  const old = section.querySelector('#v2-match-ticket'), next = holder.querySelector('#v2-match-ticket');
+  // Preserve the focused link during live updates; only replace its contents and attributes.
+  if (old && next) {
+    old.innerHTML = next.innerHTML;
+    for (const attr of [...next.attributes]) old.setAttribute(attr.name, attr.value);
+  } else section.innerHTML = html;
+  section.dataset.source = html;
 }
 function v2LimitNews() {
   const feed = document.querySelector('#app .story-feed');
-  if (!feed || v2State.newsExpanded) return;
+  if (!feed) return;
+  // Include date and title in the accessible link name, in their visible order.
+  feed.querySelectorAll('.v1-news-link').forEach(link => link.removeAttribute('aria-labelledby'));
+  if (v2State.newsExpanded) return;
   const cards = [...feed.querySelectorAll('.v1-news-card')];
   if (cards.length <= V2_NEWS_LIMIT) return;
   cards.slice(V2_NEWS_LIMIT).forEach(card => (card.hidden = true));
@@ -185,10 +176,10 @@ function v2SyncLiveBar() {
 
 /* Tor: Zahl springt kurz auf, auf Android kurze Vibration. */
 function v2WatchScore() {
-  const node = document.querySelector('#live-match.is-live .live-score strong, #app .fcsg-matchday.is-live .live-score strong, #v2-livebar:not([hidden]) [data-v2-score]');
+  const node = document.querySelector('#v2-match-ticket.is-live [data-v2-score], #live-match.is-live .live-score strong, #app .fcsg-matchday.is-live .live-score strong, #v2-livebar:not([hidden]) [data-v2-score]');
   const value = node?.textContent.trim() || '';
   if (value && v2State.lastScore && value !== v2State.lastScore && /\d/.test(value)) {
-    document.querySelectorAll('#live-match .live-score strong, .fcsg-matchday .live-score strong, #v2-livebar [data-v2-score]').forEach(el => {
+    document.querySelectorAll('#v2-match-ticket [data-v2-score], #live-match .live-score strong, .fcsg-matchday .live-score strong, #v2-livebar [data-v2-score]').forEach(el => {
       el.classList.remove('v2-score-bump');
       void el.offsetWidth;
       el.classList.add('v2-score-bump');
@@ -331,11 +322,11 @@ document.addEventListener('click', event => {
   const link = event.target.closest?.('a[href^="#match/"]');
   if (!link || !document.startViewTransition || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!link.closest('.home-matchday, .game-card, .v2-tile, .v2-livebar, .week-game, .club-match-hint')) return;
+  if (!link.closest('.v2-match-ticket, .home-matchday, .game-card, .v2-tile, .v2-livebar, .week-game, .club-match-hint')) return;
   const target = link.getAttribute('href');
   if (target === location.hash) return;
   event.preventDefault();
-  const card = link.closest('.home-matchday, .game-card, .v2-tile, .v2-livebar, .week-game') || link;
+  const card = link.closest('.v2-match-ticket, .home-matchday, .game-card, .v2-tile, .v2-livebar, .week-game') || link;
   card.style.viewTransitionName = 'v2-match';
   const transition = document.startViewTransition(() => new Promise(resolve => {
     card.style.viewTransitionName = '';
@@ -375,7 +366,19 @@ function v2Tick() {
   v2DecorateMedia();
 }
 
-// Die bestehenden Renderer bleiben unverändert; V2 ergänzt nach jedem Zeichnen.
+// V2 ersetzt ausschliesslich die Startseite; Detailansichten und V1 bleiben erhalten.
+home = () => v2Home();
+fcsgHome = () => v2Home(true);
+const v2BaseLoadFcsgData = loadFcsgData;
+loadFcsgData = async function () {
+  await v2BaseLoadFcsgData();
+  if (activeClub === 'fcsg') v2Tick();
+};
+const v2BaseUpdateFcsgLiveView = updateFcsgLiveView;
+updateFcsgLiveView = function () {
+  v2BaseUpdateFcsgLiveView();
+  if (activeClub === 'fcsg') v2Tick();
+};
 const v2BaseRender = render;
 render = function () {
   v2BaseRender();
