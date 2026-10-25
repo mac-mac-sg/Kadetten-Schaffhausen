@@ -63,6 +63,16 @@ try {
     assert.equal(await page.locator('.v2-hero-curve').isVisible(),style==='curve');
     assert.match(await page.locator('.v2-hero-media img').getAttribute('src'),new RegExp(['news-34268','v2-header-fcsg-evening','v2-header-otmar-heart'][index]));
     await page.waitForFunction(()=>document.querySelector('.v2-hero-media img')?.naturalWidth>0);
+    const photoTreatment=await page.evaluate(()=>({
+      hero:getComputedStyle(document.querySelector('.v2-hero-media img')).filter,
+      overlay:getComputedStyle(document.querySelector('.v2-hero-media'),'::after').backgroundImage,
+      wash:getComputedStyle(document.querySelector('.v2-ticket-section')).getPropertyValue('--hero-wash').trim(),
+      news:getComputedStyle(document.querySelector('.v1-news-card img')).filter
+    }));
+    assert.match(photoTreatment.hero,/saturate\(0\.68\)/,'Only the header photo is subdued');
+    assert.match(photoTreatment.overlay,/linear-gradient/,'Header fades into the page surface');
+    assert.match(photoTreatment.wash,new RegExp(theme==='light'?'30%':'38%'),'Veil follows the color scheme');
+    assert.equal(photoTreatment.news,'none','News photos keep their original color');
     assert.equal(await page.locator('h1').count(),1);
     assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
     assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button,#v2-match-ticket .v2-ticket-arrow').count(),0);

@@ -151,3 +151,5 @@ Alle Bildrechte verbleiben bei den Vereinen und jeweiligen Urhebern; es werden k
 FCSG und St. Otmar verwenden eigene Bildausschnitte: Beim Stadion liegt der Schwerpunkt auf den gefüllten Rängen und dem Spielfeld statt auf dem Dach. Bei St. Otmar rückt das Vereinswappen mit der Hand auf dem Herzen ins Bildfenster oberhalb der Spielkachel. Das freigegebene Kadetten-Motiv und sein Ausschnitt bleiben unverändert. Neue Bilddateinamen verhindern, dass noch gespeicherte alte Motive verwendet werden.
 
 Der Vereinswechsel auf der V2-Startseite öffnet den neuen Verein immer am Seitenanfang, damit der Abstand zwischen Vereinsmenü und Match-Band gleich bleibt. Die Rückkehr aus einem Newsartikel behält die Leseposition; V1 und die übrigen Ansichten behalten ihre bisherige Positionsspeicherung.
+
+Die V2-Titelbilder sind leicht entsättigt und kontrastärmer. Ein transparenter Schleier nimmt die jeweilige Vereinsfarbe auf (hell und weich im Hellmodus, dunkel getönt im Dunkelmodus); nach unten läuft das Foto in die aktuelle Seitenfläche aus. Dies gilt für beide Titelvarianten. Die Bildmotive, Ausschnitte, Spielkarte und Farben der Newsbilder bleiben erhalten.
