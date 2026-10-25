@@ -140,7 +140,7 @@ function v2HeaderPhoto() {
   return {
     kadetten: 'assets/news-34268.webp',
     fcsg: 'assets/v2-header-fcsg-evening.webp',
-    otmar: 'assets/v2-header-otmar-carl.webp'
+    otmar: 'assets/v2-header-otmar-heart.webp'
   }[activeClub] || 'assets/news-34268.webp';
 }
 function v2Home(football = false) {

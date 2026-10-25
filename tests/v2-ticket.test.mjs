@@ -124,7 +124,7 @@ test('Settings expose one labelled selector and changing its value keeps the exi
 
 test('V2 title uses fixed local club photos for each club and includes them in its offline shell', () => {
   const {context} = setup();
-  const photos = {kadetten: 'news-34268.webp', fcsg: 'v2-header-fcsg-evening.webp', otmar: 'v2-header-otmar-carl.webp'};
+  const photos = {kadetten: 'news-34268.webp', fcsg: 'v2-header-fcsg-evening.webp', otmar: 'v2-header-otmar-heart.webp'};
   const build = fs.readFileSync('scripts/build.mjs', 'utf8');
   const v2Only = build.slice(build.indexOf('if(v2){'), build.indexOf("let sw="));
   for (const [club, name] of Object.entries(photos)) {

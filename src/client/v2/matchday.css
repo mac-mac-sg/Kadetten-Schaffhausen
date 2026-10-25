@@ -99,7 +99,7 @@ html[data-preview='v2'] .v2-ticket-section {
   border-radius: 0 0 30px 30px; background: #26372e;
 }
 html[data-preview='v2'][data-club='fcsg'] .v2-ticket-section { --hero-brightness: 1.25; --hero-position: center; --hero-offset: -170px; }
-html[data-preview='v2'][data-club='otmar'] .v2-ticket-section { --hero-brightness: 1.08; --hero-position: 52% 30%; }
+html[data-preview='v2'][data-club='otmar'] .v2-ticket-section { --hero-brightness: 1.08; --hero-position: 68% center; --hero-offset: -320px; }
 html[data-preview='v2'] .v2-hero-media { position: absolute; z-index: -1; inset: 0; background: #3e5044; pointer-events: none; }
 html[data-preview='v2'] .v2-hero-media img { display: block; width: 100%; height: calc(100% - var(--hero-offset)); margin-top: var(--hero-offset); object-fit: cover; object-position: var(--hero-position); filter: brightness(var(--hero-brightness)); }
 html[data-preview='v2'] .v2-hero-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #101a1310 0%, transparent 40%, #101a1340 100%); }
