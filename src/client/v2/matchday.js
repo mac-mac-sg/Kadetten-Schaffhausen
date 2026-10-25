@@ -135,12 +135,12 @@ function v2TicketMarkup(c, info) {
     <span class="live-sr-context">${action}</span>
   </a>`;
 }
-/* Feste Spielszenen statt zufälliger News-/Stadionmotive. */
+/* Feste Vereinsmotive statt zufälliger Newsbilder. */
 function v2HeaderPhoto() {
   return {
     kadetten: 'assets/news-34268.webp',
-    fcsg: 'assets/v2-header-fcsg.webp',
-    otmar: 'assets/v2-header-otmar.webp'
+    fcsg: 'assets/v2-header-fcsg-evening.webp',
+    otmar: 'assets/v2-header-otmar-carl.webp'
   }[activeClub] || 'assets/news-34268.webp';
 }
 function v2Home(football = false) {
