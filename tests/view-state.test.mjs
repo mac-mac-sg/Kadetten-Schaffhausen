@@ -27,3 +27,11 @@ test('Incoming news stays out of a reader’s visible list until consumed; V2 re
  a.run('applyPendingNews()');assert.equal(a.run('stories[0].id'),'new');assert.equal(a.run("handballSnapshots.get('kadetten').stories[0].id"),'new');assert.equal(a.document.getElementById('new-stories'),null);
  a.document.documentElement.dataset.design='v2';a.run("visible=deferUpdatedStories('kadetten',[{id:'v2'}],stories)");assert.equal(a.run('visible[0].id'),'v2');assert.equal(a.document.getElementById('new-stories'),null);
 });
+test('V2 home starts at the same header position after switching clubs, while details retain reading position',()=>{
+ const a=harness();a.document.documentElement.dataset.preview='v2';
+ a.visit('#home');a.window.scrollY=40;a.visit('#home','fcsg');a.window.scrollY=90;
+ a.visit('#home','otmar');a.window.scrollY=130;a.visit('#home','kadetten');assert.equal(a.window.scrollY,0);
+ a.window.scrollY=260;a.visit('#news/a');a.visit('#home');assert.equal(a.window.scrollY,260);
+ a.visit('#home','fcsg');assert.equal(a.window.scrollY,0);
+ a.visit('#home','otmar');assert.equal(a.window.scrollY,0);
+});
