@@ -97,7 +97,7 @@ html[data-preview='v2'] .v2-ticket-section {
   --hero-wash: color-mix(in srgb, var(--hero-tint) 38%, transparent);
   --hero-brightness: 1.04; --hero-position: 56% 38%; --hero-offset: 40px;
   position: relative; isolation: isolate; overflow: hidden;
-  padding: calc(var(--app-header-height, 64px) + env(safe-area-inset-top, 0px) + 88px) 20px 24px;
+  padding: calc(var(--app-header-height, 64px) + env(safe-area-inset-top, 0px) + 62px) 20px 24px;
   border-radius: 0 0 30px 30px; background: #26372e;
 }
 html[data-preview='v2'][data-theme='light'] .v2-ticket-section { --hero-tint: color-mix(in srgb, var(--accent) 9%, #f6f5f0); --hero-wash: color-mix(in srgb, var(--hero-tint) 30%, transparent); }
