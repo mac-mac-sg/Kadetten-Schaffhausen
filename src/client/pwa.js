@@ -14,6 +14,8 @@
  const showIntro=()=>{
   if(installed||standalone())return;
   try{if(localStorage.getItem(INTRO_KEY))return;}catch{}
+  // V2-Entwurf: nie über einem direkt geöffneten Spiel oder Artikel, erst beim nächsten Start auf der Startseite.
+  if(document.documentElement.dataset.preview==='v2'&&!['','#','#home'].includes(location.hash))return;
   intro=document.createElement('dialog');intro.className='install-intro';intro.setAttribute('aria-labelledby','install-intro-title');
   intro.innerHTML='<img src="assets/icon-192.png" width="64" height="64" alt=""><h2 id="install-intro-title">Deine Vereine auf dem Startbildschirm</h2><p class="install-instructions">Installiere die App für schnellen Zugriff auf News, Spiele und Resultate.</p><div class="install-intro-actions"><button class="button" type="button" data-install>App installieren</button><button class="button subtle" type="button" data-later>Später</button></div>';
   document.body.append(intro);intro.showModal();

@@ -1,0 +1,211 @@
+/* V2-Designentwurf «Matchday»: nur in der Testversion unter /v2/ (scripts/build.mjs).
+   Leitidee: Titelschrift für alles, was zählt; ruhige Flächen; Vereinsfarbe als Akzent;
+   Bewegung nur mit Bedeutung. Die normale App ist davon nicht betroffen. */
+
+html[data-preview='v2'] {
+  --font-display: Anton, Impact, 'Arial Narrow', sans-serif;
+  --v2-radius: 22px;
+  --v2-radius-sm: 16px;
+  --v2-card: color-mix(in srgb, var(--text) 5%, var(--surface));
+  --v2-card-strong: color-mix(in srgb, var(--text) 8%, var(--surface));
+  --v2-shadow: 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent) inset, 0 10px 28px #0000002e;
+  --v2-shadow-soft: 0 6px 18px #00000024;
+  --v2-hairline: color-mix(in srgb, var(--text) 9%, transparent);
+  --v2-draw: #8fb6e8;
+}
+html[data-preview='v2'][data-theme='light'] {
+  --v2-card: #ffffff;
+  --v2-card-strong: #ffffff;
+  --v2-shadow: 0 1px 2px #1b261c14, 0 10px 26px #1b261c12;
+  --v2-shadow-soft: 0 4px 14px #1b261c10;
+  --v2-hairline: #1b261c14;
+  --v2-draw: #3f74b8;
+}
+
+/* ---------- Typografie: Zahlen in der Titelschrift, gleich breite Ziffern, ruhigere Gewichte ---------- */
+html[data-preview='v2'] :is(
+  .live-score > strong, .matchup > strong, .scoreline > strong, .v2-num,
+  .standings-table td:last-child strong, .standings-table td:first-child,
+  .comparison > strong, .season-number-grid strong, .season-split > strong, .week-result strong
+) {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
+}
+html[data-preview='v2'] .live-score > strong { font-size: clamp(34px, 10vw, 46px); line-height: 1.05; align-self: center; }
+html[data-preview='v2'] .matchup > strong { font-size: clamp(40px, 12vw, 56px); line-height: 1; white-space: nowrap; }
+html[data-preview='v2'] :is(.matchup-team span, .live-score b, .scoreline > div > span) { hyphens: auto; overflow-wrap: normal; word-break: normal; }
+html[data-preview='v2'] .standings-table td:last-child strong { font-size: 30px; }
+html[data-preview='v2'] :is(.standings-table, .report-table, .report-comparison, .facts, .stats-table, .season-number-grid, .match-compact-detail, .home-countdown, .match-preview-time) {
+  font-variant-numeric: tabular-nums;
+}
+html[data-preview='v2'] :is(#app h1, #app h2) { font-weight: 750; letter-spacing: -.015em; }
+html[data-preview='v2'] .home-news-heading h1 { font-size: 26px; }
+html[data-preview='v2'] .v1-news-copy h2 { font-weight: 700; }
+html[data-preview='v2'] :is(.live-score b, .matchup-team span, .scoreline > div > span, .standing-name) { font-weight: 600; }
+html[data-preview='v2'] :is(.match-preview-time, .home-countdown, .live-heading small, .venue, .meta) { font-weight: 500; }
+html[data-preview='v2'] .home-countdown { font-size: 15px; letter-spacing: 0; }
+html[data-preview='v2'] :is(.comparison, .report-comparison-row) :is(strong, b) { white-space: nowrap; }
+
+/* ---------- Flächen: flache Karten mit weichem Schatten statt Rahmen ---------- */
+html[data-preview='v2'] :is(.game-card, .v1-news-card, .panel, .stats-block, .report-comparison, .season-player-stats, .facts > div, .table-wrap .standings-table tbody tr) {
+  border-color: transparent !important;
+  box-shadow: var(--v2-shadow);
+}
+html[data-preview='v2'] :is(.game-card, .v1-news-card, .panel, .stats-block, .report-comparison) { border-radius: var(--v2-radius); }
+html[data-preview='v2'][data-theme='light'] :is(.game-card:not(.current-game), .v1-news-card, .panel, .stats-block, .report-comparison, .table-wrap .standings-table tbody tr:not(.our-team)) { background: var(--v2-card); }
+html[data-preview='v2'] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { box-shadow: var(--v2-shadow-soft); }
+
+/* ---------- Einheitliche Spielkarte: eine Sprache für Startseite, Liste und Hinweise ---------- */
+html[data-preview='v2'] .home-matchday .live-match { border-radius: var(--v2-radius); }
+/* Die Spieltag-Karte wächst mit langen Teamnamen mit, statt Zeilen zu überlagern. */
+html[data-preview='v2'] .home-matchday .live-match { grid-template-rows: auto; row-gap: 6px; }
+html[data-preview='v2'] .home-matchday .live-score { align-items: start; }
+/* Die Aktionskachel liegt bündig unter der Karte. */
+html[data-preview='v2'] .home-matchday .v1-match-stack { display: grid; }
+html[data-preview='v2'] .home-matchday .v1-match-action { margin-inline: 0; width: auto; left: auto; right: auto; inset-inline: 0; }
+/* Nächstes Spiel in der Liste: kein doppeltes «Vorschau», kompakter. */
+html[data-preview='v2'] .game-card.current-game:not(.finished) .scoreline > strong small { display: none; }
+html[data-preview='v2'] .game-card.current-game { padding-block: 18px 16px; }
+html[data-preview='v2'] .game-card.current-game .scoreline img.crest { width: 56px; height: 64px; }
+html[data-preview='v2'] .game-card.current-game .actions .button { min-height: 44px; padding-inline: 22px; }
+html[data-preview='v2'] .game-card .current-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* ---------- Kopfzeile: Vereinshinweise nur auf der Startseite, kompakt beim Scrollen ---------- */
+html[data-preview='v2']:not([data-v2-page='home']) .club-match-hints { display: none !important; }
+html[data-preview='v2'] .top.v1-compact-header { transition: padding .25s ease, box-shadow .25s ease; }
+html[data-preview='v2'].v2-scrolled .top.v1-compact-header { box-shadow: 0 8px 24px #00000030; }
+html[data-preview='v2'].v2-scrolled .top.v1-compact-header .club-match-hints { display: none !important; }
+html[data-preview='v2'].v2-scrolled .top.v1-compact-header .brand small { opacity: 0; max-height: 0; overflow: hidden; }
+html[data-preview='v2'] .top.v1-compact-header .brand small { transition: opacity .2s ease, max-height .2s ease; max-height: 2em; }
+
+/* ---------- Tabelle: keine Lücke, kein leerer Zeitstempel ---------- */
+html[data-preview='v2'] .standings-season .season-header { margin-bottom: 8px; }
+html[data-preview='v2'] .standings-season > p.muted:has(> span:only-child) { margin-top: 6px; font-size: 13px; }
+html[data-preview='v2'] .standings-table .our-team { box-shadow: var(--v2-shadow), inset 3px 0 0 var(--accent) !important; }
+
+/* ---------- Startseite nach Spielzustand ---------- */
+html[data-preview='v2'] .v2-glance {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+  margin: 16px 24px 4px; position: relative; z-index: 1;
+}
+html[data-preview='v2'] .v2-tile, html[data-preview='v2'] .v2-countdown {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-height: 118px;
+  padding: 14px 16px; border-radius: var(--v2-radius-sm); color: var(--text); text-decoration: none;
+  background: color-mix(in srgb, var(--v2-card-strong) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: var(--v2-shadow);
+}
+html[data-preview='v2'] .v2-tile:active { transform: scale(.98); }
+html[data-preview='v2'] button.v2-tile { border: 0; text-align: left; font: inherit; cursor: pointer; width: 100%; }
+html[data-preview='v2'] .v2-share-tile .v2-tile-title::after { content: ''; display: inline-block; width: 15px; height: 15px; margin-left: 8px; vertical-align: -2px; background: currentColor; -webkit-mask: var(--v2-share-icon) center / contain no-repeat; mask: var(--v2-share-icon) center / contain no-repeat; }
+html[data-preview='v2'] .v2-tile-label { font: 700 11px/1.2 var(--font-text); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html[data-preview='v2'] .v2-tile small, html[data-preview='v2'] .v2-countdown small { font: 500 13px/1.35 var(--font-text); color: var(--muted); }
+html[data-preview='v2'] .v2-tile-title { font: 650 16px/1.3 var(--font-text); }
+html[data-preview='v2'] .v2-mini-score { display: flex; align-items: center; gap: 8px; }
+html[data-preview='v2'] .v2-mini-score :is(img.crest, .clubmark) { width: 26px; height: 30px; object-fit: contain; flex: none; font-size: 10px; }
+html[data-preview='v2'] .v2-mini-score .v2-num { font-size: 32px; line-height: 1; }
+html[data-preview='v2'] .v2-rank { font-size: 46px; line-height: 1; color: var(--accent); }
+html[data-preview='v2'] .v2-result-win { box-shadow: var(--v2-shadow), inset 0 3px 0 var(--win); }
+html[data-preview='v2'] .v2-result-loss { box-shadow: var(--v2-shadow), inset 0 3px 0 var(--loss); }
+html[data-preview='v2'] .v2-result-draw { box-shadow: var(--v2-shadow), inset 0 3px 0 var(--v2-draw); }
+html[data-preview='v2'] .v2-glance-pre .v2-countdown .v2-num { font-size: 46px; line-height: 1; color: var(--accent); }
+html[data-preview='v2'] .v2-share {
+  min-height: 40px; padding: 0 16px 0 14px; border-radius: 999px; border: 1px solid var(--v2-hairline);
+  background: transparent; color: var(--text); display: inline-flex; align-items: center; gap: 8px;
+  font: 600 14px/1 var(--font-text); cursor: pointer;
+}
+html[data-preview='v2'] .v2-share::before { content: ''; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--v2-share-icon) center / contain no-repeat; mask: var(--v2-share-icon) center / contain no-repeat; }
+html[data-preview='v2'] { --v2-share-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'/%3E%3C/svg%3E"); }
+html[data-preview='v2'] .v2-share:disabled { opacity: .6; }
+html[data-preview='v2'] .v2-share-inline { display: flex; margin: 12px auto 0; width: max-content; }
+html[data-preview='v2'] .v2-more-news {
+  display: block; width: 100%; min-height: 52px; margin: 6px 0 24px; border-radius: var(--v2-radius-sm);
+  border: 1px solid var(--v2-hairline); background: var(--v2-card); color: var(--text);
+  font: 650 15px/1 var(--font-text); box-shadow: var(--v2-shadow-soft); cursor: pointer;
+}
+
+/* ---------- Live-Leiste über der Navigation ---------- */
+html[data-preview='v2'] .v2-livebar {
+  position: fixed; z-index: 40; left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 98px);
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 16px 6px 12px;
+  border-radius: 999px; color: #fff; text-decoration: none;
+  background: color-mix(in srgb, #111 82%, var(--accent));
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px #0000004d, inset 0 0 0 1px #ffffff1a;
+  animation: v2-livebar-in .35s cubic-bezier(.2,.8,.2,1) both;
+}
+html[data-preview='v2'] .v2-livebar[hidden] { display: none; }
+html[data-preview='v2'] .v2-livebar .v2-num { font-size: 24px; line-height: 1; }
+html[data-preview='v2'] .v2-livebar small { font: 600 12px/1 var(--font-text); opacity: .8; white-space: nowrap; }
+html[data-preview='v2'] .v2-livebar-crest :is(img, .clubmark) { width: 22px; height: 26px; object-fit: contain; font-size: 9px; display: block; }
+html[data-preview='v2'] .v2-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 0 0 #ff4d4d80; animation: v2-live-dot 1.6s ease-out infinite; }
+@keyframes v2-live-dot { 70% { box-shadow: 0 0 0 8px #ff4d4d00; } 100% { box-shadow: 0 0 0 0 #ff4d4d00; } }
+@keyframes v2-livebar-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---------- Bewegung mit Bedeutung ---------- */
+html[data-preview='v2'] .v2-score-bump { animation: v2-score-bump .7s cubic-bezier(.2,.9,.25,1.25); display: inline-block; }
+@keyframes v2-score-bump { 0% { transform: scale(1); } 35% { transform: scale(1.22); color: var(--accent-soft, var(--accent)); } 100% { transform: scale(1); } }
+::view-transition-group(v2-match) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .22s; }
+/* Hintergrund-Puls und Schimmer nur am Spieltag, nie im Hintergrund. */
+html[data-preview='v2'] .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]:not(.is-matchday)::before,
+html[data-preview='v2'] .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]:not(.is-matchday)::after,
+html[data-preview='v2'] .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]:not(.is-matchday) .arena-team::before { animation: none; }
+html[data-preview='v2'] .home-matchday :is(#live-match, .fcsg-matchday)[data-pulse]:not(.is-matchday) .matchday-orbit { display: none; }
+html[data-preview='v2'].v2-paused *, html[data-preview='v2'].v2-paused *::before, html[data-preview='v2'].v2-paused *::after { animation-play-state: paused !important; }
+
+/* ---------- Ladezustände statt Lücken ---------- */
+html[data-preview='v2'] .v2-loading { position: relative; }
+html[data-preview='v2'] :is(.v1-news-image, .player-card, .venue-photo, .article-media).v2-loading::before,
+html[data-preview='v2'] .v2-media-missing::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(110deg, color-mix(in srgb, var(--accent) 10%, var(--v2-card)) 30%, color-mix(in srgb, var(--accent) 22%, var(--v2-card)) 50%, color-mix(in srgb, var(--accent) 10%, var(--v2-card)) 70%) 0 0 / 300% 100%;
+  animation: v2-shimmer 1.4s linear infinite;
+}
+html[data-preview='v2'] .v2-media-missing { position: relative; min-height: 180px; }
+html[data-preview='v2'] .v2-media-missing::before { animation: none; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%), var(--v2-card); }
+@keyframes v2-shimmer { to { background-position: -300% 0; } }
+html[data-preview='v2'] .v1-image-fallback:not(.crest) { font-size: 0 !important; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%), var(--v2-card) !important; }
+html[data-preview='v2'] :is(.clubmark, .v2-crest-fallback, .v1-image-fallback.crest) {
+  display: inline-grid; place-items: center; aspect-ratio: 1; width: 44px; height: auto; border-radius: 50%;
+  background: color-mix(in srgb, var(--text) 12%, transparent); color: var(--text);
+  font: 700 13px/1 var(--font-text); letter-spacing: .02em; border: 0;
+}
+
+/* ---------- Heller Modus mit eigener Bildsprache ---------- */
+html[data-preview='v2'][data-theme='light'] .home-title-zone::before { filter: blur(6px) grayscale(.35) brightness(1.55) contrast(.7); opacity: .55; }
+html[data-preview='v2'][data-theme='light'] .home-title-zone::after { background: linear-gradient(180deg, #f6f5f0cc 0%, #f6f5f0ee 55%, #f6f5f0 100%) !important; }
+html[data-preview='v2'][data-theme='light'] .home-news-heading h1 { color: var(--text); }
+html[data-preview='v2'][data-theme='light'] .v2-tile, html[data-preview='v2'][data-theme='light'] .v2-countdown { background: #ffffffe6; }
+html[data-preview='v2'][data-theme='light'] .game-control-bar .game-filter select { background-color: transparent !important; box-shadow: none !important; border-color: transparent !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-preview='v2'] :is(.v2-livebar, .v2-score-bump, .v2-live-dot) { animation: none; }
+  html[data-preview='v2'] .v2-loading::before { animation: none; }
+  ::view-transition-group(v2-match), ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+
+/* Tabelle beginnt direkt unter der Kopfzeile. */
+html[data-preview='v2'] .standings-season.content { padding-top: 14px; }
+
+/* Live: die Aktionskachel unter der Karte reicht, kein zweiter Live-Hinweis in der Karte. */
+html[data-preview='v2'] .home-matchday:not(.games-matchday) #live-match.is-live .live-link { display: none; }
+html[data-preview='v2'] .v2-livebar .v2-num { white-space: nowrap; }
+html[data-preview='v2'] .v2-livebar .v2-livebar-crest { display: grid; place-items: center; width: 24px; height: 28px; flex: none; }
+html[data-preview='v2'] .v2-livebar .v2-livebar-crest :is(img, img.crest, .clubmark) { width: 24px !important; height: 28px !important; max-width: none; object-fit: contain; margin: 0; }
+html[data-preview='v2'] .v2-livebar .v2-livebar-crest .clubmark { width: 24px !important; height: 24px !important; font-size: 8px; }
+
+/* Kurze Zeilen bleiben einzeilig. */
+html[data-preview='v2'] .home-matchday .live-heading > span { white-space: nowrap; }
+html[data-preview='v2'] .v2-tile-label { letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html[data-preview='v2'] .v2-share-tile .v2-tile-title { white-space: nowrap; font-size: 15px; }
+html[data-preview='v2'] img[data-v2-media][hidden] { display: none !important; }
+
+/* Statistikzeilen: Werte bleiben zusammen, die Beschriftung nimmt den Rest und darf umbrechen. */
+html[data-preview='v2'] .report-comparison-row > div:first-child { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; }
+html[data-preview='v2'] .report-comparison-row > div:first-child > span { text-align: center; font-size: 13px; line-height: 1.25; }
+html[data-preview='v2'] .report-comparison-row > div:first-child > span { hyphens: auto; overflow-wrap: anywhere; }
+html[data-preview='v2'] .report-comparison-row > div:first-child > strong { font-size: 16px; }
