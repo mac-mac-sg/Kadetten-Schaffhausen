@@ -134,6 +134,16 @@ V2 zeigt auf der Startseite eine einzelne dunkle Spielkachel: Heim- und Gastmann
 
 ### V2: zwei wählbare Foto-Titelbereiche
 
-Einstellungen → Darstellung → «Titelbereich der Startseite» wechselt zwischen «Arena-Fenster» (abgerundeter Fotoabschluss, Standard) und «Geschwungener Vereinskopf» (gleicher Foto-Titelbereich mit dem Schwung der Vereinsseite). Beide Varianten zeigen die vorhandenen Bilder von BBC Arena, FCSG-Stadion beziehungsweise Kreuzbleiche hinter Vereinsmenü und Match-Band. Das dunkle Match-Band bleibt vollständig antippbar und ohne Pfeil-Icon. Die News folgen direkt. Die Bildhelligkeit berücksichtigt die unterschiedlichen Quelldateien.
+Einstellungen → Darstellung → «Titelbereich der Startseite» wechselt zwischen «Bild-Fenster» (abgerundeter Fotoabschluss, Standard) und «Geschwungener Vereinskopf» (gleicher Foto-Titelbereich mit dem Schwung der Vereinsseite). Beide Varianten zeigen feste Spielszenen der Kadetten, des FCSG beziehungsweise von St. Otmar hinter Vereinsmenü und Match-Band. Das dunkle Match-Band bleibt vollständig antippbar und ohne Pfeil-Icon. Die News folgen direkt. Die Bildhelligkeit berücksichtigt die unterschiedlichen Quelldateien.
 
 Die Auswahl wird mit `fan-v2-header-style` im isolierten V2-Speicher auf diesem Gerät für alle Vereine gespeichert; gesperrter Speicher verhindert den Wechsel innerhalb der Sitzung nicht. Ein Wechsel ändert nur die Darstellung, ohne Match-/News-Inhalte neu aufzubauen. Spielstandsaktualisierungen erhalten Foto und Abschluss. V1 lädt weder die Auswahl noch die neuen Titelstile.
+
+
+### Bildmotive im V2-Titelbereich
+
+Die Titelbilder zeigen bewusst Spieler in Aktion statt Arenen: Kadetten-Wurfszene (`news-34268.webp`, André Frensel, vorhandenes Vereins-Newsbild), FCSG-Spielszene gegen Lugano (`v2-header-fcsg.webp`) und Moritz Heinl in Kriens (`v2-header-otmar.webp`). Die Auswahl bleibt unabhängig von neuen News stabil. Die beiden zusätzlichen Bilder sind lokal als WebP abgelegt und zusammen mit dem Kadetten-Motiv ausschliesslich in der V2-Offline-Hülle vorgeladen. Die Vereinsseite mit ihren Heimstättenbildern bleibt erhalten. Die Einstellung heisst nun «Bild-Fenster»; gespeicherte Auswahlwerte bleiben kompatibel.
+
+Quellen der bereits in den Vereins-News verwendeten Fotos:
+- FCSG: https://storage.aico.swiss/19929_623ace/images/6aaade7ab41f4260916-FCSG-FCLugano-1.jpeg (für die App auf 1200 px als WebP komprimiert).
+- St. Otmar: https://data.otmar.ch/data/news/2026/10-oktober/_newsTeaserContentOverview/3995396/Moritz-Heinl-in-Kriens.webp (unverändert übernommen).
+Alle Bildrechte verbleiben bei den Vereinen und jeweiligen Urhebern; es werden keine KI-Bilder als Spielszenen verwendet.

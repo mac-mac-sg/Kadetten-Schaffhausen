@@ -121,3 +121,16 @@ test('Settings expose one labelled selector and changing its value keeps the exi
   assert.equal(document.documentElement.dataset.v2Header, 'curve');
   assert.equal(document.getElementById('v2-match-ticket'), ticket);
 });
+
+test('V2 title uses fixed local action photos for each club and includes them in its offline shell', () => {
+  const {context} = setup();
+  const photos = {kadetten: 'news-34268.webp', fcsg: 'v2-header-fcsg.webp', otmar: 'v2-header-otmar.webp'};
+  const build = fs.readFileSync('scripts/build.mjs', 'utf8');
+  const v2Only = build.slice(build.indexOf('if(v2){'), build.indexOf("let sw="));
+  for (const [club, name] of Object.entries(photos)) {
+    context.activeClub = club;
+    assert.equal(context.v2HeaderPhoto(), 'assets/' + name);
+    assert.ok(fs.existsSync('src/client/assets/' + name));
+    assert.ok(v2Only.includes("'assets/" + name + "'"), 'Photo belongs to the V2 offline shell');
+  }
+});
