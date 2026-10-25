@@ -85,6 +85,7 @@ try {
     });
     assert.ok(!geometry.overflow,JSON.stringify(scenario)+' overflows');
     assert.ok(geometry.top>=geometry.headerBottom-1,'Ticket clears the header: '+JSON.stringify({scenario,geometry}));
+    assert.ok(Math.abs(geometry.top-geometry.headerBottom-48)<1,'Compact header gap is 48px: '+JSON.stringify({scenario,geometry}));
     assert.ok(geometry.height<220,'Compact ticket grows only for necessary wrapping');
     assert.ok(await page.locator('.v2-ticket-time').evaluate(e=>e.querySelector('strong').getBoundingClientRect().right<=e.getBoundingClientRect().right+1),'Time and score stay inside their column '+JSON.stringify(scenario));
     assert.equal(await page.locator('.v1-news-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','News keeps one surface');
@@ -136,6 +137,7 @@ try {
     const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
     await page.goto(origin+'/v2/?club=kadetten#home');await page.waitForSelector('#v2-match-ticket');
     const initialGap=await page.evaluate(()=>document.querySelector('#v2-match-ticket').getBoundingClientRect().top-document.querySelector('.top').getBoundingClientRect().bottom);
+    assert.ok(Math.abs(initialGap-48)<1,'Initial header gap is 48px');
     for(const club of ['fcsg','otmar','kadetten','otmar','fcsg','kadetten']) {
       await page.evaluate(()=>scrollTo(0,40));
       await page.locator('[data-compact-clubs]').click();await page.locator('[data-compact-pick="'+club+'"]').click();
