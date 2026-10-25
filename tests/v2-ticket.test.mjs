@@ -25,16 +25,22 @@ function setup(football = false) {
   return {context, document, club, game, markup, parse};
 }
 
-test('V2 ticket is one complete preview link with time, both teams and one arrow', () => {
+test('V2 ticket is one complete preview link with time between both teams and no separate arrow', () => {
   for (const football of [false, true]) {
     const {markup, parse} = setup(football), root = parse(markup('everyday'));
     assert.equal(root.querySelectorAll('a').length, 1);
     assert.equal(root.querySelector('a').getAttribute('href'), '#match/test/overview');
     assert.equal(root.querySelector('[data-v2-score]').textContent, '19:15');
     assert.equal(root.querySelectorAll('.v2-ticket-team').length, 2);
-    assert.equal(root.querySelectorAll('.v2-ticket-arrow').length, 1);
+    const matchup = root.querySelector('.v2-ticket-matchup');
+    assert.equal(matchup.children.length, 3);
+    assert.equal(matchup.children[0].className, 'v2-ticket-team');
+    assert.equal(matchup.children[1].className, 'v2-ticket-time');
+    assert.equal(matchup.children[2].className, 'v2-ticket-team');
+    assert.equal(root.querySelectorAll('.v2-ticket-arrow,svg,button,a a').length, 0);
+    assert.match(root.querySelector('.v2-ticket-heading').textContent, /2026/);
     assert.equal(root.querySelectorAll('.v1-match-action,.v2-glance').length, 0);
-    assert.match(root.querySelector('a').textContent, /2026.*Spielvorschau öffnen/);
+    assert.match(root.querySelector('a').textContent, /2026[\s\S]*Spielvorschau öffnen/);
   }
 });
 test('Live and final states preserve home-away score order and route to their details', () => {

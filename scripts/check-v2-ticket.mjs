@@ -59,7 +59,10 @@ try {
     assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
     assert.equal(await page.locator('h1').count(),1);
     assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
-    assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button').count(),0);
+    assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button,#v2-match-ticket .v2-ticket-arrow').count(),0);
+    const positions = await page.locator('.v2-ticket-matchup').evaluate(e=>[...e.children].map(c=>{const r=c.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}));
+    assert.ok(positions[0].x+positions[0].width<=positions[1].x&&positions[1].x+positions[1].width<=positions[2].x,'Teams flank the time/score horizontally');
+    assert.ok(Math.abs(positions[0].y-positions[2].y)<1,'Both teams start at the same height');
     const geometry=await page.locator('#v2-match-ticket').evaluate(e=>{
       const r=e.getBoundingClientRect(),top=document.querySelector('.top').getBoundingClientRect(),news=document.querySelector('.home-news-heading').getBoundingClientRect();
       return {height:r.height,top:r.top,headerBottom:top.bottom,newsTop:news.top,overflow:document.documentElement.scrollWidth>innerWidth,background:getComputedStyle(e).backgroundColor};
@@ -67,7 +70,7 @@ try {
     assert.ok(!geometry.overflow,JSON.stringify(scenario)+' overflows');
     assert.ok(geometry.top>=geometry.headerBottom-1,'Ticket clears the header: '+JSON.stringify({scenario,geometry}));
     assert.ok(geometry.height<220,'Compact ticket grows only for necessary wrapping');
-    assert.ok(await page.locator('.v2-ticket-time').evaluate(e=>e.querySelector('strong').getBoundingClientRect().right<=e.getBoundingClientRect().right+1),'Time and score stay inside their column');
+    assert.ok(await page.locator('.v2-ticket-time').evaluate(e=>e.querySelector('strong').getBoundingClientRect().right<=e.getBoundingClientRect().right+1),'Time and score stay inside their column '+JSON.stringify(scenario));
     assert.equal(await page.locator('.v1-news-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','News keeps one surface');
     assert.ok(geometry.newsTop>=geometry.top+geometry.height,'News follows the ticket');
     const score=await page.locator('[data-v2-score]').first().textContent();
@@ -76,7 +79,7 @@ try {
     const violations=await page.evaluate(async()=> (await axe.run(document,{rules:{'region':{enabled:false}}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
     assert.deepEqual(violations,[],JSON.stringify(scenario));
     if(club==='kadetten'&&state==='preview'&&width===390)await page.screenshot({path:'/tmp/v2-ticket-'+theme+'.png',fullPage:false});
-    await page.locator('#v2-match-ticket').click();await page.waitForTimeout(150);
+    await page.locator('#v2-match-ticket').click({position:{x:16,y:16}});await page.waitForTimeout(150);
     assert.match(new URL(page.url()).hash,/#match\/12345\//);
     reports.push({...scenario,...geometry});await ctx.close();
   }

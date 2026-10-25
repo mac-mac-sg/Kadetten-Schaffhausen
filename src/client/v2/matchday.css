@@ -98,8 +98,8 @@ html[data-preview='v2'] .home-title-zone .home-news-heading h1 { color: var(--te
 html[data-preview='v2'] .v2-match-ticket {
   --ticket-bg: #22312b; --ticket-ink: #f5f5ef; --ticket-muted: #c4cec7;
   --ticket-accent: color-mix(in srgb, var(--accent) 48%, #fff3df);
-  display: grid; grid-template-columns: minmax(88px, .36fr) minmax(0, 1fr); gap: 16px;
-  min-height: 136px; padding: 18px 16px; border-radius: 22px;
+  display: grid; gap: 12px;
+  min-height: 154px; padding: 14px 16px; border-radius: 22px;
   background: var(--ticket-bg); color: var(--ticket-ink); text-decoration: none;
   border: 1px solid #ffffff1c; box-shadow: 0 6px 18px #15251b18;
   transition: transform .18s ease, box-shadow .18s ease;
@@ -109,18 +109,18 @@ html[data-preview='v2'][data-club='fcsg']:not([data-theme='light']) .v2-match-ti
 html[data-preview='v2'][data-club='otmar']:not([data-theme='light']) .v2-match-ticket { --ticket-bg: #383626; }
 html[data-preview='v2'] .v2-match-ticket:active { transform: scale(.985); }
 html[data-preview='v2'] .v2-match-ticket:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
-html[data-preview='v2'] .v2-ticket-time { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 7px; min-width: 0; padding-right: 12px; border-right: 1px solid #ffffff26; }
-html[data-preview='v2'] .v2-ticket-day { color: var(--ticket-accent); font: 650 11px/1.3 var(--font-text); }
-html[data-preview='v2'] .v2-ticket-time strong { font: 700 clamp(23px, 7vw, 30px)/1.1 var(--font-text); letter-spacing: -.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-html[data-preview='v2'] .v2-match-ticket:is(.is-live, [data-result]:not([data-result=''])) .v2-ticket-time strong { font-size: 26px; }
-html[data-preview='v2'] .v2-ticket-league { color: var(--ticket-muted); font: 500 11px/1.35 var(--font-text); overflow-wrap: anywhere; }
-html[data-preview='v2'] .v2-ticket-teams { display: grid; gap: 10px; min-width: 0; }
-html[data-preview='v2'] .v2-ticket-team { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 9px; align-items: center; min-width: 0; }
-html[data-preview='v2'] .v2-ticket-team b { font: 650 14px/1.25 var(--font-text); overflow-wrap: anywhere; }
-html[data-preview='v2'] .v2-ticket-team :is(img.crest, .clubmark) { display: grid; width: 26px; height: 30px; object-fit: contain; margin: 0; font-size: 9px; color: var(--ticket-ink); }
-html[data-preview='v2'] .v2-ticket-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; color: var(--ticket-muted); font: 500 12px/1.35 var(--font-text); }
-html[data-preview='v2'] .v2-ticket-arrow { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 1px solid var(--ticket-accent); color: var(--ticket-accent); border-radius: 50%; }
-html[data-preview='v2'] .v2-ticket-arrow svg { display: block; width: 17px; height: 17px; }
+html[data-preview='v2'] .v2-ticket-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; font: 500 11px/1.35 var(--font-text); color: var(--ticket-muted); }
+html[data-preview='v2'] .v2-ticket-day { min-width: 0; }
+html[data-preview='v2'] .v2-match-ticket.is-live .v2-ticket-day { color: var(--ticket-accent); }
+html[data-preview='v2'] .v2-ticket-league { min-width: 0; max-width: 45%; text-align: right; overflow-wrap: anywhere; }
+html[data-preview='v2'] .v2-ticket-matchup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(76px, .8fr) minmax(0, 1fr); align-items: center; gap: 8px; }
+html[data-preview='v2'] .v2-ticket-time { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; text-align: center; }
+html[data-preview='v2'] .v2-ticket-time strong { font: 700 clamp(26px, 7vw, 32px)/1.1 var(--font-text); letter-spacing: -.035em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+html[data-preview='v2'] .v2-ticket-status { color: var(--ticket-muted); font: 500 11px/1.3 var(--font-text); overflow-wrap: anywhere; }
+html[data-preview='v2'] .v2-ticket-team { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; min-width: 0; text-align: center; align-self: stretch; }
+html[data-preview='v2'] .v2-ticket-team b { font: 600 13px/1.25 var(--font-text); overflow-wrap: anywhere; text-wrap: balance; }
+html[data-preview='v2'] .v2-ticket-team :is(img.crest, .clubmark) { display: grid; width: 32px; height: 32px; object-fit: contain; margin: 0; flex: none; font-size: 9px; color: var(--ticket-ink); }
+html[data-preview='v2'] .v2-ticket-footer { color: var(--ticket-muted); font: 500 12px/1.3 var(--font-text); text-align: center; }
 html[data-preview='v2'] .v2-ticket-empty { margin: 0; padding: 18px 0; color: var(--muted); }
 html[data-preview='v2'] .v2-match-ticket.is-live { border-color: var(--ticket-accent); }
 html[data-preview='v2'] .v2-match-ticket[data-result='win'] { border-color: var(--win); }
@@ -128,9 +128,9 @@ html[data-preview='v2'] .v2-match-ticket[data-result='draw'] { border-color: var
 html[data-preview='v2'] .v2-match-ticket[data-result='loss'] { border-color: var(--loss); }
 @media (max-width: 360px) {
   html[data-preview='v2'] .v2-ticket-section { padding-inline: 14px; }
-  html[data-preview='v2'] .v2-match-ticket { gap: 12px; padding-inline: 12px; }
-  html[data-preview='v2'] .v2-ticket-team { gap: 7px; }
-  html[data-preview='v2'] .v2-ticket-team b { font-size: 13px; }
+  html[data-preview='v2'] .v2-match-ticket { padding-inline: 12px; }
+  html[data-preview='v2'] .v2-ticket-matchup { gap: 6px; }
+  html[data-preview='v2'] .v2-ticket-time strong { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-preview='v2'] .v2-match-ticket { transition: none; }
