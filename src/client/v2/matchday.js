@@ -26,7 +26,7 @@ function v2InstallHeaderChoice() {
   if (!select) {
     const label = document.createElement('label');
     label.className = 'v2-header-setting';
-    label.innerHTML = '<span>Titelbereich der Startseite</span><select data-v2-header-style><option value="arena">Arena-Fenster</option><option value="curve">Geschwungener Vereinskopf</option></select>';
+    label.innerHTML = '<span>Titelbereich der Startseite</span><select data-v2-header-style><option value="arena">Bild-Fenster</option><option value="curve">Geschwungener Vereinskopf</option></select>';
     select = label.querySelector('select');
     select.addEventListener('change', () => v2SetHeaderStyle(select.value));
     group.append(label);
@@ -135,10 +135,18 @@ function v2TicketMarkup(c, info) {
     <span class="live-sr-context">${action}</span>
   </a>`;
 }
+/* Feste Spielszenen statt zufälliger News-/Stadionmotive. */
+function v2HeaderPhoto() {
+  return {
+    kadetten: 'assets/news-34268.webp',
+    fcsg: 'assets/v2-header-fcsg.webp',
+    otmar: 'assets/v2-header-otmar.webp'
+  }[activeClub] || 'assets/news-34268.webp';
+}
 function v2Home(football = false) {
   const c = v2Club(), info = v2MatchState(c);
   return homeNewsLayout(football ? fcsgData.stories : stories,
-    `<section class="v2-ticket-section" aria-label="Aktuelles Spiel"><div class="v2-hero-media" aria-hidden="true"><img src="${v2ClubIdentity().photo}" alt="" decoding="async" fetchpriority="high"></div><div class="v2-ticket-content">${v2TicketMarkup(c, info)}</div>${v2ClubCurve().replace('v2-club-curve', 'v2-hero-curve')}</section>`, football);
+    `<section class="v2-ticket-section" aria-label="Aktuelles Spiel"><div class="v2-hero-media" aria-hidden="true"><img src="${v2HeaderPhoto()}" alt="" decoding="async" fetchpriority="high"></div><div class="v2-ticket-content">${v2TicketMarkup(c, info)}</div>${v2ClubCurve().replace('v2-club-curve', 'v2-hero-curve')}</section>`, football);
 }
 function v2SyncHome() {
   if (v2Page()[0] !== 'home') return;
