@@ -5,6 +5,35 @@
 const V2_NEWS_LIMIT = 6;
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
+/* Zwei lokale Testvarianten für den bebilderten Startbereich. */
+const V2_HEADER_STYLE_KEY = 'fan-v2-header-style';
+function v2ReadHeaderStyle() {
+  try { return localStorage.getItem(V2_HEADER_STYLE_KEY) === 'curve' ? 'curve' : 'arena'; }
+  catch { return 'arena'; }
+}
+function v2SetHeaderStyle(style) {
+  if (!['arena', 'curve'].includes(style)) return false;
+  document.documentElement.dataset.v2Header = style;
+  document.querySelectorAll('[data-v2-header-style]').forEach(select => (select.value = style));
+  try { localStorage.setItem(V2_HEADER_STYLE_KEY, style); } catch { /* Die Auswahl gilt auch ohne Speicher für diese Sitzung. */ }
+  return true;
+}
+document.documentElement.dataset.v2Header = v2ReadHeaderStyle();
+function v2InstallHeaderChoice() {
+  const group = document.querySelector('.club-settings-dialog .theme-settings');
+  if (!group) return;
+  let select = group.querySelector('[data-v2-header-style]');
+  if (!select) {
+    const label = document.createElement('label');
+    label.className = 'v2-header-setting';
+    label.innerHTML = '<span>Titelbereich der Startseite</span><select data-v2-header-style><option value="arena">Arena-Fenster</option><option value="curve">Geschwungener Vereinskopf</option></select>';
+    select = label.querySelector('select');
+    select.addEventListener('change', () => v2SetHeaderStyle(select.value));
+    group.append(label);
+  }
+  select.value = document.documentElement.dataset.v2Header;
+}
+
 function v2Page() {
   return (location.hash.slice(1) || 'home').split('/');
 }
@@ -109,24 +138,25 @@ function v2TicketMarkup(c, info) {
 function v2Home(football = false) {
   const c = v2Club(), info = v2MatchState(c);
   return homeNewsLayout(football ? fcsgData.stories : stories,
-    `<section class="v2-ticket-section" aria-label="Aktuelles Spiel">${v2TicketMarkup(c, info)}</section>`, football);
+    `<section class="v2-ticket-section" aria-label="Aktuelles Spiel"><div class="v2-hero-media" aria-hidden="true"><img src="${v2ClubIdentity().photo}" alt="" decoding="async" fetchpriority="high"></div><div class="v2-ticket-content">${v2TicketMarkup(c, info)}</div>${v2ClubCurve().replace('v2-club-curve', 'v2-hero-curve')}</section>`, football);
 }
 function v2SyncHome() {
   if (v2Page()[0] !== 'home') return;
   const section = document.querySelector('#app .v2-ticket-section');
   if (!section) return;
+  const content = section.querySelector('.v2-ticket-content') || section;
   const c = v2Club(), info = v2MatchState(c), html = v2TicketMarkup(c, info);
   document.documentElement.dataset.v2State = info.state;
-  if (section.dataset.source === html) return;
+  if (content.dataset.source === html) return;
   const holder = document.createElement('div');
   holder.innerHTML = html;
-  const old = section.querySelector('#v2-match-ticket'), next = holder.querySelector('#v2-match-ticket');
+  const old = content.querySelector('#v2-match-ticket'), next = holder.querySelector('#v2-match-ticket');
   // Preserve the focused link during live updates; only replace its contents and attributes.
   if (old && next) {
     old.innerHTML = next.innerHTML;
     for (const attr of [...next.attributes]) old.setAttribute(attr.name, attr.value);
-  } else section.innerHTML = html;
-  section.dataset.source = html;
+  } else content.innerHTML = html;
+  content.dataset.source = html;
 }
 function v2LimitNews() {
   const feed = document.querySelector('#app .story-feed');
@@ -366,6 +396,13 @@ function v2Tick() {
   v2WatchScore();
   v2DecorateMedia();
 }
+
+const v2BaseOpenClubSettings = openClubSettings;
+openClubSettings = function (...args) {
+  const result = v2BaseOpenClubSettings(...args);
+  v2InstallHeaderChoice();
+  return result;
+};
 
 // V2 ersetzt ausschliesslich die Startseite; Detailansichten und V1 bleiben erhalten.
 home = () => v2Home();
