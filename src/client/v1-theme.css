@@ -600,6 +600,7 @@ html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-wi
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team { box-shadow:inset 3px 0 var(--accent); }
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:first-child { font-size:16px; line-height:1.25; color:var(--text); }
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:nth-child(4) { font-size:12px; color:var(--muted); }
+ html:not([data-design='v2'])[data-theme] .standings-table .standing-played { display:block; margin-top:3px; font:400 12px/1.25 var(--font-text); color:var(--muted); white-space:nowrap; }
  html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:last-child { font-size:24px; line-height:1.1; }
  html:not([data-design='v2'])[data-theme] .standings-table .table-team { gap:8px; }
  html:not([data-design='v2'])[data-theme] .standings-table .table-team > .crest { flex:none; width:28px; height:32px; }

@@ -2393,3 +2393,6 @@ html:not([data-design='v2']) .games-mode .season-header { top:calc(var(--v1-cont
 html:not([data-design='v2']) .profile-back { top:var(--v1-content-top); }
 html:not([data-design='v2']).snap-profile { scroll-padding-top:var(--v1-content-top); }
 html:not([data-design='v2']) .player-mode .profile-slide { min-height:calc(100svh - var(--v1-content-top)); }
+
+/* Mobile V1 supplies a compact visual copy; the original games column remains semantic. */
+.standing-played { display:none; }
