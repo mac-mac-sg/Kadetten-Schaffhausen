@@ -31,7 +31,7 @@ if(!v2){
 // V2-Designentwurf «Matchday» (v2/matchday.*): eigene Stile und Verhalten, nur in der Testversion unter /v2/.
 if(v2){
   shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css','v2/matchday.css','v2/matchday.js');
-  shellFiles.push('assets/news-34268.webp','assets/v2-header-fcsg.webp','assets/v2-header-otmar.webp');
+  shellFiles.push('assets/news-34268.webp','assets/v2-header-fcsg-evening.webp','assets/v2-header-otmar-carl.webp');
   html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"><link rel="stylesheet" href="v2/matchday.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="v2/matchday.js"></script><script src="js/main.js"></script>');
   html=html.replace("connect-src 'self'", "connect-src 'self' https://tiles.openfreemap.org");
   html=html.replace('<html lang="de-CH"', '<html data-preview="v2" lang="de-CH"').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");
