@@ -15,7 +15,8 @@ const server = http.createServer((req,res) => {
     const pathname = new URL(req.url, 'http://local').pathname;
     const file = path.resolve(root, '.' + pathname + (pathname.endsWith('/') ? 'index.html' : ''));
     assert.ok(file.startsWith(root + path.sep));
-    res.writeHead(200, {'Content-Type': types[path.extname(file)] || 'application/octet-stream'}); res.end(fs.readFileSync(file));
+    const content = fs.readFileSync(file);
+    res.writeHead(200, {'Content-Type': types[path.extname(file)] || 'application/octet-stream'}); res.end(content);
   } catch { res.writeHead(404); res.end(); }
 });
 let browser;
@@ -26,20 +27,21 @@ try {
   browser = await chromium.launch({headless:true, executablePath:process.env.GAMES_CHROMIUM_EXECUTABLE, args:['--no-sandbox','--disable-dev-shm-usage']});
   const axe = fs.readFileSync(process.env.GAMES_AXE_SCRIPT, 'utf8');
   const scenarios = [];
-  for (const club of ['kadetten','fcsg','otmar']) for (const theme of ['light','dark']) for (const state of ['preview','live','post']) scenarios.push({club,theme,state,width:390});
-  for (const width of [320,1440]) for (const theme of ['light','dark']) scenarios.push({club:'otmar',theme,state:'preview',width});
+  for (const style of ['arena','curve']) for (const club of ['kadetten','fcsg','otmar']) for (const theme of ['light','dark']) for (const state of ['preview','live','post']) scenarios.push({club,theme,state,style,width:390});
+  for (const style of ['arena','curve']) for (const width of [320,1440]) for (const theme of ['light','dark']) scenarios.push({club:'otmar',theme,state:'preview',style,width});
   for (const scenario of scenarios) {
-    const {club,theme,state,width} = scenario, index = ['kadetten','fcsg','otmar'].indexOf(club), now = '2026-10-25T12:00:00Z';
+    const {club,theme,state,style,width} = scenario, index = ['kadetten','fcsg','otmar'].indexOf(club), now = '2026-10-25T12:00:00Z';
     const data = structuredClone(originals[index]);
     const game = {...data.games.find(g => g.league !== 'Testspiel'), id:'12345', home:names[index], away:'GC Amicitia Zürich', date:state==='preview'?'2026-10-31':'2026-10-25', time:'19:15', confirmed:true, score:state==='post'?[31,29]:null, league:club==='fcsg'?'Super League':'QHL'};
     data.games = [game]; data.checkedAt = now;
     const live = state==='live'?{...game, live:true, liveScore:[12,10], score:[12,10], phase:'2. Halbzeit', clock:'42:10'}:null;
     const ctx = await browser.newContext({viewport:{width,height:844},serviceWorkers:'block',reducedMotion:'reduce',bypassCSP:true});
-    await ctx.addInitScript(({now,theme}) => {
+    await ctx.addInitScript(({now,theme,style}) => {
       const D=Date; window.Date=class extends D {constructor(...a){super(...(a.length?a:[now]));}static now(){return D.parse(now);}};
       localStorage.setItem('v2:fan-v1-theme',theme);
+      if(!localStorage.getItem('v2:fan-v2-header-style'))localStorage.setItem('v2:fan-v2-header-style',style);
       for(const prefix of ['','v2:']) for(const key of ['fan-app-onboarding-v1','fan-app-install-intro-v1'])localStorage.setItem(prefix+key,'seen');
-    },{now,theme});
+    },{now,theme,style});
     await ctx.route('**/api/**', async r => {
       const p = new URL(r.request().url()).pathname;
       const body = p.endsWith('/data') ? data : {ok:true,checkedAt:now,match:live,finished:null};
@@ -57,6 +59,10 @@ try {
     await page.waitForFunction(expected=>document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent===expected,state==='live'?'12:10':state==='post'?'31:29':'19:15');
     await page.waitForTimeout(120);
     assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
+    assert.equal(await page.locator('html').getAttribute('data-v2-header'),style);
+    assert.equal(await page.locator('.v2-hero-curve').isVisible(),style==='curve');
+    assert.match(await page.locator('.v2-hero-media img').getAttribute('src'),new RegExp(['bbc-arena-hall','fcsg-stadium','otmar-kreuzbleiche'][index]));
+    await page.waitForFunction(()=>document.querySelector('.v2-hero-media img')?.naturalWidth>0);
     assert.equal(await page.locator('h1').count(),1);
     assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
     assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button,#v2-match-ticket .v2-ticket-arrow').count(),0);
@@ -78,13 +84,38 @@ try {
     await page.addScriptTag({content:axe});
     const violations=await page.evaluate(async()=> (await axe.run(document,{rules:{'region':{enabled:false}}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
     assert.deepEqual(violations,[],JSON.stringify(scenario));
-    if(club==='kadetten'&&state==='preview'&&width===390)await page.screenshot({path:'/tmp/v2-ticket-'+theme+'.png',fullPage:false});
+    if(state==='preview'&&width===390) {
+      await page.screenshot({path:'/tmp/v2-header-'+club+'-'+style+'-'+theme+'.png',fullPage:false});
+      await page.evaluate(()=>window.headerTestTicket=document.getElementById('v2-match-ticket'));
+      await page.locator('#club-settings').click();
+      const select=page.locator('[data-v2-header-style]');
+      assert.equal(await select.count(),1);
+      const other=style==='arena'?'curve':'arena';
+      await select.selectOption(other);
+      assert.equal(await page.locator('html').getAttribute('data-v2-header'),other);
+      assert.ok(await page.evaluate(()=>window.headerTestTicket===document.getElementById('v2-match-ticket')),'Switching preserves the match link');
+      assert.equal(await page.evaluate(()=>localStorage.getItem('fan-v2-header-style')),null,'V1 storage remains untouched');
+      const settingsViolations=await page.evaluate(async()=> (await axe.run(document,{rules:{region:{enabled:false}}})).violations.map(v=>v.id));
+      assert.deepEqual(settingsViolations,[],'Header selector accessibility');
+      await page.locator('[data-close-clubs]').click();
+      await page.reload();
+      await page.waitForSelector('#v2-match-ticket');
+      assert.equal(await page.locator('html').getAttribute('data-v2-header'),other,'Selection survives reload');
+      await page.locator('#club-settings').click();
+      await page.locator('[data-v2-header-style]').selectOption(style);
+      await page.locator('[data-close-clubs]').click();
+      if(club==='kadetten'&&theme==='light'&&style==='arena') {
+        await page.locator('.v2-hero-media img').evaluate(img=>img.src='assets/unavailable-test-photo.webp');
+        await page.waitForFunction(()=>document.querySelector('.v2-hero-media').classList.contains('v2-media-missing'));
+        assert.ok(await page.locator('#v2-match-ticket').isVisible(),'Match remains usable without the background image');
+      }
+    }
     await page.locator('#v2-match-ticket').click({position:{x:16,y:16}});await page.waitForTimeout(150);
     assert.match(new URL(page.url()).hash,/#match\/12345\//);
     reports.push({...scenario,...geometry});await ctx.close();
   }
   assert.deepEqual(errors,[]);
   // Main version retains its approved card and does not load the new ticket.
-  const page=await browser.newPage();await page.goto(origin+'/#home');await page.waitForSelector('#live-match');assert.equal(await page.locator('#v2-match-ticket').count(),0);await page.close();
+  const page=await browser.newPage();await page.addInitScript(()=>{localStorage.setItem('fan-app-onboarding-v1','seen');localStorage.setItem('fan-app-install-intro-v1','seen');});await page.goto(origin+'/#home');await page.waitForSelector('#live-match');assert.equal(await page.locator('#v2-match-ticket').count(),0);await page.locator('#club-settings').click();assert.equal(await page.locator('[data-v2-header-style]').count(),0);await page.close();
   console.log(JSON.stringify({checks:reports.length,errors,reports},null,2));
 } finally {await browser?.close();await new Promise(r=>server.close(r));}

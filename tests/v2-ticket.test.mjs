@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
 
-function setup(football = false) {
-  const {document} = parseHTML('<html><body><main id="app"><section class="v2-ticket-section"></section></main></body></html>');
+function setup(football = false, storage = new Map()) {
+  const {document} = parseHTML('<html><body><main id="app"><section class="v2-ticket-section"><div class="v2-hero-media"></div><div class="v2-ticket-content"></div><svg class="v2-hero-curve"></svg></section></main></body></html>');
   const noop = () => {};
   const context = vm.createContext({document, location: {hash: '#home'}, window: {addEventListener: noop},
-    setInterval: noop, render: noop, showLiveMatch: noop, updateFcsgLiveView: noop, loadFcsgData: noop,
+    setInterval: noop, render: noop, showLiveMatch: noop, updateFcsgLiveView: noop, loadFcsgData: noop, openClubSettings: noop,
+    localStorage: {getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value)},
     liveEscape: x => String(x).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'),
     liveRequestFailed: false, fcsgLiveErrors: new Set(), v2ArrowSvg: () => '<svg aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>',
     kickoffAt: () => null, activeClub: football ? 'fcsg' : 'kadetten'});
@@ -75,11 +76,48 @@ test('Refresh keeps the ticket link node, updates scores immediately, and avoids
   const {context, document, club, game} = setup();
   game.score = [12, 10]; club.fixture.live = game;
   context.v2SyncHome();
-  const link = document.getElementById('v2-match-ticket'), first = link.firstElementChild;
+  const link = document.getElementById('v2-match-ticket'), first = link.firstElementChild, photo = document.querySelector('.v2-hero-media'), curve = document.querySelector('.v2-hero-curve');
   context.v2SyncHome(); assert.equal(link.firstElementChild, first);
   game.score = [13, 10]; context.v2SyncHome();
   assert.equal(document.getElementById('v2-match-ticket'), link);
   assert.equal(link.querySelector('[data-v2-score]').textContent, '13:10');
   context.liveRequestFailed = true; context.v2SyncHome();
   assert.match(link.textContent, /Letzter verfügbarer Stand/);
+  club.fixture = {game: null, live: null}; club.games = []; context.v2SyncHome();
+  assert.match(document.querySelector('.v2-ticket-content').textContent, /Noch kein nächstes Spiel/);
+  club.fixture = {game, live: game}; context.v2SyncHome();
+  assert.equal(document.querySelector('.v2-hero-media'), photo);
+  assert.equal(document.querySelector('.v2-hero-curve'), curve);
+  assert.equal(document.querySelectorAll('#v2-match-ticket').length, 1);
+});
+
+test('Header variants restore and persist one valid preference, with a usable storage fallback', () => {
+  const key = 'fan-v2-header-style', storage = new Map([[key, 'curve']]);
+  const {context, document} = setup(false, storage);
+  assert.equal(document.documentElement.dataset.v2Header, 'curve');
+  assert.equal(context.v2SetHeaderStyle('arena'), true);
+  assert.equal(storage.get(key), 'arena');
+  assert.equal(context.v2SetHeaderStyle('invalid'), false);
+  assert.equal(document.documentElement.dataset.v2Header, 'arena');
+  context.localStorage = {getItem: () => {throw Error('blocked');}, setItem: () => {throw Error('blocked');}};
+  assert.equal(context.v2ReadHeaderStyle(), 'arena');
+  assert.equal(context.v2SetHeaderStyle('curve'), true);
+  assert.equal(document.documentElement.dataset.v2Header, 'curve');
+  assert.equal(setup(false, new Map([[key, 'invalid']])).document.documentElement.dataset.v2Header, 'arena');
+});
+test('Settings expose one labelled selector and changing its value keeps the existing match link', () => {
+  const {context, document} = setup();
+  const group = document.createElement('section'); group.className = 'theme-settings';
+  const dialog = document.createElement('dialog'); dialog.className = 'club-settings-dialog'; dialog.append(group); document.body.append(dialog);
+  context.v2SyncHome();
+  const ticket = document.getElementById('v2-match-ticket');
+  context.v2InstallHeaderChoice(); context.v2InstallHeaderChoice();
+  assert.equal(group.querySelectorAll('select').length, 1);
+  assert.equal(group.querySelector('label > span').textContent, 'Titelbereich der Startseite');
+  const select = group.querySelector('select');
+  select.querySelector('option[value="arena"]').selected = false;
+  select.querySelector('option[value="curve"]').selected = true;
+  select.dispatchEvent(new document.defaultView.Event('change'));
+  assert.equal(document.documentElement.dataset.v2Header, 'curve');
+  assert.equal(document.getElementById('v2-match-ticket'), ticket);
 });
