@@ -81,7 +81,7 @@ function v2MatchState(c) {
   return {state: 'everyday', game: next};
 }
 
-/* Ein einziges Match-Ticket: Zeit/Resultat links, Mannschaften rechts. */
+/* Ein einziges Match-Band: Heimteam, Zeit/Resultat, Gastteam nebeneinander. */
 function v2TicketMarkup(c, info) {
   const g = info.game;
   if (!g) return '<p class="v2-ticket-empty">Noch kein nächstes Spiel veröffentlicht.</p>';
@@ -90,19 +90,20 @@ function v2TicketMarkup(c, info) {
   const time = !c.football || g.confirmed ? g.time : null;
   const value = live || finished ? (score ? score.join(':') : '–:–') : time || 'Offen';
   const day = new Date(g.date + 'T12:00:00Z').toLocaleDateString('de-CH', {
-    timeZone: 'Europe/Zurich', weekday: 'short', day: '2-digit', month: '2-digit'
+    timeZone: 'Europe/Zurich', weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
   });
   const phase = live ? [c.fixture.live.phase, c.fixture.live.clock].filter(Boolean).join(' · ') : '';
   const stale = c.football ? fcsgLiveErrors.has(g.id) || fcsgLiveErrors.has('latest') : liveRequestFailed;
   const where = c.isOwn(g.home) ? 'Heimspiel' : 'Auswärtsspiel';
-  const note = live ? phase || 'Spiel läuft' : finished ? 'Endresultat' : where;
+  const status = live ? phase || 'Spiel läuft' : finished ? 'Endresultat' : '';
   const action = live ? 'Live verfolgen' : finished ? 'Rückblick und Statistiken öffnen' : 'Spielvorschau öffnen';
   const href = live ? c.liveHref(c.fixture.live) : c.matchHref(g, finished);
   const result = finished ? c.result(g)?.state || '' : '';
   return `<a id="v2-match-ticket" class="v2-match-ticket${live ? ' is-live' : ''}" href="${liveEscape(href)}" data-result="${result}">
-    <span class="v2-ticket-time"><span class="v2-ticket-day">${live ? 'Jetzt live' : liveEscape(day)}</span><strong data-v2-score>${liveEscape(value)}</strong><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
-    <span class="v2-ticket-teams"><span class="v2-ticket-team">${c.crestOf(g, true)}<b>${liveEscape(g.home)}</b></span><span class="v2-ticket-team">${c.crestOf(g, false)}<b>${liveEscape(g.away)}</b></span><span class="v2-ticket-footer"><span>${liveEscape(note)}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span><span class="v2-ticket-arrow" aria-hidden="true">${v2ArrowSvg()}</span></span></span>
-    <span class="live-sr-context">${g.date.slice(0, 4)} · ${action}</span>
+    <span class="v2-ticket-heading"><span class="v2-ticket-day">${live ? 'Jetzt live · ' : ''}${liveEscape(day)}</span><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
+    <span class="v2-ticket-matchup"><span class="v2-ticket-team">${c.crestOf(g, true)}<b>${liveEscape(g.home)}</b></span><span class="v2-ticket-time"><strong data-v2-score>${liveEscape(value)}</strong>${status ? `<span class="v2-ticket-status">${liveEscape(status)}</span>` : ''}</span><span class="v2-ticket-team">${c.crestOf(g, false)}<b>${liveEscape(g.away)}</b></span></span>
+    <span class="v2-ticket-footer">${where}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span>
+    <span class="live-sr-context">${action}</span>
   </a>`;
 }
 function v2Home(football = false) {
