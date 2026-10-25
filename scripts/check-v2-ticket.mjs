@@ -114,8 +114,32 @@ try {
     assert.match(new URL(page.url()).hash,/#match\/12345\//);
     reports.push({...scenario,...geometry});await ctx.close();
   }
+  // Revisit clubs after scrolling: V2 must not restore a different header gap per club.
+  const switchReports=[];
+  for(const style of ['arena','curve'])for(const theme of ['light','dark']) {
+    const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block',reducedMotion:'reduce'});
+    await ctx.addInitScript(({style,theme})=>{
+      localStorage.setItem('v2:fan-v2-header-style',style);localStorage.setItem('v2:fan-v1-theme',theme);
+      for(const p of ['','v2:'])for(const k of ['fan-app-onboarding-v1','fan-app-install-intro-v1'])localStorage.setItem(p+k,'seen');
+    },{style,theme});
+    await ctx.route('https://**/*',r=>r.abort());
+    const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
+    await page.goto(origin+'/v2/?club=kadetten#home');await page.waitForSelector('#v2-match-ticket');
+    const initialGap=await page.evaluate(()=>document.querySelector('#v2-match-ticket').getBoundingClientRect().top-document.querySelector('.top').getBoundingClientRect().bottom);
+    for(const club of ['fcsg','otmar','kadetten','otmar','fcsg','kadetten']) {
+      await page.evaluate(()=>scrollTo(0,40));
+      await page.locator('[data-compact-clubs]').click();await page.locator('[data-compact-pick="'+club+'"]').click();
+      await page.waitForFunction(club=>document.documentElement.dataset.club===club&&scrollY===0,club);
+      await page.waitForTimeout(180);
+      const gap=await page.evaluate(()=>document.querySelector('#v2-match-ticket').getBoundingClientRect().top-document.querySelector('.top').getBoundingClientRect().bottom);
+      assert.ok(Math.abs(gap-initialGap)<1,'Same header gap after returning to '+club+': '+gap+' / '+initialGap);
+      assert.equal(await page.evaluate(()=>scrollY),0);
+      switchReports.push({style,theme,club,gap});
+    }
+    await ctx.close();
+  }
   assert.deepEqual(errors,[]);
   // Main version retains its approved card and does not load the new ticket.
   const page=await browser.newPage();await page.addInitScript(()=>{localStorage.setItem('fan-app-onboarding-v1','seen');localStorage.setItem('fan-app-install-intro-v1','seen');});await page.goto(origin+'/#home');await page.waitForSelector('#live-match');assert.equal(await page.locator('#v2-match-ticket').count(),0);await page.locator('#club-settings').click();assert.equal(await page.locator('[data-v2-header-style]').count(),0);await page.close();
-  console.log(JSON.stringify({checks:reports.length,errors,reports},null,2));
+  console.log(JSON.stringify({checks:reports.length,switchChecks:switchReports.length,errors,reports,switchReports},null,2));
 } finally {await browser?.close();await new Promise(r=>server.close(r));}
