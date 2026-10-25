@@ -61,7 +61,7 @@ try {
     assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
     assert.equal(await page.locator('html').getAttribute('data-v2-header'),style);
     assert.equal(await page.locator('.v2-hero-curve').isVisible(),style==='curve');
-    assert.match(await page.locator('.v2-hero-media img').getAttribute('src'),new RegExp(['news-34268','v2-header-fcsg-evening','v2-header-otmar-carl'][index]));
+    assert.match(await page.locator('.v2-hero-media img').getAttribute('src'),new RegExp(['news-34268','v2-header-fcsg-evening','v2-header-otmar-heart'][index]));
     await page.waitForFunction(()=>document.querySelector('.v2-hero-media img')?.naturalWidth>0);
     assert.equal(await page.locator('h1').count(),1);
     assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
