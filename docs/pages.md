@@ -120,3 +120,7 @@ Die Handball-Spielvorschau bei Kadetten und St. Otmar beginnt direkt unter den S
 Kadetten und St. Otmar verwenden für abgeschlossene Spiele und verfügbare Live-Teamwerte dieselben Vergleichszeilen wie das FCSG-Matchcenter. Durchgehende Balken zeigen die Anteile beider Mannschaften; Vereinsfarben folgen auch bei Auswärtsspielen der eigenen Mannschaft, Gegner bleiben blaugrau. Kacheln, Torverlauf und Spielerbereiche erhalten einen gemeinsamen dezenten Verlauf (Orange/Gold, im hellen Modus sehr leicht).
 
 Die führende Zahl wird zurückhaltend hinterlegt: höhere Tore/Quoten/Paraden, weniger Fehler/Strafen; Würfe und Auszeiten sind bei Live-Teamwerten neutral. Gleichstände und fehlende Werte erhalten keine Hervorhebung. Fehlende Vergleichswerte bleiben als Strich mit leerem Balken erhalten. Daten, Reihenfolge und Mannschaftsumschalter bleiben bestehen. V2 und FCSG sind nicht verändert.
+
+## V1: gespielte Partien in der kompakten Tabelle
+
+Auf Mobilgeräten steht unter dem Torverhältnis klein die Anzahl gespielter Partien («11 Spiele»). Das gilt für Kadetten, St. Otmar und FCSG sowie die European League. Punkte und Bilanzbalken behalten ihren Platz. Desktop und V2 behalten ihre bisherige Darstellung; für Screenreader bleibt die bestehende Spaltendarstellung erhalten. `scripts/check-standings-layout.mjs` prüft Sichtbarkeit, Zuordnung und Platzbedarf zusätzlich zur Barrierefreiheit.

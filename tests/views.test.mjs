@@ -984,3 +984,15 @@ test('Handballvergleich: korrekte Führung, fehlende Werte und Heim-/Auswärtsfa
   finally{delete context.document.documentElement.dataset[key];}
  }
 });
+
+ test('Tabellen behalten die gespielten Partien unter dem Torverhältnis für die mobile V1 bereit', () => {
+  for(const out of [view('standing()'),view('fcsgStanding()')]){
+   const doc=parseHTML(out).document;
+   for(const row of doc.querySelectorAll('.standings-table tbody tr')){
+    const played=row.children[2].textContent,goals=row.children[3],label=goals.querySelector('.standing-played');
+    assert.ok(label);assert.equal(label.textContent,played+(played==='1'?' Spiel':' Spiele'));
+    assert.equal(label.getAttribute('aria-hidden'),'true');
+    assert.match(goals.firstChild.textContent,/^\d+:\d+$/);
+   }
+  }
+ });
