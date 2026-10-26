@@ -8,6 +8,8 @@ assert.ok(!original.includes('v2Storage'),'Original must retain existing storage
 const originalCss=fs.readFileSync('dist/client/app.css','utf8'),previewCss=fs.readFileSync('dist/client/v2/app.css','utf8');
 assert.ok(!originalCss.includes('.qhl-map-screen')&&previewCss.includes('.qhl-map-screen'),'QHL explorer must remain V2-only');
 assert.ok(!original.includes('qhl-map-screen')&&preview.includes('qhl-map-screen'),'QHL explorer code must remain V2-only');
+for(const bundle of [original,preview])assert.ok(bundle.includes('v2-match-ticket'),'Shared match ticket missing');
+for(const css of [originalCss,previewCss])assert.ok(css.includes('data-home-title=modern'),'Shared title styles missing');
 assert.ok(originalCss.includes('.v2-club-entry')&&originalCss.includes('data-club-layout=modern'),'Shared club layout missing');
 const previewHtml=fs.readFileSync('dist/client/v2/index.html','utf8');
 assert.match(previewHtml,/data-preview="v2"/);

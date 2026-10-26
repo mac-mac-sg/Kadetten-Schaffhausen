@@ -34,9 +34,9 @@ function beginViewRender(){
   const route=location.hash||'#home',routeKey=activeClub+'|'+route;
   if(currentViewMemory?.routeKey!==routeKey)applyViewOptions(rememberedView(route).options);
   const options=viewOptions(),key=viewPositionKey(activeClub,route,options);
-  // V2's home header always starts at the same position when changing clubs.
+  // The shared home header always starts at the same position when changing clubs.
   const clubChanged=currentViewMemory&&currentViewMemory.routeKey.split('|')[0]!==activeClub;
-  if(document.documentElement.dataset.preview==='v2'&&route==='#home'&&clubChanged)viewPositions.delete(key);
+  if((document.documentElement.dataset.preview==='v2'||document.documentElement.dataset.homeTitle==='modern')&&route==='#home'&&clubChanged)viewPositions.delete(key);
   const memory={key,routeKey,route,options,position:viewPositions.get(key)};
   clubViewOptions.set(activeClub,options);currentViewMemory=memory;
   return memory;
