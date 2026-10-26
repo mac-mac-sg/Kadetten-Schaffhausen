@@ -15,6 +15,8 @@ function setup(football = false, storage = new Map()) {
     kickoffAt: () => null, activeClub: football ? 'fcsg' : 'kadetten'});
   vm.runInContext(fs.readFileSync('src/client/js/logic.js', 'utf8'), context);
   context.kickoffAt = () => null;
+  document.documentElement.dataset.preview='v2';
+  vm.runInContext(fs.readFileSync('src/client/js/home-title.js', 'utf8'), context);
   vm.runInContext(fs.readFileSync('src/client/v2/matchday.js', 'utf8'), context);
   context.v2Now = () => new Date('2026-10-31T12:00:00Z');
   const game = {id: 'test', home: football ? 'FC St.Gallen 1879' : 'Kadetten Schaffhausen', away: 'Ein sehr langer Gegnername', date: '2026-10-31', time: '19:15', league: 'QHL', confirmed: true};
@@ -129,12 +131,12 @@ test('V2 title uses fixed local club photos for each club and includes them in i
   const {context} = setup();
   const photos = {kadetten: 'news-34268.webp', fcsg: 'v2-header-fcsg-evening.webp', otmar: 'v2-header-otmar-heart.webp'};
   const build = fs.readFileSync('scripts/build.mjs', 'utf8');
-  const v2Only = build.slice(build.indexOf('if(v2){'), build.indexOf("let sw="));
+  const sharedShell = build.slice(0, build.indexOf('let html='));
   for (const [club, name] of Object.entries(photos)) {
     context.activeClub = club;
     assert.equal(context.v2HeaderPhoto(), 'assets/' + name);
     assert.ok(fs.existsSync('src/client/assets/' + name));
-    assert.ok(v2Only.includes("'assets/" + name + "'"), 'Photo belongs to the V2 offline shell');
+    assert.ok(sharedShell.includes("'assets/" + name + "'"), 'Photo belongs to the shared offline shell');
   }
 });
 

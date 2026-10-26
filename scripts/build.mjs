@@ -12,7 +12,7 @@ fs.writeFileSync('dist/client/platform-config.js','window.KADETTEN_PLATFORM='+JS
 
 // Content-version the complete shell on every build, including future UI edits.
 const {createHash}=await import('node:crypto');
-const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/push-settings.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/club-design.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','club-design.css','pwa.js','manifest.webmanifest','assets/anton.woff2','assets/bbc-arena-hall.webp','assets/fcsg-stadium.webp','assets/otmar-kreuzbleiche.webp'];
+const shellFiles=['platform-config.js','platform.js','data/venues.js','data/squad.js','data/otmar-fallback.js','data/otmar-history.js','data/fcsg-fallback.js','data/fallback.js','data/club.js','js/logic.js','enhancements.js','js/core.js','js/views-news.js','js/views-season.js','js/views-week.js','js/views-match.js','js/views-player.js','js/views-club.js','js/clubs.js','js/push-settings.js','js/fcsg-live.js','js/fcsg-match.js','js/fcsg-history.js','js/view-state.js','js/match-header.js','js/router.js','js/data-sync.js','js/live.js','js/club-design.js','js/home-title.js','js/main.js','style.css','enhancements.css','fcsg-match.css','v1-theme.css','club.css','club-design.css','home-title.css','pwa.js','manifest.webmanifest','assets/anton.woff2','assets/bbc-arena-hall.webp','assets/fcsg-stadium.webp','assets/otmar-kreuzbleiche.webp','assets/news-34268.webp','assets/v2-header-fcsg-evening.webp','assets/v2-header-otmar-heart.webp'];
 let html=fs.readFileSync('dist/client/index.html','utf8').replace(/\?v=[a-f0-9]+/g,'');
 const v2=process.env.KADETTEN_DESIGN==='v2';
 if(!v2){
@@ -31,7 +31,6 @@ if(!v2){
 // V2-Designentwurf «Matchday» (v2/matchday.*): eigene Stile und Verhalten, nur in der Testversion unter /v2/.
 if(v2){
   shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css','v2/matchday.css','v2/matchday.js');
-  shellFiles.push('assets/news-34268.webp','assets/v2-header-fcsg-evening.webp','assets/v2-header-otmar-heart.webp');
   html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"><link rel="stylesheet" href="v2/matchday.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="v2/matchday.js"></script><script src="js/main.js"></script>');
   html=html.replace("connect-src 'self'", "connect-src 'self' https://tiles.openfreemap.org");
   html=html.replace('<html lang="de-CH"', '<html data-preview="v2" lang="de-CH"').replace("if(!location.pathname.split('/').includes('v2'))","if(true)").replace("localStorage.getItem('fan-v1-theme')","localStorage.getItem('v2:fan-v1-theme')");

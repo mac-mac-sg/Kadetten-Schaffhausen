@@ -217,12 +217,12 @@ test('Alle Vereine zeigen vollständige News-Karten unter dem bestehenden Trenne
       const news=run(club==='fcsg'?'fcsgData.stories':'stories');
       const {document}=parseHTML(view(club==='fcsg'?'fcsgHome()':'home()'));
       assert.equal(document.querySelector('.home-news-heading h1').textContent,'Neues aus dem Verein');
-      assert.ok(document.querySelector('.home-title-zone .home-matchday'));
+      assert.ok(document.querySelector('.home-title-zone .v2-ticket-section'));
       const cards=[...document.querySelectorAll('.v1-news-card')];assert.equal(cards.length,news.length);
       for(let i=0;i<cards.length;i++){
         const card=cards[i],link=card.querySelector('a'),title=card.querySelector('h2');
         assert.equal(card.querySelectorAll('a').length,1);assert.equal(link.getAttribute('href'),'#news/'+news[i].id);
-        assert.equal(link.getAttribute('aria-labelledby'),title.id);assert.ok(card.querySelector('.v1-news-arrow[aria-hidden="true"]'));
+        assert.equal(link.getAttribute('aria-labelledby'),null);assert.ok(title.textContent.includes(news[i].title));assert.ok(card.querySelector('.v1-news-arrow[aria-hidden="true"]'));
         assert.equal(card.querySelector('img').getAttribute('alt'),'');assert.equal(card.querySelectorAll('.button').length,0);
         assert.equal(card.querySelector('img').getAttribute(i?'loading':'fetchpriority'),i?'lazy':'high');
       }
