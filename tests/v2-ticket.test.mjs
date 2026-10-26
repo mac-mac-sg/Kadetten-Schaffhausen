@@ -134,3 +134,20 @@ test('V2 title uses fixed local club photos for each club and includes them in i
     assert.ok(v2Only.includes("'assets/" + name + "'"), 'Photo belongs to the V2 offline shell');
   }
 });
+
+test('The ticket light edge progresses from calm to soon, matchday and live, then rests after the result', () => {
+  for (const football of [false,true]) {
+    const {markup,parse,club,game}=setup(football);
+    game.date='2026-11-02';
+    assert.equal(parse(markup('everyday')).querySelector('a').dataset.effect,'calm');
+    assert.equal(parse(markup('pre')).querySelector('a').dataset.effect,'soon');
+    game.date=club.today;
+    assert.equal(parse(markup('pre')).querySelector('a').dataset.effect,'matchday');
+    game.confirmed=false;game.time='';
+    assert.equal(parse(markup('pre')).querySelector('a').dataset.effect,'matchday');
+    club.fixture.live=game;
+    assert.equal(parse(markup('live')).querySelector('a').dataset.effect,'live');
+    club.fixture.live=null;game.score=[31,29];
+    assert.equal(parse(markup('post')).querySelector('a').dataset.effect,'result');
+  }
+});

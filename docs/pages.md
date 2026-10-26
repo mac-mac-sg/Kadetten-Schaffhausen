@@ -153,3 +153,7 @@ FCSG und St. Otmar verwenden eigene Bildausschnitte: Beim Stadion liegt der Schw
 Der Vereinswechsel auf der V2-Startseite öffnet den neuen Verein immer am Seitenanfang, damit der Abstand zwischen Vereinsmenü und Match-Band bei allen drei Vereinen und beiden Titelvarianten gleich bleibt (48 px). Die Rückkehr aus einem Newsartikel behält die Leseposition; V1 und die übrigen Ansichten behalten ihre bisherige Positionsspeicherung.
 
 Die V2-Titelbilder sind leicht entsättigt und kontrastärmer. Ein transparenter Schleier nimmt die jeweilige Vereinsfarbe auf (hell und weich im Hellmodus, dunkel getönt im Dunkelmodus); nach unten läuft das Foto in die aktuelle Seitenfläche aus. Dies gilt für beide Titelvarianten. Die Bildmotive, Ausschnitte, Spielkarte und Farben der Newsbilder bleiben erhalten.
+
+### Lichtsaum der V2-Spielkarte
+
+Ein einzelner feiner Lichtsaum in Vereinsfarbe folgt dem vorhandenen Kartenrand. Ferne Spiele bleiben ruhig und statisch. Innerhalb von 24 Stunden atmet der Saum sehr langsam (6 s), am Schweizer Spieltag sanft pulsierend (3,6 s), während bestätigter Live-Spiele etwas lebendiger (2,6 s). Nur die Deckkraft verändert sich; Karte, Text und Hintergrund bleiben still. Nach Spielende verschwindet der Lichteffekt, der vorhandene Ergebnisrand bleibt erhalten. Bei «Bewegungen reduzieren» bleibt der Saum in allen Vorschau-/Live-Zuständen statisch. Die gesamte Karte bleibt ein einzelner Link.

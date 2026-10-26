@@ -118,15 +118,32 @@ html[data-preview='v2'] .home-title-zone .home-news-heading h1 { color: var(--te
 html[data-preview='v2'] .v2-match-ticket {
   --ticket-bg: #22312b; --ticket-ink: #f5f5ef; --ticket-muted: #c4cec7;
   --ticket-accent: color-mix(in srgb, var(--accent) 48%, #fff3df);
-  display: grid; gap: 12px;
+  position: relative; display: grid; gap: 12px;
   min-height: 154px; padding: 14px 16px; border-radius: 22px;
   background: var(--ticket-bg); color: var(--ticket-ink); text-decoration: none;
-  border: 1px solid #ffffff1c; box-shadow: 0 6px 18px #15251b18;
+  border: 1px solid color-mix(in srgb, var(--ticket-accent) 24%, #ffffff1c); box-shadow: 0 6px 18px #15251b18;
   transition: transform .18s ease, box-shadow .18s ease;
 }
 html[data-preview='v2']:not([data-theme='light']) .v2-match-ticket { --ticket-bg: #353029; }
 html[data-preview='v2'][data-club='fcsg']:not([data-theme='light']) .v2-match-ticket { --ticket-bg: #273e32; }
 html[data-preview='v2'][data-club='otmar']:not([data-theme='light']) .v2-match-ticket { --ticket-bg: #383626; }
+/* One light edge follows the existing border; only opacity animates. */
+html[data-preview='v2'] .v2-match-ticket::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit;
+  border: 1px solid var(--ticket-accent); pointer-events: none; opacity: .28;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--ticket-accent) 20%, transparent);
+}
+html[data-preview='v2'] .v2-match-ticket[data-effect='soon']::after {
+  --rim-low: .22; --rim-high: .48; animation: v2-ticket-breathe 6s ease-in-out infinite;
+}
+html[data-preview='v2'] .v2-match-ticket[data-effect='matchday']::after {
+  --rim-low: .3; --rim-high: .68; animation: v2-ticket-breathe 3.6s ease-in-out infinite;
+}
+html[data-preview='v2'] .v2-match-ticket[data-effect='live']::after {
+  --rim-low: .42; --rim-high: .85; animation: v2-ticket-breathe 2.6s ease-in-out infinite;
+}
+html[data-preview='v2'] .v2-match-ticket[data-effect='result']::after { content: none; }
+@keyframes v2-ticket-breathe { 0%, 100% { opacity: var(--rim-low); } 50% { opacity: var(--rim-high); } }
 html[data-preview='v2'] .v2-match-ticket:active { transform: scale(.985); }
 html[data-preview='v2'] .v2-match-ticket:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 html[data-preview='v2'] .v2-ticket-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; font: 500 11px/1.35 var(--font-text); color: var(--ticket-muted); }
@@ -154,6 +171,7 @@ html[data-preview='v2'] .v2-match-ticket[data-result='loss'] { border-color: var
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-preview='v2'] .v2-match-ticket { transition: none; }
+  html[data-preview='v2'] .v2-match-ticket::after { animation: none !important; opacity: .35; }
 }
 
 html[data-preview='v2'] .v2-share {
