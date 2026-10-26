@@ -157,3 +157,5 @@ Die V2-Titelbilder sind leicht entsättigt und kontrastärmer. Ein transparenter
 ### Lichtsaum der V2-Spielkarte
 
 Ein einzelner feiner Lichtsaum in Vereinsfarbe folgt dem vorhandenen Kartenrand. Ferne Spiele bleiben ruhig und statisch. Innerhalb von 24 Stunden atmet der Saum sehr langsam (6 s), am Schweizer Spieltag sanft pulsierend (3,6 s), während bestätigter Live-Spiele etwas lebendiger (2,6 s). Nur die Deckkraft verändert sich; Karte, Text und Hintergrund bleiben still. Nach Spielende verschwindet der Lichteffekt, der vorhandene Ergebnisrand bleibt erhalten. Bei «Bewegungen reduzieren» bleibt der Saum in allen Vorschau-/Live-Zuständen statisch. Die gesamte Karte bleibt ein einzelner Link.
+
+Im V2-Match-Band steht oben «Heute», «Morgen» oder «In X Tagen» auf Basis des Schweizer Kalenderdatums. Live-/Endzustände sind dort mit «Jetzt live» bzw. «Beendet» gekennzeichnet. Das vollständige Datum mit Wochentag und Jahr steht unten anstelle der bisherigen Heim-/Auswärtszeile. Diese Einordnung bleibt im zugänglichen Linktext erhalten; die Anspielzeit beziehungsweise das Resultat bleibt zentral zwischen den Mannschaften.

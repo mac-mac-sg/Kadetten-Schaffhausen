@@ -75,6 +75,9 @@ try {
     assert.equal(photoTreatment.news,'none','News photos keep their original color');
     const expectedEffect={preview:'calm',soon:'soon',matchday:'matchday',live:'live',post:'result'}[state];
     assert.equal(await page.locator('#v2-match-ticket').getAttribute('data-effect'),expectedEffect);
+    assert.equal(await page.locator('.v2-ticket-day').textContent(),{preview:'In 6 Tagen',soon:'Morgen',matchday:'Heute',live:'Jetzt live',post:'Beendet'}[state]);
+    assert.match(await page.locator('.v2-ticket-footer').textContent(),new RegExp(state==='preview'?'31\\.10\\.2026':state==='soon'?'26\\.10\\.2026':'25\\.10\\.2026'));
+    assert.doesNotMatch(await page.locator('.v2-ticket-footer').textContent(),/Heimspiel|Auswärtsspiel/);
     const rim=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::after');return {animation:c.animationName,duration:c.animationDuration,content:c.content,pointer:c.pointerEvents,opacity:c.opacity};});
     assert.equal((await rim()).animation,'none','Reduced motion keeps the rim static');
     await page.emulateMedia({reducedMotion:'no-preference'});

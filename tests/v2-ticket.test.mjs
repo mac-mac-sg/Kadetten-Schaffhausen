@@ -13,7 +13,10 @@ function setup(football = false, storage = new Map()) {
     liveEscape: x => String(x).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'),
     liveRequestFailed: false, fcsgLiveErrors: new Set(), v2ArrowSvg: () => '<svg aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>',
     kickoffAt: () => null, activeClub: football ? 'fcsg' : 'kadetten'});
+  vm.runInContext(fs.readFileSync('src/client/js/logic.js', 'utf8'), context);
+  context.kickoffAt = () => null;
   vm.runInContext(fs.readFileSync('src/client/v2/matchday.js', 'utf8'), context);
+  context.v2Now = () => new Date('2026-10-31T12:00:00Z');
   const game = {id: 'test', home: football ? 'FC St.Gallen 1879' : 'Kadetten Schaffhausen', away: 'Ein sehr langer Gegnername', date: '2026-10-31', time: '19:15', league: 'QHL', confirmed: true};
   const club = {football, fixture: {game, live: null}, today: '2026-10-31', games: [game],
     score: g => g.liveScore || g.score, isOwn: n => n === game.home,
@@ -39,7 +42,7 @@ test('V2 ticket is one complete preview link with time between both teams and no
     assert.equal(matchup.children[1].className, 'v2-ticket-time');
     assert.equal(matchup.children[2].className, 'v2-ticket-team');
     assert.equal(root.querySelectorAll('.v2-ticket-arrow,svg,button,a a').length, 0);
-    assert.match(root.querySelector('.v2-ticket-heading').textContent, /2026/);
+    assert.match(root.querySelector('.v2-ticket-footer').textContent, /2026/);
     assert.equal(root.querySelectorAll('.v1-match-action,.v2-glance').length, 0);
     assert.match(root.querySelector('a').textContent, /2026[\s\S]*Spielvorschau öffnen/);
   }
@@ -149,5 +152,24 @@ test('The ticket light edge progresses from calm to soon, matchday and live, the
     assert.equal(parse(markup('live')).querySelector('a').dataset.effect,'live');
     club.fixture.live=null;game.score=[31,29];
     assert.equal(parse(markup('post')).querySelector('a').dataset.effect,'result');
+  }
+});
+
+test('Countdown occupies the heading and the full Swiss date replaces the home-away footer', () => {
+  for(const football of [false,true]) {
+    const {context,club,game,markup,parse}=setup(football);
+    context.v2Now=()=>new Date('2026-10-24T22:30:00Z'); // Already Sunday in Zurich, before the DST switch.
+    for(const [date,label] of [['2026-10-25','Heute'],['2026-10-26','Morgen'],['2026-10-28','In 3 Tagen'],['2026-12-01','In 37 Tagen']]) {
+      game.date=date;const root=parse(markup('everyday'));
+      assert.equal(root.querySelector('.v2-ticket-day').textContent,label);
+      assert.match(root.querySelector('.v2-ticket-footer').textContent,/2026/);
+      assert.doesNotMatch(root.querySelector('.v2-ticket-footer').textContent,/Heimspiel|Auswärtsspiel/);
+    }
+    context.v2Now=()=>new Date('2026-12-31T23:30:00Z');game.date='2027-01-02';
+    assert.equal(parse(markup('everyday')).querySelector('.v2-ticket-day').textContent,'Morgen');
+    club.fixture.live=game;
+    assert.equal(parse(markup('live')).querySelector('.v2-ticket-day').textContent,'Jetzt live');
+    club.fixture.live=null;game.score=[1,0];
+    assert.equal(parse(markup('post')).querySelector('.v2-ticket-day').textContent,'Beendet');
   }
 });
