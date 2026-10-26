@@ -3,7 +3,27 @@
    Bewegung nur mit Bedeutung. Die normale App ist davon nicht betroffen. */
 
 html[data-preview='v2'] {
-  --font-display: Anton, Impact, 'Arial Narrow', sans-serif;
+  --v2-font-display: Anton, Impact, 'Arial Narrow', sans-serif;
+  --font-display: var(--v2-font-display);
+  --v2-touch-size: 44px;
+  --v2-caption-size: 12px;
+  --v2-meta-size: 13px;
+  --v2-control-fill: var(--v1-control-fill);
+  --v2-control-ink: var(--v1-control-ink);
+  --v2-control-tray: var(--v1-control-tray);
+  --v2-status-fill: var(--surface-2);
+  --v2-status-ink: var(--text);
+  --v2-status-alert: #ff565f;
+  --v2-status-ring: #171b17;
+  --v2-status-shadow: 0 12px 32px #0009;
+  --v2-ticket-fill: #353029;
+  --v2-ticket-ink: #f5f5ef;
+  --v2-ticket-muted: #c4cec7;
+  --v2-ticket-highlight: #fff3df;
+  --v2-ticket-edge: #ffffff1c;
+  --v2-ticket-shadow: 0 6px 18px #15251b18;
+  --v2-ticket-reflection: #ffffff1f;
+  --v2-ticket-reflection-soft: #ffffff0d;
   --v2-radius: 22px;
   --v2-radius-sm: 16px;
   --v2-card: color-mix(in srgb, var(--text) 5%, var(--surface));
@@ -14,6 +34,7 @@ html[data-preview='v2'] {
   --v2-draw: #8fb6e8;
 }
 html[data-preview='v2'][data-theme='light'] {
+  --v2-ticket-fill: #22312b;
   --v2-card: #ffffff;
   --v2-card-strong: #ffffff;
   --v2-shadow: 0 1px 2px #1b261c14, 0 10px 26px #1b261c12;
@@ -21,6 +42,50 @@ html[data-preview='v2'][data-theme='light'] {
   --v2-hairline: #1b261c14;
   --v2-draw: #3f74b8;
 }
+html[data-preview='v2'][data-club='fcsg']:not([data-theme='light']) { --v2-ticket-fill: #273e32; }
+html[data-preview='v2'][data-club='otmar']:not([data-theme='light']) { --v2-ticket-fill: #383626; }
+
+/* Mobile controls share colour roles; each theme and club supplies the values above. */
+html[data-preview='v2'][data-theme] :is(.league-toggle,.match-tabs.segments) { background: var(--v2-control-tray); }
+html[data-preview='v2'][data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected),
+html[data-preview='v2'][data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected):hover {
+  background: var(--v2-control-fill); color: var(--v2-control-ink); border-color: var(--v2-control-fill);
+}
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket {
+  --ticket-bg: var(--v2-ticket-fill); --ticket-ink: var(--v2-ticket-ink); --ticket-muted: var(--v2-ticket-muted);
+  --ticket-accent: color-mix(in srgb, var(--accent) 48%, var(--v2-ticket-highlight));
+  border-color: color-mix(in srgb, var(--ticket-accent) 24%, var(--v2-ticket-edge));
+  box-shadow: var(--v2-ticket-shadow);
+}
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket.is-live { border-color: var(--ticket-accent); }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket[data-result='win'] { border-color: var(--win); }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket[data-result='draw'] { border-color: var(--draw); }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket[data-result='loss'] { border-color: var(--loss); }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket::before {
+  background: radial-gradient(ellipse at 12% 0%, var(--v2-ticket-reflection), transparent 62%),
+    linear-gradient(125deg, transparent 22%, var(--v2-ticket-reflection-soft) 40%, transparent 58%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--ticket-accent) 12%, transparent), transparent 65%);
+}
+
+/* The small dot has a full touch target below the header, clear of its buttons. */
+html[data-preview='v2'] .compact-status { top: calc(env(safe-area-inset-top, 0px) + var(--app-header-height, 64px) + 20px); right: 14px; }
+html[data-preview='v2'] .compact-status:not([hidden]):has(~ .compact-status:not([hidden])) { right: 62px; }
+html[data-preview='v2'] .compact-status > summary { width: var(--v2-touch-size); height: var(--v2-touch-size); touch-action: manipulation; }
+html[data-preview='v2'] .compact-status > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+html[data-preview='v2'] .compact-status > summary:active { background: var(--v2-card); }
+html[data-preview='v2'] .status-dot { background: var(--v2-status-alert); box-shadow: 0 0 0 2px var(--v2-status-ring); }
+html[data-preview='v2'][data-theme] .status-popover {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + var(--app-header-height, 64px) + 20px + var(--v2-touch-size)); right: 16px;
+  width: min(320px, calc(100% - 32px)); background: var(--v2-status-fill); color: var(--v2-status-ink); box-shadow: var(--v2-status-shadow);
+}
+html[data-preview='v2'] .season-form a { width: var(--v2-touch-size); height: var(--v2-touch-size); min-width: var(--v2-touch-size); min-height: var(--v2-touch-size); touch-action: manipulation; }
+
+/* Metadata stays secondary, but is readable without zooming. Dense table cells keep their scale. */
+html[data-preview='v2'][data-home-title='modern'] :is(.v2-ticket-heading,.v2-ticket-status) { font-size: var(--v2-caption-size); line-height: 1.4; }
+html[data-preview='v2'][data-home-title='modern'] .v2-ticket-footer { font-size: var(--v2-meta-size); line-height: 1.4; }
+html[data-preview='v2'][data-theme] :is(.club-match-hint small,.match-compact-detail,.v1-news-copy p) { font-size: var(--v2-meta-size); line-height: 1.45; }
+html[data-preview='v2'][data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.meta,.venue) { font-size: var(--v2-meta-size); line-height: 1.45; }
+html[data-preview='v2'][data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline small { font-size: var(--v2-caption-size); }
 
 /* ---------- Typografie: Zahlen in der Titelschrift, gleich breite Ziffern, ruhigere Gewichte ---------- */
 html[data-preview='v2'] :is(
