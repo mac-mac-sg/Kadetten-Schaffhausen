@@ -198,7 +198,7 @@ html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket::before {
     radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--ticket-accent) 12%, transparent), transparent 65%);
   opacity: .5; animation: v2-ticket-reflection 2.4s cubic-bezier(.22, 1, .36, 1) both;
 }
-html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket > * { position: relative; }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket > :is(.v2-ticket-heading, .v2-ticket-matchup, .v2-ticket-footer) { position: relative; }
 html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket[data-effect='result']::before { content: none; animation: none; }
 @keyframes v2-ticket-reflection { 0% { opacity: .12; } 45% { opacity: .8; } 100% { opacity: .5; } }
 @media (prefers-reduced-motion: reduce) {
