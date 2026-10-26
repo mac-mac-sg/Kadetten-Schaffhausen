@@ -81,7 +81,13 @@ try {
     assert.doesNotMatch(await page.locator('.v2-ticket-footer').textContent(),/Heimspiel|Auswärtsspiel/);
     const rim=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::after');return {animation:c.animationName,duration:c.animationDuration,content:c.content,pointer:c.pointerEvents,opacity:c.opacity};});
     assert.equal((await rim()).animation,'none','Reduced motion keeps the rim static');
+    const reflection=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::before');return {animation:c.animationName,content:c.content,pointer:c.pointerEvents,iterations:c.animationIterationCount};});
+    assert.equal((await reflection()).animation,'none','Reduced motion keeps the reflection static');
     await page.emulateMedia({reducedMotion:'no-preference'});
+    const reflected=await reflection(),hasReflection=version==='v2'&&state!=='post';
+    assert.equal(reflected.animation,hasReflection?'v2-ticket-reflection':'none','Reflection is confined to V2 preview/live tickets');
+    if(hasReflection){assert.equal(reflected.pointer,'none');assert.equal(reflected.iterations,'1','Reflection settles instead of looping');}
+    if(version==='v2'&&state==='post')assert.equal(reflected.content,'none','Final result has no surface effect');
     const movingRim=await rim(),durations={soon:'6s',matchday:'3.6s',live:'2.6s'};
     assert.equal(movingRim.animation,durations[state]?'v2-ticket-breathe':'none');
     if(durations[state])assert.equal(movingRim.duration,durations[state]);
