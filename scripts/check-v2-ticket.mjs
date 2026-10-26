@@ -27,12 +27,12 @@ try {
   browser = await chromium.launch({headless:true, executablePath:process.env.GAMES_CHROMIUM_EXECUTABLE, args:['--no-sandbox','--disable-dev-shm-usage']});
   const axe = fs.readFileSync(process.env.GAMES_AXE_SCRIPT, 'utf8');
   const scenarios = [];
-  for (const style of ['arena','curve']) for (const club of ['kadetten','fcsg','otmar']) for (const theme of ['light','dark']) for (const state of ['preview','live','post']) scenarios.push({club,theme,state,style,width:390});
+  for (const style of ['arena','curve']) for (const club of ['kadetten','fcsg','otmar']) for (const theme of ['light','dark']) for (const state of ['preview','soon','matchday','live','post']) scenarios.push({club,theme,state,style,width:390});
   for (const style of ['arena','curve']) for (const width of [320,1440]) for (const theme of ['light','dark']) scenarios.push({club:'otmar',theme,state:'preview',style,width});
   for (const scenario of scenarios) {
     const {club,theme,state,style,width} = scenario, index = ['kadetten','fcsg','otmar'].indexOf(club), now = '2026-10-25T12:00:00Z';
     const data = structuredClone(originals[index]);
-    const game = {...data.games.find(g => g.league !== 'Testspiel'), id:'12345', home:names[index], away:'GC Amicitia Zürich', date:state==='preview'?'2026-10-31':'2026-10-25', time:'19:15', confirmed:true, score:state==='post'?[31,29]:null, league:club==='fcsg'?'Super League':'QHL'};
+    const game = {...data.games.find(g => g.league !== 'Testspiel'), id:'12345', home:names[index], away:'GC Amicitia Zürich', date:state==='preview'?'2026-10-31':state==='soon'?'2026-10-26':'2026-10-25', time:state==='soon'?'10:00':'19:15', confirmed:true, score:state==='post'?[31,29]:null, league:club==='fcsg'?'Super League':'QHL'};
     data.games = [game]; data.checkedAt = now;
     const live = state==='live'?{...game, live:true, liveScore:[12,10], score:[12,10], phase:'2. Halbzeit', clock:'42:10'}:null;
     const ctx = await browser.newContext({viewport:{width,height:844},serviceWorkers:'block',reducedMotion:'reduce',bypassCSP:true});
@@ -56,7 +56,7 @@ try {
     await page.goto(origin+'/v2/?club='+club+'#home');
     await page.waitForSelector('#v2-match-ticket');
     if(state==='live')await page.waitForFunction(()=>document.querySelector('#v2-match-ticket').classList.contains('is-live'));
-    await page.waitForFunction(expected=>document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent===expected,state==='live'?'12:10':state==='post'?'31:29':'19:15');
+    await page.waitForFunction(expected=>document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent===expected,state==='live'?'12:10':state==='post'?'31:29':state==='soon'?'10:00':'19:15');
     await page.waitForTimeout(120);
     assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
     assert.equal(await page.locator('html').getAttribute('data-v2-header'),style);
@@ -73,6 +73,21 @@ try {
     assert.match(photoTreatment.overlay,/linear-gradient/,'Header fades into the page surface');
     assert.match(photoTreatment.wash,new RegExp(theme==='light'?'30%':'38%'),'Veil follows the color scheme');
     assert.equal(photoTreatment.news,'none','News photos keep their original color');
+    const expectedEffect={preview:'calm',soon:'soon',matchday:'matchday',live:'live',post:'result'}[state];
+    assert.equal(await page.locator('#v2-match-ticket').getAttribute('data-effect'),expectedEffect);
+    const rim=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::after');return {animation:c.animationName,duration:c.animationDuration,content:c.content,pointer:c.pointerEvents,opacity:c.opacity};});
+    assert.equal((await rim()).animation,'none','Reduced motion keeps the rim static');
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    const movingRim=await rim(),durations={soon:'6s',matchday:'3.6s',live:'2.6s'};
+    assert.equal(movingRim.animation,durations[state]?'v2-ticket-breathe':'none');
+    if(durations[state])assert.equal(movingRim.duration,durations[state]);
+    assert.equal(movingRim.pointer,'none','Rim never intercepts the match link');
+    if(state==='post')assert.equal(movingRim.content,'none','Result has no animated overlay');
+    if(state==='live'&&style==='arena'&&theme==='dark') {
+      await page.locator('#v2-match-ticket').evaluate(e=>{for(const a of e.getAnimations({subtree:true}))if(a.animationName==='v2-ticket-breathe'){a.pause();a.currentTime=1300;}});
+      await page.screenshot({path:'/tmp/v2-glow-'+club+'-live.png'});
+    }
+    await page.emulateMedia({reducedMotion:'reduce'});
     assert.equal(await page.locator('h1').count(),1);
     assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
     assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button,#v2-match-ticket .v2-ticket-arrow').count(),0);
@@ -91,7 +106,7 @@ try {
     assert.equal(await page.locator('.v1-news-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','News keeps one surface');
     assert.ok(geometry.newsTop>=geometry.top+geometry.height,'News follows the ticket');
     const score=await page.locator('[data-v2-score]').first().textContent();
-    assert.equal(score,state==='live'?'12:10':state==='post'?'31:29':'19:15');
+    assert.equal(score,state==='live'?'12:10':state==='post'?'31:29':state==='soon'?'10:00':'19:15');
     await page.addScriptTag({content:axe});
     const violations=await page.evaluate(async()=> (await axe.run(document,{rules:{'region':{enabled:false}}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
     assert.deepEqual(violations,[],JSON.stringify(scenario));
