@@ -189,3 +189,18 @@ html[data-preview='v2'][data-theme] .v1-news-card { padding: 0 20px; background:
 html[data-preview='v2'][data-theme] .v1-news-link { background: var(--v2-card); box-shadow: var(--v2-shadow-soft); border-radius: 22px; }
 html[data-preview='v2'][data-theme] .v1-news-grid { display: block; padding: 0; }
 html[data-preview='v2'][data-theme='light'][data-v2-page='home'] { --surface: #f6f5f0; }
+
+/* Soft surface reflection, confined to V2; the shared rim remains independent. */
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(ellipse at 12% 0%, #ffffff1f, transparent 62%),
+    linear-gradient(125deg, transparent 22%, #ffffff0d 40%, transparent 58%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--ticket-accent) 12%, transparent), transparent 65%);
+  opacity: .5; animation: v2-ticket-reflection 2.4s cubic-bezier(.22, 1, .36, 1) both;
+}
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket > :is(.v2-ticket-heading, .v2-ticket-matchup, .v2-ticket-footer) { position: relative; }
+html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket[data-effect='result']::before { content: none; animation: none; }
+@keyframes v2-ticket-reflection { 0% { opacity: .12; } 45% { opacity: .8; } 100% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) {
+  html[data-preview='v2'][data-home-title='modern'] .v2-match-ticket::before { animation: none; }
+}
