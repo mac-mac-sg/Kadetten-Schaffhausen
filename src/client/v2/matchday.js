@@ -124,16 +124,18 @@ function v2TicketMarkup(c, info) {
   const phase = live ? [c.fixture.live.phase, c.fixture.live.clock].filter(Boolean).join(' · ') : '';
   const stale = c.football ? fcsgLiveErrors.has(g.id) || fcsgLiveErrors.has('latest') : liveRequestFailed;
   const where = c.isOwn(g.home) ? 'Heimspiel' : 'Auswärtsspiel';
+  const remaining = daysUntil(g.date, v2Now());
+  const label = live ? 'Jetzt live' : finished ? 'Beendet' : remaining === 0 ? 'Heute' : remaining === 1 ? 'Morgen' : remaining > 1 ? `In ${remaining} Tagen` : 'Nächstes Spiel';
   const status = live ? phase || 'Spiel läuft' : finished ? 'Endresultat' : '';
   const action = live ? 'Live verfolgen' : finished ? 'Rückblick und Statistiken öffnen' : 'Spielvorschau öffnen';
   const href = live ? c.liveHref(c.fixture.live) : c.matchHref(g, finished);
   const result = finished ? c.result(g)?.state || '' : '';
   const effect = live ? 'live' : finished ? 'result' : g.date === c.today ? 'matchday' : info.state === 'pre' ? 'soon' : 'calm';
   return `<a id="v2-match-ticket" class="v2-match-ticket${live ? ' is-live' : ''}" href="${liveEscape(href)}" data-result="${result}" data-effect="${effect}">
-    <span class="v2-ticket-heading"><span class="v2-ticket-day">${live ? 'Jetzt live · ' : ''}${liveEscape(day)}</span><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
+    <span class="v2-ticket-heading"><span class="v2-ticket-day">${liveEscape(label)}</span><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
     <span class="v2-ticket-matchup"><span class="v2-ticket-team">${c.crestOf(g, true)}<b>${liveEscape(g.home)}</b></span><span class="v2-ticket-time"><strong data-v2-score>${liveEscape(value)}</strong>${status ? `<span class="v2-ticket-status">${liveEscape(status)}</span>` : ''}</span><span class="v2-ticket-team">${c.crestOf(g, false)}<b>${liveEscape(g.away)}</b></span></span>
-    <span class="v2-ticket-footer">${where}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span>
-    <span class="live-sr-context">${action}</span>
+    <span class="v2-ticket-footer">${liveEscape(day)}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span>
+    <span class="live-sr-context">${where} · ${action}</span>
   </a>`;
 }
 /* Feste Vereinsmotive statt zufälliger Newsbilder. */
