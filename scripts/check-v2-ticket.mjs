@@ -84,10 +84,10 @@ try {
     const reflection=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::before');return {animation:c.animationName,content:c.content,pointer:c.pointerEvents,iterations:c.animationIterationCount};});
     assert.equal((await reflection()).animation,'none','Reduced motion keeps the reflection static');
     await page.emulateMedia({reducedMotion:'no-preference'});
-    const reflected=await reflection(),hasReflection=version==='v2'&&state!=='post';
-    assert.equal(reflected.animation,hasReflection?'v2-ticket-reflection':'none','Reflection is confined to V2 preview/live tickets');
+    const reflected=await reflection(),hasReflection=state!=='post';
+    assert.equal(reflected.animation,hasReflection?'v2-ticket-reflection':'none','Both versions show the reflection on preview/live tickets');
     if(hasReflection){assert.equal(reflected.pointer,'none');assert.equal(reflected.iterations,'1','Reflection settles instead of looping');}
-    if(version==='v2'&&state==='post')assert.equal(reflected.content,'none','Final result has no surface effect');
+    if(state==='post')assert.equal(reflected.content,'none','Final result has no surface effect');
     const movingRim=await rim(),durations={soon:'6s',matchday:'3.6s',live:'2.6s'};
     assert.equal(movingRim.animation,durations[state]?'v2-ticket-breathe':'none');
     if(durations[state])assert.equal(movingRim.duration,durations[state]);
