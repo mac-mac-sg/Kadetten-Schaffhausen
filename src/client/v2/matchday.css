@@ -84,23 +84,21 @@ html[data-preview='v2'] .season-form a { width: var(--v2-touch-size); height: va
 html[data-preview='v2'][data-home-title='modern'] :is(.v2-ticket-heading,.v2-ticket-status) { font-size: var(--v2-caption-size); line-height: 1.4; }
 html[data-preview='v2'][data-home-title='modern'] .v2-ticket-footer { font-size: var(--v2-meta-size); line-height: 1.4; }
 html[data-preview='v2'][data-theme] :is(.club-match-hint small,.match-compact-detail,.v1-news-copy p) { font-size: var(--v2-meta-size); line-height: 1.45; }
-html[data-preview='v2'][data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.meta,.venue) { font-size: var(--v2-meta-size); line-height: 1.45; }
-html[data-preview='v2'][data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline small { font-size: var(--v2-caption-size); }
 
 /* ---------- Typografie: Zahlen in der Titelschrift, gleich breite Ziffern, ruhigere Gewichte ---------- */
 html[data-preview='v2'] :is(
-  .live-score > strong, .matchup > strong, .scoreline > strong, .v2-num,
+  .live-score > strong, .matchup > strong, .v2-num,
   .standings-table td:last-child strong, .standings-table td:first-child,
   .comparison > strong, .season-number-grid strong, .season-split > strong, .week-result strong
-) {
+):not(.game-timeline *) {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: .01em;
   font-variant-numeric: tabular-nums;
 }
-html[data-preview='v2'] .live-score > strong { font-size: clamp(34px, 10vw, 46px); line-height: 1.05; align-self: center; }
+html[data-preview='v2'] .live-score > strong:not(.game-timeline *) { font-size: clamp(34px, 10vw, 46px); line-height: 1.05; align-self: center; }
 html[data-preview='v2'] .matchup > strong { font-size: clamp(40px, 12vw, 56px); line-height: 1; white-space: nowrap; }
-html[data-preview='v2'] :is(.matchup-team span, .live-score b, .scoreline > div > span) { hyphens: auto; overflow-wrap: normal; word-break: normal; }
+html[data-preview='v2'] :is(.matchup-team span, .live-score b) { hyphens: auto; overflow-wrap: normal; word-break: normal; }
 html[data-preview='v2'] .standings-table td:last-child strong { font-size: 30px; }
 html[data-preview='v2'] :is(.standings-table, .report-table, .report-comparison, .facts, .stats-table, .season-number-grid, .match-compact-detail, .home-countdown, .match-preview-time) {
   font-variant-numeric: tabular-nums;
@@ -108,19 +106,20 @@ html[data-preview='v2'] :is(.standings-table, .report-table, .report-comparison,
 html[data-preview='v2'] :is(#app h1, #app h2) { font-weight: 750; letter-spacing: -.015em; }
 html[data-preview='v2'] .home-news-heading h1 { font-size: 26px; }
 html[data-preview='v2'] .v1-news-copy h2 { font-weight: 700; }
-html[data-preview='v2'] :is(.live-score b, .matchup-team span, .scoreline > div > span, .standing-name) { font-weight: 600; }
-html[data-preview='v2'] :is(.match-preview-time, .home-countdown, .live-heading small, .venue, .meta) { font-weight: 500; }
+html[data-preview='v2'] :is(.live-score b, .matchup-team span, .standing-name):not(.game-timeline *) { font-weight: 600; }
+html[data-preview='v2'] :is(.match-preview-time, .home-countdown, .live-heading small) { font-weight: 500; }
+html[data-preview='v2'] :is(.venue,.meta):not(.game-timeline *) { font-weight: 500; }
 html[data-preview='v2'] .home-countdown { font-size: 15px; letter-spacing: 0; }
 html[data-preview='v2'] :is(.comparison, .report-comparison-row) :is(strong, b) { white-space: nowrap; }
 
 /* ---------- Flächen: flache Karten mit weichem Schatten statt Rahmen ---------- */
-html[data-preview='v2'] :is(.game-card, .v1-news-card, .panel, .stats-block, .report-comparison, .season-player-stats, .facts > div, .table-wrap .standings-table tbody tr) {
+html[data-preview='v2'] :is(.v1-news-card, .panel, .stats-block, .report-comparison, .season-player-stats, .facts > div, .table-wrap .standings-table tbody tr) {
   border-color: transparent !important;
   box-shadow: var(--v2-shadow);
 }
-html[data-preview='v2'] :is(.game-card, .v1-news-card, .panel, .stats-block, .report-comparison) { border-radius: var(--v2-radius); }
-html[data-preview='v2'][data-theme='light'] :is(.game-card:not(.current-game), .v1-news-card, .panel, .stats-block, .report-comparison, .table-wrap .standings-table tbody tr:not(.our-team)) { background: var(--v2-card); }
-html[data-preview='v2'] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { box-shadow: var(--v2-shadow-soft); }
+html[data-preview='v2'] :is(.v1-news-card, .panel, .stats-block, .report-comparison) { border-radius: var(--v2-radius); }
+html[data-preview='v2'][data-theme='light'] :is(.v1-news-card, .panel, .stats-block, .report-comparison, .table-wrap .standings-table tbody tr:not(.our-team)) { background: var(--v2-card); }
+/* Die Spieleliste einschliesslich Ergebnisrand, Schrift und Abständen übernimmt die gemeinsamen V1-Regeln. */
 
 /* ---------- Einheitliche Spielkarte: eine Sprache für Startseite, Liste und Hinweise ---------- */
 html[data-preview='v2'] .home-matchday .live-match { border-radius: var(--v2-radius); }
@@ -130,13 +129,6 @@ html[data-preview='v2'] .home-matchday .live-score { align-items: start; }
 /* Die Aktionskachel liegt bündig unter der Karte. */
 html[data-preview='v2'] .home-matchday .v1-match-stack { display: grid; }
 html[data-preview='v2'] .home-matchday .v1-match-action { margin-inline: 0; width: auto; left: auto; right: auto; inset-inline: 0; }
-/* Nächstes Spiel in der Liste: kein doppeltes «Vorschau», kompakter. */
-html[data-preview='v2'] .game-card.current-game:not(.finished) .scoreline > strong small { display: none; }
-html[data-preview='v2'] .game-card.current-game { padding-block: 18px 16px; }
-html[data-preview='v2'] .game-card.current-game .scoreline img.crest { width: 56px; height: 64px; }
-html[data-preview='v2'] .game-card.current-game .actions .button { min-height: 44px; padding-inline: 22px; }
-html[data-preview='v2'] .game-card .current-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-
 /* ---------- Kopfzeile: Vereinshinweise nur auf der Startseite, kompakt beim Scrollen ---------- */
 html[data-preview='v2']:not([data-v2-page='home']) .club-match-hints { display: none !important; }
 html[data-preview='v2'] .top.v1-compact-header { transition: padding .25s ease, box-shadow .25s ease; }
@@ -211,7 +203,7 @@ html[data-preview='v2'] .v2-media-missing { position: relative; min-height: 180p
 html[data-preview='v2'] .v2-media-missing::before { animation: none; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%), var(--v2-card); }
 @keyframes v2-shimmer { to { background-position: -300% 0; } }
 html[data-preview='v2'] .v1-image-fallback:not(.crest) { font-size: 0 !important; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%), var(--v2-card) !important; }
-html[data-preview='v2'] :is(.clubmark, .v2-crest-fallback, .v1-image-fallback.crest) {
+html[data-preview='v2'] :is(.clubmark, .v2-crest-fallback, .v1-image-fallback.crest):not(.game-timeline *) {
   display: inline-grid; place-items: center; aspect-ratio: 1; width: 44px; height: auto; border-radius: 50%;
   background: color-mix(in srgb, var(--text) 12%, transparent); color: var(--text);
   font: 700 13px/1 var(--font-text); letter-spacing: .02em; border: 0;
