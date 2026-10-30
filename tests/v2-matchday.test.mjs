@@ -37,3 +37,27 @@ test('Missing crest badges stay readable on the dark magazine cover', () => {
 test('The temporary download link of the result image is hidden from assistive technology', () => {
   assert.match(js, /link\.download = file\.name;\s*link\.hidden = true;/);
 });
+
+test('V2 neutralises V1 surfaces that leak in through html:not([data-design=v2])', () => {
+  // Table cells, magazine news frames and the match tab border came from V1 rules and hugged the text.
+  assert.match(css, /\.table-wrap \.standings-table tbody tr > \* \{ background:transparent; \}/);
+  assert.match(css, /\.table-wrap \.standings-table thead th \{ background:transparent; \}/);
+  assert.match(css, /\.v2-magazine \.v1-news-grid \.v1-news-link \{ border:0; overflow:visible; \}/);
+  assert.match(css, /\.match-tabs\.segments \{ border-width:0 0 1px; \}/);
+  assert.match(css, /#app :is\(\.notice,\.club-title-panel\) \{ padding-inline:16px; \}/);
+});
+
+test('Text keeps its distance from edges on narrow phones and desktop', () => {
+  assert.match(css, /#app\.v2-detail \.match-hero > div \{ left:22px; right:22px; \}/, 'match preview hero text');
+  assert.match(css, /\.player-card b \{ bottom:100%;/, 'squad number above long names');
+  assert.match(css, /\.settings-app-info \{ flex-wrap:wrap;/, 'settings data stamp wraps');
+  assert.match(css, /\.profile-back \{ left:max\(16px,calc\(\(100vw - 600px\) \/ 2 \+ 16px\)\); \}/, 'profile back link inside the 600 px column');
+  assert.match(css, /\.scoreline \.clubmark \{ width:auto; min-width:30px;/, 'three-letter badges');
+});
+
+test('Club switcher never truncates the club name', () => {
+  const fit = js.match(/function v2FitClubLabel\(\) \{[\s\S]*?\n\}/)[0];
+  assert.match(fit, /club\.title/); assert.match(fit, /club\.short/); assert.match(fit, /v2-club-crest-only/);
+  assert.match(js.match(/function v2MagazineChrome\(\) \{[\s\S]*?\n\}/)[0], /v2FitClubLabel\(\)/);
+  assert.match(css, /\.compact-club-trigger\.v2-club-crest-only > span \{ display:none; \}/);
+});

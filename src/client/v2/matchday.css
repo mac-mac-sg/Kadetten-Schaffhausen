@@ -524,3 +524,43 @@ html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-title { backg
 @media(max-width:420px) {
  html[data-preview='v2'][data-theme] #app.v2-detail :is(.bento-penalties,.keeper-metrics,.fcsg-bento-cards) { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+/* ---------- Abstände und Ränder (Layoutprüfung 30.10.2026) ----------
+   V1-Regeln mit html:not([data-design='v2']) greifen auch in V2 (data-preview); hier werden sie für das Magazin gelöst. */
+/* Tabelle: keine Zellenflächen, die eng um Rang, Name und Punkte liegen. */
+html[data-preview='v2'][data-theme] .table-wrap .standings-table tbody tr > * { background:transparent; }
+html[data-preview='v2'][data-theme] .season-header { background:var(--surface); }
+/* News im Magazin: kein Rahmen ohne Innenabstand, Unterlängen bleiben sichtbar. */
+html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-link { border:0; overflow:visible; }
+/* Flächen mit Hintergrund erhalten seitlichen Innenabstand. */
+html[data-preview='v2'][data-theme] #app :is(.notice,.club-title-panel) { padding-inline:16px; }
+/* Spielreiter: nur die Unterlinie, keine Seitenränder am Bildschirmrand. */
+html[data-preview='v2'][data-theme] .match-tabs.segments { border-width:0 0 1px; }
+/* Spieltagsvorschau: Text im Bild hält rechts Abstand und bleibt auf hellen Bildstellen lesbar. */
+html[data-preview='v2'][data-theme] #app.v2-detail .match-hero > div { left:22px; right:22px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .match-hero::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent 25%,#06090c66 50%,#06090ce6 100%); pointer-events:none; }
+html[data-preview='v2'][data-theme] #app.v2-detail .match-hero :is(.eyebrow,h1) { text-shadow:0 1px 8px #0008; }
+html[data-preview='v2'][data-theme] #app.v2-detail .match-hero .eyebrow { margin:0 0 10px; line-height:1.5; letter-spacing:.08em; }
+/* Kopfzeile auf dem Titelfoto: Symbole hell wie die Vereinswahl. */
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .header-button { color:#fff; border-color:#ffffff70; background:#10121465; }
+/* Vereinswahl: passt der Name nicht, bleibt nur das Wappen (Name im aria-label). */
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { flex:0 0 auto; }
+html[data-preview='v2'][data-theme] .top .compact-club-trigger.v2-club-crest-only > span { display:none; }
+/* Spielerkarten: Nummer über dem Namen, damit lange Namen die volle Breite haben. */
+html[data-preview='v2'][data-theme] .player-card > div { padding-right:0; }
+html[data-preview='v2'][data-theme] .player-card b { bottom:100%; line-height:1; margin-bottom:2px; }
+html[data-preview='v2'][data-theme] .player-card strong { overflow-wrap:anywhere; hyphens:auto; }
+/* Spielerprofil: Nummer links der Kapitel-Navigation, Zurück-Link mit Innenabstand. */
+html[data-preview='v2'][data-theme] #app.v2-detail .portrait > div { right:48px; padding-right:56px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .profile-back.back-link { padding:0 14px 0 12px; }
+/* Spielerprofil am Desktop: Zurück-Link und Kapitel-Navigation an der 600 px breiten V2-Spalte ausrichten. */
+html[data-preview='v2'][data-theme] #app.v2-detail .profile-back { left:max(16px,calc((100vw - 600px) / 2 + 16px)); }
+html[data-preview='v2'][data-theme] .player-mode .profile-jumps { right:max(0px,calc((100vw - 600px) / 2)); }
+/* Tabelle am Desktop: auch Kopfzellen ohne eigene Fläche. */
+html[data-preview='v2'][data-theme] .table-wrap .standings-table thead th { background:transparent; }
+/* Einstellungen: Datenstand bricht auf schmalen Geräten um statt am Dialogrand zu enden. */
+html[data-preview='v2'][data-theme] .settings-app-info { flex-wrap:wrap; row-gap:4px; }
+/* Kürzel-Abzeichen in Spielkarten: dreistellige Kürzel passen in eine Pille. */
+html[data-preview='v2'][data-theme] .scoreline .clubmark { width:auto; min-width:30px; height:30px; aspect-ratio:auto; padding:0 6px; border-radius:999px; box-sizing:border-box; }
+/* Vereinsseite: Hinweis unter dem Titel-Panel nicht direkt anliegend. */
+html[data-preview='v2'][data-theme] #app .club-title-panel + * { margin-top:14px; }

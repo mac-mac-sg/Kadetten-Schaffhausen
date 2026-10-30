@@ -54,6 +54,19 @@ function v2MagazineHome(football = false) {
 v2TicketMarkup = v2MagazineTicket;
 v2Home = v2MagazineHome;
 
+/* Vereinswahl: kein abgeschnittener Name. Zuerst der Titel, sonst das Kürzel, sonst nur das Wappen. */
+function v2FitClubLabel() {
+  const trigger = document.querySelector('.top .compact-club-trigger'), label = trigger?.querySelector(':scope > span'), text = label?.firstChild;
+  if (!text || text.nodeType !== 3) return;
+  const club = fanClubs[activeClub], overflows = () => label.scrollWidth > label.clientWidth + 1;
+  trigger.classList.remove('v2-club-crest-only');
+  text.textContent = club.title + ' ';
+  if (overflows()) text.textContent = club.short.toUpperCase() + ' ';
+  if (overflows()) trigger.classList.add('v2-club-crest-only');
+}
+window.addEventListener('resize', v2FitClubLabel, {passive: true});
+document.fonts?.ready.then(v2FitClubLabel);
+
 function v2MagazineChrome() {
   document.querySelectorAll('#app aside.notice').forEach(note => note.setAttribute('role', 'note'));
   const top = document.querySelector('body > .top');
@@ -64,6 +77,7 @@ function v2MagazineChrome() {
     brand.innerHTML = 'MATCH<span>DAY</span>';
     top.prepend(brand);
   }
+  v2FitClubLabel();
   for (const [key, label] of [['news', 'Magazin'], ['squad', 'Team']]) {
     const link = document.querySelector(`[data-nav="${key}"]`);
     if (link) for (const node of link.childNodes) if (node.nodeType === 3 && node.textContent.trim()) node.textContent = label;
