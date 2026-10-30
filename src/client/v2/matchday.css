@@ -153,8 +153,8 @@ html[data-preview='v2'] .v2-share {
 html[data-preview='v2'] .v2-share::before { content: ''; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--v2-share-icon) center / contain no-repeat; mask: var(--v2-share-icon) center / contain no-repeat; }
 html[data-preview='v2'] { --v2-share-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'/%3E%3C/svg%3E"); }
 html[data-preview='v2'] .v2-share:disabled { opacity: .6; }
-/* Die Leiste .match-sticky-bar zieht sich 56 px nach oben; der Abstand hält die Schaltfläche frei. */
-html[data-preview='v2'] .v2-share-inline { display: flex; margin: 12px auto 64px; width: max-content; min-height: 44px; }
+/* V2 places the compact identity above the tabs without reserving an empty row. */
+html[data-preview='v2'] .v2-share-inline { display: flex; margin: 12px auto 0; width: max-content; min-height: 44px; }
 html[data-preview='v2'] .v2-more-news {
   display: block; width: 100%; min-height: 52px; margin: 6px 0 24px; border-radius: var(--v2-radius-sm);
   border: 1px solid var(--v2-hairline); background: var(--v2-card); color: var(--text);
@@ -570,3 +570,95 @@ html[data-preview='v2'] .game-control-bar .game-view-toggle { flex:1 0 100%; gri
 html[data-preview='v2'] .game-control-bar .game-filter { flex:1 0 100%; }
 /* Keep the small section markers, with generous finger-sized targets. */
 html[data-preview='v2'] :is(.player-mode .profile-jumps,.fcsg-profile-jumps) button { width:48px; height:48px; min-height:48px; }
+
+/* Reference edition: large cover typography, photographs and flat editorial furniture. */
+html[data-preview='v2'][data-theme] { --v2-cover-size:clamp(76px,26vw,138px); --v2-event-size:24px; }
+html[data-preview='v2'][data-theme] #install-app { display:none; }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { max-width:130px; }
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top.v1-compact-header { align-items:center; padding-block:calc(env(safe-area-inset-top,0px) + 18px) 14px; gap:10px; }
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .v2-masthead { font-size:clamp(44px,12.8vw,70px); line-height:1; letter-spacing:-.045em; flex:none; }
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { flex:1 1 auto; max-width:132px; margin-left:auto; }
+html[data-preview='v2'][data-theme][data-v2-page='squad']:not(.v2-scrolled) .v2-masthead { color:var(--accent); font-size:42px; line-height:1; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover.v2-ticket-section { padding-top:calc(var(--app-header-height,94px) + 145px); padding-bottom:24px; min-height:min(880px,calc(100svh - 68px)); }
+html[data-preview='v2'][data-theme] #v2-cover-title { font-size:var(--v2-cover-size); line-height:.94; letter-spacing:-.045em; }
+html[data-preview='v2'][data-theme] .v2-cover-editorial { margin-bottom:24px; }
+html[data-preview='v2'][data-theme] .v2-cover-kicker { margin-bottom:12px; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-hero-media::after { background:linear-gradient(90deg,#080b1040,transparent 65%),linear-gradient(180deg,#080b1020 4%,transparent 28%,#080b10a6 57%,#080b10ed 79%,#080b10 100%); }
+html[data-preview='v2'][data-theme][data-club='kadetten'] .v2-magazine-cover .v2-hero-media img { object-position:64% top; filter:saturate(1.03) contrast(1.04); }
+html[data-preview='v2'][data-theme][data-club='fcsg'] .v2-magazine-cover .v2-hero-media img { object-position:48% 22%; filter:saturate(1.05) contrast(1.04); }
+html[data-preview='v2'][data-theme][data-club='otmar'] .v2-magazine-cover .v2-hero-media img { object-position:58% top; filter:brightness(1.18) saturate(1.02); }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-link { border:0; border-radius:0; overflow:visible; grid-template-columns:100px minmax(0,1fr); }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-copy h2 { font:400 24px/1.12 Anton,Impact,sans-serif; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-arrow { border:0; background:none; }
+/* The original portraits and links stay in the roster; the cover reuses one real field-player photograph. */
+html[data-preview='v2'][data-theme] .v2-team-cover { min-height:clamp(420px,58svh,560px); padding:28px 22px; background:#0c0f12; }
+html[data-preview='v2'][data-theme] .v2-team-cover > img { object-position:30% top; }
+html[data-preview='v2'][data-theme] .v2-team-cover::after { background:linear-gradient(90deg,#080b1060,transparent 72%),linear-gradient(0deg,#080b10d9,transparent 70%); }
+html[data-preview='v2'][data-theme] .v2-team-title { font-size:clamp(80px,27vw,142px); line-height:.94; letter-spacing:-.04em; }
+html[data-preview='v2'][data-theme] .v2-team-title > span { display:block; }
+html[data-preview='v2'][data-theme] .v2-team-cover p { color:#fff; text-shadow:0 1px 5px #000; }
+html[data-preview='v2'][data-theme] .players { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 14px; }
+html[data-preview='v2'][data-theme] .player-card { display:block; aspect-ratio:auto; border:0; border-radius:0; box-shadow:none; background:transparent; color:var(--text); overflow:visible; }
+html[data-preview='v2'][data-theme] .player-card::after { content:none; }
+html[data-preview='v2'][data-theme] .player-card > img,
+html[data-preview='v2'][data-theme] .player-card > .v1-image-fallback { display:block; position:static; width:100%; height:auto; aspect-ratio:3/4; object-fit:cover; object-position:center top; border-radius:2px; background:#101214; }
+html[data-preview='v2'][data-theme] .player-card:hover img { transform:none; filter:brightness(1.06); }
+html[data-preview='v2'][data-theme] .player-card > div { position:static; inset:auto; padding:10px 0 0; line-height:1.25; color:var(--text); }
+html[data-preview='v2'][data-theme] .player-card :is(span,strong) { color:inherit; font-size:15px; }
+html[data-preview='v2'][data-theme] .player-card strong { margin-top:2px; font-weight:650; }
+html[data-preview='v2'][data-theme] .player-card b { position:static; display:block; margin:5px 0 0; font:400 13px/1.4 var(--font-text); color:var(--muted); }
+html[data-preview='v2'][data-theme] .player-card b::before { content:'#'; }
+html[data-preview='v2'][data-theme] .season .v2-club-entry { position:relative; min-height:134px; height:auto; margin:28px 0 34px; border:0; border-radius:2px; background:#101214; color:#fff; overflow:hidden; }
+html[data-preview='v2'][data-theme] .season .v2-club-entry-photo { position:absolute; inset:0; height:100%; width:100%; object-fit:cover; object-position:center; opacity:.75; }
+html[data-preview='v2'][data-theme] .season .v2-club-entry-copy { position:relative; min-height:134px; padding:22px; display:flex; align-items:center; justify-content:space-between; gap:18px; background:linear-gradient(90deg,#080b10c9,#080b1060); }
+html[data-preview='v2'][data-theme] .season .v2-club-entry h2 { margin:0 0 6px; font:400 29px/1.15 Anton,Impact,sans-serif; color:#fff; }
+html[data-preview='v2'][data-theme] .season .v2-club-entry p { margin:0; color:#fff; font-size:13px; }
+html[data-preview='v2'][data-theme] .season .v2-club-arrow { flex:none; border:0; border-radius:0; background:transparent; color:var(--v2-cover-accent); }
+/* A compact match identity, then tabs and content. The compact identity overlays the outgoing header. */
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.match-top,.fcsg-match-header,.live-match-header) { margin-block:0; padding:12px 22px 16px; min-height:0; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-title { position:relative; display:flex; justify-content:center; align-items:center; min-height:90px; padding:18px 52px; margin:-12px -22px 20px; color:#101214; background:linear-gradient(110deg,var(--v2-cover-accent) 25%,color-mix(in srgb,var(--v2-cover-accent) 60%,#402000)); }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-wordmark { display:flex; max-width:none; font:400 clamp(32px,10vw,54px)/1.05 Anton,Impact,sans-serif; letter-spacing:-.035em; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-wordmark > span { font:inherit; max-width:none; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-wordmark > span:last-child { color:#fff; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-match-back { position:absolute; top:50%; left:8px; transform:translateY(-50%); display:grid; place-items:center; margin:0; padding:0; width:44px; min-height:44px; font-size:0; color:#101214; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-match-back svg { width:22px; height:22px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .matchup { display:grid; margin:14px auto 12px; gap:10px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .matchup > strong { font-size:clamp(48px,16.5vw,78px); line-height:1.05; letter-spacing:-.025em; font-variant-numeric:tabular-nums; }
+html[data-preview='v2'][data-theme] #app.v2-detail .matchup-team :is(.crest,.clubmark) { width:48px; height:54px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-share-inline { margin:12px auto 0; min-height:44px; padding:10px 12px; border:0; border-radius:0; background:transparent; box-shadow:none; font-size:13px; color:var(--muted); }
+html[data-preview='v2'][data-theme] .match-sticky-bar { top:calc(var(--v1-content-top,68px) + 56px); margin-top:0; margin-bottom:18px; }
+html[data-preview='v2'][data-theme] .match-compact-header { position:absolute; inset:auto 0 100%; width:100%; }
+html[data-preview='v2'][data-theme] #app.v2-detail .match-tabs.segments { margin:0; padding:0; }
+html[data-preview='v2'][data-theme] #app.v2-detail .match .content { padding-top:14px; }
+/* Time, icon and original event text are independent columns. */
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-event,.fcsg-ticker > li) { display:grid; grid-template-columns:24px 38px minmax(0,1fr); gap:12px; padding:18px 0; border:0; border-bottom:1px solid var(--line); }
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-events,.fcsg-ticker) { padding:0; margin:12px 0; list-style:none; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-event-icon { width:24px; height:24px; display:block; color:var(--muted); }
+html[data-preview='v2'][data-theme] #app.v2-detail [data-v2-event='goal'] > .v2-event-icon { color:var(--accent); }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-event-icon svg { width:24px; height:24px; }
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-event time,.fcsg-ticker-minute) { padding:2px 0 0; margin:0; width:auto; font-size:13px; font-weight:650; color:var(--text); background:transparent; font-variant-numeric:tabular-nums; }
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-event,.fcsg-ticker > li) > div { min-width:0; }
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-event,.fcsg-ticker > li) :is(strong,h3) { font:650 15px/1.4 var(--font-text); color:var(--text); margin:0 0 5px; }
+html[data-preview='v2'][data-theme] #app.v2-detail :is(.live-event,.fcsg-ticker > li) :is(p,small) { font-size:13px; line-height:1.5; color:var(--muted); }
+/* Navigation is a full-width part of the page, with safe-area padding inside its surface. */
+html[data-preview='v2'][data-theme] .dock { bottom:0; width:100%; max-width:600px; min-width:0; border:0; border-top:1px solid var(--line); border-radius:0; padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px)); background:color-mix(in srgb,var(--surface) 94%,transparent); color:var(--text); box-shadow:none; }
+html[data-preview='v2'][data-theme] .dock a { border-radius:0; min-height:54px; padding:6px 4px; }
+html[data-preview='v2'][data-theme] .dock a.active { color:var(--accent); }
+html[data-preview='v2'][data-theme] .dock a.active::before { content:none; }
+html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inset-bottom,0px) + 80px); }
+html[data-preview='v2'][data-theme] [data-v2-install] { width:100%; min-height:48px; margin:8px 0 18px; }
+@media(max-width:350px) {
+ html[data-preview='v2'][data-theme] .top.v1-compact-header { padding-inline:14px; gap:6px; }
+ html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { max-width:90px; }
+ html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-wordmark { font-size:30px; }
+ html[data-preview='v2'][data-theme] #app.v2-detail .matchup { gap:6px; }
+ html[data-preview='v2'][data-theme] #app.v2-detail .matchup-team :is(.crest,.clubmark) { width:36px; height:42px; }
+}
+html[data-preview='v2'][data-theme] #app .v2-magazine-cover .v1-news-link { border:0; border-radius:0; overflow:visible; grid-template-columns:100px minmax(0,1fr); }
+html[data-preview='v2'][data-theme] #app .v2-magazine-cover .v1-news-copy h2 { font:400 24px/1.12 Anton,Impact,sans-serif; }
+html[data-preview='v2'][data-theme] #app .v2-magazine-cover .v1-news-arrow { border:0; background:transparent; }
+html[data-preview='v2'][data-theme] #app.v2-detail .matchup-team > span { width:max-content; max-width:clamp(82px,25vw,110px); overflow-wrap:normal; word-break:normal; hyphens:none; }
+html[data-preview='v2'][data-theme]:is([data-v2-state='live'],[data-v2-state='post']) { --v2-cover-size:clamp(66px,22vw,116px); }
+html[data-preview='v2'][data-theme] body > .dock a:is(.active,.active:hover) { background:transparent; color:var(--accent); }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { min-width:54px; }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { gap:4px; padding-inline:5px; }

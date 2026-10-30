@@ -67,17 +67,70 @@ function v2FitClubLabel() {
 window.addEventListener('resize', v2FitClubLabel, {passive: true});
 document.fonts?.ready.then(v2FitClubLabel);
 function v2MagazineTeamCover(section) {
-  if (section && !section.querySelector('.v2-team-cover')) {
-    const title = section.querySelector('h1');
-    const cover = document.createElement('div'); cover.className = 'v2-team-cover';
-    const photo = activeClub === 'kadetten' ? 'assets/team.webp' : v2HeaderPhoto();
-    cover.innerHTML = `<img src="${photo}" alt="" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
-    if (title) { title.className = 'v2-team-title'; title.textContent = 'DAS TEAM.'; cover.lastElementChild.append(title); }
-    section.prepend(cover);
-    const entry = section.querySelector('.v2-club-entry');
-    if (entry) section.append(entry);
+  if (!section || section.querySelector('.v2-team-cover')) return;
+  const title = section.querySelector('h1'), groups = [...section.querySelectorAll('.players')];
+  const preferred = {kadetten:'22',fcsg:'5426',otmar:'2'}[activeClub];
+  const portrait = section.querySelector(`.player-card[href="#player/${preferred}"] img`) || groups[1]?.querySelector('.player-card img') || groups[0]?.querySelector('.player-card img');
+  const photo = portrait?.getAttribute('src') || v2HeaderPhoto();
+  const cover = document.createElement('div'); cover.className = 'v2-team-cover';
+  cover.innerHTML = `<img src="${liveEscape(photo)}" alt="" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
+  if (title) {
+    title.className = 'v2-team-title'; title.setAttribute('aria-label','Das Team');
+    title.innerHTML = '<span>DAS </span><span>TEAM.</span>'; cover.lastElementChild.append(title);
+  }
+  section.prepend(cover);
+  const entry = section.querySelector('.v2-club-entry');
+  if (entry) {
+    const heading = entry.querySelector('h2'), copy = entry.querySelector('p');
+    if (heading) heading.textContent = 'Geschichte & Erfolge';
+    if (copy) copy.textContent = 'Unser Verein';
+    if (groups[0]) groups[0].after(entry); else section.append(entry);
   }
 }
+
+function v2MatchChrome(header) {
+  if (!header || header.querySelector('.v2-matchcenter-title')) return;
+  const label = document.createElement('p'); label.className = 'v2-matchcenter-title';
+  let back = header.querySelector('.back-link') || header.parentElement?.querySelector(':scope > .back-link');
+  if (!back) {
+    back = document.createElement('a'); back.href = '#season/games';
+    back.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m14 6-6 6 6 6M8 12h12"/></svg>';
+  }
+  back.classList.add('v2-match-back'); back.setAttribute('aria-label','Zurück zu den Spielen');
+  const words = document.createElement('span'); words.className = 'v2-matchcenter-wordmark';
+  words.innerHTML = '<span>MATCH</span><span>CENTER</span>'; label.append(back,words); header.prepend(label);
+}
+
+function v2EditorialEvents(scope = document) {
+  const icons = {
+    goal:'<circle cx="12" cy="12" r="9"/><path d="m12 7 5 4-2 6H9l-2-6Z"/>',
+    penalty:'<path d="M4 9h11a5 5 0 1 1-5 5H4Zm11 0 5-5M4 9V5h5v4"/>',
+    change:'<path d="M4 7h15l-4-4M20 17H5l4 4M19 7l-4 4M5 17l4-4"/>',
+    event:'<path d="M5 4h14v13H9l-4 4Z"/><path d="M8 8h8M8 12h5"/>'
+  };
+  scope.querySelectorAll('.live-event,.fcsg-ticker > li').forEach(row => {
+    if (row.querySelector('.v2-event-icon')) return;
+    const text = row.querySelector('strong,h3')?.textContent || '';
+    const kind = /(?:^|\s)(?:Tor|Goal)(?:\s|[·:!]|$)|Siebenmeter/i.test(text) ? 'goal' : /Strafe|Minuten|Karte|Gelb|Rot/i.test(text) ? 'penalty' : /Wechsel|Auswechsl|Einwechsl/i.test(text) ? 'change' : 'event';
+    const icon = document.createElement('span'); icon.className = 'v2-event-icon'; icon.setAttribute('aria-hidden','true');
+    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[kind]}</svg>`;
+    row.dataset.v2Event = kind; row.prepend(icon);
+  });
+}
+
+function v2InstallSettings() {
+  const dialog = document.querySelector('.club-settings-dialog'), install = document.getElementById('install-app');
+  if (!dialog || !install) return;
+  const existing = dialog.querySelector('[data-v2-install]');
+  if (install.hidden) { existing?.remove(); return; }
+  if (existing) return;
+  const button = document.createElement('button'); button.type = 'button'; button.className = 'settings-help-row';
+  button.dataset.v2Install = ''; button.innerHTML = install.innerHTML + '<span>Matchday installieren</span>';
+  button.onclick = () => { dialog.querySelector('[aria-label="Einstellungen schliessen"]')?.click(); install.click(); };
+  dialog.querySelector('.settings-app-info')?.before(button);
+}
+const v2BaseOpenClubSettings = openClubSettings;
+openClubSettings = function (...args) { const result = v2BaseOpenClubSettings(...args); v2InstallSettings(); return result; };
 
 function v2MagazineChrome() {
   document.querySelectorAll('#app aside.notice').forEach(note => note.setAttribute('role', 'note'));
@@ -104,12 +157,8 @@ function v2MagazineChrome() {
     const section = document.querySelector('#app .season');
     v2MagazineTeamCover(section);
   }
-  if (page === 'match') {
-    const header = document.querySelector('#app .match-top, #app .fcsg-match-header');
-    if (header && !header.querySelector('.v2-matchcenter-title')) {
-      const label = document.createElement('p'); label.className = 'v2-matchcenter-title'; label.textContent = 'MATCHCENTER'; header.prepend(label);
-    }
-  }
+  if (page === 'match') v2MatchChrome(document.querySelector('#app .match-top, #app .fcsg-match-header, #app .live-match-header'));
+  v2EditorialEvents();
 }
 
 /* Move existing nodes, rather than copy content or replace live/statistics targets. */
@@ -167,10 +216,8 @@ function v2DetailPages() {
       }
     }).observe(rail, {subtree:true,attributes:true,attributeFilter:['aria-pressed']});
   }
-  const liveHeader = app.querySelector('.live-match-header');
-  if (liveHeader && !liveHeader.querySelector('.v2-matchcenter-title')) {
-    const label = document.createElement('p'); label.className = 'v2-matchcenter-title'; label.textContent = 'MATCHCENTER'; liveHeader.prepend(label);
-  }
+  v2MatchChrome(app.querySelector('.live-match-header'));
+  v2EditorialEvents(app);
 }
 
 function v2LimitNews() {
@@ -392,6 +439,12 @@ function v2SyncChrome() {
   const [page, id] = v2Page();
   const root = document.documentElement;
   root.dataset.v2Page = page === 'season' ? id || 'games' : page;
+  const masthead = document.querySelector('.v2-masthead');
+  if (masthead) {
+    const team = page === 'season' && id === 'squad';
+    masthead.innerHTML = team ? 'TEAM' : 'MATCH<span>DAY</span>';
+    masthead.setAttribute('aria-label',team ? 'Team · Zum Magazin' : 'Matchday · Magazin');
+  }
   root.classList.toggle('v2-scrolled', window.scrollY > 24);
 }
 window.addEventListener('scroll', () => document.documentElement.classList.toggle('v2-scrolled', window.scrollY > 24), {passive: true});
@@ -400,6 +453,7 @@ document.addEventListener('visibilitychange', () => document.documentElement.cla
 function v2AfterRender() {
   v2SyncChrome();
   v2MagazineChrome();
+  v2SyncChrome();
   v2DetailPages();
   v2SyncHome();
   v2LimitNews();
@@ -411,6 +465,7 @@ function v2AfterRender() {
 function v2Tick() {
   v2SyncHome();
   v2MagazineChrome();
+  v2SyncChrome();
   v2DetailPages();
   v2SyncLiveBar();
   v2AddShareButton();
