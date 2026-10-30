@@ -39,11 +39,12 @@ if(v2){
   const themeInit=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
   html=html.replace("script-src 'self'","script-src 'self' 'sha256-"+createHash('sha256').update(themeInit).digest('base64')+"'");
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
-  Object.assign(manifest,{description:'Separate Design-Testversion der Vereins-App'});
+  html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Matchday"').replace('<title>Meine Vereine ·','<title>Matchday ·');
+  Object.assign(manifest,{name:'Matchday',short_name:'Matchday',description:'Matchday V2: News, Spiele, Tabellen und Teams deiner Vereine im Magazin-Stil.'});
   fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
 }
 let sw=fs.readFileSync('dist/client/sw.js','utf8').replace("const API_ORIGIN='';",'const API_ORIGIN='+JSON.stringify(apiOrigin)+';').replace(/const CACHE='[^']+';/,"const CACHE='kadetten-offline-build';").replace(/\?v=[a-f0-9]+/g,'');
-if(!v2)sw=sw.replaceAll('Meine Vereine · Offline','Matchday · Offline').replace('<h1>Meine Vereine</h1>','<h1>Matchday</h1>');
+sw=sw.replaceAll('Meine Vereine · Offline','Matchday · Offline').replace('<h1>Meine Vereine</h1>','<h1>Matchday</h1>');
 // Die Quellmodule bleiben getrennt; die öffentliche Hülle lädt zwei verzögerte Skripte und ein Stylesheet.
 const scripts=[...html.matchAll(/<script src="([^"?]+)"[^>]*><\/script>/g)].map(m=>m[1]).filter(file=>file!=='platform-config.js');
 const styles=[...html.matchAll(/<link rel="stylesheet" href="([^"?]+)"[^>]*>/g)].map(m=>m[1]);

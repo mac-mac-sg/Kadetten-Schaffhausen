@@ -55,3 +55,19 @@ test('Horizontal movement drives the pager before release and short drags return
  a.emit('touchend',target,180,200);assert.equal(a.location.hash,'#home');assert.deepEqual(a.pagerEvents.at(-2),['finish',null]);
  const b=harness(),t=b.document.getElementById('content');b.emit('touchstart',t);b.setTime(4000);b.emit('touchmove',t,100,200);b.emit('touchend',t,100,200);assert.equal(b.location.hash,'#season/games','A deliberate slow drag can complete');
 });
+
+
+test('Swipe preview documents retain the active layout identity, theme and shared-calendar mode',()=>{
+ const {document}=parseHTML('<html data-preview="v2" data-home-title="modern" data-club-layout="modern" data-theme="light"><head><link rel="stylesheet" href="app.css"></head><body class="games-mode calendar-mode"><main id="app"><h1>Spiele</h1></main></body></html>');
+ let scheduled;
+ const context=vm.createContext({document,location:{hash:'#season/games',href:'https://example.test/v2/#season/games'},activeClub:'otmar',window:{innerWidth:390,innerHeight:844,addEventListener(){},matchMedia:()=>({matches:false})},getComputedStyle:()=>({getPropertyValue:()=> '68px'}),setTimeout(fn){scheduled=fn;},clearTimeout(){},liveEscape:v=>String(v).replaceAll('&','&amp;').replaceAll('"','&quot;'),rememberedView:()=>({options:{mode:'week'},position:null})});
+ vm.runInContext(source,context);vm.runInContext("mainTabPreviewMarkup=()=>'<h1>Vorschau</h1>';createMainTabPager(document.getElementById('app'))",context);scheduled();
+ const frames=[...document.querySelectorAll('.main-tab-pager iframe')];assert.equal(frames.length,3);
+ for(const frame of frames){
+  const preview=parseHTML(frame.srcdoc).document;
+  for(const key of ['preview','homeTitle','clubLayout','theme'])assert.equal(preview.documentElement.dataset[key],document.documentElement.dataset[key]);
+  assert.equal(preview.documentElement.dataset.club,'otmar');
+  assert.ok(preview.querySelector('link[href="app.css"]'));assert.equal(preview.querySelectorAll('script').length,0);
+ }
+ assert.ok(parseHTML(frames[1].srcdoc).document.body.classList.contains('calendar-mode'));
+});

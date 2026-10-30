@@ -17,25 +17,27 @@
   // V2-Entwurf: nie über einem direkt geöffneten Spiel oder Artikel, erst beim nächsten Start auf der Startseite.
   if(document.documentElement.dataset.preview==='v2'&&!['','#','#home'].includes(location.hash))return;
   intro=document.createElement('dialog');intro.className='install-intro';intro.setAttribute('aria-labelledby','install-intro-title');
-  intro.innerHTML='<img src="assets/icon-192.png" width="64" height="64" alt=""><h2 id="install-intro-title">Deine Vereine auf dem Startbildschirm</h2><p class="install-instructions">Installiere die App für schnellen Zugriff auf News, Spiele und Resultate.</p><div class="install-intro-actions"><button class="button" type="button" data-install>App installieren</button><button class="button subtle" type="button" data-later>Später</button></div>';
+  intro.innerHTML='<img src="assets/icon-192.png" width="64" height="64" alt=""><h2 id="install-intro-title">Matchday auf dem Startbildschirm</h2><p class="install-instructions">Installiere die App für schnellen Zugriff auf News, Spiele und Resultate.</p><div class="install-intro-actions"><button class="button" type="button" data-install>App installieren</button><button class="button subtle" type="button" data-later>Später</button></div>';
   document.body.append(intro);intro.showModal();
   try{localStorage.setItem(INTRO_KEY,'seen');}catch{}
   intro.querySelector('[data-install]').onclick=install;intro.querySelector('[data-later]').onclick=dismissIntro;
   intro.addEventListener('cancel',event=>{event.preventDefault();dismissIntro();});
  };
+ const magazine=document.documentElement.dataset.preview==='v2';
+ const sharedWeek=document.documentElement.dataset.preview==='v2'||document.documentElement.dataset.design==='v2';
  const GUIDE_KEY='fan-app-onboarding-v1';let guide;
  const steps=[
   {label:'Deine Vereine',title:'Eine App. Deine Vereine.',text:'Wechsle oben zwischen Kadetten, FCSG und St. Otmar. In den Einstellungen wählst du, welche Vereine du sehen möchtest.',tip:'Deine Vereinsauswahl wird auf diesem Gerät gespeichert.'},
-  {label:'News',title:'Bleib am Ball.',text:'Auf der Startseite findest du die aktuellen News deines Vereins. Öffne einen Artikel, um den ganzen Bericht zu lesen.',tip:'Wische durch die News, um weitere Artikel zu entdecken.'},
-  {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:document.documentElement.dataset.design==='v2'?'Liste und Kalender zeigen den aktiven Verein. «Meine Woche» vereint die Spiele aller ausgewählten Vereine. Die Tabelle findest du über die Navigation.':'Wähle Liste oder Kalender und grenze die Spiele mit dem Wettbewerbsfilter ein. Die Tabelle findest du über die Navigation.'},
-  {label:'Kader & Verein',title:'Lerne dein Team und deinen Verein kennen.',text:'Im Kader entdeckst du die Spieler und ihre Saisonstatistiken. Über das Vereinswappen oben rechts öffnest du auch die Vereinsgeschichte und die Erfolge deines Vereins.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
+  {label:magazine?'Magazin':'News',title:'Bleib am Ball.',text:magazine?'Im «Magazin» findest du die aktuellen News deines Vereins. Tippe auf einen Artikel, um den ganzen Bericht zu lesen.':'Auf der Startseite findest du die aktuellen News deines Vereins. Öffne einen Artikel, um den ganzen Bericht zu lesen.',tip:magazine?'Scrolle durch das Magazin, um weitere Artikel zu entdecken.':'Wische durch die News, um weitere Artikel zu entdecken.'},
+  {label:'Spiele',title:'Vorher. Live. Danach.',text:'Unter «Spiele» findest du den Spielplan und die Resultate. Öffne ein Spiel für die Vorschau, den Liveticker oder den Rückblick – mit den verfügbaren Aufstellungen und Statistiken.',tip:sharedWeek?'Liste und Kalender zeigen den aktiven Verein. «Meine Woche» vereint die Spiele aller ausgewählten Vereine. Die Tabelle findest du über die Navigation.':'Wähle Liste oder Kalender und grenze die Spiele mit dem Wettbewerbsfilter ein. Die Tabelle findest du über die Navigation.'},
+  {label:magazine?'Team & Verein':'Kader & Verein',title:'Lerne dein Team und deinen Verein kennen.',text:magazine?'Unter «Team» entdeckst du die Spieler und ihre Saisonstatistiken. Die Kachel «Unser Verein» führt zur Vereinsgeschichte und den Erfolgen. Du erreichst sie auch über die Vereinsauswahl oben.':'Im Kader entdeckst du die Spieler und ihre Saisonstatistiken. Über das Vereinswappen oben rechts öffnest du auch die Vereinsgeschichte und die Erfolge deines Vereins.',tip:'Diese Einführung kannst du jederzeit auf der Startseite unter Einstellungen → Einführung & Tipps erneut öffnen.'}
  ];
  const crests='<span><img src="assets/logo.png" alt="">Kadetten</span><span><img src="assets/fcsg-logo.svg" alt="">FCSG</span><span><img src="assets/club-140684.webp" alt="">St. Otmar</span>';
  const visuals=[
   '<div class="guide-preview-picker">'+crests+'</div><div class="guide-preview-note">Oben wechseln · In den Einstellungen auswählen</div>',
   '<div class="guide-preview-news"><span>NEWS AUS DEINEM VEREIN</span><strong>Alles rund um dein Team.</strong><i>Zum Artikel →</i></div>',
-  document.documentElement.dataset.design==='v2'?'<div class="guide-preview-tabs"><span>Liste</span><span>Kalender</span><b>Meine Woche</b></div><div class="guide-preview-week">'+crests+'</div><div class="guide-preview-note">Ein Kalender. Alle deine Vereine.</div>':'<div class="guide-preview-tabs"><b>Liste</b><span>Kalender</span><span>Alle ▾</span></div><div class="guide-preview-note">Ansicht und Wettbewerb auf einen Blick.</div>',
-  '<div class="guide-preview-roster"><span>KADER</span><div class="guide-preview-history"><img src="assets/logo.png" alt=""><b>Verein</b></div></div><div class="guide-preview-players"><span><i></i>Spieler</span><span><i></i>Spieler</span><span><i></i>Spieler</span></div><div class="guide-preview-note">Wappen antippen → Geschichte &amp; Erfolge</div>'
+  sharedWeek?'<div class="guide-preview-tabs"><span>Liste</span><span>Kalender</span><b>Meine Woche</b></div><div class="guide-preview-week">'+crests+'</div><div class="guide-preview-note">Ein Kalender. Alle deine Vereine.</div>':'<div class="guide-preview-tabs"><b>Liste</b><span>Kalender</span><span>Alle ▾</span></div><div class="guide-preview-note">Ansicht und Wettbewerb auf einen Blick.</div>',
+  '<div class="guide-preview-roster"><span>'+(magazine?'TEAM':'KADER')+'</span><div class="guide-preview-history"><img src="assets/logo.png" alt=""><b>Verein</b></div></div><div class="guide-preview-players"><span><i></i>Spieler</span><span><i></i>Spieler</span><span><i></i>Spieler</span></div><div class="guide-preview-note">'+(magazine?'Unser Verein → Geschichte &amp; Erfolge':'Wappen antippen → Geschichte &amp; Erfolge')+'</div>'
  ];
  window.showAppIntroduction=(firstVisit=false)=>{
   if(guide)return;
@@ -73,7 +75,7 @@
  });
 
  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();promptEvent=event;sync()});
- window.addEventListener('appinstalled',()=>{promptEvent=null;installed=true;button.hidden=true;appFeedback('Meine Vereine wurde installiert.')});
+ window.addEventListener('appinstalled',()=>{promptEvent=null;installed=true;button.hidden=true;appFeedback('Matchday wurde installiert.')});
  window.matchMedia('(display-mode: standalone)').addEventListener('change',sync);
  button.addEventListener('click',install);
  if('serviceWorker' in navigator){

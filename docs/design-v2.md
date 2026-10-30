@@ -66,3 +66,11 @@ Prüfung: `npm run verify` (inklusive `tests/v2-matchday.test.mjs` für Mindests
 | `check-qhl-map.mjs` | QHL-Karte, Detaildialog, Liste bei Kartenfehlern, V1/Fussball unverändert |
 
 Diese Skripte laufen nicht in GitHub Actions; sie benötigen Playwright, Chromium und axe-core (`GAMES_PLAYWRIGHT_MODULE`, `GAMES_CHROMIUM_EXECUTABLE`, `GAMES_AXE_SCRIPT`). Gemeinsame Seiten (Vereinsgeschichte, Bildlegenden, einzelne Tabellen- und Spielmetadaten) verwenden weiter die 10–11-px-Schriften der geteilten V1-Stile; sie sind nicht Teil dieser Änderung.
+
+### Bereinigung der V2-Gesamtprüfung (30. Oktober 2026)
+
+Die ausgelieferte V2 wird über `data-preview="v2"` erkannt. «Meine Woche» steht deshalb wieder neben Liste und Kalender zur Verfügung und bleibt beim Rendern erhalten. Der Filter entfällt in der gemeinsamen Ansicht; in den Vereinsansichten stammen die V2-Wettbewerbe aus den vorhandenen Partien, einschliesslich Cup. V1 behält ihre zwei Ansichten und bisherige Kadetten-Auswahl.
+
+Skriptfreie Wischvorschauen übernehmen Preview-, Design-, Titel- und Vereinslayoutattribute, die Kalenderklasse auch für «Meine Woche» und das Magazin-Cover der Teamseite. Layoutänderungen verwerfen vorbereitete Vorschauen. Die Einführung verwendet in V2 «Magazin», «Team» und die tatsächlichen Zugänge zur Vereinschronik. Profilabschnitte erhalten 48 × 48 CSS-Pixel grosse Trefferflächen. Installationsmanifest, Apple-Titel, Installationshinweis und Offline-Seite verwenden «Matchday» bei unveränderten IDs und Scopes.
+
+Regressionstests: `tests/week.test.mjs`, `tests/swipe-tabs.test.mjs`, `tests/v2-detail-magazine.test.mjs`, `tests/v2-introduction.test.mjs`; der Build prüft die App-Namen und die getrennten V1-/V2-Caches. Die optionale V1-/V2-Inhaltsprüfung vergleicht gemeinsame Steuerelemente ohne den zusätzlichen Wochen-Tab oder die absichtlich unterschiedlichen Wettbewerbsoptionen. Physische Touch-, Installations- und Push-Zustellungstests bleiben Geräteprüfungen.

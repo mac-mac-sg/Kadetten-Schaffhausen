@@ -90,3 +90,32 @@ test('Handball data also refreshes on a quiet day, but never in the background, 
  a.run("document.hidden=false;navigator.onLine=false");await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
  a.run("navigator.onLine=true;activeClub='fcsg'");await a.run('syncMatchdayData()');assert.equal(a.context.loads,1);
 });
+
+
+test('The shipped V2 preview exposes all three views and hides the single-club filter only in the shared view',()=>{
+ const a=app();a.document.documentElement.dataset.preview='v2';
+ assert.equal(a.document.documentElement.dataset.design,undefined);
+ for(const club of ['kadetten','fcsg','otmar']) {
+  a.run(`activeClub='${club}';mode='list'`);
+  const list=parseHTML(a.run('gameControls()')).document;
+  assert.equal(list.querySelectorAll('[data-mode]').length,3);
+  assert.equal(list.querySelector('[data-mode="week"]').textContent,'Meine Woche');
+  assert.ok(list.querySelector('#competition'));
+  a.run("mode='week'");
+  const shared=parseHTML(a.run("activeClub==='fcsg'?fcsgView('season','games'):season('games')")).document;
+  assert.ok(shared.querySelector('#shared-week'));
+  assert.equal(shared.querySelector('[data-mode="week"]').getAttribute('aria-pressed'),'true');
+  assert.equal(shared.querySelector('#competition'),null);
+ }
+ delete a.document.documentElement.dataset.preview;
+ assert.equal(parseHTML(a.run('gameViewToggle()')).document.querySelectorAll('[data-mode]').length,2);
+});
+test('Every club competition filter includes source competitions, escapes them and removes duplicates or missing names',()=>{
+ const a=app();a.document.documentElement.dataset.preview='v2';a.context.fixtureLeagues=[{league:'QHL'},{league:'Mobiliar-Cup M'},{league:'Mobiliar-Cup M'},{league:'A & B'},{}, {league:' '}];
+ for(const club of ['kadetten','fcsg','otmar']) {
+  a.run(`activeClub='${club}';mode='list';competition='Mobiliar-Cup M';games=fixtureLeagues;fcsgData={...fcsgData,games:fixtureLeagues}`);
+  const doc=parseHTML(a.run('gameControls()')).document,options=[...doc.querySelectorAll('option')];
+  assert.deepEqual(options.map(o=>o.getAttribute('value')),['Alle','QHL','Mobiliar-Cup M','A & B']);
+  assert.equal(doc.querySelector('option[selected]').getAttribute('value'),'Mobiliar-Cup M');
+ }
+});
