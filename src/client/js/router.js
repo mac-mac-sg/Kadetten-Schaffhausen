@@ -128,7 +128,7 @@ function render() {
     scrollTop = window.scrollY;
   scrollRoot.style.scrollSnapType = 'none';
   const [page = 'home', id, tab = 'overview'] = (location.hash.slice(1) || 'home').split('/');
-  if(scrollRoot.dataset?.design!=='v2'&&mode==='week')mode='calendar';
+  if(mode==='week'&&!sharedWeekEnabled())mode='calendar';
   const fixedCalendar = page === 'season' && id === 'games' && ['calendar','week'].includes(mode);
   document.body.classList.toggle('games-mode', page === 'season' && id === 'games');
   scrollRoot.classList.toggle('calendar-mode', fixedCalendar);
@@ -383,6 +383,10 @@ function mainTabPreviewMarkup(route) {
       const slot=container.querySelector('.home-matchday .live-match');
       if(slot){if(activeClub!=='fcsg')paintHandballMatchday(slot,true);else syncV1MatchAction(slot);}
     }
+    if(document.documentElement.dataset.preview==='v2') {
+      if(route==='#season/squad')v2MagazineTeamCover(container.querySelector('.season'));
+      v2DecorateForwardLinks(container);
+    }
     return container.innerHTML;
   } finally {applyViewOptions(savedOptions);}
 }
@@ -390,7 +394,7 @@ function createMainTabPager(app) {
   const host=document.createElement('div');host.className='main-tab-pager';host.setAttribute('aria-hidden','true');host.inert=true;document.body.append(host);
   let frames=new Map(),key='',timer=0,drag=null,committing=null,animations=[],generation=0;
   const reduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const signature=()=>[activeClub,document.documentElement.dataset.theme,window.innerWidth,window.innerHeight,location.hash||'#home'].join('|');
+  const signature=()=>[activeClub,...['theme','preview','design','homeTitle','clubLayout'].map(k=>document.documentElement.dataset[k]||''),window.innerWidth,window.innerHeight,location.hash||'#home'].join('|');
   const stop=()=>{generation++;for(const a of animations)a.cancel();animations=[];};
   const hide=()=>{host.classList.remove('is-dragging');for(const entry of frames.values()){entry.frame.style.visibility='hidden';entry.frame.style.transform='translateX(0px)';}};
   const cancel=()=>{stop();drag=null;committing=null;hide();schedule();};
@@ -412,11 +416,12 @@ function createMainTabPager(app) {
     const memory=rememberedView(route),entry={frame,route,ready:false,position:memory.position};frames.set(route,entry);
     const root=document.documentElement,styles=[...document.querySelectorAll('link[rel="stylesheet"]')].map(e=>e.outerHTML).join('');
     const vars=['--app-header-height','--v1-content-top','--v1-games-left','--v1-games-width','--v1-games-controls-height'].map(k=>k+':'+getComputedStyle(root).getPropertyValue(k)).join(';');
-    const isCurrent=route===(location.hash||'#home'),bodyClass=isCurrent?document.body.className:route==='#home'?'immersive':route==='#season/games'?'games-mode'+(memory.options.mode==='calendar'?' calendar-mode':''):'';
+    const isCurrent=route===(location.hash||'#home'),bodyClass=isCurrent?document.body.className:route==='#home'?'immersive':route==='#season/games'?'games-mode'+(['calendar','week'].includes(memory.options.mode)?' calendar-mode':''):'';
     const markup=route===(location.hash||'#home')?app.innerHTML:mainTabPreviewMarkup(route);
     const theme=root.dataset.theme==='light'?'light':'dark';
+    const layoutAttributes=['data-preview','data-design','data-home-title','data-club-layout'].filter(name=>root.hasAttribute(name)).map(name=>` ${name}="${liveEscape(root.getAttribute(name))}"`).join('');
     frame.addEventListener('load',()=>{try{entry.ready=true;align(entry,route===(location.hash||'#home'));}catch{entry.ready=false;}});
-    frame.srcdoc=`<!doctype html><html lang="de-CH" class="${isCurrent?root.className:route==='#season/games'&&memory.options.mode==='calendar'?'calendar-mode':''}" data-theme="${theme}" data-club="${activeClub}" style="${vars}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><base href="${location.href.split('#')[0]}">${styles}<style>html{scroll-snap-type:none!important;scroll-behavior:auto!important}*{animation:none!important;transition:none!important}.season-header,.game-control-bar,.story-dots{visibility:hidden!important}body{pointer-events:none}</style></head><body class="${bodyClass}"><main id="app">${markup}</main></body></html>`;
+    frame.srcdoc=`<!doctype html><html lang="de-CH"${layoutAttributes} class="${isCurrent?root.className:route==='#season/games'&&['calendar','week'].includes(memory.options.mode)?'calendar-mode':''}" data-theme="${theme}" data-club="${activeClub}" style="${vars}"><head><meta name="viewport" content="width=device-width,initial-scale=1"><base href="${location.href.split('#')[0]}">${styles}<style>html{scroll-snap-type:none!important;scroll-behavior:auto!important}*{animation:none!important;transition:none!important}.season-header,.game-control-bar,.story-dots{visibility:hidden!important}body{pointer-events:none}</style></head><body class="${bodyClass}"><main id="app">${markup}</main></body></html>`;
     host.append(frame);
   }
   function prepare(){
@@ -429,7 +434,7 @@ function createMainTabPager(app) {
   function schedule(){clearTimeout(timer);timer=setTimeout(prepare,100);}
   if(typeof MutationObserver!=='undefined'){
     new MutationObserver(()=>{if(drag&&!drag.target?.isConnected)cancel();schedule();}).observe(app,{childList:true});
-    new MutationObserver(records=>{if(records.some(r=>r.oldValue!==r.target.getAttribute(r.attributeName)))cancel();}).observe(document.documentElement,{attributes:true,attributeOldValue:true,attributeFilter:['data-theme','data-club']});
+    new MutationObserver(records=>{if(records.some(r=>r.oldValue!==r.target.getAttribute(r.attributeName)))cancel();}).observe(document.documentElement,{attributes:true,attributeOldValue:true,attributeFilter:['data-theme','data-club','data-preview','data-design','data-home-title','data-club-layout']});
   }
   window.addEventListener('resize',cancel);schedule();
   return {

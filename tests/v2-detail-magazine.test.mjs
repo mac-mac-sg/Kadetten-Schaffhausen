@@ -49,3 +49,17 @@ test('Live header updates remain idempotent and the same score and event nodes s
  assert.equal(document.getElementById('live-events'),events);
  context.location.hash='#home';decorate();assert.equal(document.getElementById('app').classList.contains('v2-detail'),false);
 });
+
+
+test('Detached team previews receive the same magazine cover and keep the club entry after the roster',()=>{
+ const {document,context}=setup('#season/table','');
+ const preview=document.createElement('section');preview.className='season';
+ preview.innerHTML='<header><h1>Kader</h1></header><a class="v2-club-entry" href="#club">Unser Verein</a><div class="players"><a href="#player/6">Spieler</a></div>';
+ context.liveEscape=v=>v;
+ const title=preview.querySelector('h1'),players=preview.querySelector('.players'),entry=preview.querySelector('.v2-club-entry');
+ context.v2MagazineTeamCover(preview);context.v2MagazineTeamCover(preview);
+ assert.equal(preview.querySelectorAll('.v2-team-cover').length,1);
+ assert.equal(preview.querySelector('.v2-team-cover h1'),title);assert.equal(title.textContent,'DAS TEAM.');
+ assert.equal(preview.querySelector('.players'),players);assert.equal(preview.lastElementChild,entry);
+ assert.equal(document.getElementById('app').children.length,0);
+});

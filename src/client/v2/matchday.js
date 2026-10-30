@@ -66,6 +66,18 @@ function v2FitClubLabel() {
 }
 window.addEventListener('resize', v2FitClubLabel, {passive: true});
 document.fonts?.ready.then(v2FitClubLabel);
+function v2MagazineTeamCover(section) {
+  if (section && !section.querySelector('.v2-team-cover')) {
+    const title = section.querySelector('h1');
+    const cover = document.createElement('div'); cover.className = 'v2-team-cover';
+    const photo = activeClub === 'kadetten' ? 'assets/team.webp' : v2HeaderPhoto();
+    cover.innerHTML = `<img src="${photo}" alt="" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
+    if (title) { title.className = 'v2-team-title'; title.textContent = 'DAS TEAM.'; cover.lastElementChild.append(title); }
+    section.prepend(cover);
+    const entry = section.querySelector('.v2-club-entry');
+    if (entry) section.append(entry);
+  }
+}
 
 function v2MagazineChrome() {
   document.querySelectorAll('#app aside.notice').forEach(note => note.setAttribute('role', 'note'));
@@ -90,16 +102,7 @@ function v2MagazineChrome() {
   }
   if (page === 'season' && id === 'squad') {
     const section = document.querySelector('#app .season');
-    if (section && !section.querySelector('.v2-team-cover')) {
-      const title = section.querySelector('h1');
-      const cover = document.createElement('div'); cover.className = 'v2-team-cover';
-      const photo = activeClub === 'kadetten' ? 'assets/team.webp' : v2HeaderPhoto();
-      cover.innerHTML = `<img src="${photo}" alt="" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
-      if (title) { title.className = 'v2-team-title'; title.textContent = 'DAS TEAM.'; cover.lastElementChild.append(title); }
-      section.prepend(cover);
-      const entry = section.querySelector('.v2-club-entry');
-      if (entry) section.append(entry);
-    }
+    v2MagazineTeamCover(section);
   }
   if (page === 'match') {
     const header = document.querySelector('#app .match-top, #app .fcsg-match-header');

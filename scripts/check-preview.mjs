@@ -17,7 +17,7 @@ assert.doesNotMatch(previewHtml,/data-design="v2"/);
 assert.match(previewHtml,/localStorage.getItem\('v2:fan-v1-theme'\)/,'Early theme must use isolated V2 preference');
 assert.ok(preview.includes('v2:'),'V2 storage namespace missing');
 const manifest=JSON.parse(fs.readFileSync('dist/client/v2/manifest.webmanifest','utf8'));
-assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Meine Vereine');assert.equal(manifest.short_name,'Meine Vereine');
+assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Matchday');assert.equal(manifest.short_name,'Matchday');
 const v1Manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
 assert.deepEqual(v1Manifest.icons.map(i=>i.src),['assets/app-v1-scarf-glow-192.png','assets/app-v1-scarf-glow-512.png','assets/app-v1-scarf-glow-maskable-512.png']);
 assert.deepEqual(manifest.icons.map(i=>i.src),['assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'],'V2 app identity must stay unchanged');
@@ -26,14 +26,14 @@ assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.
 assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
 for(const base of ['dist/client','dist/client/v2']) {
  const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
- const appName=base==='dist/client'?'Matchday':'Meine Vereine';
+ const appName='Matchday';
  assert.equal(appManifest.name,appName);assert.equal(appManifest.short_name,appName);
  const html=fs.readFileSync(base+'/index.html','utf8');
  assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+appName+'"'),'Installed app label must stay isolated per version');
  assert.ok(html.includes('<title>'+appName+' ·'),'Browser title must use the version-specific app name');
  const bundle=fs.readFileSync(base+'/js/app.js','utf8');
  assert.ok(bundle.includes(appName+' wurde installiert.'));
- assert.ok(bundle.includes((base==='dist/client'?'Matchday':'Deine Vereine')+' auf dem Startbildschirm'));
+ assert.ok(bundle.includes('Matchday auf dem Startbildschirm'));
  assert.match(html,/data-club-layout="modern"/);
  if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
  for(const [,file] of html.matchAll(/(?:src|href)="((?:assets|js)\/[^"?#]+|app.css|platform-config.js|manifest.webmanifest)/g))assert.ok(fs.existsSync(base+'/'+file),'Missing asset: '+base+'/'+file);
