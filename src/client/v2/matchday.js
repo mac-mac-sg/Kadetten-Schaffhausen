@@ -95,6 +95,67 @@ function v2MagazineChrome() {
   }
 }
 
+/* Move existing nodes, rather than copy content or replace live/statistics targets. */
+function v2DetailPages() {
+  const app = document.getElementById('app');
+  if (!app) return;
+  const [page] = v2Page(), detail = ['news', 'player', 'match', 'club'].includes(page);
+  app.classList.toggle('v2-detail', detail);
+  app.dataset.v2Detail = detail ? page : '';
+  if (!detail) return;
+  const article = app.querySelector('.news-article');
+  if (article && !article.querySelector('.v2-article-heading')) {
+    const copy = article.querySelector('.content'), title = copy?.querySelector(':scope > h1');
+    if (title) {
+      const header = document.createElement('header'); header.className = 'v2-article-heading';
+      const label = document.createElement('p'); label.className = 'v2-detail-kicker';
+      label.textContent = 'Vereinsnews · ' + fanClubs[activeClub].name;
+      header.append(label);
+      const date = copy.querySelector(':scope > p.muted'); if (date) header.append(date);
+      header.append(title);
+      const bar = article.querySelector('.article-bar');
+      if (bar) bar.after(header); else article.prepend(header);
+    }
+  }
+  const profile = app.querySelector('#fcsg-profile-intro');
+  if (profile && !profile.querySelector('.v2-player-cover')) {
+    const photo = profile.querySelector('.fcsg-player-photo'), title = profile.querySelector('h1');
+    if (photo && title) {
+      const cover = document.createElement('div'); cover.className = 'v2-player-cover';
+      photo.before(cover); cover.append(photo);
+      const copy = document.createElement('div'); copy.className = 'v2-player-cover-copy';
+      const position = profile.querySelector('.eyebrow'); if (position) copy.append(position);
+      copy.append(title); cover.append(copy);
+    }
+  }
+  const portrait = app.querySelector('.profile-intro .portrait > div');
+  if (portrait && !portrait.querySelector('.v2-profile-label')) {
+    const label = document.createElement('p'); label.className = 'v2-profile-label'; label.textContent = 'Spielerporträt'; portrait.prepend(label);
+  }
+  const club = app.querySelector('.v2-club-page');
+  club?.querySelectorAll('.club-chapter').forEach(chapter => {
+    if (chapter.querySelector('.v2-chapter-heading')) return;
+    const copy = chapter.querySelector('.club-chapter-copy'), year = copy?.querySelector('.club-chapter-year'), title = copy?.querySelector('h3');
+    if (!year || !title) return;
+    const header = document.createElement('header'); header.className = 'v2-chapter-heading'; header.append(year, title); chapter.prepend(header);
+  });
+  const rail = club?.querySelector('.club-years');
+  if (rail && !rail.dataset.v2Rail && typeof MutationObserver !== 'undefined') {
+    rail.dataset.v2Rail = '1';
+    new MutationObserver(() => {
+      const current = rail.querySelector('[aria-pressed="true"]');
+      if (!current || !rail.isConnected) return;
+      if (current.offsetLeft < rail.scrollLeft || current.offsetLeft + current.offsetWidth > rail.scrollLeft + rail.clientWidth) {
+        rail.scrollTo({left:Math.max(0,current.offsetLeft - (rail.clientWidth-current.offsetWidth)/2),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+      }
+    }).observe(rail, {subtree:true,attributes:true,attributeFilter:['aria-pressed']});
+  }
+  const liveHeader = app.querySelector('.live-match-header');
+  if (liveHeader && !liveHeader.querySelector('.v2-matchcenter-title')) {
+    const label = document.createElement('p'); label.className = 'v2-matchcenter-title'; label.textContent = 'MATCHCENTER'; liveHeader.prepend(label);
+  }
+}
+
 function v2LimitNews() {
   const feed = document.querySelector('#app .story-feed');
   if (!feed) return;
@@ -321,6 +382,7 @@ document.addEventListener('visibilitychange', () => document.documentElement.cla
 function v2AfterRender() {
   v2SyncChrome();
   v2MagazineChrome();
+  v2DetailPages();
   v2SyncHome();
   v2LimitNews();
   v2SyncLiveBar();
@@ -331,6 +393,7 @@ function v2AfterRender() {
 function v2Tick() {
   v2SyncHome();
   v2MagazineChrome();
+  v2DetailPages();
   v2SyncLiveBar();
   v2WatchScore();
   v2DecorateMedia();
