@@ -169,3 +169,13 @@ Der freigegebene Titelbereich ist in `js/home-title.js` und `home-title.css` zus
 ### Spieleliste in V2 wie V1
 
 V2 übernimmt für die Spieleliste die gemeinsamen V1-Regeln: kompakte Zeilen, gut lesbare Ergebniszahlen, dezente Flächen und die farbige linke Ergebniskante für Sieg, Unentschieden und Niederlage. Auch die aktuelle Spielkarte folgt den vorhandenen V1-Stilen. Die V2-Überlagerungen für Rahmen, Schatten, Schrift, Metadaten und Abstände entfallen dort. Filter, Kalender, Spielreihenfolge, Daten und die gemeinsame Startseitenkarte bleiben erhalten.
+
+## V2: Magazin-Ausgabe
+
+V2 öffnet mit einem fotografischen Cover und eigener Matchday-Wortmarke. Die Titelzeile folgt dem bestätigten Spielzustand: «Unser Spiel/Abend», «Mitten im Spiel» oder «Nach dem Spiel». Begegnung, Countdown, vollständiges Datum, Anspielzeit beziehungsweise bestätigter Spielstand und der direkte Absprung bleiben im Cover. Unbestätigte Anspielzeiten und fehlende Resultate werden weiterhin als offen dargestellt.
+
+Der erste vorhandene Newsbeitrag erscheint einmal als Cover-Teaser; danach wechseln grosse Bildaufmacher und kompakte Meldungen. Nach sechs Beiträgen lassen sich alle übrigen Beiträge einblenden. Originalartikel, Artikelrouten und Vereinsarchive bleiben erhalten. Die Navigation heisst «Magazin», «Spiele», «Tabelle», «Team» und verwendet dieselben Routen wie zuvor.
+
+Die Teamseite ergänzt einen fotografischen Einstieg und verschiebt den weiterhin vollständig klickbaren Vereinszugang unter die Spielergruppen. Spielerporträts und Statistiken bleiben erhalten. Matchcenter, Tabellen, Artikel und Vereinsseiten verwenden die neue Schrift- und Flächengestaltung; Datenquellen, Kalender, Wettbewerbsfilter, Benachrichtigungen und Aktualisierungsintervalle bleiben bestehen. Die frühere Auswahl zwischen zwei Titelabschlüssen wird in V2 durch das Magazin-Cover ersetzt. Hell-/Dunkelmodus und getrennte V2-Einstellungen bleiben verfügbar.
+
+Die neuen Renderer und Styles laden ausschliesslich im V2-Build. Das bestehende Mannschaftsfoto wird zusätzlich in dessen Offline-Hülle aufgenommen; V1 bleibt bei seiner bisherigen Gestaltung. Verifikation: `npm run verify`; `tests/v2-ticket.test.mjs` prüft unter anderem unveränderte Artikelanzahl/-routen aller Vereine, Einblenden aller News, Spielzustände, fehlende Werte und die Erhaltung des fokussierten Live-Links.
