@@ -49,6 +49,13 @@ Seit #266 und #267 ist V2 ein Magazin mit grossen Vereinsfotos. Alles liegt in `
 - **Ladezustände:** Bilder zeigen beim Laden eine dezente Fläche in Vereinsfarbe, fehlende Bilder eine getönte Fläche, fehlende Wappen ein rundes Kürzel-Abzeichen. Auf der dunklen Titelseite ist das Abzeichen hell auf dunkel.
 - **Resultat teilen:** auf Seiten beendeter Spiele aller drei Vereine. Ein 1080×1350-Bild (Wappen, Resultat in Anton, Sieg/Unentschieden/Niederlage, Wettbewerb, Datum) entsteht im Browser; Teilen über das System-Menü, sonst Download über einen versteckten Link. Die Schaltfläche hält 64 px Abstand zur hochgezogenen Spielleiste und wird nach Live-Aktualisierungen des Spielkopfs (FCSG) wieder eingesetzt.
 
+**Layoutprüfung 30.10.2026.** Viele V1-Regeln beginnen mit `html:not([data-design='v2'])` und greifen deshalb auch in V2, das nur `data-preview='v2'` setzt. Daraus entstanden Flächen ohne Innenabstand, die eng um den Text lagen. `matchday.css` hebt sie für das Magazin auf:
+
+- Tabelle ohne Zellenflächen; News-Karten im Magazin ohne Rahmen; Hinweise und Titel-Panel mit 16 px seitlichem Innenabstand; Spielreiter nur mit Unterlinie statt Rahmen bis an den Bildschirmrand.
+- Spieltagsvorschau: Text im Bild mit 22 px Abstand rechts, Verlauf und Schatten für die Lesbarkeit, Oberzeile in einer Zeile.
+- Vereinswahl: kein abgeschnittener Name. Erst der Titel, dann das Kürzel («FCSG»), sonst nur das Wappen; der volle Name steht im `aria-label`.
+- Kopfzeilen-Symbole auf dem Titelfoto hell; Spielerkarten mit Nummer über dem Namen, damit lange Namen ganz sichtbar sind; Spielerprofil mit Nummer links der Kapitel-Navigation und am Desktop an der 600 px breiten Spalte ausgerichtet; Datenstand in den Einstellungen bricht um; dreistellige Kürzel-Abzeichen als Pille.
+
 Prüfung: `npm run verify` (inklusive `tests/v2-matchday.test.mjs` für Mindestschriftgrösse, Touch-Ziele, Teilen-Schaltfläche und Platzhalter-Kontrast) und die Browser-Skripte nach `npm run build:pages`:
 
 | Skript | Prüft |
