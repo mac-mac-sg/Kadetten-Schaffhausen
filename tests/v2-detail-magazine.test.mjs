@@ -63,3 +63,46 @@ test('Detached team previews receive the same magazine cover and keep the club e
  assert.equal(preview.querySelector('.players'),players);assert.equal(preview.lastElementChild,entry);
  assert.equal(document.getElementById('app').children.length,0);
 });
+
+
+test('Team cover uses the real preferred player image and inserts history after the first complete position group',()=>{
+ const {document,context}=setup('#season/squad','');
+ const section=document.createElement('section');
+ section.innerHTML='<h1>Kader</h1><a class="v2-club-entry" href="#club"><h2>Unser Verein</h2><p>Geschichte</p></a><h2>Torhüter</h2><div class="players" id="keepers"><a class="player-card" href="#player/1"><img src="keeper.webp" alt="Torhüter"></a></div><h2>Rückraum</h2><div class="players" id="field"><a class="player-card" href="#player/22"><img src="real-player.webp" alt="Patrik Martinovic"><div>Originalname und Nummer</div></a></div>';
+ context.liveEscape=v=>v;
+ const groups=[...section.querySelectorAll('.players')],cards=[...section.querySelectorAll('.player-card')],entry=section.querySelector('.v2-club-entry');
+ context.v2MagazineTeamCover(section);context.v2MagazineTeamCover(section);
+ assert.equal(section.querySelector('.v2-team-cover > img').getAttribute('src'),'real-player.webp');
+ assert.equal(section.querySelector('h1').getAttribute('aria-label'),'Das Team');assert.equal(section.querySelectorAll('.v2-team-title > span').length,2);
+ assert.equal(groups[0].nextElementSibling,entry);assert.deepEqual([...section.querySelectorAll('.player-card')],cards);
+ assert.equal(section.querySelectorAll('.players').length,2);assert.equal(entry.getAttribute('href'),'#club');
+});
+test('Match identity moves the original back link while retaining the live score target and every header fact',()=>{
+ const {document,context}=setup('#match/test/stats','<header class="fcsg-match-header"><a class="back-link" href="#season/games">Zurück zu den Spielen</a><p class="eyebrow">Liga · 19:15 Uhr</p><div class="matchup"><strong data-fcsg-score="test">1 : 0</strong></div><p class="fcsg-match-venue">Stadion</p></header>');
+ const header=document.querySelector('header'),back=header.querySelector('a'),score=header.querySelector('strong');
+ context.v2MatchChrome(header);context.v2MatchChrome(header);
+ assert.equal(header.querySelectorAll('.v2-matchcenter-title').length,1);assert.equal(header.querySelector('.v2-matchcenter-title a'),back);
+ assert.equal(back.getAttribute('aria-label'),'Zurück zu den Spielen');assert.equal(header.querySelector('[data-fcsg-score]'),score);
+ assert.equal(header.querySelector('.eyebrow').textContent,'Liga · 19:15 Uhr');assert.equal(header.querySelector('.fcsg-match-venue').textContent,'Stadion');
+ score.textContent='2 : 0';context.v2MatchChrome(header);assert.equal(header.querySelector('[data-fcsg-score]').textContent,'2 : 0');
+ header.innerHTML='<div class="matchup"><strong data-fcsg-score="test">3 : 0</strong></div>';context.v2MatchChrome(header);
+ assert.equal(header.querySelector('.v2-match-back').getAttribute('href'),'#season/games');assert.equal(header.querySelector('[data-fcsg-score]').textContent,'3 : 0');
+});
+test('Ticker icons are decorative and leave original events, source links and unknown values intact',()=>{
+ const {document,context}=setup('#match/test/report','<ol class="live-events"><li class="live-event"><time>52:00</time><div><strong>Tor · 28 : 24</strong><span>Originalspieler</span></div></li><li class="live-event"><time>–</time><div><strong>2 Minuten</strong><a href="https://example.test/source">Quelle</a></div></li></ol><ol class="fcsg-ticker"><li data-ticker-id="a"><span class="fcsg-ticker-minute">46′</span><div><h3>Wechsel</h3><p>Originalmeldung</p></div></li></ol>');
+ const originals=[...document.querySelectorAll('time,strong,a,h3,p')],text=originals.map(e=>e.textContent);
+ context.v2EditorialEvents();context.v2EditorialEvents();
+ assert.equal(document.querySelectorAll('.v2-event-icon').length,3);
+ assert.deepEqual([...document.querySelectorAll('[data-v2-event]')].map(e=>e.dataset.v2Event),['goal','penalty','change']);
+ assert.deepEqual([...document.querySelectorAll('time,strong,a,h3,p')],originals);assert.deepEqual(originals.map(e=>e.textContent),text);
+ assert.ok([...document.querySelectorAll('.v2-event-icon')].every(e=>e.getAttribute('aria-hidden')==='true'));
+});
+test('Installation stays reachable in settings and closes the dialog before invoking the existing install action',()=>{
+ const {document,context}=setup('#home','');
+ const install=document.createElement('button');install.id='install-app';install.innerHTML='<svg aria-hidden="true"></svg>';let sequence=[];install.click=()=>sequence.push('install');document.body.append(install);
+ const dialog=document.createElement('dialog');dialog.className='club-settings-dialog';dialog.innerHTML='<button aria-label="Einstellungen schliessen"></button><section class="settings-app-info"></section>';dialog.querySelector('button').click=()=>sequence.push('close');document.body.append(dialog);
+ context.v2InstallSettings();context.v2InstallSettings();
+ const button=dialog.querySelector('[data-v2-install]');assert.ok(button);assert.equal(dialog.querySelectorAll('[data-v2-install]').length,1);
+ button.onclick();assert.deepEqual(sequence,['close','install']);
+ install.hidden=true;context.v2InstallSettings();assert.equal(dialog.querySelector('[data-v2-install]'),null);
+});

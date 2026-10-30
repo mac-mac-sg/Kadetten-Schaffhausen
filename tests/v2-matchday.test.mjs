@@ -17,11 +17,10 @@ test('Masthead link is a 44 px touch target', () => {
   assert.match(rule(css, ".v2-masthead { display:inline-flex"), /min-height:44px/);
 });
 
-test('Share button keeps clear of the pulled-up sticky match bar', () => {
-  const bar = fs.readFileSync('src/client/v1-theme.css', 'utf8').match(/\.match-sticky-bar \{[^}]*margin-top:\s*-(\d+)px/);
-  const share = css.match(/\.v2-share-inline \{[^}]*margin:\s*\d+px auto (\d+)px/);
-  assert.ok(bar && share, 'both rules exist');
-  assert.ok(Number(share[1]) >= Number(bar[1]), 'bottom margin covers the sticky bar overlap');
+test('V2 compact identity overlays the outgoing header without a negative tab margin or a large share spacer', () => {
+  assert.match(css, /\.match-sticky-bar \{ top:calc\(var\(--v1-content-top,68px\) \+ 56px\); margin-top:0;/);
+  assert.match(css, /\.match-compact-header \{ position:absolute; inset:auto 0 100%; width:100%; \}/);
+  assert.match(css, /\.v2-share-inline \{ display: flex; margin: 12px auto 0;/);
 });
 
 test('Share button is restored after live updates replace the match header', () => {
