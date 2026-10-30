@@ -153,7 +153,8 @@ html[data-preview='v2'] .v2-share {
 html[data-preview='v2'] .v2-share::before { content: ''; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--v2-share-icon) center / contain no-repeat; mask: var(--v2-share-icon) center / contain no-repeat; }
 html[data-preview='v2'] { --v2-share-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'/%3E%3C/svg%3E"); }
 html[data-preview='v2'] .v2-share:disabled { opacity: .6; }
-html[data-preview='v2'] .v2-share-inline { display: flex; margin: 12px auto 0; width: max-content; }
+/* Die Leiste .match-sticky-bar zieht sich 56 px nach oben; der Abstand hält die Schaltfläche frei. */
+html[data-preview='v2'] .v2-share-inline { display: flex; margin: 12px auto 64px; width: max-content; min-height: 44px; }
 html[data-preview='v2'] .v2-more-news {
   display: block; width: 100%; min-height: 52px; margin: 6px 0 24px; border-radius: var(--v2-radius-sm);
   border: 1px solid var(--v2-hairline); background: var(--v2-card); color: var(--text);
@@ -174,7 +175,7 @@ html[data-preview='v2'] .v2-livebar {
 html[data-preview='v2'] .v2-livebar[hidden] { display: none; }
 html[data-preview='v2'] .v2-livebar .v2-num { font-size: 24px; line-height: 1; }
 html[data-preview='v2'] .v2-livebar small { font: 600 12px/1 var(--font-text); opacity: .8; white-space: nowrap; }
-html[data-preview='v2'] .v2-livebar-crest :is(img, .clubmark) { width: 22px; height: 26px; object-fit: contain; font-size: 9px; display: block; }
+html[data-preview='v2'] .v2-livebar-crest :is(img, .clubmark) { width: 22px; height: 26px; object-fit: contain; font-size: 12px; display: block; }
 html[data-preview='v2'] .v2-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 0 0 #ff4d4d80; animation: v2-live-dot 1.6s ease-out infinite; }
 @keyframes v2-live-dot { 70% { box-shadow: 0 0 0 8px #ff4d4d00; } 100% { box-shadow: 0 0 0 0 #ff4d4d00; } }
 @keyframes v2-livebar-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -229,7 +230,7 @@ html[data-preview='v2'] .home-matchday:not(.games-matchday) #live-match.is-live 
 html[data-preview='v2'] .v2-livebar .v2-num { white-space: nowrap; }
 html[data-preview='v2'] .v2-livebar .v2-livebar-crest { display: grid; place-items: center; width: 24px; height: 28px; flex: none; }
 html[data-preview='v2'] .v2-livebar .v2-livebar-crest :is(img, img.crest, .clubmark) { width: 24px !important; height: 28px !important; max-width: none; object-fit: contain; margin: 0; }
-html[data-preview='v2'] .v2-livebar .v2-livebar-crest .clubmark { width: 24px !important; height: 24px !important; font-size: 8px; }
+html[data-preview='v2'] .v2-livebar .v2-livebar-crest .clubmark { width: 24px !important; height: 24px !important; font-size: 12px; }
 
 /* Kurze Zeilen bleiben einzeilig. */
 html[data-preview='v2'] .home-matchday .live-heading > span { white-space: nowrap; }
@@ -267,9 +268,9 @@ html[data-preview='v2'][data-theme] .top.v1-compact-header {
   display:flex; flex-wrap:nowrap; gap:8px; color:var(--text); background:var(--surface);
   box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
 }
-html[data-preview='v2'][data-theme] .v2-masthead { flex:1; min-width:0; font:400 clamp(28px,8vw,36px)/1.15 Anton,Impact,sans-serif; letter-spacing:-.045em; color:inherit; white-space:nowrap; }
+html[data-preview='v2'][data-theme] .v2-masthead { display:inline-flex; align-items:center; min-height:44px; flex:1; min-width:0; font:400 clamp(28px,8vw,36px)/1.15 Anton,Impact,sans-serif; letter-spacing:-.045em; color:inherit; white-space:nowrap; }
 html[data-preview='v2'][data-theme] .v2-masthead span { color:var(--accent); }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { flex:0 1 auto; max-width:155px; gap:6px; padding:0 8px; border:1px solid var(--line); border-radius:30px; font-size:11px; }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { flex:0 1 auto; max-width:155px; gap:6px; padding:0 8px; border:1px solid var(--line); border-radius:30px; font-size:12px; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand img { width:22px; height:26px; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand small { display:none; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand .compact-club-chevron { width:14px; margin:0; }
@@ -290,7 +291,7 @@ html[data-preview='v2'][data-theme][data-club='fcsg'] .v2-magazine-cover .v2-her
 html[data-preview='v2'][data-theme][data-club='otmar'] .v2-magazine-cover .v2-hero-media img { object-position:62% top; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-hero-media::after { background:linear-gradient(180deg,#06090c05 12%,#06090c42 30%,#06090ce8 68%,#06090c 100%); }
 html[data-preview='v2'][data-theme] .v2-cover-editorial { position:relative; margin-bottom:24px; }
-html[data-preview='v2'][data-theme] .v2-cover-kicker { margin:0 0 12px; font-size:11px; font-weight:650; letter-spacing:.1em; text-transform:uppercase; color:#f5f5f5; }
+html[data-preview='v2'][data-theme] .v2-cover-kicker { margin:0 0 12px; font-size:12px; font-weight:650; letter-spacing:.1em; text-transform:uppercase; color:#f5f5f5; }
 html[data-preview='v2'][data-theme] #v2-cover-title { margin:0; font:400 clamp(60px,20vw,106px)/1.04 Anton,Impact,sans-serif; letter-spacing:-.035em; color:#fff; }
 html[data-preview='v2'][data-theme] #v2-cover-title span { display:block; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-match-ticket {
@@ -299,7 +300,8 @@ html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-match-ticket {
 }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-match-ticket::before,
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-match-ticket::after { content:none; }
-html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-heading { color:#dedfe2; font-size:11px; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-heading { color:#dedfe2; font-size:12px; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover :is(.clubmark,.v2-crest-fallback,.v1-image-fallback.crest) { background:#ffffff26; color:#fff; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-day { color:var(--v2-cover-accent); }
 html[data-preview='v2'][data-theme] .v2-cover-pairing { font:400 clamp(23px,6.4vw,35px)/1.22 Anton,Impact,sans-serif; text-transform:uppercase; text-wrap:balance; }
 html[data-preview='v2'][data-theme] .v2-cover-fixture { display:flex; align-items:center; gap:10px; }
@@ -308,7 +310,7 @@ html[data-preview='v2'][data-theme] .v2-cover-crests :is(img.crest,.clubmark) { 
 html[data-preview='v2'][data-theme] .v2-cover-fixture > strong { font:400 32px/1.2 Anton,Impact,sans-serif; white-space:nowrap; }
 html[data-preview='v2'][data-theme] .v2-cover-action { margin-left:auto; text-align:right; font-size:12px; font-weight:650; }
 html[data-preview='v2'][data-theme] .v2-cover-action > span { color:var(--v2-cover-accent); font-size:22px; }
-html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-footer { text-align:left; color:#d7d9dc; font-size:12px; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-footer { text-align:left; color:#d7d9dc; font-size:13px; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v2-ticket-empty { color:#fff; }
 /* The cover's first real article becomes a compact editorial teaser. */
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-card { padding:0; margin:18px 0 0; width:100%; }
@@ -316,15 +318,15 @@ html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-link { display:g
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-image { border-radius:0; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-image img { height:100%; min-height:84px; aspect-ratio:1; object-fit:cover; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-copy { padding:0; column-gap:8px; }
-html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-copy :is(p,.v2-news-meta) { color:#d7d9dc; font-size:11px; margin:0 0 5px; }
+html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-copy :is(p,.v2-news-meta) { color:#d7d9dc; font-size:12px; margin:0 0 5px; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-copy h2 { font:600 15px/1.3 var(--font-text); color:#fff; text-wrap:pretty; }
 html[data-preview='v2'][data-theme] .v1-news-arrow { border:0; color:var(--accent); }
 html[data-preview='v2'][data-theme] .v2-magazine-cover .v1-news-arrow { color:var(--v2-cover-accent); }
 /* Alternating feature spreads and compact news rows, rather than identical tiles. */
 html[data-preview='v2'][data-theme] .v2-magazine-heading { padding:34px 22px 22px; display:grid; grid-template-columns:1fr auto; align-items:end; gap:5px 8px; }
-html[data-preview='v2'][data-theme] .v2-editorial-kicker { grid-column:1/-1; margin:0; color:var(--muted); font-size:11px; font-weight:650; letter-spacing:.12em; text-transform:uppercase; }
+html[data-preview='v2'][data-theme] .v2-editorial-kicker { grid-column:1/-1; margin:0; color:var(--muted); font-size:12px; font-weight:650; letter-spacing:.12em; text-transform:uppercase; }
 html[data-preview='v2'][data-theme] .v2-magazine-heading h2 { margin:0; font:400 40px/1.1 Anton,Impact,sans-serif; letter-spacing:-.02em; }
-html[data-preview='v2'][data-theme] .v2-magazine-heading > span { padding-bottom:3px; color:var(--muted); font-size:11px; }
+html[data-preview='v2'][data-theme] .v2-magazine-heading > span { padding-bottom:3px; color:var(--muted); font-size:12px; }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid { display:block; padding:0 22px; }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-card { padding:18px 0; margin:0; border-top:1px solid var(--line); }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-link { background:transparent; border-radius:0; color:var(--text); box-shadow:none; }
@@ -375,17 +377,17 @@ html[data-preview='v2'][data-theme] .v2-club-hero-copy .v2-club-curve { display:
 /* A single restrained glass element, always within thumb reach. */
 html[data-preview='v2'][data-theme] .dock { width:calc(100% - 28px); min-width:0; max-width:480px; border-radius:18px; background:#17191dee; color:#f8f8f8; padding:5px; box-shadow:0 6px 24px #0004; }
 html[data-preview='v2'][data-theme='light'] .dock { background:#fffffff0; color:#151618; }
-html[data-preview='v2'][data-theme] .dock a { flex:1; padding:7px 4px; font-size:11px; min-height:52px; color:inherit; border-radius:12px; }
+html[data-preview='v2'][data-theme] .dock a { flex:1; padding:7px 4px; font-size:12px; min-height:52px; color:inherit; border-radius:12px; }
 html[data-preview='v2'][data-theme] .dock a.active { background:transparent; color:var(--v2-cover-accent); }
 html[data-preview='v2'][data-theme='light'] .dock a.active { color:var(--accent); }
 html[data-preview='v2'][data-theme] .dock a.active::before { background:currentColor; bottom:2px; }
 html[data-preview='v2'][data-theme] .dock .nav-icon { width:22px; height:22px; color:inherit; }
 @media(max-width:360px) {
   html[data-preview='v2'][data-theme] .top.v1-compact-header { padding-inline:12px; gap:5px; }
-  html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { max-width:130px; font-size:10px; padding-inline:6px; }
+  html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { max-width:130px; font-size:12px; padding-inline:6px; }
   html[data-preview='v2'][data-theme] .v2-magazine-cover.v2-ticket-section { padding-inline:18px; padding-top:calc(var(--app-header-height,76px) + 120px); }
   html[data-preview='v2'][data-theme] .v2-cover-fixture { flex-wrap:wrap; }
-  html[data-preview='v2'][data-theme] .v2-cover-action { font-size:11px; }
+  html[data-preview='v2'][data-theme] .v2-cover-action { font-size:12px; }
 }
 @media(prefers-reduced-transparency:reduce) {
   html[data-preview='v2'][data-theme] .dock { background:var(--surface); color:var(--text); backdrop-filter:none; -webkit-backdrop-filter:none; }
@@ -411,7 +413,7 @@ html[data-preview='v2'][data-theme] #app.v2-detail .button.subtle { background:t
 html[data-preview='v2'][data-theme] #app.v2-detail .source-details { padding-block:12px; border-top:1px solid var(--line); color:var(--muted); }
 html[data-preview='v2'][data-theme] #app.v2-detail .source-details summary { min-height:44px; align-content:center; color:var(--text); font-size:12px; }
 html[data-preview='v2'][data-theme] #app.v2-detail .notice { border:0; border-left:2px solid var(--accent); border-radius:0; background:var(--surface-2); color:var(--text); padding:16px; box-shadow:none; font-size:14px; }
-html[data-preview='v2'][data-theme] #app.v2-detail .v2-detail-kicker { color:var(--accent); font-size:11px; font-weight:650; letter-spacing:.12em; text-transform:uppercase; margin:0 0 12px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .v2-detail-kicker { color:var(--accent); font-size:12px; font-weight:650; letter-spacing:.12em; text-transform:uppercase; margin:0 0 12px; }
 /* Story title, original metadata and original photo form the magazine opening. */
 html[data-preview='v2'][data-theme] #app.v2-detail .article-bar { position:static; padding:8px 22px; background:var(--surface); backdrop-filter:none; }
 html[data-preview='v2'][data-theme] #app.v2-detail .v2-article-heading { padding:18px 22px 26px; border-bottom:1px solid var(--line); }
@@ -455,7 +457,7 @@ html[data-preview='v2'][data-theme] #app.v2-detail .portrait::after { background
 html[data-preview='v2'][data-theme] #app.v2-detail .portrait h1 { font:400 clamp(42px,13vw,70px)/1.1 Anton,Impact,sans-serif; letter-spacing:-.02em; color:#fff; margin:7px 0; }
 html[data-preview='v2'][data-theme] #app.v2-detail .portrait > div { padding-right:48px; }
 html[data-preview='v2'][data-theme] #app.v2-detail .portrait p { font:500 19px/1.4 var(--font-text); color:#fff; }
-html[data-preview='v2'][data-theme] #app.v2-detail .portrait .v2-profile-label { color:var(--v2-cover-accent); font:600 11px/1.4 var(--font-text); letter-spacing:.12em; text-transform:uppercase; margin-bottom:10px; }
+html[data-preview='v2'][data-theme] #app.v2-detail .portrait .v2-profile-label { color:var(--v2-cover-accent); font:600 12px/1.4 var(--font-text); letter-spacing:.12em; text-transform:uppercase; margin-bottom:10px; }
 html[data-preview='v2'][data-theme] #app.v2-detail .portrait b { font:400 60px/1 Anton,Impact,sans-serif; color:var(--v2-cover-accent); }
 html[data-preview='v2'][data-theme] #app.v2-detail .profile-back.back-link { color:#fff; background:#111619cc; border-radius:3px; }
 html[data-preview='v2'][data-theme] #app.v2-detail :is(.profile-minihero,.profile-minihero::after) { border-radius:0; }
@@ -489,7 +491,7 @@ html[data-preview='v2'][data-theme] #app.v2-detail .club-years button[aria-press
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter { display:block; padding:34px 22px; min-height:0; border-bottom:1px solid var(--line); scroll-margin-top:calc(var(--v1-content-top) + 76px); }
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter figure { margin:20px -22px; border-radius:0; background:var(--surface-2); }
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter figure img { width:100%; height:auto; max-height:none; object-fit:contain; border-radius:0; }
-html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter figcaption { padding:10px 22px; font-size:11px; color:var(--muted); }
+html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter figcaption { padding:10px 22px; font-size:12px; color:var(--muted); }
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter-year { font:400 54px/1.1 Anton,Impact,sans-serif; color:var(--accent); margin:0 0 10px; }
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter h3 { font:400 30px/1.2 Anton,Impact,sans-serif; margin:0 0 18px; }
 html[data-preview='v2'][data-theme] #app.v2-detail .club-chapter-copy > p:not(.club-chapter-position) { color:var(--text); font-size:16px; line-height:1.8; }

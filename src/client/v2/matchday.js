@@ -320,6 +320,7 @@ async function v2ShareResult(gameId) {
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = file.name;
+  link.hidden = true;
   document.body.append(link);
   link.click();
   setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 2000);
@@ -395,15 +396,10 @@ function v2Tick() {
   v2MagazineChrome();
   v2DetailPages();
   v2SyncLiveBar();
+  v2AddShareButton();
   v2WatchScore();
   v2DecorateMedia();
 }
-
-const v2BaseOpenClubSettings = openClubSettings;
-openClubSettings = function (...args) {
-  const result = v2BaseOpenClubSettings(...args);
-  return result;
-};
 
 // V2 builds on the shared routes; its magazine renderers and chrome never load in V1.
 home = () => v2Home();

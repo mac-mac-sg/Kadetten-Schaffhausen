@@ -46,11 +46,8 @@ try {
      const element=page.locator(selector);if(!await element.count())continue;
      assert.ok(await element.evaluate((e,min)=>parseFloat(getComputedStyle(e).fontSize)>=min,selector==='.v2-ticket-footer'?13:12),scope+' readable '+selector);
     }
-    assert.ok(await page.locator('.v2-match-ticket').evaluate(ticket=>{
-     const previous=ticket.getAttribute('data-result'),probe=document.createElement('span');document.body.append(probe);
-     const results=['win','draw','loss'].every(result=>{ticket.dataset.result=result;probe.style.color='var(--'+result+')';return getComputedStyle(ticket).borderTopColor===getComputedStyle(probe).color;});
-     if(previous===null)ticket.removeAttribute('data-result');else ticket.setAttribute('data-result',previous);probe.remove();return results;
-    }),scope+' result border keeps its semantic colour');
+    // The magazine cover uses a neutral white rim; the result itself is checked in check-v2-ticket.mjs.
+    assert.ok(await page.locator('.v2-masthead').evaluate(e=>e.getBoundingClientRect().height>=44),scope+' masthead is a 44 px touch target');
    }
    if(route==='season/table'){
     const form=page.locator('.season-form a').first();if(await form.count()){const href=await form.getAttribute('href');await form.click();await page.waitForURL(url=>url.hash===href);assert.equal(new URL(page.url()).hash,href,scope+' form link still opens its game');await page.goBack();await page.waitForSelector('.standings-table');}
