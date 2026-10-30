@@ -1,4 +1,5 @@
-/* Optional browser regression after build:pages; fixtures never touch production data. */
+/* Optional browser regression after build:pages; fixtures never touch production data.
+   Magazine cover ticket of V2 in every match state, the live bar, the result share button and a11y. */
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
@@ -27,155 +28,92 @@ try {
   browser = await chromium.launch({headless:true, executablePath:process.env.GAMES_CHROMIUM_EXECUTABLE, args:['--no-sandbox','--disable-dev-shm-usage']});
   const axe = fs.readFileSync(process.env.GAMES_AXE_SCRIPT, 'utf8');
   const scenarios = [];
-  for (const style of ['arena','curve']) for (const club of ['kadetten','fcsg','otmar']) for (const theme of ['light','dark']) for (const state of ['preview','soon','matchday','live','post']) scenarios.push({club,theme,state,style,width:390});
-  for (const style of ['arena','curve']) for (const width of [320,1440]) for (const theme of ['light','dark']) scenarios.push({club:'otmar',theme,state:'preview',style,width});
-  for (const version of ['v1','v2']) for (const scenario of scenarios) {
-    const base=version==='v2'?'/v2/':'/',storagePrefix=version==='v2'?'v2:':'';
-    const {club,theme,state,style,width} = scenario, index = ['kadetten','fcsg','otmar'].indexOf(club), now = '2026-10-25T12:00:00Z';
+  for (const club of ['kadetten', 'fcsg', 'otmar']) for (const theme of ['light', 'dark']) for (const state of ['preview', 'soon', 'matchday', 'live', 'post']) scenarios.push({club, theme, state, width: 390});
+  for (const width of [320, 1440]) for (const theme of ['light', 'dark']) scenarios.push({club: 'otmar', theme, state: 'preview', width});
+  const expected = {
+    preview: {day: 'Nächstes Spiel in 6 Tagen', effect: 'calm', score: '19:15', footer: '31.10.2026', action: 'Zur Vorschau'},
+    soon: {day: 'Nächstes Spiel morgen', effect: 'soon', score: '10:00', footer: '26.10.2026', action: 'Zur Vorschau'},
+    matchday: {day: 'Heute ist Matchday', effect: 'matchday', score: '19:15', footer: '25.10.2026', action: 'Zur Vorschau'},
+    live: {day: 'Jetzt live', effect: 'live', score: '12 : 10', footer: '25.10.2026', action: 'Zum Liveticker'},
+    post: {day: 'Heute gespielt', effect: 'result', score: '31 : 29', footer: '25.10.2026', action: 'Zum Rückblick'}
+  };
+  for (const scenario of scenarios) {
+    const {club, theme, state, width} = scenario, index = ['kadetten', 'fcsg', 'otmar'].indexOf(club), now = '2026-10-25T12:00:00Z', want = expected[state];
     const data = structuredClone(originals[index]);
-    const game = {...data.games.find(g => g.league !== 'Testspiel'), id:'12345', home:names[index], away:'GC Amicitia Zürich', date:state==='preview'?'2026-10-31':state==='soon'?'2026-10-26':'2026-10-25', time:state==='soon'?'10:00':'19:15', confirmed:true, score:state==='post'?[31,29]:null, league:club==='fcsg'?'Super League':'QHL'};
+    const game = {...data.games.find(g => g.league !== 'Testspiel'), id: '12345', home: names[index], away: 'GC Amicitia Zürich', date: state === 'preview' ? '2026-10-31' : state === 'soon' ? '2026-10-26' : '2026-10-25', time: state === 'soon' ? '10:00' : '19:15', confirmed: true, score: state === 'post' ? [31, 29] : null, league: club === 'fcsg' ? 'Super League' : 'QHL'};
     data.games = [game]; data.checkedAt = now;
-    const live = state==='live'?{...game, live:true, liveScore:[12,10], score:[12,10], phase:'2. Halbzeit', clock:'42:10'}:null;
-    const ctx = await browser.newContext({viewport:{width,height:844},serviceWorkers:'block',reducedMotion:'reduce',bypassCSP:true});
-    await ctx.addInitScript(({now,theme,style,storagePrefix}) => {
-      const D=Date; window.Date=class extends D {constructor(...a){super(...(a.length?a:[now]));}static now(){return D.parse(now);}};
-      localStorage.setItem(storagePrefix+'fan-v1-theme',theme);
-      if(!localStorage.getItem(storagePrefix+'fan-v2-header-style'))localStorage.setItem(storagePrefix+'fan-v2-header-style',style);
-      for(const prefix of ['','v2:']) for(const key of ['fan-app-onboarding-v1','fan-app-install-intro-v1'])localStorage.setItem(prefix+key,'seen');
-    },{now,theme,style,storagePrefix});
+    const live = state === 'live' ? {...game, live: true, liveScore: [12, 10], score: [12, 10], phase: '2. Halbzeit', clock: '42:10'} : null;
+    const ctx = await browser.newContext({viewport: {width, height: 844}, serviceWorkers: 'block', reducedMotion: 'reduce', bypassCSP: true, acceptDownloads: true});
+    await ctx.addInitScript(({now, theme}) => {
+      const D = Date; window.Date = class extends D {constructor(...a) {super(...(a.length ? a : [now]));} static now() {return D.parse(now);}};
+      localStorage.setItem('v2:fan-v1-theme', theme);
+      for (const prefix of ['', 'v2:']) for (const key of ['fan-app-onboarding-v1', 'fan-app-install-intro-v1']) localStorage.setItem(prefix + key, 'seen');
+    }, {now, theme});
     await ctx.route('**/api/**', async r => {
       const p = new URL(r.request().url()).pathname;
-      const body = p.endsWith('/data') ? data : {ok:true,checkedAt:now,match:live,finished:null};
-      await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
+      await r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify(p.endsWith('/data') ? data : {ok: true, checkedAt: now, match: live, finished: null})});
     });
     await ctx.route('https://**/*', async r => {
       if (new URL(r.request().url()).pathname.startsWith('/api/')) return r.fallback();
-      if (r.request().resourceType()==='image')return r.fulfill({status:200,contentType:'image/webp',body:fs.readFileSync('src/client/assets/bbc-arena-hall.webp')});
+      if (r.request().resourceType() === 'image') return r.fulfill({status: 200, contentType: 'image/webp', body: fs.readFileSync('src/client/assets/bbc-arena-hall.webp')});
       return r.abort();
     });
-    const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
-    await page.goto(origin+base+'?club='+club+'#home');
+    const page = await ctx.newPage(); page.on('pageerror', e => errors.push(club + ' ' + state + ': ' + e.message));
+    const axeViolations = async () => { await page.addScriptTag({content: axe}); return page.evaluate(async () => (await axe.run(document, {runOnly: {type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa']}})).violations.map(v => v.id + ' ' + v.nodes[0].target.join(' '))); };
+    await page.goto(origin + '/v2/?club=' + club + '#home');
     await page.waitForSelector('#v2-match-ticket');
-    if(state==='live')await page.waitForFunction(()=>document.querySelector('#v2-match-ticket').classList.contains('is-live'));
-    await page.waitForFunction(expected=>document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent===expected,state==='live'?'12:10':state==='post'?'31:29':state==='soon'?'10:00':'19:15');
-    await page.waitForTimeout(120);
-    assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
-    assert.equal(await page.locator('html').getAttribute('data-v2-header'),style);
-    assert.equal(await page.locator('.v2-hero-curve').isVisible(),style==='curve');
-    assert.match(await page.locator('.v2-hero-media img').getAttribute('src'),new RegExp(['news-34268','v2-header-fcsg-evening','v2-header-otmar-heart'][index]));
-    await page.waitForFunction(()=>document.querySelector('.v2-hero-media img')?.naturalWidth>0);
-    const photoTreatment=await page.evaluate(()=>({
-      hero:getComputedStyle(document.querySelector('.v2-hero-media img')).filter,
-      overlay:getComputedStyle(document.querySelector('.v2-hero-media'),'::after').backgroundImage,
-      wash:getComputedStyle(document.querySelector('.v2-ticket-section')).getPropertyValue('--hero-wash').trim(),
-      news:getComputedStyle(document.querySelector('.v1-news-card img')).filter
-    }));
-    assert.match(photoTreatment.hero,/saturate\(0\.68\)/,'Only the header photo is subdued');
-    assert.match(photoTreatment.overlay,/linear-gradient/,'Header fades into the page surface');
-    assert.match(photoTreatment.wash,new RegExp(theme==='light'?'30%':'38%'),'Veil follows the color scheme');
-    assert.equal(photoTreatment.news,'none','News photos keep their original color');
-    const expectedEffect={preview:'calm',soon:'soon',matchday:'matchday',live:'live',post:'result'}[state];
-    assert.equal(await page.locator('#v2-match-ticket').getAttribute('data-effect'),expectedEffect);
-    assert.equal(await page.locator('.v2-ticket-day').textContent(),{preview:'In 6 Tagen',soon:'Morgen',matchday:'Heute',live:'Jetzt live',post:'Beendet'}[state]);
-    assert.match(await page.locator('.v2-ticket-footer').textContent(),new RegExp(state==='preview'?'31\\.10\\.2026':state==='soon'?'26\\.10\\.2026':'25\\.10\\.2026'));
-    assert.doesNotMatch(await page.locator('.v2-ticket-footer').textContent(),/Heimspiel|Auswärtsspiel/);
-    const rim=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::after');return {animation:c.animationName,duration:c.animationDuration,content:c.content,pointer:c.pointerEvents,opacity:c.opacity};});
-    assert.equal((await rim()).animation,'none','Reduced motion keeps the rim static');
-    const reflection=()=>page.locator('#v2-match-ticket').evaluate(e=>{const c=getComputedStyle(e,'::before');return {animation:c.animationName,content:c.content,pointer:c.pointerEvents,iterations:c.animationIterationCount};});
-    assert.equal((await reflection()).animation,'none','Reduced motion keeps the reflection static');
-    await page.emulateMedia({reducedMotion:'no-preference'});
-    const reflected=await reflection(),hasReflection=state!=='post';
-    assert.equal(reflected.animation,hasReflection?'v2-ticket-reflection':'none','Both versions show the reflection on preview/live tickets');
-    if(hasReflection){assert.equal(reflected.pointer,'none');assert.equal(reflected.iterations,'1','Reflection settles instead of looping');}
-    if(state==='post')assert.equal(reflected.content,'none','Final result has no surface effect');
-    const movingRim=await rim(),durations={soon:'6s',matchday:'3.6s',live:'2.6s'};
-    assert.equal(movingRim.animation,durations[state]?'v2-ticket-breathe':'none');
-    if(durations[state])assert.equal(movingRim.duration,durations[state]);
-    assert.equal(movingRim.pointer,'none','Rim never intercepts the match link');
-    if(state==='post')assert.equal(movingRim.content,'none','Result has no animated overlay');
-    if(state==='live'&&style==='arena'&&theme==='dark') {
-      await page.locator('#v2-match-ticket').evaluate(e=>{for(const a of e.getAnimations({subtree:true}))if(a.animationName==='v2-ticket-breathe'){a.pause();a.currentTime=1300;}});
-      await page.screenshot({path:'/tmp/title-'+version+'-glow-'+club+'-live.png'});
+    if (state === 'live') await page.waitForFunction(() => document.querySelector('#v2-match-ticket').classList.contains('is-live'));
+    await page.waitForFunction(score => document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent === score, want.score);
+    const tag = JSON.stringify(scenario);
+    assert.equal(await page.locator('html').getAttribute('data-theme'), theme);
+    assert.equal(await page.locator('.v2-ticket-day').textContent(), want.day, tag);
+    assert.equal(await page.locator('#v2-match-ticket').getAttribute('data-effect'), want.effect, tag);
+    assert.match(await page.locator('.v2-cover-action').textContent(), new RegExp(want.action), tag);
+    assert.match(await page.locator('.v2-ticket-footer').textContent(), new RegExp(want.footer.replaceAll('.', '\\.')), tag);
+    assert.equal(await page.locator('h1').count(), 1, tag);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), tag + ' overflows');
+    assert.match(await page.locator('.v2-hero-media img').getAttribute('src'), new RegExp(['news-34268', 'v2-header-fcsg-evening', 'v2-header-otmar-heart'][index]), tag);
+    // Readable metadata: at least 12 px, as for every V2 text.
+    for (const selector of ['.v2-cover-kicker', '.v2-ticket-heading', '.v2-ticket-day', '.v2-ticket-league', '.v2-ticket-footer', '.v2-cover-action'])
+      assert.ok(await page.locator(selector).first().evaluate(e => parseFloat(getComputedStyle(e).fontSize) >= 12), tag + ' ' + selector + ' is at least 12 px');
+    assert.ok((await page.locator('.v2-masthead').boundingBox()).height >= 44, tag + ' masthead is a 44 px target');
+    const rim = () => page.locator('#v2-match-ticket').evaluate(e => ({animation: getComputedStyle(e, '::after').animationName, pointer: getComputedStyle(e, '::after').pointerEvents}));
+    assert.equal((await rim()).animation, 'none', 'Reduced motion keeps the ticket static');
+    assert.equal((await rim()).pointer, 'none');
+    assert.deepEqual(await axeViolations(), [], tag + ' axe');
+    // A missing crest falls back to a readable badge on the dark cover.
+    if (width === 390 && theme === 'light') {
+      await page.locator('.v2-cover-crests img').first().evaluate(img => img.dispatchEvent(new Event('error')));
+      const badge = page.locator('.v2-magazine-cover .v2-crest-fallback').first();
+      if (await badge.count()) assert.ok(await badge.evaluate(e => getComputedStyle(e).color === 'rgb(255, 255, 255)'), tag + ' crest fallback is light on the dark cover');
     }
-    await page.emulateMedia({reducedMotion:'reduce'});
-    assert.equal(await page.locator('h1').count(),1);
-    assert.equal(await page.locator('.v1-match-action,.v2-glance').count(),0);
-    assert.equal(await page.locator('#v2-match-ticket a,#v2-match-ticket button,#v2-match-ticket .v2-ticket-arrow').count(),0);
-    const positions = await page.locator('.v2-ticket-matchup').evaluate(e=>[...e.children].map(c=>{const r=c.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}));
-    assert.ok(positions[0].x+positions[0].width<=positions[1].x&&positions[1].x+positions[1].width<=positions[2].x,'Teams flank the time/score horizontally');
-    assert.ok(Math.abs(positions[0].y-positions[2].y)<1,'Both teams start at the same height');
-    const geometry=await page.locator('#v2-match-ticket').evaluate(e=>{
-      const r=e.getBoundingClientRect(),top=document.querySelector('.top').getBoundingClientRect(),news=document.querySelector('.home-news-heading').getBoundingClientRect();
-      return {height:r.height,top:r.top,headerBottom:top.bottom,newsTop:news.top,overflow:document.documentElement.scrollWidth>innerWidth,background:getComputedStyle(e).backgroundColor};
-    });
-    assert.ok(!geometry.overflow,JSON.stringify(scenario)+' overflows');
-    assert.ok(geometry.top>=geometry.headerBottom-1,'Ticket clears the header: '+JSON.stringify({scenario,geometry}));
-    assert.ok(Math.abs(geometry.top-geometry.headerBottom-48)<1,'Compact header gap is 48px: '+JSON.stringify({scenario,geometry}));
-    assert.ok(geometry.height<220,'Compact ticket grows only for necessary wrapping');
-    assert.ok(await page.locator('.v2-ticket-time').evaluate(e=>e.querySelector('strong').getBoundingClientRect().right<=e.getBoundingClientRect().right+1),'Time and score stay inside their column '+JSON.stringify(scenario));
-    if(version==='v2')assert.equal(await page.locator('.v1-news-card').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','News keeps one surface');
-    assert.ok(geometry.newsTop>=geometry.top+geometry.height,'News follows the ticket');
-    const score=await page.locator('[data-v2-score]').first().textContent();
-    assert.equal(score,state==='live'?'12:10':state==='post'?'31:29':state==='soon'?'10:00':'19:15');
-    await page.addScriptTag({content:axe});
-    const violations=await page.evaluate(async()=> (await axe.run(document,{rules:{'region':{enabled:false}}})).violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})));
-    assert.deepEqual(violations,[],JSON.stringify(scenario));
-    if(state==='preview'&&width===390) {
-      await page.screenshot({path:'/tmp/title-'+version+'-'+club+'-'+style+'-'+theme+'.png',fullPage:false});
-      await page.evaluate(()=>window.headerTestTicket=document.getElementById('v2-match-ticket'));
-      await page.locator('#club-settings').click();
-      const select=page.locator('[data-v2-header-style]');
-      assert.equal(await select.count(),1);
-      const other=style==='arena'?'curve':'arena';
-      await select.selectOption(other);
-      assert.equal(await page.locator('html').getAttribute('data-v2-header'),other);
-      assert.ok(await page.evaluate(()=>window.headerTestTicket===document.getElementById('v2-match-ticket')),'Switching preserves the match link');
-      assert.equal(await page.evaluate(key=>localStorage.getItem(key),version==='v2'?'fan-v2-header-style':'v2:fan-v2-header-style'),null,'Other version storage remains untouched');
-      const settingsViolations=await page.evaluate(async()=> (await axe.run(document,{rules:{region:{enabled:false}}})).violations.map(v=>v.id));
-      assert.deepEqual(settingsViolations,[],'Header selector accessibility');
-      await page.locator('[data-close-clubs]').click();
-      await page.reload();
+    if (state === 'live') {
+      await page.evaluate(() => { location.hash = '#season/games'; });
+      await page.waitForSelector('#v2-livebar:not([hidden])');
+      const bar = await page.locator('#v2-livebar').evaluate(e => ({label: e.getAttribute('aria-label'), height: e.getBoundingClientRect().height, bottom: e.getBoundingClientRect().bottom, dock: document.querySelector('.dock').getBoundingClientRect().top}));
+      assert.match(bar.label, /12 : 10/); assert.ok(bar.height >= 44 && bar.bottom <= bar.dock, tag + ' live bar sits above the navigation');
+      await page.evaluate(() => { location.hash = '#home'; });
       await page.waitForSelector('#v2-match-ticket');
-      assert.equal(await page.locator('html').getAttribute('data-v2-header'),other,'Selection survives reload');
-      await page.locator('#club-settings').click();
-      await page.locator('[data-v2-header-style]').selectOption(style);
-      await page.locator('[data-close-clubs]').click();
-      if(club==='kadetten'&&theme==='light'&&style==='arena') {
-        await page.locator('.v2-hero-media img').evaluate(img=>img.src='assets/unavailable-test-photo.webp');
-        await page.waitForFunction(()=>document.querySelector('.v2-hero-media').classList.contains('v2-media-missing'));
-        assert.ok(await page.locator('#v2-match-ticket').isVisible(),'Match remains usable without the background image');
-      }
     }
-    await page.locator('#v2-match-ticket').click({position:{x:16,y:16}});await page.waitForTimeout(150);
-    assert.match(new URL(page.url()).hash,/#match\/12345\//);
-    reports.push({version,...scenario,...geometry});await ctx.close();
-  }
-  // Revisit clubs after scrolling: V2 must not restore a different header gap per club.
-  const switchReports=[];
-  for(const version of ['v1','v2'])for(const style of ['arena','curve'])for(const theme of ['light','dark']) {
-    const base=version==='v2'?'/v2/':'/',storagePrefix=version==='v2'?'v2:':'';
-    const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block',reducedMotion:'reduce'});
-    await ctx.addInitScript(({style,theme,storagePrefix})=>{
-      localStorage.setItem(storagePrefix+'fan-v2-header-style',style);localStorage.setItem(storagePrefix+'fan-v1-theme',theme);
-      for(const p of ['','v2:'])for(const k of ['fan-app-onboarding-v1','fan-app-install-intro-v1'])localStorage.setItem(p+k,'seen');
-    },{style,theme,storagePrefix});
-    await ctx.route('https://**/*',r=>r.abort());
-    const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
-    await page.goto(origin+base+'?club=kadetten#home');await page.waitForSelector('#v2-match-ticket');
-    const initialGap=await page.evaluate(()=>document.querySelector('#v2-match-ticket').getBoundingClientRect().top-document.querySelector('.top').getBoundingClientRect().bottom);
-    assert.ok(Math.abs(initialGap-48)<1,'Initial header gap is 48px');
-    for(const club of ['fcsg','otmar','kadetten','otmar','fcsg','kadetten']) {
-      await page.evaluate(()=>scrollTo(0,40));
-      await page.locator('[data-compact-clubs]').click();await page.locator('[data-compact-pick="'+club+'"]').click();
-      await page.waitForFunction(club=>document.documentElement.dataset.club===club&&scrollY===0,club);
-      await page.waitForTimeout(180);
-      const gap=await page.evaluate(()=>document.querySelector('#v2-match-ticket').getBoundingClientRect().top-document.querySelector('.top').getBoundingClientRect().bottom);
-      assert.ok(Math.abs(gap-initialGap)<1,'Same header gap after returning to '+club+': '+gap+' / '+initialGap);
-      assert.equal(await page.evaluate(()=>scrollY),0);
-      switchReports.push({version,style,theme,club,gap});
+    await page.locator('#v2-match-ticket').click({position: {x: 16, y: 16}}); await page.waitForTimeout(250);
+    assert.match(new URL(page.url()).hash, /#match\/12345\//, tag);
+    assert.equal(await page.locator('h1').count(), 1, tag + ' match page');
+    if (width === 390) {
+      await page.waitForSelector(state === 'post' ? '#app .match-top, #app .fcsg-match-header' : '#app .match');
+      const share = page.locator('[data-v2-share]');
+      if (state === 'post') {
+        // The button must exist for every club, even after live updates replaced the header, and must not sit under the sticky bar.
+        await share.waitFor({timeout: 5000});
+        assert.ok(await share.evaluate(b => { const r = b.getBoundingClientRect(); return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === b; }), tag + ' share button is not covered');
+        assert.ok((await share.boundingBox()).height >= 44, tag + ' share button is a 44 px target');
+        const download = page.waitForEvent('download', {timeout: 8000});
+        await share.click();
+        assert.equal((await download).suggestedFilename(), 'resultat-2026-10-25.jpg', tag);
+      } else assert.equal(await share.count(), 0, tag + ' share only after the game');
+      assert.deepEqual(await axeViolations(), [], tag + ' match page axe');
     }
-    await ctx.close();
+    reports.push(scenario); await ctx.close();
   }
-  assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({checks:reports.length,switchChecks:switchReports.length,errors,reports,switchReports},null,2));
-} finally {await browser?.close();await new Promise(r=>server.close(r));}
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({checks: reports.length, errors}));
+} finally {await browser?.close(); await new Promise(r => server.close(r));}

@@ -50,7 +50,7 @@ try{
  }
  await p.goto(origin+'/v2/?club=kadetten#season/table',{waitUntil:'domcontentloaded'});await p.getByRole('button',{name:'European League',exact:true}).click();assert.equal(await p.locator('.qhl-view-switch').count(),0);await p.getByRole('button',{name:'QHL',exact:true}).click();await p.locator('.qhl-view-switch a').last().click();await ready();
  await p.locator('#club-settings').click();const lightMode=p.locator('[data-v1-light-mode]');await lightMode.check();await p.keyboard.press('Escape');await ready();assert.equal(await p.locator('html').getAttribute('data-theme'),'light');
- await p.locator('.dock [data-nav="news"]').click();await p.locator('.v1-news-layout').waitFor();assert.equal(await p.locator('.qhl-map-screen,.maplibregl-canvas').count(),0);
+ await p.locator('.dock [data-nav="news"]').click();await p.locator('.v2-magazine').waitFor();assert.equal(await p.locator('.qhl-map-screen,.maplibregl-canvas').count(),0);
  await p.goto(origin+'/v2/?club=fcsg#season/table',{waitUntil:'domcontentloaded'});assert.equal(await p.locator('.qhl-view-switch').count(),0);
  for(const club of ['kadetten','otmar']){await pages[0].goto(origin+'/?club='+club+'#season/table',{waitUntil:'domcontentloaded'});assert.equal(await pages[0].locator('.qhl-view-switch,.qhl-map-screen').count(),0);}
  // Style unavailable: every club and its details remain reachable without a map or location permission.

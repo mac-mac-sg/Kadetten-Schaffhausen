@@ -12,13 +12,22 @@ GAMES_AXE_SCRIPT=/pfad/zu/axe.min.js node scripts/check-v2-mobile.mjs
 
 Ein installiertes Playwright mit Chromium ist erforderlich. `GAMES_PLAYWRIGHT_MODULE` und `GAMES_CHROMIUM_EXECUTABLE` erlauben vorhandene Laufzeitinstallationen. `MOBILE_QA_SCREENSHOTS` kann auf einen bestehenden Ausgabeordner zeigen. Diese optionalen Browserwerkzeuge werden nicht als App-Abhängigkeiten ausgeliefert.
 
-## Aktueller Prüfstand ab 20. Oktober 2026
+## Aktueller Prüfstand ab 30. Oktober 2026 (Magazin)
 
-V2 wurde auf die aktuelle V1 zurückgesetzt. Der aktuelle Browserlauf vergleicht 60 Ansichten (390/1280 px × drei Vereine × Hell/Dunkel × fünf Hauptrouten) direkt mit V1. Er prüft identische Inhalte, Geometrie und Farben, eine Hauptüberschrift, keinen Überlauf, keine Skriptfehler und keine neuen axe-core-Verstösse gegenüber V1. Dazu kommen Kalender → Liste und isolierte Themen-Einstellungen mit erneutem Laden. Der frühere Kartenstapel-Test verweist jetzt auf diesen Lauf.
+V2 ist seit #266/#267 das «Matchday»-Magazin und nicht mehr inhaltsgleich mit V1. Prüfbefehle und Umfang stehen in [design-v2.md](design-v2.md). Zusammengefasst, nach `npm run build:pages`:
 
-Ergebnis des Baseline-Laufs: 60/60 Ansichten stimmen mit V1 überein; keine Skriptfehler oder Überläufe, eine Hauptüberschrift, Kalender-Rückweg und getrennte Themen-Speicherung erfolgreich. Bei 390 px keine axe-core-Verstösse. Ein bereits in V1 vorhandener Kontrasthinweis betrifft bei 1280 px den Bilanztext der Kadetten-Zeile in der dunklen Tabelle (`.our-team .record-text`); V2 übernimmt diesen Stand unverändert. Keine neuen Verstösse.
+- `check-v2-mobile.mjs`: 120 Ansichten (360/390/430/1280 px × drei Vereine × Hell/Dunkel × fünf Hauptrouten). Vergleich mit V1 für Navigation, Steuerelemente, Spieler und Vereinsinhalt; die Magazin-Startseite wird strukturell geprüft. Eine Hauptüberschrift, kein Überlauf, keine Skriptfehler, keine neuen axe-core-Verstösse.
+- `check-v2-ticket.mjs`: alle Spielzustände, Live-Leiste, Wappen-Platzhalter, «Resultat teilen» mit Bild-Download (34 Szenarien).
+- `check-v2-readability.mjs`: 60 Ansichten bei 320/390 px, Schriften ab 12 px, 44-px-Ziele, Statusfenster.
+- `check-qhl-map.mjs`: 16 Kartenansichten, V1/Fussball unverändert.
 
-Zusätzlich wurden V1-HTML, Stylesheet, Skriptbündel, Service Worker und Manifest gegen einen Build des vorherigen Main-Commits verglichen: bytegleich.
+Behoben am 30. Oktober 2026: «Resultat teilen» lag auf Handball-Spielseiten unter der Spielleiste und fehlte bei FCSG nach Live-Aktualisierungen; Wappen-Abzeichen waren auf der dunklen Titelseite dunkel auf dunkel; Text unter 12 px; MATCHDAY-Schriftzug nur 31 px hoch; der Download-Link des Teilen-Bilds war kurz ohne Namen im DOM.
+
+Der Prüfstand verwendet Chromium mit mobilem Viewport; er ersetzt keinen Test auf einem physischen iPhone oder Android-Gerät.
+
+## Prüfstand 20. Oktober 2026 (V2 gleich V1, überholt)
+
+Damals verglich der Lauf 60 Ansichten direkt mit V1 (identische Inhalte, Geometrie und Farben). Das gilt nach dem Magazin-Umbau nicht mehr.
 
 ## Historischer Prüfstand vor dem Zurücksetzen (13. Oktober 2026)
 
