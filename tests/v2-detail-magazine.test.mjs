@@ -51,7 +51,7 @@ test('Live header updates remain idempotent and the same score and event nodes s
 });
 
 
-test('Detached team previews receive the same magazine cover and keep the club entry after the roster',()=>{
+test('Detached team previews receive the same magazine cover and keep the club entry above the roster',()=>{
  const {document,context}=setup('#season/table','');
  const preview=document.createElement('section');preview.className='season';
  preview.innerHTML='<header><h1>Kader</h1></header><a class="v2-club-entry" href="#club">Unser Verein</a><div class="players"><a href="#player/6">Spieler</a></div>';
@@ -60,12 +60,12 @@ test('Detached team previews receive the same magazine cover and keep the club e
  context.v2MagazineTeamCover(preview);context.v2MagazineTeamCover(preview);
  assert.equal(preview.querySelectorAll('.v2-team-cover').length,1);
  assert.equal(preview.querySelector('.v2-team-cover h1'),title);assert.equal(title.textContent,'DAS TEAM.');
- assert.equal(preview.querySelector('.players'),players);assert.equal(preview.lastElementChild,entry);
+ assert.equal(preview.querySelector('.players'),players);assert.equal(preview.querySelector('.v2-team-cover').nextElementSibling,entry);
  assert.equal(document.getElementById('app').children.length,0);
 });
 
 
-test('Team cover uses the real preferred player image and inserts history after the first complete position group',()=>{
+test('Team cover uses the real preferred player image and inserts history before the first position group',()=>{
  const {document,context}=setup('#season/squad','');
  const section=document.createElement('section');
  section.innerHTML='<h1>Kader</h1><a class="v2-club-entry" href="#club"><h2>Unser Verein</h2><p>Geschichte</p></a><h2>Torhüter</h2><div class="players" id="keepers"><a class="player-card" href="#player/1"><img src="keeper.webp" alt="Torhüter"></a></div><h2>Rückraum</h2><div class="players" id="field"><a class="player-card" href="#player/22"><img src="real-player.webp" alt="Patrik Martinovic"><div>Originalname und Nummer</div></a></div>';
@@ -74,7 +74,7 @@ test('Team cover uses the real preferred player image and inserts history after 
  context.v2MagazineTeamCover(section);context.v2MagazineTeamCover(section);
  assert.equal(section.querySelector('.v2-team-cover > img').getAttribute('src'),'real-player.webp');
  assert.equal(section.querySelector('h1').getAttribute('aria-label'),'Das Team');assert.equal(section.querySelectorAll('.v2-team-title > span').length,2);
- assert.equal(groups[0].nextElementSibling,entry);assert.deepEqual([...section.querySelectorAll('.player-card')],cards);
+ assert.equal(section.querySelector('.v2-team-cover').nextElementSibling,entry);assert.deepEqual([...section.querySelectorAll('.player-card')],cards);
  assert.equal(section.querySelectorAll('.players').length,2);assert.equal(entry.getAttribute('href'),'#club');
 });
 test('Match identity moves the original back link while retaining the live score target and every header fact',()=>{

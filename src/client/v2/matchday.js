@@ -95,7 +95,7 @@ function v2MagazineTeamCover(section) {
     const heading = entry.querySelector('h2'), copy = entry.querySelector('p');
     if (heading) heading.textContent = 'Geschichte & Erfolge';
     if (copy) copy.textContent = 'Unser Verein';
-    if (groups[0]) groups[0].after(entry); else section.append(entry);
+    cover.after(entry);
   }
 }
 
