@@ -5,6 +5,35 @@
 const V2_NEWS_LIMIT = 6;
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
+/* The floating band is the default; the earlier compact dock stays selectable. */
+const V2_DOCK_STYLE_KEY = 'fan-v2-dock-style';
+function v2ReadDockStyle() {
+  try { return localStorage.getItem(V2_DOCK_STYLE_KEY) === 'compact' ? 'compact' : 'band'; }
+  catch { return 'band'; }
+}
+function v2SetDockStyle(style) {
+  if (!['band','compact'].includes(style)) return false;
+  document.documentElement.dataset.v2Dock = style;
+  document.querySelectorAll('[data-v2-dock-style]').forEach(select => { select.value = style; });
+  try { localStorage.setItem(V2_DOCK_STYLE_KEY,style); } catch { /* Keep the choice for this session. */ }
+  document.querySelector('body > .dock')?.classList.add('v2-dock-no-motion');
+  v2SyncDock();
+  return true;
+}
+document.documentElement.dataset.v2Dock = v2ReadDockStyle();
+function v2InstallDockChoice() {
+  const group = document.querySelector('.club-settings-dialog .theme-settings');
+  if (!group) return;
+  let select = group.querySelector('[data-v2-dock-style]');
+  if (!select) {
+    const label = document.createElement('label'); label.className = 'v2-header-setting';
+    label.innerHTML = '<span>Menüansicht</span><select data-v2-dock-style aria-label="Menüansicht"><option value="band">Menüband · alle Beschriftungen</option><option value="compact">Kompakt · aktive Beschriftung</option></select>';
+    select = label.querySelector('select');
+    select.addEventListener('change',() => v2SetDockStyle(select.value)); group.append(label);
+  }
+  select.value = document.documentElement.dataset.v2Dock;
+}
+
 /* Magazine edition. Data, routes and live confirmation still come from the shared app. */
 function v2CoverTitle() {
   const club = fanClubs[activeClub];
@@ -134,7 +163,7 @@ function v2InstallSettings() {
   dialog.querySelector('.settings-app-info')?.before(button);
 }
 const v2BaseOpenClubSettings = openClubSettings;
-openClubSettings = function (...args) { const result = v2BaseOpenClubSettings(...args); v2InstallSettings(); return result; };
+openClubSettings = function (...args) { const result = v2BaseOpenClubSettings(...args); v2InstallSettings(); v2InstallDockChoice(); return result; };
 
 function v2MagazineChrome() {
   document.querySelectorAll('#app aside.notice').forEach(note => note.setAttribute('role', 'note'));
