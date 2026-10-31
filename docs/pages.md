@@ -191,3 +191,7 @@ Die Erweiterung liegt ausschliesslich in `v2/matchday.js` und `v2/matchday.css`.
 ### V2: Spielplan ohne Wettbewerbsfilter
 
 Liste, Kalender und «Meine Woche» bleiben verfügbar. Der Wettbewerbsfilter entfällt in V2 bei allen drei Vereinen; ein zuvor ausgewählter Wettbewerb wird vor dem Rendern auf «Alle» zurückgesetzt, damit keine Spiele unsichtbar bleiben. V1 behält seinen Filter. `tests/v2-ticket.test.mjs` prüft die Entfernung und das Zurücksetzen in allen drei Ansichten und Vereinsausgaben.
+
+### V2: Trennung der Spiele im hellen Modus
+
+Normale Karten der Spieleliste erhalten im hellen Modus eine leicht graue Fläche, eine feine Kontur oben, unten und rechts sowie einen sehr dezenten Schatten. Die farbige linke Ergebniskante bleibt bestehen. Die hervorgehobene aktuelle Partie und laufende FCSG-Spiele behalten ihre eigenen Flächen; Dunkelmodus und V1 bleiben unverändert.
