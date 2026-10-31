@@ -277,7 +277,7 @@ html[data-preview='v2'][data-theme] .top.v1-compact-header .brand .compact-club-
 html[data-preview='v2'][data-theme] .top.v1-compact-header .header-button { flex:0 0 36px; width:36px; padding:9px; }
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top.v1-compact-header { background:linear-gradient(#07090bba,transparent); color:#fff; }
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .v2-masthead span { color:var(--v2-cover-accent); }
-html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { border-color:#ffffff70; background:#10121465; }
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { border-color:#ffffff70; background:#101214b8; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .compact-club-menu { top:100%; left:12px; right:12px; background:var(--surface); color:var(--text); border-radius:8px; }
 html[data-preview='v2'][data-theme] :is(.home-news,.story-feed,.home-front-page) { background:transparent; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover.v2-ticket-section {
@@ -542,7 +542,7 @@ html[data-preview='v2'][data-theme] #app.v2-detail .match-hero::after { content:
 html[data-preview='v2'][data-theme] #app.v2-detail .match-hero :is(.eyebrow,h1) { text-shadow:0 1px 8px #0008; }
 html[data-preview='v2'][data-theme] #app.v2-detail .match-hero .eyebrow { margin:0 0 10px; line-height:1.5; letter-spacing:.08em; }
 /* Kopfzeile auf dem Titelfoto: Symbole hell wie die Vereinswahl. */
-html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .header-button { color:#fff; border-color:#ffffff70; background:#10121465; }
+html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .header-button { color:#fff; border-color:#ffffff70; background:#101214b8; }
 /* Vereinswahl: passt der Name nicht, bleibt nur das Wappen (Name im aria-label). */
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { flex:0 0 auto; }
 html[data-preview='v2'][data-theme] .top .compact-club-trigger.v2-club-crest-only > span { display:none; }

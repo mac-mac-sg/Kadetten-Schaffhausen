@@ -58,10 +58,10 @@ function footer() {
   const historySource = page === 'match' && tab === 'stats' && game?.league === 'QHL' && !verifiedReport(game);
   return `<footer><span class="footer-updated">${updateLabel(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p>${hasDirectSource ? '' : `<p>${ext(handballClub()==='otmar'?'https://otmar.ch/':url, handballTeamName(), '')}${historySource ? ' · ' + ext('https://www.handball.ch/de/matchcenter/', 'SHV: Resultate und Direktvergleich', '') : ''}</p>`}<p>Bilder: ${handballClub()==='otmar'?'TSV St. Otmar St. Gallen und jeweilige Urheber':'Kadetten Schaffhausen · Spielbilder © André Frensel / Erich Mosberger'}</p></details></footer>`;
 }
-function badge(name) {
-  const logo = clubLogos[name];
+function badge(name, decorative = false) {
+  const logo = clubLogos[name] || clubLogos[Object.keys(clubLogos).find(key => teamName(key) === teamName(name))];
   return logo
-    ? `<img class="crest" src="${liveEscape(photoUrl(logo))}" alt="${name}" width="48" height="60" loading="lazy" decoding="async">`
+    ? `<img class="crest" src="${liveEscape(photoUrl(logo))}" alt="${decorative ? '' : name}" width="48" height="60" loading="lazy" decoding="async">`
     : `<span class="clubmark" aria-hidden="true">${name
         .split(' ')
         .map(w => w[0])

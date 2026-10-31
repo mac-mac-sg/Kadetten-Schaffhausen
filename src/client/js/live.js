@@ -88,7 +88,7 @@ async function checkLiveMatch() {
     const r = await apiFetch(handballApiPath('/api/live',requestClub), {cache: 'no-store', signal: AbortSignal.timeout(30000)});
     const d = await r.json();
     if (!r.ok || !d.ok) throw Error('Live source unavailable');
-    if (!d.match && lastLiveMatch && d.sources?.[lastLiveMatch.league === 'QHL' ? 'SHV' : 'EHF']?.ok === false) throw Error('Live source unavailable');
+    if (!d.match && lastLiveMatch && d.sources?.[handballLiveSource(lastLiveMatch)]?.ok === false) throw Error('Live source unavailable');
     if(activeClub!==requestClub)return;
     applyFinishedMatch(d.finished);
     liveState = d;
@@ -259,7 +259,7 @@ function statsView(src,chart='',finished=false) {
 function teamSwitchMarkup(id,home,away,panel) {
  const side=liveStatsTeam?.id===id?liveStatsTeam.side:(isOwnHandballTeam(home)||!isOwnHandballTeam(away)?'home':'away');
  const teams=[['home',home],['away',away]];
- return `<div class="team-switch" role="group" aria-label="Mannschaft wählen" data-stats-switch="${liveEscape(id)}" style="--selected:${side==='home'?0:1}"><span class="team-switch-slider" aria-hidden="true"></span>${teams.map(([k,name])=>`<button type="button" data-stats-team="${k}" aria-pressed="${k===side}">${badge(name)}<span>${liveEscape(name)}</span></button>`).join('')}</div>${teams.map(([k,name])=>`<section class="live-team-stats" data-stats-panel="${k}" ${k===side?'':'hidden'}><h2 class="live-sr-context">${liveEscape(name)}</h2>${panel(k,name)}</section>`).join('')}`;
+ return `<div class="team-switch" role="group" aria-label="Mannschaft wählen" data-stats-switch="${liveEscape(id)}" style="--selected:${side==='home'?0:1}"><span class="team-switch-slider" aria-hidden="true"></span>${teams.map(([k,name])=>`<button type="button" data-stats-team="${k}" aria-pressed="${k===side}">${badge(name,true)}<span>${liveEscape(name)}</span></button>`).join('')}</div>${teams.map(([k,name])=>`<section class="live-team-stats" data-stats-panel="${k}" ${k===side?'':'hidden'}><h2 class="live-sr-context">${liveEscape(name)}</h2>${panel(k,name)}</section>`).join('')}`;
 }
 function statsPlayers(src) {
  const seven=src.players.some(p=>p.seven!==null&&p.seven!==undefined);

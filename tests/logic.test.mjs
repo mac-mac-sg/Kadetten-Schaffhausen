@@ -63,16 +63,17 @@ test('Countdown wird nur in der letzten Stunde vor dem Anpfiff "bald"', () => {
   assert.equal(l.countdownSoon(game('2026-10-03', undefined), new Date('2026-10-03T15:30:00Z')), false);
 });
 
-test('Heutige Spiele: nur QHL und EHL, nach Anspielzeit sortiert', () => {
+test('Heutige Pflichtspiele einschliesslich Cup, nach Anspielzeit sortiert', () => {
   const l = logic('2026-10-03T08:00:00Z', [
     game('2026-10-03', '20:00'),
     game('2026-10-03', '18:00'),
     game('2026-10-03', '19:00', {league: 'Test'}),
+    game('2026-10-03', '19:30', {league: 'Mobiliar-Cup M'}),
     game('2026-10-04', '18:00')
   ]);
   assert.deepEqual(
     l.todayGames().map(g => g.time),
-    ['18:00', '20:00']
+    ['18:00', '19:30', '20:00']
   );
 });
 
@@ -202,4 +203,28 @@ test('Gemeinsame Vorschau nutzt Zürcher Kalendertage und volle Termine mit Jahr
  assert.equal(l.matchPreviewLabel(game('2026-10-21','19:15')),'Nächstes Spiel · morgen');assert.equal(l.matchPreviewLabel(game('2026-10-20','18:00')),'Spieltag · heute');
  assert.equal(l.matchPreviewSchedule(game('2026-10-24','18:00')),'Samstag, 24.10.2026 · 18:00 Uhr');assert.equal(l.matchPreviewSchedule(game('2026-10-24','18:00'),false),'Samstag, 24.10.2026 · Zeit noch offen');assert.equal(l.matchPreviewSchedule(game('2026-10-24','')),'Samstag, 24.10.2026 · Zeit noch offen');
  assert.equal(logic('2026-10-24T22:30:00Z').matchPreviewLabel(game('2026-10-26','18:00')),'Nächstes Spiel · morgen');assert.equal(logic('2026-10-25T22:30:00Z').matchPreviewLabel(game('2026-10-26','18:00')),'Nächstes Spiel · morgen');assert.equal(logic('2026-12-31T23:15:00Z').matchPreviewLabel(game('2027-01-02','18:00')),'Nächstes Spiel · morgen');
+});
+
+
+test('A cup fixture remains the current match after kickoff even before or without a fresh live response',()=>{
+ const cup=game('2026-10-31','20:00',{id:'517266',home:'Handball Emmen',away:'Kadetten Schaffhausen',league:'Mobiliar-Cup M'}),next=game('2026-11-11','19:15');
+ for(const now of ['2026-10-31T18:59:00Z','2026-10-31T19:04:00Z','2026-10-31T21:30:00Z']) {
+  const l=logic(now,[cup,next]);
+  assert.equal(l.homeFixture().game,cup);assert.equal(l.homeFixture().live,null);
+  l.liveState={checkedAt:'2026-10-31T18:00:00Z',match:{...cup,score:[1,1]}};
+  assert.equal(l.homeFixture().game,cup,'An expired live response must not send the reader to the next match');
+ }
+ assert.equal(logic('2026-10-31T23:00:00Z',[cup,next]).homeFixture().game,next);
+});
+test('Cup live names with SHV division qualifiers match the schedule and keep the correct club identity',()=>{
+ const cup=game('2026-10-31','20:00',{id:'517266',home:'Handball Emmen',away:'Kadetten Schaffhausen',league:'Mobiliar-Cup M'}),next=game('2026-11-11','19:15');
+ const l=logic('2026-10-31T19:04:00Z',[cup,next]),live={id:517266,home:'Handball Emmen (MNLB)',away:'Kadetten Schaffhausen (QHL)',league:'Mobiliar-Cup M',score:[1,1]};
+ assert.equal(l.sameFixture(cup,live),true);assert.equal(l.isOwnHandballTeam(live.away),true);
+ assert.equal(l.teamResult({...live,score:[20,30]},'Kadetten Schaffhausen').state,'win');
+ l.liveState={checkedAt:'2026-10-31T19:03:55Z',match:live};assert.equal(l.homeFixture().live,live);assert.equal(l.homeFixture().game.date,cup.date);assert.equal(l.homeFixture().game.time,cup.time);assert.equal(l.homeFixture().game.id,cup.id);assert.equal(l.homeFixture().game.home,cup.home);
+ l.liveState={match:null,finished:{...live,status:'finished',date:cup.date,score:[20,30]}};
+ assert.equal(l.homeFixture().game.id,cup.id);assert.deepEqual([...l.homeFixture().game.score],[20,30]);
+ const withoutSchedule=logic('2026-10-31T19:04:00Z');withoutSchedule.liveState={checkedAt:'2026-10-31T19:03:55Z',match:live};assert.equal(withoutSchedule.homeFixture().game.date,'2026-10-31');
+ assert.equal(l.handballLiveSource(live),'SHV');assert.equal(l.handballLiveSource({league:'QHL'}),'SHV');assert.equal(l.handballLiveSource({league:'European League'}),'EHF');
+ assert.equal(l.sameFixture(cup,{...live,home:'Ein anderer Verein (MNLB)'}),false);
 });
