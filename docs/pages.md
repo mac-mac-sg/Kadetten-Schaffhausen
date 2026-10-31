@@ -199,3 +199,7 @@ Normale Karten der Spieleliste erhalten im hellen Modus eine leicht graue Fläch
 ### V2: Ergebnisfarben im hellen Modus
 
 Die Ergebniswörter auf Spielkarten erscheinen im hellen Modus kräftig und fett: Sieg grün, Niederlage rot, Unentschieden bernsteinfarben. Die Worte bleiben zusätzlich zur Farbe lesbar. Dunkelmodus, übrige Metadaten und farbige Ergebniskanten bleiben unverändert.
+
+### Laufende Cupspiele auf der Startseite
+
+V1 und V2 verwenden dieselbe Spieltagsauswahl. Heutige Pflichtspiele einschliesslich Cup bleiben auch nach der Anspielzeit im Vordergrund, bis Live-Daten beziehungsweise das bestätigte Endresultat eintreffen; Testspiele sind davon ausgenommen. Das Endresultat bleibt bis zum Schweizer Tageswechsel sichtbar. SHV-Namenszusätze wie «(QHL)» und «(MNLB)» werden für den Spielabgleich und die Wappenzuordnung normalisiert. Live-Spielstände werden vor der Darstellung um Datum, Anspielzeit und bekannte Vereinsnamen aus dem Spielplan ergänzt; ohne lokalen Eintrag gilt das aktuelle Schweizer Datum. Cup-Live-Daten gehören zur SHV-Quelle, auch wenn zeitweise keine frische Antwort vorliegt.

@@ -6,7 +6,7 @@ function handballApiPath(path, club=handballClub()) { return club==='otmar' ? pa
 function handballPlayerImage(id) { return handballClub()==='otmar' ? updateState?.roster?.find(p=>p.number===Number(id))?.image || 'assets/club-140684.webp' : 'assets/player-'+id+'.webp'; }
 /* Reine Spiel- und Spieltagslogik ohne Zugriff auf die Seite. Wird in tests/logic.test.mjs geprüft. */
 function teamName(n) {
-  return n.replace(/^TSV /, '');
+  return n.replace(/\s+\((?:QHL|MNLA|MNLB|NLA|NLB|SPL[12]|[1-4]\.\s?Liga)\)$/i, '').replace(/^TSV /, '').trim();
 }
 function teamResult(x, team) {
   const own = teamName(x.home) === teamName(team) ? 0 : 1,
@@ -55,14 +55,20 @@ function freshLive() {
 function sameFixture(a, b) {
   return a && b && teamName(a.home) === teamName(b.home) && teamName(a.away) === teamName(b.away);
 }
+function handballLiveSource(match) {
+  return ['EHL','European League'].includes(match?.league) ? 'EHF' : 'SHV';
+}
 function todayGames() {
   return games
-    .filter(g => g.date === swissToday() && ['QHL', 'EHL'].includes(g.league))
+    .filter(g => g.date === swissToday() && !/^Test(?:spiel)?$/i.test(g.league || ''))
     .sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
 }
 function homeFixture() {
   const live = freshLive();
-  if (live) return {game: live, live};
+  if (live) {
+    const local = games.find(g => g.date === swissToday() && sameFixture(g, live));
+    return {game: {...local, ...live, id: local?.id || live.id, date: local?.date || live.date || swissToday(), time: local?.time || live.time, home: local?.home || live.home, away: local?.away || live.away}, live};
+  }
   const today = todayGames(),
     pending = today.find(g => !g.score),
     finished = today.filter(g => g.score).at(-1),
