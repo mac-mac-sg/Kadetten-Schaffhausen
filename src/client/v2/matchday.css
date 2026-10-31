@@ -753,3 +753,11 @@ html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v2-news-meta > p
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
  html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock::before { background:var(--v2-dock-surface); }
 }
+
+/* Optional floating menu band: V1 silhouette with the same moving V2 recess. */
+html[data-preview='v2'][data-theme][data-v2-dock='band'] body > .dock.v2-orbit-dock { --v2-dock-surface:color-mix(in srgb,var(--surface) 82%,var(--accent)); width:calc(100% - 24px); max-width:600px; bottom:max(12px,env(safe-area-inset-bottom,0px)); height:78px; min-height:78px; padding:0 8px; border-radius:36px; box-shadow:0 8px 28px #0003; }
+html[data-preview='v2'][data-theme][data-v2-dock='band'] body > .dock.v2-orbit-dock::before { mask-size:100% 78px,100% 100%; mask-position:center top,center 78px; }
+html[data-preview='v2'][data-theme][data-v2-dock='band'] body > .dock.v2-orbit-dock a { min-height:78px; }
+html[data-preview='v2'][data-theme][data-v2-dock='band'] body > .dock.v2-orbit-dock a svg { transform:none; }
+html[data-preview='v2'][data-theme][data-v2-dock='band'] .v2-dock-label { top:52px; opacity:1; }
+html[data-preview='v2'][data-theme][data-v2-dock='band'] :is(.v2-livebar,.return-current-game) { bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 94px); }

@@ -271,3 +271,29 @@ test('V2 adds exactly one independent club destination after the existing four l
   assert.equal(link.querySelector('.v2-dock-label').textContent,'Verein');
   assert.equal(link.querySelector('svg').getAttribute('aria-hidden'),'true');
 });
+
+test('Dock style restores its choice, rejects invalid values and works without persistent storage',()=>{
+ const key='fan-v2-dock-style',storage=new Map([[key,'compact']]);
+ const {context,document}=setup(false,storage);
+ assert.equal(document.documentElement.dataset.v2Dock,'compact');
+ assert.equal(context.v2SetDockStyle('band'),true);assert.equal(storage.get(key),'band');
+ assert.equal(context.v2SetDockStyle('invalid'),false);assert.equal(document.documentElement.dataset.v2Dock,'band');
+ assert.equal(setup(false,storage).document.documentElement.dataset.v2Dock,'band');
+ assert.equal(setup(false,new Map([[key,'unknown']])).document.documentElement.dataset.v2Dock,'band');
+ context.localStorage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};
+ assert.equal(context.v2ReadDockStyle(),'band');assert.equal(context.v2SetDockStyle('compact'),true);
+ assert.equal(document.documentElement.dataset.v2Dock,'compact');
+});
+test('One labelled menu selector switches styles without replacing content or navigation links',()=>{
+ const {context,document}=setup();
+ const dialog=document.createElement('dialog');dialog.className='club-settings-dialog';dialog.innerHTML='<section class="theme-settings"></section>';document.body.append(dialog);
+ const dock=document.createElement('nav');dock.className='dock';dock.innerHTML='<a href="#club" data-nav="club">Verein</a>';document.body.append(dock);
+ const link=dock.firstElementChild,content=document.getElementById('app').firstElementChild;
+ context.v2InstallDockChoice();context.v2InstallDockChoice();
+ const select=dialog.querySelector('[data-v2-dock-style]');
+ assert.equal(dialog.querySelectorAll('[data-v2-dock-style]').length,1);assert.equal(select.getAttribute('aria-label'),'Menüansicht');
+ select.querySelector('[value="band"]').selected=false;select.querySelector('[value="compact"]').selected=true;
+ select.dispatchEvent(new document.defaultView.Event('change'));
+ assert.equal(document.documentElement.dataset.v2Dock,'compact');assert.equal(dock.firstElementChild,link);assert.equal(document.getElementById('app').firstElementChild,content);
+ context.v2SetDockStyle('band');assert.equal(document.documentElement.dataset.v2Dock,'band');assert.equal(dialog.querySelector('[data-v2-dock-style]'),select);
+});
