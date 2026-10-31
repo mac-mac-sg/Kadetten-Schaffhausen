@@ -12,6 +12,7 @@ function setup(football = false, storage = new Map()) {
     localStorage: {getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value)},
     liveEscape: x => String(x).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;'),
     liveRequestFailed: false, fcsgLiveErrors: new Set(), v2ArrowSvg: () => '<svg aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>',
+    fanClubs: {kadetten:{name:'Kadetten Schaffhausen',title:'KADETTEN',subtitle:'SCHAFFHAUSEN'},fcsg:{name:'FC St. Gallen',title:'FC ST. GALLEN',subtitle:'1879'},otmar:{name:'TSV St. Otmar',title:'ST. OTMAR',subtitle:'ST. GALLEN'}},
     kickoffAt: () => null, activeClub: football ? 'fcsg' : 'kadetten'});
   vm.runInContext(fs.readFileSync('src/client/js/logic.js', 'utf8'), context);
   context.kickoffAt = () => null;
@@ -43,7 +44,7 @@ test('Magazine fixture is one complete link with both teams, crests, time and a 
     assert.equal(root.querySelectorAll('.v2-ticket-arrow,svg,button,a a').length, 0);
     assert.match(root.querySelector('.v2-ticket-footer').textContent, /2026/);
     assert.equal(root.querySelectorAll('.v1-match-action,.v2-glance').length, 0);
-    assert.match(root.querySelector('.v2-cover-action').textContent, /Zur Vorschau/);
+    assert.match(root.querySelector('.v2-cover-action').textContent, /Spielvorschau öffnen/);
   }
 });
 test('Live and final states preserve home-away score order and route to their details', () => {
@@ -176,7 +177,7 @@ test('Countdown occupies the heading and the full Swiss date replaces the home-a
 test('Magazine retains every story once, including its original route, in all three club editions', () => {
   const {context, document, club, game, parse} = setup();
   vm.runInContext(fs.readFileSync('src/client/js/views-news.js', 'utf8'), context);
-  Object.assign(context, {fanClubs: {kadetten:{name:'Kadetten Schaffhausen'},fcsg:{name:'FC St.Gallen'},otmar:{name:'St. Otmar'}},
+  Object.assign(context, {
     photoUrl: x => x, snapshotText: x => x, footer: () => '', fcsgFooter: () => '',
     v2ClubIdentity: () => ({photo:'assets/team.webp'})});
   const news = Array.from({length:9}, (_,i) => ({id:'article-'+i, title:'Vereinsbericht '+i, image:'assets/team.webp', date:'30.10.2026'}));
@@ -185,10 +186,12 @@ test('Magazine retains every story once, including its original route, in all th
     context.activeClub = id;
     const markup = context.v2MagazineHome(id === 'fcsg'), root = parse(markup);
     assert.equal(root.querySelectorAll('h1').length, 1);
+    assert.equal(root.querySelector('.v1-news-grid .v1-news-link').getAttribute('href'),'#news/article-0');
+    assert.equal(root.querySelector('h1').textContent,[context.fanClubs[id].title,context.fanClubs[id].subtitle].join(''));
     assert.equal(root.querySelectorAll('.v1-news-card').length, news.length);
-    assert.equal(root.querySelectorAll('.v2-magazine-cover .v1-news-card').length, 1);
+    assert.equal(root.querySelectorAll('.v2-magazine-cover .v1-news-card').length, 0);
     for (const story of news) assert.equal(root.querySelectorAll(`a[href="#news/${story.id}"]`).length,1);
-    assert.equal(root.querySelectorAll('a[href="#club"]').length,1);
+    assert.equal(root.querySelectorAll('a[href="#club"]').length,0);
     document.getElementById('app').innerHTML = markup;
     context.v2LimitNews();
     assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,6);
@@ -196,10 +199,9 @@ test('Magazine retains every story once, including its original route, in all th
     assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,9);
     vm.runInContext('v2State.newsExpanded=false',context);
   }
-  game.time='14:00'; assert.deepEqual([...context.v2CoverTitle({game,state:'pre'})],['UNSER','SPIEL.']);
-  game.time='19:15'; assert.deepEqual([...context.v2CoverTitle({game,state:'pre'})],['UNSER','ABEND.']);
-  assert.deepEqual([...context.v2CoverTitle({game,state:'live'})],['MITTEN','IM SPIEL.']);
-  assert.deepEqual([...context.v2CoverTitle({game,state:'post'})],['NACH DEM','SPIEL.']);
+  for (const state of ['pre','live','post','everyday']) {
+    assert.deepEqual([...context.v2CoverTitle({game,state})],['ST. OTMAR','ST. GALLEN']);
+  }
   club.fixture.live=null;
 });
 
@@ -215,4 +217,24 @@ test('Magazine team chrome preserves the single heading, every player link and t
   assert.equal(document.querySelector('h1').textContent,'DAS TEAM.');
   assert.equal(document.querySelectorAll('.player-card').length,2);
   assert.equal(document.querySelector('.season').lastElementChild.getAttribute('href'),'#club');
+});
+
+
+test('Dock aligns its recess with the active destination without replacing links or losing labels', () => {
+  const {context,document}=setup();
+  const dock=document.createElement('nav');dock.className='dock';
+  dock.innerHTML=['Magazin','Spiele','Tabelle','Team'].map((label,i)=>`<a data-nav="${i}" href="#${i}" class="${i===0?'active':''}"><svg></svg>${label}</a>`).join('');
+  document.body.append(dock);
+  Object.defineProperty(dock,'clientWidth',{value:390});
+  const links=[...dock.querySelectorAll('a')];
+  links.forEach((link,i)=>{Object.defineProperty(link,'offsetLeft',{value:8+i*93.5});Object.defineProperty(link,'offsetWidth',{value:93.5});});
+  context.v2SyncDock();context.v2SyncDock();
+  assert.equal(dock.style.getPropertyValue('--v2-dock-offset'),'-140.25px');
+  assert.equal(dock.querySelectorAll('.v2-dock-label').length,4);
+  assert.equal(links[0].textContent,'Magazin');
+  assert.equal(links[3].getAttribute('href'),'#3');
+  links[0].classList.remove('active');links[3].classList.add('active');context.v2SyncDock();
+  assert.equal(dock.style.getPropertyValue('--v2-dock-offset'),'140.25px');
+  assert.equal(dock.querySelectorAll('svg').length,4);
+  assert.equal(dock.querySelectorAll('a')[3],links[3]);
 });

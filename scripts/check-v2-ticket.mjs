@@ -31,11 +31,11 @@ try {
   for (const club of ['kadetten', 'fcsg', 'otmar']) for (const theme of ['light', 'dark']) for (const state of ['preview', 'soon', 'matchday', 'live', 'post']) scenarios.push({club, theme, state, width: 390});
   for (const width of [320, 1440]) for (const theme of ['light', 'dark']) scenarios.push({club: 'otmar', theme, state: 'preview', width});
   const expected = {
-    preview: {day: 'Nächstes Spiel in 6 Tagen', effect: 'calm', score: '19:15', footer: '31.10.2026', action: 'Zur Vorschau'},
-    soon: {day: 'Nächstes Spiel morgen', effect: 'soon', score: '10:00', footer: '26.10.2026', action: 'Zur Vorschau'},
-    matchday: {day: 'Heute ist Matchday', effect: 'matchday', score: '19:15', footer: '25.10.2026', action: 'Zur Vorschau'},
-    live: {day: 'Jetzt live', effect: 'live', score: '12 : 10', footer: '25.10.2026', action: 'Zum Liveticker'},
-    post: {day: 'Heute gespielt', effect: 'result', score: '31 : 29', footer: '25.10.2026', action: 'Zum Rückblick'}
+    preview: {day: 'Nächstes Spiel in 6 Tagen', effect: 'calm', score: '19:15', footer: '31.10.2026', action: 'Spielvorschau öffnen'},
+    soon: {day: 'Nächstes Spiel morgen', effect: 'soon', score: '10:00', footer: '26.10.2026', action: 'Spielvorschau öffnen'},
+    matchday: {day: 'Heute ist Matchday', effect: 'matchday', score: '19:15', footer: '25.10.2026', action: 'Spielvorschau öffnen'},
+    live: {day: 'Jetzt live', effect: 'live', score: '12 : 10', footer: '25.10.2026', action: 'Liveticker öffnen'},
+    post: {day: 'Heute gespielt', effect: 'result', score: '31 : 29', footer: '25.10.2026', action: 'Rückblick öffnen'}
   };
   for (const scenario of scenarios) {
     const {club, theme, state, width} = scenario, index = ['kadetten', 'fcsg', 'otmar'].indexOf(club), now = '2026-10-25T12:00:00Z', want = expected[state];
