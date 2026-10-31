@@ -16,15 +16,19 @@ function v2ClubEntry() {
   return `<a class="v2-club-entry" href="#club" aria-label="Unser Verein · ${liveEscape(club.name)}: Geschichte, Erfolge und Heimat"><img class="v2-club-entry-photo" src="${club.photo}" alt="" width="800" height="530" decoding="async"><div class="v2-club-entry-copy">${v2ClubCurve()}<div><h2>Unser Verein</h2><p>Geschichte, Erfolge und Heimat</p></div><span class="v2-club-arrow" aria-hidden="true">${v2ArrowSvg()}</span></div></a>`;
 }
 const v2SharedSquad=squad;
-squad=function(...args){return v2ClubEntry()+v2SharedSquad(...args);};
+squad=function(...args){return (document.documentElement.dataset.preview==='v2'?'':v2ClubEntry())+v2SharedSquad(...args);};
 const v2SharedFcsgSquad=fcsgSquad;
-fcsgSquad=function(...args){return v2ClubEntry()+v2SharedFcsgSquad(...args);};
+fcsgSquad=function(...args){return (document.documentElement.dataset.preview==='v2'?'':v2ClubEntry())+v2SharedFcsgSquad(...args);};
 function v2ClubPage(markup) {
   const shell=document.createElement('div');shell.innerHTML=markup;
   const root=shell.querySelector('.club-page'),intro=shell.querySelector('.club-intro');
   if(!root||!intro)return markup;
   const club=v2ClubIdentity(),photo=intro.querySelector('.club-intro-photo'),caption=intro.querySelector('.club-intro-caption');
   root.classList.add('v2-club-page');
+  if(document.documentElement.dataset.preview==='v2') {
+    root.querySelector('.club-topline')?.remove();
+    root.querySelectorAll('.club-next a[href="#season/squad"]').forEach(link=>{link.setAttribute('href','#home');link.textContent='Zum Magazin';});
+  }
   intro.className='v2-club-hero';
   intro.innerHTML=`<figure class="v2-club-hero-media">${photo?.outerHTML||''}${caption?`<figcaption>${caption.innerHTML}</figcaption>`:''}</figure><div class="v2-club-hero-copy">${v2ClubCurve()}<p class="v2-club-label">Unser Verein</p><h1 id="club-title">${liveEscape(club.name)}</h1><p>${liveEscape(club.line)}</p></div>`;
   shell.querySelector('#club-cabinet-title').textContent='Unsere Erfolge';

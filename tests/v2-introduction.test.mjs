@@ -13,14 +13,14 @@ function introduction(preview){
  context.window.showAppIntroduction();
  return {document,next:()=>document.querySelector('[data-next]').onclick()};
 }
-test('V2 introduction describes the magazine, shared calendar and the real team-to-club route',()=>{
+test('V2 introduction describes the magazine, shared calendar and the independent club destination',()=>{
  const a=introduction(true);a.next();
  assert.match(a.document.querySelector('.guide-progress').textContent,/Magazin/);
  assert.match(a.document.querySelector('.guide-text').textContent,/«Magazin»/);
  assert.match(a.document.querySelector('.guide-tip').textContent,/Scrolle/);
  a.next();assert.match(a.document.querySelector('.guide-tip').textContent,/Meine Woche/);assert.match(a.document.querySelector('.guide-visual').textContent,/Meine Woche/);
  a.next();assert.match(a.document.querySelector('.guide-progress').textContent,/Team & Verein/);
- assert.match(a.document.querySelector('.guide-text').textContent,/«Team».*«Unser Verein».*Vereinsauswahl/);
+ assert.match(a.document.querySelector('.guide-text').textContent,/«Team».*Menüpunkt «Verein».*Heimstätte/);
  assert.doesNotMatch(a.document.querySelector('.guide-text').textContent,/oben rechts/);
  assert.match(a.document.querySelector('.guide-visual').textContent,/TEAM.*Unser Verein/);
 });

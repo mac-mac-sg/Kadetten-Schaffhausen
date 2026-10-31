@@ -90,13 +90,6 @@ function v2MagazineTeamCover(section) {
     title.innerHTML = '<span>DAS </span><span>TEAM.</span>'; cover.lastElementChild.append(title);
   }
   section.prepend(cover);
-  const entry = section.querySelector('.v2-club-entry');
-  if (entry) {
-    const heading = entry.querySelector('h2'), copy = entry.querySelector('p');
-    if (heading) heading.textContent = 'Geschichte & Erfolge';
-    if (copy) copy.textContent = 'Unser Verein';
-    cover.after(entry);
-  }
 }
 
 function v2MatchChrome(header) {
@@ -448,6 +441,15 @@ document.addEventListener('click', event => {
 }, true);
 
 /* Active navigation rises into a moving recess, inspired by the supplied recording. */
+function v2EnsureClubNavigation() {
+  const dock = document.querySelector('body > .dock');
+  if (!dock || dock.querySelector('[data-nav="club"]')) return;
+  const link = document.createElement('a');
+  link.setAttribute('href','#club'); link.dataset.nav = 'club';
+  link.innerHTML = '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 8 3v6c0 4-4 7-8 9-4-2-8-5-8-9V6Z"/><path d="m12 8 1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.2-2.4 1.2.5-2.6-1.9-1.8 2.6-.4Z"/></svg>Verein';
+  dock.append(link);
+}
+v2EnsureClubNavigation();
 function v2SyncDock() {
   const dock = document.querySelector('body > .dock');
   if (!dock) return;
@@ -484,8 +486,8 @@ function v2SyncChrome() {
   const masthead = document.querySelector('.v2-masthead');
   if (masthead) {
     const team = page === 'season' && id === 'squad';
-    masthead.innerHTML = team ? 'TEAM' : 'MATCH<span>DAY</span>';
-    masthead.setAttribute('aria-label',team ? 'Team · Zum Magazin' : 'Matchday · Magazin');
+    masthead.innerHTML = team ? 'TEAM' : page === 'club' ? 'VEREIN' : 'MATCH<span>DAY</span>';
+    masthead.setAttribute('aria-label',team ? 'Team · Zum Magazin' : page === 'club' ? 'Verein · Zum Magazin' : 'Matchday · Magazin');
   }
   root.classList.toggle('v2-scrolled', window.scrollY > 24);
   v2SyncDock();
