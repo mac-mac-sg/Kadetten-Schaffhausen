@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
 const source=fs.readFileSync('src/client/js/router.js','utf8');
-function harness(route='#home',design='v1'){
+function harness(route='#home',design='v1',preview=''){
  const {document,window:dom}=parseHTML('<html><body><main id="app"><a href="#news/article"><span id="content">Inhalt</span></a><button id="control">Filter</button><div class="calendar-panel" id="calendar">Kalender</div><div id="scroll" style="overflow-x:auto">Tabelle</div></main><div id="compact-club-menu" hidden></div></body></html>');
- document.documentElement.dataset.design=design;
+ document.documentElement.dataset.design=design;document.documentElement.dataset.preview=preview;
  let url=new URL('https://example.test/?club=otmar'+route),now=1000,reduced=false;
  const events={},location={get href(){return url.href;},get hash(){return url.hash;},set hash(v){url.hash=v;}};
  const window={innerWidth:390,addEventListener:(type,fn)=>{events[type]=fn;},matchMedia:()=>({matches:reduced}),getSelection:()=>({isCollapsed:true})};
@@ -70,4 +70,20 @@ test('Swipe preview documents retain the active layout identity, theme and share
   assert.ok(preview.querySelector('link[href="app.css"]'));assert.equal(preview.querySelectorAll('script').length,0);
  }
  assert.ok(parseHTML(frames[1].srcdoc).document.body.classList.contains('calendar-mode'));
+});
+
+
+test('V2 treats Verein as a fifth main tab with its own active state and swipe boundaries',()=>{
+ for(const [route,dx,expected] of [['#season/squad',-120,'#club'],['#club',120,'#season/squad'],['#club',-120,'#club']]){
+  const a=harness(route,'v1','v2');a.swipe(dx);assert.equal(a.location.hash,expected);
+ }
+ const v2=harness('#club','v1','v2');assert.equal(v2.context.mainNavigationKey('club'),'club');assert.equal(v2.context.mainNavigationKey('player'),'squad');
+ const v1=harness('#club');assert.equal(v1.context.mainNavigationKey('club'),'squad');
+});
+
+test('V2 club swipe previews render the selected club archive instead of the season view',()=>{
+ const a=harness('#season/squad','v1','v2');
+ Object.assign(a.context,{activeClub:'kadetten',viewOptions:()=>({}),rememberedView:()=>({options:{}}),applyViewOptions:()=>{},clubPage:()=>'<h1>Unsere Geschichte</h1>',fcsgClubPage:()=>'<h1>Grün-Weisse Geschichte</h1>',v2DecorateForwardLinks:()=>{}});
+ assert.match(a.context.mainTabPreviewMarkup('#club'),/Unsere Geschichte/);
+ a.context.activeClub='fcsg';assert.match(a.context.mainTabPreviewMarkup('#club'),/Grün-Weisse Geschichte/);
 });

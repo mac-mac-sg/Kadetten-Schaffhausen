@@ -119,6 +119,13 @@ function setupViews() {
 function notFound() {
   return '<section class="content"><h1>Hier geht’s zurück aufs Feld.</h1><a class="button" href="#home">Zur Startseite</a></section>';
 }
+function mainNavigationKey(page,id) {
+  if (page === 'club') return document.documentElement.dataset.preview === 'v2' ? 'club' : 'squad';
+  if (page === 'player') return 'squad';
+  if (page === 'match') return 'games';
+  if (page === 'season') return ['games','table','squad'].includes(id) ? id : 'games';
+  return 'news';
+}
 function render() {
   applyPendingNews();
   const viewMemory=beginViewRender();
@@ -155,19 +162,7 @@ function render() {
               ? profile(Number(id))
               : notFound();
   document.querySelectorAll('[data-nav]').forEach(a => {
-    const active =
-      a.dataset.nav ===
-      (['home', 'news'].includes(page)
-        ? 'news'
-        : ['player','club'].includes(page)
-          ? 'squad'
-          : page === 'match'
-            ? 'games'
-            : page === 'season'
-              ? ['games', 'table', 'squad'].includes(id)
-                ? id
-                : 'games'
-              : 'news');
+    const active = a.dataset.nav === mainNavigationKey(page,id);
     a.classList.toggle('active', active);
     if (active) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
@@ -314,8 +309,9 @@ function measureAppChrome() {
   }
 }
 
-/* Touch navigation is limited to V1's four primary routes. Native scrolling stays in charge. */
+/* V2 adds its independent club page to the shared primary-route gestures. */
 const mainTabSwipeRoutes=['#home','#season/games','#season/table','#season/squad'];
+if(document.documentElement?.dataset?.preview==='v2')mainTabSwipeRoutes.push('#club');
 function mainTabSwipeTarget(route,dx,dy,duration,width) {
   const index=mainTabSwipeRoutes.indexOf(route||'#home');
   const distance=Math.max(64,Math.min(96,width*.18));
@@ -377,7 +373,7 @@ function mainTabPreviewMarkup(route) {
   const savedOptions=viewOptions();
   try {
     applyViewOptions(rememberedView(route).options);
-    const tab=route.split('/')[1],markup=route==='#home'?(activeClub==='fcsg'?fcsgHome():home()):(activeClub==='fcsg'?fcsgView('season',tab):season(tab));
+    const tab=route.split('/')[1],markup=route==='#home'?(activeClub==='fcsg'?fcsgHome():home()):route==='#club'?(activeClub==='fcsg'?fcsgClubPage():clubPage()):(activeClub==='fcsg'?fcsgView('season',tab):season(tab));
     const container=document.createElement('div');container.innerHTML=markup;
     if(route==='#home'){
       const slot=container.querySelector('.home-matchday .live-match');

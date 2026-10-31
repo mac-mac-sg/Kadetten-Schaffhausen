@@ -21,7 +21,7 @@ test('Production shell loads the approved shared design before main',()=>{
  assert.ok(html.indexOf('src="js/club-design.js"')<html.indexOf('src="js/main.js"'));
  assert.doesNotMatch(html,/data-preview="v2"/);
 });
-test('V2 club entry is one whole link before every player group and preserves the full club archive',()=>{
+test('V2 separates the roster from the club archive while V1 keeps its club entry',()=>{
  const {document}=parseHTML('<html><body></body></html>'),noop=()=>{},fake=()=>({classList:{toggle:noop,add:noop,remove:noop},style:{},dataset:{},setAttribute:noop});
  const context=vm.createContext({document:{hidden:false,createElement:tag=>document.createElement(tag),createTextNode:t=>document.createTextNode(t),body:fake(),documentElement:fake(),querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,addEventListener:noop},location:{hash:'#season/squad',href:'https://example.test/v2/'},navigator:{onLine:true},window:{addEventListener:noop,scrollTo:noop},localStorage:{getItem:()=>null,setItem:noop},setInterval:()=>0,setTimeout:()=>0,clearTimeout:noop,clearInterval:noop,requestAnimationFrame:noop,cancelAnimationFrame:noop,fetch:()=>Promise.reject(Error('offline')),apiFetch:()=>Promise.reject(Error('offline')),console});
  context.document.documentElement.dataset.preview='v2';
@@ -34,10 +34,16 @@ test('V2 club entry is one whole link before every player group and preserves th
  for(const club of ['kadetten','fcsg','otmar']){
   run(`activeClub='${club}'`);
   const roster=parse(run(club==='fcsg'?'fcsgSquad()':'squad()')),entry=roster.querySelector('.v2-club-entry'),page=parse(run(club==='fcsg'?'fcsgClubPage()':'clubPage()'));
-  assert.equal(roster.firstElementChild,entry);assert.equal(entry.tagName,'A');assert.equal(entry.getAttribute('href'),'#club');assert.equal(entry.querySelectorAll('a,button').length,0);assert.equal(entry.querySelector('h2').textContent,'Unser Verein');assert.equal(roster.querySelectorAll('.player-card').length,baseline[club].roster.querySelectorAll('.player-card').length);
+  assert.equal(entry,null);assert.equal(roster.querySelectorAll('.player-card').length,baseline[club].roster.querySelectorAll('.player-card').length);
+  assert.equal(page.querySelector('.club-topline'),null);
+  context.document.documentElement.dataset.preview='';
+  const v1Roster=parse(run(club==='fcsg'?'fcsgSquad()':'squad()'));
+  assert.equal(v1Roster.firstElementChild.className,'v2-club-entry');
+  context.document.documentElement.dataset.preview='v2';
   assert.equal(page.querySelectorAll('h1').length,1);assert.equal(page.querySelectorAll('.v2-club-curve').length,1);assert.equal(page.querySelectorAll('.club-intro').length,0);assert.equal(page.querySelector('h1').textContent,run('v2ClubIdentity().name'));
   for(const selector of ['.club-cabinet','.club-history','.club-credits']){
    const original=baseline[club].page.querySelector(selector).cloneNode(true),updated=page.querySelector(selector).cloneNode(true);
+   original.querySelectorAll('.club-next a[href="#season/squad"]').forEach(link=>{link.setAttribute('href','#home');link.textContent='Zum Magazin';});
    original.querySelector('h2')?.remove();updated.querySelector('h2')?.remove();assert.equal(updated.innerHTML,original.innerHTML,club+' preserves '+selector);
   }
   assert.equal(page.querySelector('.v2-club-hero-media img').getAttribute('src'),baseline[club].page.querySelector('.club-intro-photo').getAttribute('src'));
