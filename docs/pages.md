@@ -187,3 +187,7 @@ Artikel öffnen mit der originalen Datumszeile und dem Titel vor dem Foto. Die v
 Matchcenter, Vorschau, Rückblick, Live-Ticker, Aufstellung und Statistiken teilen Typografie, Kapiteltrenner und kompakte Datenflächen. Der einklappende Spielkopf und Live-Aktualisierungen behalten ihre bisherigen Ziele. Die Vereinschronik erhält ein Foto-Cover und Magazin-Kapitel mit Jahr, Titel, Originalbild und vollständigem Text. Die Jahresnavigation läuft horizontal; die aktive Station wird bei Bedarf sichtbar gehalten. QHL-Vereinsdetails, Matchprogramm-Viewer und Einstellungsdialoge übernehmen dieselben Schrift- und Flächenregeln.
 
 Die Erweiterung liegt ausschliesslich in `v2/matchday.js` und `v2/matchday.css`. V1 lädt sie nicht. `tests/v2-detail-magazine.test.mjs` prüft die Identität und Erhaltung der Titel-, Artikel-, Statistik-, Quellen- und Bildknoten sowie die wiederholte Anwendung bei Live-Updates. Browserprüfung erfolgt mit dem Pages-Build auf Handybreite und mit Hell-/Dunkelmodus; nicht verfügbare externe Inhalte behalten ihre bestehenden Fehlermeldungen.
+
+### V2: Spielplan ohne Wettbewerbsfilter
+
+Liste, Kalender und «Meine Woche» bleiben verfügbar. Der Wettbewerbsfilter entfällt in V2 bei allen drei Vereinen; ein zuvor ausgewählter Wettbewerb wird vor dem Rendern auf «Alle» zurückgesetzt, damit keine Spiele unsichtbar bleiben. V1 behält seinen Filter. `tests/v2-ticket.test.mjs` prüft die Entfernung und das Zurücksetzen in allen drei Ansichten und Vereinsausgaben.

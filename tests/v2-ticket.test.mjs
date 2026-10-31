@@ -238,3 +238,18 @@ test('Dock aligns its recess with the active destination without replacing links
   assert.equal(dock.querySelectorAll('svg').length,4);
   assert.equal(dock.querySelectorAll('a')[3],links[3]);
 });
+
+
+test('V2 removes the competition selector and resets stale filters without changing the schedule view', () => {
+  const {context,parse}=setup();
+  context.gameViewToggle=()=>['list','calendar','week'].map(mode=>`<button data-mode="${mode}">${mode}</button>`).join('');
+  for(const club of ['kadetten','fcsg','otmar'])for(const mode of ['list','calendar','week']) {
+    Object.assign(context,{activeClub:club,mode,competition:'EHL'});
+    const root=parse(context.gameControls());
+    assert.equal(root.querySelectorAll('select,#competition').length,0);
+    assert.equal(root.querySelectorAll('[data-mode]').length,3);
+    assert.equal(context.competition,'Alle');
+    assert.equal(context.mode,mode);
+    assert.ok(root.querySelector('.game-control-bar'));
+  }
+});
