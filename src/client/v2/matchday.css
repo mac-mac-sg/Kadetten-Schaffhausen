@@ -727,3 +727,9 @@ html[data-preview='v2'][data-theme='light'] #app .game-timeline > .game-card:not
   border-inline-end:1px solid color-mix(in srgb,var(--text) 17%,var(--surface));
   box-shadow:0 2px 8px #10121408;
 }
+
+/* Restore distinct, saturated result text on light cards; dark result colours stay as they are. */
+html[data-preview='v2'][data-theme='light'] #app .game-card .game-result-label { font-weight:700; }
+html[data-preview='v2'][data-theme='light'] #app .game-card.result-win .game-result-label { color:#23723a; }
+html[data-preview='v2'][data-theme='light'] #app .game-card.result-loss .game-result-label { color:#b32930; }
+html[data-preview='v2'][data-theme='light'] #app .game-card.result-draw .game-result-label { color:#8b5a00; }
