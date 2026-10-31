@@ -54,6 +54,13 @@ function v2MagazineHome(football = false) {
     <div class="v1-news-grid">${news.map((n, i) => homeNewsCard(n, i, football)).join('') || '<p class="notice">Noch keine News verfügbar.</p>'}</div>
   </div></section>${football ? fcsgFooter() : footer()}`;
 }
+// V2 has one unfiltered schedule. Clear an earlier choice before the shared views render.
+function v2GameControls() {
+  competition = 'Alle';
+  return `<div class="game-control-bar" role="group" aria-label="Spielplan">${gameViewToggle()}</div>`;
+}
+gameControls = v2GameControls;
+
 // Reuse the shared live updater, including its focused-link preservation.
 v2TicketMarkup = v2MagazineTicket;
 v2Home = v2MagazineHome;
