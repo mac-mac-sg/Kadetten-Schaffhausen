@@ -74,6 +74,37 @@ try {
     assert.equal(await page.locator('h1').count(), 1, tag);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), tag + ' overflows');
     assert.match(await page.locator('.v2-hero-media img').getAttribute('src'), new RegExp(['news-34268', 'v2-header-fcsg-evening', 'v2-header-otmar-heart'][index]), tag);
+    // Only the selected destination has visible text; every link keeps its accessible name.
+    const checkDock = async () => {
+      const links = page.locator('.v2-orbit-dock a');
+      assert.equal(await links.count(), 4);
+      for (const link of await links.all()) {
+        const active = await link.evaluate(e => e.classList.contains('active'));
+        assert.equal(await link.locator('.v2-dock-label').evaluate(e => getComputedStyle(e).opacity), active ? '1' : '0', tag + ' active label only');
+        assert.ok((await link.boundingBox()).height >= 44, tag + ' touch target');
+        assert.match(await link.getAttribute('href'), /^#/);
+        assert.ok((await link.textContent()).trim(), tag + ' accessible link name');
+        if (active) assert.ok(await link.evaluate(e => {
+          const circle = getComputedStyle(e, '::before'), icon = e.querySelector('svg').getBoundingClientRect(), r = e.getBoundingClientRect();
+          return Math.abs(icon.top + icon.height / 2 - (r.top + parseFloat(circle.height) / 2)) < 1;
+        }), tag + ' icon centered in active circle');
+      }
+      const box = await page.locator('.v2-orbit-dock').boundingBox();
+      assert.equal(box.height, 70, tag + ' compact navigation');
+      assert.equal(box.y + box.height, 844, tag + ' bottom aligned');
+    };
+    await checkDock();
+    if (state === 'preview') {
+      for (const destination of ['games', 'table', 'squad', 'news']) {
+        await page.locator(`[data-nav="${destination}"]`).click();
+        await page.waitForTimeout(80);
+        await checkDock();
+        assert.equal(await page.locator('h1').count(), 1, tag + ' destination heading');
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), tag + ' destination overflow');
+        assert.deepEqual(await axeViolations(), [], tag + ' destination axe');
+      }
+      await page.waitForSelector('#v2-match-ticket');
+    }
     // Readable metadata: at least 12 px, as for every V2 text.
     for (const selector of ['.v2-cover-kicker', '.v2-ticket-heading', '.v2-ticket-day', '.v2-ticket-league', '.v2-ticket-footer', '.v2-cover-action'])
       assert.ok(await page.locator(selector).first().evaluate(e => parseFloat(getComputedStyle(e).fontSize) >= 12), tag + ' ' + selector + ' is at least 12 px');

@@ -17,7 +17,7 @@ test('V2 navigation frosts the complete masked surface and keeps its active circ
   assert.match(surface, /backdrop-filter:blur\(16px\)/);
   assert.match(surface, /-webkit-backdrop-filter:blur\(16px\)/);
   // A separate mask band extends the same glass material through the safe area.
-  assert.match(surface, /linear-gradient\(#000 0 0\) center 78px/);
+  assert.match(surface, /linear-gradient\(#000 0 0\) center 70px/);
   const circle = rule(dock + ' a::before');
   assert.match(circle, /top:0;/);
   // A clip-path on an ancestor would prevent the glass from sampling page content.
