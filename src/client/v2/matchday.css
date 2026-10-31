@@ -673,7 +673,7 @@ html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title { font-siz
 html[data-preview='v2'][data-theme][data-club='fcsg'] .v2-deck-identity #v2-cover-title { font-size:clamp(42px,14.5vw,76px); }
 html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title span + span { margin-top:8px; font-size:clamp(22px,7vw,34px); letter-spacing:.025em; }
 html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-content { position:relative; z-index:1; width:calc(100% - 32px); margin:-60px 16px 0; }
-html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { display:grid; gap:18px; padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--text); box-shadow:0 12px 32px #00000018; --ticket-ink:var(--text); --ticket-muted:var(--muted); }
+html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { display:grid; gap:18px; padding:18px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 13%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 7%,var(--surface))); border-color:color-mix(in srgb,var(--v2-cover-accent) 26%,var(--line)); color:var(--text); box-shadow:0 12px 32px #00000018; --ticket-ink:var(--text); --ticket-muted:var(--muted); }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-heading { display:flex; justify-content:space-between; gap:8px 16px; flex-wrap:wrap; color:var(--muted); font-size:12px; line-height:1.5; }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-day { color:var(--accent); font-weight:700; }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-pairing.live-sr-context { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
@@ -716,3 +716,6 @@ html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inse
  html[data-preview='v2'][data-theme] .v2-match-deck .v2-deck-matchup { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr); gap:6px; }
  html[data-preview='v2'][data-theme] .v2-deck-team b { overflow-wrap:normal; hyphens:auto; }
 }
+
+/* Dark surfaces need a little more club colour to remain distinct from the page. */
+html[data-preview='v2'][data-theme='dark'] #app .v2-deck-cover .v2-match-deck { background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 19%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 11%,var(--surface))); }
