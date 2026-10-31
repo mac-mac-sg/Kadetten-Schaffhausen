@@ -189,6 +189,9 @@ test('Magazine retains every story once, including its original route, in all th
     assert.equal(root.querySelector('.v1-news-grid .v1-news-link').getAttribute('href'),'#news/article-0');
     assert.equal(root.querySelector('h1').textContent,[context.fanClubs[id].title,context.fanClubs[id].subtitle].join(''));
     assert.equal(root.querySelectorAll('.v1-news-card').length, news.length);
+    assert.equal(root.querySelectorAll('.v2-news-lead').length,1);
+    assert.equal(root.querySelector('.v2-news-lead .v1-news-link').getAttribute('href'),'#news/article-0');
+    assert.equal(root.querySelectorAll('.v2-news-row').length,news.length-1);
     assert.equal(root.querySelectorAll('.v2-magazine-cover .v1-news-card').length, 0);
     for (const story of news) assert.equal(root.querySelectorAll(`a[href="#news/${story.id}"]`).length,1);
     assert.equal(root.querySelectorAll('a[href="#club"]').length,0);
