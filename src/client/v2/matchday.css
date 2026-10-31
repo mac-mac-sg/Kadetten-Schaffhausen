@@ -662,3 +662,57 @@ html[data-preview='v2'][data-theme]:is([data-v2-state='live'],[data-v2-state='po
 html[data-preview='v2'][data-theme] body > .dock a:is(.active,.active:hover) { background:transparent; color:var(--accent); }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { min-width:54px; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { gap:4px; padding-inline:5px; }
+
+/* Match deck: the club is the cover; the real fixture is its foreground. */
+html[data-preview='v2'][data-theme] #app .v2-deck-cover.v2-ticket-section { display:block; padding:0; min-height:0; background:transparent; overflow:visible; }
+html[data-preview='v2'][data-theme] .v2-deck-identity { position:relative; isolation:isolate; display:flex; align-items:flex-end; min-height:clamp(350px,53svh,470px); padding:150px 22px 90px; background:#101214; }
+html[data-preview='v2'][data-theme] .v2-deck-identity .v2-hero-media { position:absolute; inset:0; overflow:hidden; }
+html[data-preview='v2'][data-theme] .v2-deck-identity .v2-hero-media::after { background:linear-gradient(180deg,#06090c25 15%,#06090c05 35%,#06090cbb 75%,#06090cee); }
+html[data-preview='v2'][data-theme] .v2-deck-identity .v2-cover-editorial { width:100%; margin:0; }
+html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title { font-size:clamp(52px,20vw,96px); line-height:1.03; letter-spacing:-.035em; }
+html[data-preview='v2'][data-theme][data-club='fcsg'] .v2-deck-identity #v2-cover-title { font-size:clamp(42px,14.5vw,76px); }
+html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title span + span { margin-top:8px; font-size:clamp(22px,7vw,34px); letter-spacing:.025em; }
+html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-content { position:relative; z-index:1; width:calc(100% - 32px); margin:-60px 16px 0; }
+html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { display:grid; gap:18px; padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--text); box-shadow:0 12px 32px #00000018; --ticket-ink:var(--text); --ticket-muted:var(--muted); }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-heading { display:flex; justify-content:space-between; gap:8px 16px; flex-wrap:wrap; color:var(--muted); font-size:12px; line-height:1.5; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-day { color:var(--accent); font-weight:700; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-pairing.live-sr-context { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-deck-matchup { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.45fr) minmax(0,1fr); align-items:center; gap:8px; }
+html[data-preview='v2'][data-theme] .v2-deck-team { display:flex; flex-direction:column; align-items:center; gap:9px; min-width:0; text-align:center; }
+html[data-preview='v2'][data-theme] .v2-deck-team :is(img.crest,.clubmark,.v2-crest-fallback,.v1-image-fallback.crest) { width:42px; height:48px; margin:0; object-fit:contain; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-deck-team :is(.clubmark,.v2-crest-fallback,.v1-image-fallback.crest) { background:var(--bg); color:var(--text); }
+html[data-preview='v2'][data-theme] .v2-deck-team b { font:650 12px/1.4 var(--font-text); overflow-wrap:anywhere; }
+html[data-preview='v2'][data-theme] .v2-deck-center { display:flex; flex-direction:column; align-items:center; gap:7px; text-align:center; min-width:0; }
+html[data-preview='v2'][data-theme] .v2-deck-center > strong { font:400 clamp(40px,13vw,64px)/1.1 Anton,Impact,sans-serif; white-space:nowrap; font-variant-numeric:tabular-nums; letter-spacing:-.025em; }
+html[data-preview='v2'][data-theme] .is-wide-score .v2-deck-center > strong { font-size:clamp(32px,10vw,48px); }
+html[data-preview='v2'][data-theme] .is-open-time .v2-deck-center > strong { font-size:36px; }
+html[data-preview='v2'][data-theme] .v2-match-deck :is(.v2-ticket-footer,.v2-deck-phase,.v2-deck-stale) { color:var(--muted); text-align:center; font:500 12px/1.5 var(--font-text); }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-action { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:48px; margin:0; padding:10px; border-radius:6px; background:var(--text); color:var(--surface); font-size:13px; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-action > span { color:inherit; font-size:22px; }
+html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-empty { margin:0; padding:24px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--text); }
+/* The selected destination rises into a moving recess; every link keeps its accessible label. */
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock { --v2-orbit-ink:#fff; --v2-orbit-fill:#151719; height:calc(78px + env(safe-area-inset-bottom,0px)); min-height:78px; padding:0 8px env(safe-area-inset-bottom,0px); background:transparent; border:0; box-shadow:none; isolation:isolate; clip-path:inset(-20px 0 0); }
+html[data-preview='v2'][data-theme='dark'] body > .dock.v2-orbit-dock { --v2-orbit-ink:#151719; --v2-orbit-fill:#f3f3f0; }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock::before { content:''; position:absolute; z-index:-1; top:16px; bottom:0; left:50%; width:1400px; background:var(--surface); mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 100' preserveAspectRatio='none'%3E%3Cpath fill='white' d='M0 0H650C660 0 663 6 668 16C672 29 683 38 700 38C717 38 728 29 732 16C737 6 740 0 750 0H1400V100H0Z'/%3E%3C/svg%3E") center/100% 100% no-repeat; transform:translateX(calc(-50% + var(--v2-dock-offset,0px))); }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a { position:relative; isolation:isolate; display:flex; flex:1; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-width:0; min-height:78px; padding:10px 2px 4px; background:transparent; color:var(--muted); border-radius:0; }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a:is(.active,.active:hover) { color:var(--text); background:transparent; }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a::before { content:''; position:absolute; z-index:-1; top:0; bottom:auto; left:50%; width:48px; height:48px; border-radius:50%; transform:translateX(-50%); background:var(--v2-orbit-fill); opacity:0; }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a.active::before { opacity:1; }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a svg { width:24px; height:24px; margin:0; transform:translateY(0); }
+html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a.active svg { color:var(--v2-orbit-ink); transform:translateY(-9px); }
+html[data-preview='v2'][data-theme] .v2-dock-label { font-size:12px; line-height:16px; font-weight:650; opacity:0; transform:translateY(-4px); }
+html[data-preview='v2'][data-theme] .active > .v2-dock-label { opacity:1; transform:none; }
+html[data-preview='v2'][data-theme] .v2-orbit-dock.v2-dock-ready:not(.v2-dock-no-motion)::before { transition:transform 220ms cubic-bezier(.23,1,.32,1); }
+html[data-preview='v2'][data-theme] .v2-orbit-dock.v2-dock-ready:not(.v2-dock-no-motion) a :is(svg,.v2-dock-label),
+html[data-preview='v2'][data-theme] .v2-orbit-dock.v2-dock-ready:not(.v2-dock-no-motion) a::before { transition:transform 180ms cubic-bezier(.23,1,.32,1),opacity 140ms ease-out; }
+html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inset-bottom,0px) + 94px); }
+@media(prefers-reduced-motion:reduce) {
+ html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock::before,
+ html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a::before,
+ html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock a :is(svg,.v2-dock-label) { transition:none; }
+}
+@media(max-width:350px) {
+ html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { padding:14px 12px; }
+ html[data-preview='v2'][data-theme] .v2-match-deck .v2-deck-matchup { grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr); gap:6px; }
+ html[data-preview='v2'][data-theme] .v2-deck-team b { overflow-wrap:normal; hyphens:auto; }
+}

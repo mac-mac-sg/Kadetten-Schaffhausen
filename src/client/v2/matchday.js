@@ -6,10 +6,9 @@ const V2_NEWS_LIMIT = 6;
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
 /* Magazine edition. Data, routes and live confirmation still come from the shared app. */
-function v2CoverTitle(info) {
-  if (info.state === 'live') return ['MITTEN', 'IM SPIEL.'];
-  if (info.state === 'post') return ['NACH DEM', 'SPIEL.'];
-  return Number(info.game?.time?.split(':')[0]) >= 17 ? ['UNSER', 'ABEND.'] : ['UNSER', 'SPIEL.'];
+function v2CoverTitle() {
+  const club = fanClubs[activeClub];
+  return [club.title, club.subtitle].filter(Boolean);
 }
 function v2MagazineTicket(c, info) {
   const g = info.game;
@@ -27,27 +26,32 @@ function v2MagazineTicket(c, info) {
   const stale = c.football ? fcsgLiveErrors.has(g.id) || fcsgLiveErrors.has('latest') : liveRequestFailed;
   const href = live ? c.liveHref(c.fixture.live) : c.matchHref(g, finished);
   const effect = live ? 'live' : finished ? 'result' : g.date === c.today ? 'matchday' : info.state === 'pre' ? 'soon' : 'calm';
-  return `<a id="v2-match-ticket" class="v2-match-ticket${live ? ' is-live' : ''}" href="${liveEscape(href)}" data-result="${finished ? c.result(g)?.state || '' : ''}" data-effect="${effect}">
+  const action = live ? 'Liveticker öffnen' : finished ? 'Rückblick öffnen' : 'Spielvorschau öffnen';
+  const wide = value.length > 7 ? ' is-wide-score' : '', open = value === 'Offen' ? ' is-open-time' : '';
+  return `<a id="v2-match-ticket" class="v2-match-ticket v2-match-deck${live ? ' is-live' : ''}${wide}${open}" href="${liveEscape(href)}" data-result="${finished ? c.result(g)?.state || '' : ''}" data-effect="${effect}">
     <span class="v2-ticket-heading"><span class="v2-ticket-day">${liveEscape(label)}</span><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
-    <span class="v2-cover-pairing">${liveEscape(g.home)}<span aria-hidden="true"> — </span><span class="live-sr-context"> gegen </span>${liveEscape(g.away)}</span>
-    <span class="v2-cover-fixture"><span class="v2-cover-crests" aria-hidden="true">${c.crestOf(g, true)}${c.crestOf(g, false)}</span><strong data-v2-score>${liveEscape(value)}</strong><span class="v2-cover-action">${live ? 'Zum Liveticker' : finished ? 'Zum Rückblick' : 'Zur Vorschau'}<span aria-hidden="true"> ↗</span></span></span>
-    <span class="v2-ticket-footer">${liveEscape(day)}${phase ? ' · ' + liveEscape(phase) : ''}${stale && (live || finished) ? ' · Letzter verfügbarer Stand' : ''}</span>
+    <span class="v2-cover-pairing live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</span>
+    <span class="v2-cover-crests v2-deck-matchup">
+      <span class="v2-deck-team">${c.crestOf(g, true)}<b>${liveEscape(g.home)}</b></span>
+      <span class="v2-deck-center"><strong data-v2-score>${liveEscape(value)}</strong><span class="v2-ticket-footer">${liveEscape(day)}</span>${phase ? `<span class="v2-deck-phase">${liveEscape(phase)}</span>` : ''}</span>
+      <span class="v2-deck-team">${c.crestOf(g, false)}<b>${liveEscape(g.away)}</b></span>
+    </span>
+    ${stale && (live || finished) ? '<span class="v2-deck-stale">Letzter verfügbarer Stand</span>' : ''}
+    <span class="v2-cover-action">${action}<span aria-hidden="true"> ↗</span></span>
     <span class="live-sr-context">${c.isOwn(g.home) ? 'Heimspiel' : 'Auswärtsspiel'}${finished ? ' · Endresultat' : ''}</span>
   </a>`;
 }
 function v2MagazineHome(football = false) {
-  const c = v2Club(), info = v2MatchState(c), title = v2CoverTitle(info);
+  const c = v2Club(), info = v2MatchState(c), title = v2CoverTitle();
   const news = football ? fcsgData.stories : stories;
   return `<section class="home-news v2-magazine" aria-labelledby="v2-cover-title"><div class="story-feed">
-    <div class="home-front-page"><section class="v2-ticket-section v2-magazine-cover" aria-label="Aktuelles Spiel">
-      <div class="v2-hero-media" aria-hidden="true"><img src="${v2HeaderPhoto()}" alt="" decoding="async" fetchpriority="high"></div>
-      <div class="v2-cover-editorial"><p class="v2-cover-kicker">${liveEscape(fanClubs[activeClub].name)} · ${c.football ? 'Fussball' : 'Handball'}</p><h1 id="v2-cover-title">${title.map(line => `<span>${line}</span>`).join('')}</h1></div>
+    <div class="home-front-page"><section class="v2-ticket-section v2-magazine-cover v2-deck-cover" aria-label="Aktuelles Spiel">
+      <div class="v2-deck-identity"><div class="v2-hero-media" aria-hidden="true"><img src="${v2HeaderPhoto()}" alt="" decoding="async" fetchpriority="high"></div>
+      <div class="v2-cover-editorial"><p class="v2-cover-kicker">${c.football ? 'Fussball' : 'Handball'} · Dein Vereinsmagazin</p><h1 id="v2-cover-title" aria-label="${liveEscape(fanClubs[activeClub].name)}">${title.map(line => `<span>${liveEscape(line)}</span>`).join('')}</h1></div></div>
       <div class="v2-ticket-content">${v2MagazineTicket(c, info)}</div>
-      ${news[0] ? homeNewsCard(news[0], 0, football) : ''}
     </section></div>
     <header class="v2-magazine-heading"><p class="v2-editorial-kicker">Aus dem Verein</p><h2>NAH DRAN.</h2><span>News & Geschichten</span></header>
-    <div class="v1-news-grid">${news.slice(1).map((n, i) => homeNewsCard(n, i + 1, football)).join('') || '<p class="notice">Weitere News folgen, sobald sie veröffentlicht sind.</p>'}</div>
-    <a class="v2-magazine-club" href="#club"><img src="${v2ClubIdentity().photo}" alt="" loading="lazy" decoding="async"><span><small>Mehr als ein Spiel.</small><strong>UNSER VEREIN.</strong><span>Geschichte & Erfolge ↗</span></span></a>
+    <div class="v1-news-grid">${news.map((n, i) => homeNewsCard(n, i, football)).join('') || '<p class="notice">Noch keine News verfügbar.</p>'}</div>
   </div></section>${football ? fcsgFooter() : footer()}`;
 }
 // Reuse the shared live updater, including its focused-link preservation.
@@ -145,13 +149,15 @@ function v2MagazineChrome() {
   v2FitClubLabel();
   for (const [key, label] of [['news', 'Magazin'], ['squad', 'Team']]) {
     const link = document.querySelector(`[data-nav="${key}"]`);
-    if (link) for (const node of link.childNodes) if (node.nodeType === 3 && node.textContent.trim()) node.textContent = label;
+    const copy = link?.querySelector('.v2-dock-label');
+    if (copy) copy.textContent = label;
+    else if (link) for (const node of link.childNodes) if (node.nodeType === 3 && node.textContent.trim()) node.textContent = label;
   }
   const [page, id] = v2Page();
   if (page === 'home') {
     const title = document.querySelector('#v2-cover-title');
-    const lines = v2CoverTitle(v2MatchState(v2Club()));
-    if (title && title.textContent !== lines.join('')) title.innerHTML = lines.map(line => `<span>${line}</span>`).join('');
+    const lines = v2CoverTitle();
+    if (title && title.textContent !== lines.join('')) title.innerHTML = lines.map(line => `<span>${liveEscape(line)}</span>`).join('');
   }
   if (page === 'season' && id === 'squad') {
     const section = document.querySelector('#app .season');
@@ -434,6 +440,35 @@ document.addEventListener('click', event => {
   transition.finished.finally(() => document.querySelectorAll('[style*="view-transition-name"]').forEach(el => (el.style.viewTransitionName = '')));
 }, true);
 
+/* Active navigation rises into a moving recess, inspired by the supplied recording. */
+function v2SyncDock() {
+  const dock = document.querySelector('body > .dock');
+  if (!dock) return;
+  dock.classList.add('v2-orbit-dock');
+  const links = [...dock.querySelectorAll('[data-nav]')];
+  for (const link of links) {
+    if (link.querySelector('.v2-dock-label')) continue;
+    const text = [...link.childNodes].find(node => node.nodeType === 3 && node.textContent.trim());
+    if (!text) continue;
+    const label = document.createElement('span'); label.className = 'v2-dock-label';
+    text.before(label); label.append(text);
+  }
+  const active = links.find(link => link.classList.contains('active'));
+  if (!active || !(dock.clientWidth > 0)) return;
+  const offset = active.offsetLeft + active.offsetWidth / 2 - dock.clientWidth / 2;
+  const value = offset.toFixed(2) + 'px';
+  if (dock.style.getPropertyValue('--v2-dock-offset') !== value) dock.style.setProperty('--v2-dock-offset',value);
+  if (!dock.classList.contains('v2-dock-ready')) {
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => dock.classList.add('v2-dock-ready'));
+    else dock.classList.add('v2-dock-ready');
+  }
+}
+window.addEventListener('resize',v2SyncDock,{passive:true});
+document.addEventListener('keydown',event => {
+  if (event.target.closest?.('.dock')) document.querySelector('body > .dock')?.classList.add('v2-dock-no-motion');
+});
+document.addEventListener('pointerdown',() => document.querySelector('body > .dock')?.classList.remove('v2-dock-no-motion'),{passive:true});
+
 /* Kompakte Kopfzeile beim Scrollen und Merkmale für die Gestaltung. */
 function v2SyncChrome() {
   const [page, id] = v2Page();
@@ -446,6 +481,7 @@ function v2SyncChrome() {
     masthead.setAttribute('aria-label',team ? 'Team · Zum Magazin' : 'Matchday · Magazin');
   }
   root.classList.toggle('v2-scrolled', window.scrollY > 24);
+  v2SyncDock();
 }
 window.addEventListener('scroll', () => document.documentElement.classList.toggle('v2-scrolled', window.scrollY > 24), {passive: true});
 document.addEventListener('visibilitychange', () => document.documentElement.classList.toggle('v2-paused', document.hidden));
