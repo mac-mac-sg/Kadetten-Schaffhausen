@@ -27,3 +27,20 @@ test('V2 navigation frosts the complete masked surface and keeps its active circ
   assert.match(rule(dock), /overflow:hidden;/);
   assert.match(css, /@supports not \(\(backdrop-filter:/);
 });
+
+
+test('The menu band keeps its outer corner separate from the first and last recess on small phones',()=>{
+ const band="html[data-preview='v2'][data-theme][data-v2-dock='band'] body > .dock.v2-orbit-dock";
+ const box=rule(band),surface=rule(band+'::before');
+ const inset=Number(box.match(/padding:0 (\d+)px/)[1]),radius=Number(box.match(/border-radius:(\d+)px/)[1]);
+ const path=decodeURIComponent(surface.match(/url\("([^\"]+)"/)[1]).match(/d='([^']+)'/)[1];
+ const halfRecess=700-Number(path.match(/H(\d+)C/)[1]);
+ // 305 px also covers a 320 px preview with a traditional 15 px scrollbar.
+ for(const viewport of [305,320,360,390,430]) {
+  const width=viewport-24,slot=(width-2*inset)/5;
+  assert.ok(slot>=44,'Each link remains a full touch target');
+  const bridge=inset+slot/2-halfRecess-radius;
+  assert.ok(bridge>=8,'The recess must leave a flat bridge beyond the rounded corner');
+ }
+ assert.match(rule(band+' a::before'),/width:44px; height:44px/);
+});
