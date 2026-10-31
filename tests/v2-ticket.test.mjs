@@ -216,7 +216,7 @@ test('Magazine team chrome preserves the single heading, every player link and t
   assert.equal(document.querySelectorAll('h1').length,1);
   assert.equal(document.querySelector('h1').textContent,'DAS TEAM.');
   assert.equal(document.querySelectorAll('.player-card').length,2);
-  assert.equal(document.querySelector('.season').lastElementChild.getAttribute('href'),'#club');
+  assert.equal(document.querySelector('.v2-team-cover').nextElementSibling.getAttribute('href'),'#club');
 });
 
 
@@ -251,5 +251,21 @@ test('V2 removes the competition selector and resets stale filters without chang
     assert.equal(context.competition,'Alle');
     assert.equal(context.mode,mode);
     assert.ok(root.querySelector('.game-control-bar'));
+  }
+});
+
+
+test('The club entry precedes the first position heading and every player in all V2 club editions', () => {
+  for (const id of ['kadetten','fcsg','otmar']) {
+    const {context,document}=setup(id==='fcsg');context.activeClub=id;
+    document.getElementById('app').innerHTML='<section class="season"><header><h1>Kader</h1></header><h2>Torhüter</h2><div class="players"><a class="player-card" href="#player/1">Torhüter</a></div><a class="v2-club-entry" href="#club"><h2>Unser Verein</h2><p>Geschichte</p></a><h2>Feldspieler</h2><div class="players"><a class="player-card" href="#player/2">Feldspieler</a></div></section>';
+    const section=document.querySelector('.season'),entry=section.querySelector('.v2-club-entry'),players=[...section.querySelectorAll('.player-card')],firstHeading=section.querySelector('h2');
+    context.v2MagazineTeamCover(section);context.v2MagazineTeamCover(section);
+    assert.equal(section.querySelector('.v2-team-cover').nextElementSibling,entry);
+    assert.ok([...section.children].indexOf(entry)<[...section.children].indexOf(firstHeading));
+    assert.equal(section.querySelectorAll('.v2-club-entry').length,1);
+    assert.equal(entry.getAttribute('href'),'#club');
+    assert.deepEqual([...section.querySelectorAll('.player-card')],players);
+    assert.equal(entry.querySelector('h2').textContent,'Geschichte & Erfolge');
   }
 });
