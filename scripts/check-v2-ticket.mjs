@@ -66,6 +66,7 @@ try {
     await page.waitForFunction(score => document.querySelector('#v2-match-ticket [data-v2-score]')?.textContent === score, want.score);
     const tag = JSON.stringify(scenario);
     assert.equal(await page.locator('html').getAttribute('data-theme'), theme);
+    assert.notEqual(await page.locator('#v2-match-ticket').evaluate(e => getComputedStyle(e).backgroundImage), 'none', tag + ' has a club-tinted surface');
     assert.equal(await page.locator('.v2-ticket-day').textContent(), want.day, tag);
     assert.equal(await page.locator('#v2-match-ticket').getAttribute('data-effect'), want.effect, tag);
     assert.match(await page.locator('.v2-cover-action').textContent(), new RegExp(want.action), tag);
