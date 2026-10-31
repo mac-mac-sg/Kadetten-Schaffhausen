@@ -195,3 +195,7 @@ Liste, Kalender und «Meine Woche» bleiben verfügbar. Der Wettbewerbsfilter en
 ### V2: Trennung der Spiele im hellen Modus
 
 Normale Karten der Spieleliste erhalten im hellen Modus eine leicht graue Fläche, eine feine Kontur oben, unten und rechts sowie einen sehr dezenten Schatten. Die farbige linke Ergebniskante bleibt bestehen. Die hervorgehobene aktuelle Partie und laufende FCSG-Spiele behalten ihre eigenen Flächen; Dunkelmodus und V1 bleiben unverändert.
+
+### V2: Ergebnisfarben im hellen Modus
+
+Die Ergebniswörter auf Spielkarten erscheinen im hellen Modus kräftig und fett: Sieg grün, Niederlage rot, Unentschieden bernsteinfarben. Die Worte bleiben zusätzlich zur Farbe lesbar. Dunkelmodus, übrige Metadaten und farbige Ergebniskanten bleiben unverändert.
