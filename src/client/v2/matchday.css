@@ -719,3 +719,11 @@ html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inse
 
 /* Dark surfaces need a little more club colour to remain distinct from the page. */
 html[data-preview='v2'][data-theme='dark'] #app .v2-deck-cover .v2-match-deck { background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 19%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 11%,var(--surface))); }
+
+/* Light schedules need their own card surface, just as dark schedules already have. */
+html[data-preview='v2'][data-theme='light'] #app .game-timeline > .game-card:not(.current-game):not(.fcsg-game-live) {
+  background:color-mix(in srgb,var(--text) 5%,var(--surface));
+  border-block:1px solid color-mix(in srgb,var(--text) 17%,var(--surface));
+  border-inline-end:1px solid color-mix(in srgb,var(--text) 17%,var(--surface));
+  box-shadow:0 2px 8px #10121408;
+}
