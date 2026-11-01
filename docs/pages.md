@@ -203,3 +203,7 @@ Die Ergebniswörter auf Spielkarten erscheinen im hellen Modus kräftig und fett
 ### Laufende Cupspiele auf der Startseite
 
 V1 und V2 verwenden dieselbe Spieltagsauswahl. Heutige Pflichtspiele einschliesslich Cup bleiben auch nach der Anspielzeit im Vordergrund, bis Live-Daten beziehungsweise das bestätigte Endresultat eintreffen; Testspiele sind davon ausgenommen. Das Endresultat bleibt bis zum Schweizer Tageswechsel sichtbar. SHV-Namenszusätze wie «(QHL)» und «(MNLB)» werden für den Spielabgleich und die Wappenzuordnung normalisiert. Live-Spielstände werden vor der Darstellung um Datum, Anspielzeit und bekannte Vereinsnamen aus dem Spielplan ergänzt; ohne lokalen Eintrag gilt das aktuelle Schweizer Datum. Cup-Live-Daten gehören zur SHV-Quelle, auch wenn zeitweise keine frische Antwort vorliegt.
+
+### Statistiklasche in V2
+
+Die Statistiklasche verwendet ein modulares Dashboard: Tore, Gegentore und Differenz aus Sicht des gewählten Vereins stehen als drei Kennzahlen oben. Sie werden nur aus dem angezeigten bestätigten Spielstand abgeleitet; fehlende Spielstände ergeben keine Nullwerte. Torverlauf beziehungsweise FCSG-Torgefährlichkeit, Teamvergleiche und Spielerstatistiken erhalten eigene Kacheln mit 14-Pixel-Rundungen und klaren Abständen. Beim Handball steht der vorhandene Torverlauf vor dem Teamvergleich. Alle Quellen, Tabellen, Mannschaftsumschalter und Live-Aktualisierungen bleiben erhalten. Matchcenter-Titel und Resultatbereich sowie andere Laschen bleiben unverändert.

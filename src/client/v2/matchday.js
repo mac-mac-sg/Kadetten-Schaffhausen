@@ -171,6 +171,47 @@ function v2MagazineChrome() {
 }
 
 /* Move existing nodes, rather than copy content or replace live/statistics targets. */
+/* Statistics-only dashboard: preserve the shared match header and all original controls. */
+function v2MatchStatistics() {
+  const app = document.getElementById('app'), [page,,tab] = v2Page();
+  if (!app) return;
+  const active = page === 'match' && tab === 'stats';
+  app.classList.toggle('v2-statistics-dashboard', active);
+  if (!active) return;
+  const body = app.querySelector('.fcsg-match-dashboard,.finished-match-stats,.live-match-body,.match > .content');
+  if (!body) return;
+  body.classList.add('v2-statistics-body');
+  // Older match reports expose scorers and keepers as sibling blocks rather than sections.
+  body.querySelectorAll(':scope > h2').forEach(heading => {
+    if (heading.textContent === 'Das Spiel in Zahlen') return;
+    const card = document.createElement('section'); card.className = 'v2-stat-card';
+    heading.before(card); card.append(heading);
+    while (card.nextElementSibling && !card.nextElementSibling.matches('h2,.report-score-card,.report-comparison,.panel,.report-player-section,.actions')) card.append(card.nextElementSibling);
+  });
+  body.querySelectorAll('.report-score-card,.report-comparison,.panel,.report-player-section,.fcsg-stat-card,.fcsg-lineup-dashboard').forEach(card => {
+    if (!card.parentElement.closest('.v2-stat-card')) card.classList.add('v2-stat-card');
+  });
+  const chart = body.querySelector('.report-score-card'), first = body.querySelector('.v2-stat-card');
+  if (chart && first && chart !== first && chart.parentElement === first.parentElement) first.before(chart);
+  const header = app.querySelector('.match-top,.live-match-header,.fcsg-match-header');
+  const score = header?.querySelector('.matchup > strong')?.textContent.trim().match(/^(\d+)\s*:\s*(\d+)$/);
+  const homeName = header?.querySelector('.matchup-team > span')?.textContent || '';
+  const ownSide = body.dataset.ownSide || (homeName ? (activeClub === 'fcsg' ? (/St[. ]?\s*Gallen/i.test(homeName) ? 'home' : 'away') : typeof isOwnHandballTeam === 'function' ? (isOwnHandballTeam(homeName) ? 'home' : 'away') : null) : null);
+  let metrics = body.querySelector('.v2-match-metrics');
+  if (!score || !ownSide) { metrics?.remove(); return; }
+  const own = Number(score[ownSide === 'home' ? 1 : 2]), opponent = Number(score[ownSide === 'home' ? 2 : 1]);
+  const diff = own - opponent, signature = `${own}:${opponent}`;
+  if (!metrics) {
+    metrics = document.createElement('dl'); metrics.className = 'v2-match-metrics';
+    metrics.setAttribute('aria-label', 'Spielkennzahlen aus Vereinssicht');
+    body.prepend(metrics);
+  }
+  if (metrics.dataset.score !== signature) {
+    metrics.dataset.score = signature;
+    metrics.innerHTML = [['Tore',own],['Gegentore',opponent],['Differenz',diff > 0 ? '+' + diff : String(diff)]].map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('');
+  }
+}
+
 function v2DetailPages() {
   const app = document.getElementById('app');
   if (!app) return;
@@ -227,6 +268,7 @@ function v2DetailPages() {
   }
   v2MatchChrome(app.querySelector('.live-match-header'));
   v2EditorialEvents(app);
+  v2MatchStatistics();
 }
 
 function v2LimitNews() {

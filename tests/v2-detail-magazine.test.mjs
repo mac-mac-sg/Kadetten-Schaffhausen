@@ -106,3 +106,30 @@ test('Installation stays reachable in settings and closes the dialog before invo
  button.onclick();assert.deepEqual(sequence,['close','install']);
  install.hidden=true;context.v2InstallSettings();assert.equal(dialog.querySelector('[data-v2-install]'),null);
 });
+
+test('Statistics dashboard keeps matchcenter and score nodes unchanged, groups original modules and derives away metrics',()=>{
+ const {document,context,decorate}=setup('#match/a/stats','<section class="match"><header class="match-top"><p class="v2-matchcenter-title">Matchcenter</p><div class="matchup"><div class="matchup-team"><span>Gegner</span></div><strong>26 : 42</strong></div><small>Originaldatum</small></header><nav class="match-tabs"><a href="#match/a/stats">Statistiken</a></nav><div class="content finished-match-stats" data-own-side="away"><section class="report-comparison"><h2>Teamstatistik</h2><a href="#source">Quelle</a></section><figure class="report-score-card"><svg id="original-chart"></svg></figure><section class="report-player-section"><button data-stats-team="home">Heim</button><table><tr><td>Originalspieler</td></tr></table></section></div></section>');
+ const header=document.querySelector('header'),before=header.innerHTML,score=header.querySelector('strong'),chart=document.querySelector('figure'),button=document.querySelector('button'),table=document.querySelector('table');
+ decorate();decorate();
+ assert.equal(header.innerHTML,before);assert.equal(header.querySelector('strong'),score);
+ assert.deepEqual([...document.querySelectorAll('.v2-match-metrics dd')].map(e=>e.textContent),['42','26','+16']);
+ assert.equal(document.querySelectorAll('.v2-match-metrics').length,1);assert.equal(document.querySelectorAll('.v2-stat-card').length,3);
+ assert.equal(document.querySelector('.v2-match-metrics').nextElementSibling,chart);
+ assert.equal(document.querySelector('button'),button);assert.equal(document.querySelector('table'),table);
+ score.textContent='27 : 42';decorate();
+ assert.deepEqual([...document.querySelectorAll('.v2-match-metrics dd')].map(e=>e.textContent),['42','27','+15']);
+ score.textContent='– : –';decorate();assert.equal(document.querySelector('.v2-match-metrics'),null);
+ context.location.hash='#match/a/report';decorate();assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
+});
+test('Football statistics use own-side goals including zero, and never decorate preview tabs',()=>{
+ const {context,document}=setup('#match/f/stats','<header class="fcsg-match-header"><div class="matchup"><div class="matchup-team"><span>FC St. Gallen</span></div><strong>0 : 2</strong></div></header><div class="fcsg-match-dashboard"><section class="fcsg-stat-card"><h2>Pässe</h2></section></div>');
+ context.activeClub='fcsg';context.v2MatchStatistics();
+ assert.deepEqual([...document.querySelectorAll('.v2-match-metrics dd')].map(e=>e.textContent),['0','2','-2']);
+ context.location.hash='#match/f/overview';context.v2MatchStatistics();assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
+});
+test('Older statistical reports keep scorer links and keeper facts inside separate modules without duplicate wrappers',()=>{
+ const {context,document}=setup('#match/old/stats','<section class="match"><div class="content finished-match-stats" data-own-side="home"><h2>Das Spiel in Zahlen</h2><section class="report-comparison">Teamwerte</section><h2>Torschützen</h2><div class="scorers"><a href="#player/1">Originalspieler</a></div><h2>Torhüter</h2><div class="facts">Paraden</div><p class="notice">Torfolge nicht verfügbar</p></div></section>');
+ const link=document.querySelector('a'),facts=document.querySelector('.facts');context.v2MatchStatistics();context.v2MatchStatistics();
+ assert.equal(document.querySelectorAll('.v2-stat-card').length,3);assert.equal(link.closest('.v2-stat-card').querySelector('h2').textContent,'Torschützen');
+ assert.equal(facts.closest('.v2-stat-card').querySelector('h2').textContent,'Torhüter');assert.equal(document.querySelector('.notice').textContent,'Torfolge nicht verfügbar');
+});
