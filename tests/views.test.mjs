@@ -996,3 +996,20 @@ test('Handballvergleich: korrekte Führung, fehlende Werte und Heim-/Auswärtsfa
    }
   }
  });
+
+test('V2 can omit calculation footnotes without losing season figures or unavailable-data notices',()=>{
+ const saved={club:run('activeClub'),state:run('updateState'),players:run('players'),games:run('games'),league:run('tableLeague')};
+ try {
+  run("activeClub='otmar';updateState=otmarFallback;players=otmarFallback.roster.map(p=>[p.number,p.name,p.position]);games=otmarFallback.games;tableLeague='QHL'");
+  const doc=parseHTML(view('seasonNumbers()')).document;
+  assert.ok(doc.querySelector('.player-leader-note.data-explanation'));
+  assert.ok(doc.querySelector('.season-data-note.data-explanation'));
+  assert.ok(doc.querySelectorAll('.player-leader').length>0);
+  assert.match(doc.querySelector('.player-leader-note').textContent,/Strafminuten/);
+  run('updateState={};');
+  const unavailable=parseHTML(view('seasonPlayerLeaders()')).document;
+  assert.ok(unavailable.querySelector('p.muted:not(.data-explanation)'));
+  assert.match(unavailable.querySelector('p.muted').textContent,/nicht verfügbar/);
+  assert.match(fs.readFileSync('src/client/v2/matchday.css','utf8'),/html\[data-preview='v2'\] #app \.data-explanation \{ display:none !important; \}/);
+ }finally{context.__notesSaved=saved;run('activeClub=__notesSaved.club;updateState=__notesSaved.state;players=__notesSaved.players;games=__notesSaved.games;tableLeague=__notesSaved.league');}
+});
