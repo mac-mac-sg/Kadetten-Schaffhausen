@@ -756,7 +756,7 @@ html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v2-news-meta > p
 /* Variant 2: statistic modules only; matchcenter and score header retain their layout. */
 html[data-preview='v2'][data-theme] #app.v2-statistics-dashboard .v2-statistics-body { --v2-stat-surface:var(--surface-2); padding-top:18px; }
 html[data-preview='v2'][data-theme='light'] #app.v2-statistics-dashboard .v2-statistics-body { --v2-stat-surface:#f1f2f3; }
-html[data-preview='v2'][data-theme] #app.v2-detail.v2-statistics-dashboard .v2-stat-card { min-width:0; margin:16px 0; padding:18px; border:1px solid var(--line) !important; border-radius:14px; background:var(--v2-stat-surface); box-shadow:none; }
+html[data-preview='v2'][data-theme] #app.v2-detail.v2-statistics-dashboard :is(.v2-stat-card,.report-score-card,.report-comparison:not(.panel .report-comparison),.report-player-section,.fcsg-stat-card,.finished-match-stats > .panel,.handball-match-stats > .panel) { min-width:0; margin:16px 0; padding:18px; border:1px solid var(--line) !important; border-radius:14px; background:var(--v2-stat-surface,var(--surface-2)); box-shadow:none; }
 html[data-preview='v2'][data-theme] #app.v2-statistics-dashboard .v2-stat-card > h2,
 html[data-preview='v2'][data-theme] #app.v2-statistics-dashboard .v2-stat-card > figcaption h2 { margin:0 0 16px; font:400 24px/1.2 Anton,Impact,sans-serif; letter-spacing:0; }
 html[data-preview='v2'][data-theme] #app.v2-statistics-dashboard .v2-stat-card > figcaption h2 { margin-bottom:0; }
