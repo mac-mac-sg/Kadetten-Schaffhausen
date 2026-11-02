@@ -134,3 +134,9 @@ test('Older statistical reports keep scorer links and keeper facts inside separa
  assert.equal(document.querySelectorAll('.v2-stat-card').length,3);assert.equal(link.closest('.v2-stat-card').querySelector('h2').textContent,'Torschützen');
  assert.equal(facts.closest('.v2-stat-card').querySelector('h2').textContent,'Torhüter');assert.equal(document.querySelector('.notice').textContent,'Torfolge nicht verfügbar');
 });
+
+test('V2 statistic controls avoid duplicate crest labels and keep football chart headings in sequence',()=>{
+ const {context,document}=setup('#match/f/stats','<div class="fcsg-match-dashboard"><section class="fcsg-stat-card"><h2>Formkurve</h2><h4 id="fcsg-difference-title">Tordifferenz</h4><button data-recent-team="Kadetten"><img alt="Kadetten"><span>Kadetten</span></button></section></div>');
+ context.v2MatchStatistics();
+ assert.equal(document.querySelector('img').alt,'');assert.equal(document.getElementById('fcsg-difference-title').getAttribute('aria-level'),'3');
+});

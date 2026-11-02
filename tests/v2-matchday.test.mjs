@@ -67,6 +67,15 @@ test('V2 statistics frames apply immediately to original asynchronous modules wi
  const line=css.split('\n').find(x=>x.includes('#app.v2-detail.v2-statistics-dashboard :is(.v2-stat-card,'));
  assert.ok(line,'Frame rule also selects original statistic module classes');
  for(const name of ['.report-score-card','.report-comparison','.report-player-section','.fcsg-stat-card','.finished-match-stats > .panel']) assert.ok(line.includes(name),name);
- assert.match(line,/border:1px solid var\(--line\) !important/);
- assert.match(line,/background:var\(--v2-stat-surface,var\(--surface-2\)\)/);
+ assert.match(line,/border:var\(--v2-stat-border\) !important/);
+ assert.match(line,/background:var\(--v2-stat-surface\)/);
+});
+
+test('All V2 match statistics use the completed-match master surface, border and radius',()=>{
+ assert.match(css,/--v2-stat-border:1px solid var\(--line\); --v2-stat-radius:14px/);
+ for(const selector of ['.v2-match-metrics > div {','.form-team,.duel-summary) {']) {
+  const line=css.split('\n').find(x=>x.includes(selector));
+  for(const property of ['border:var(--v2-stat-border)','border-radius:var(--v2-stat-radius)','background:var(--v2-stat-surface)']) assert.ok(line.includes(property),selector+' '+property);
+ }
+ assert.doesNotMatch(css,/\.v2-match-metrics > div:first-child \{ background:color-mix/);
 });
