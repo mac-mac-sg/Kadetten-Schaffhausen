@@ -57,9 +57,10 @@ test('Text keeps its distance from edges on narrow phones and desktop', () => {
 
 test('Club switcher never truncates the club name', () => {
   const fit = js.match(/function v2FitClubLabel\(\) \{[\s\S]*?\n\}/)[0];
-  assert.match(fit, /club\.title/); assert.match(fit, /club\.short/); assert.match(fit, /v2-club-crest-only/);
+  assert.match(fit, /fanClubs\[activeClub\]\.short/); assert.match(fit, /classList\.remove\('v2-club-crest-only'\)/);
   assert.match(js.match(/function v2MagazineChrome\(\) \{[\s\S]*?\n\}/)[0], /v2FitClubLabel\(\)/);
-  assert.match(css, /\.compact-club-trigger\.v2-club-crest-only > span \{ display:none; \}/);
+  assert.doesNotMatch(css, /\.v2-club-crest-only > span \{ display:none/);
+  assert.match(css, /grid-template-columns:minmax\(0,1fr\) auto 44px/);
 });
 
 

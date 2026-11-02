@@ -140,3 +140,19 @@ test('V2 statistic controls avoid duplicate crest labels and keep football chart
  context.v2MatchStatistics();
  assert.equal(document.querySelector('img').alt,'');assert.equal(document.getElementById('fcsg-difference-title').getAttribute('aria-level'),'3');
 });
+
+test('Every V2 main route uses the same MATCHDAY masthead and club selection always includes its name',()=>{
+ const {context,document}=setup('#home','');
+ const top=document.createElement('header');top.className='top v1-compact-header';
+ top.innerHTML='<a class="v2-masthead" href="#home">TEAM</a><button class="compact-club-trigger v2-club-crest-only"><img src="crest.webp" alt=""><span>Alter Name <small>Zusatz</small></span><svg class="compact-club-chevron"></svg></button>';
+ document.body.append(top);context.fanClubs.kadetten.short='Kadetten';
+ const crest=top.querySelector('img'),chevron=top.querySelector('svg');
+ for(const route of ['#home','#season/games','#season/table','#season/squad','#club']) {
+  context.location.hash=route;context.v2SyncChrome();context.v2FitClubLabel();
+  assert.equal(top.querySelector('.v2-masthead').textContent,'MATCHDAY');
+  assert.equal(top.querySelector('.v2-masthead').getAttribute('aria-label'),'Matchday · Magazin');
+  assert.equal(top.querySelector('button > span').firstChild.textContent,'KADETTEN ');
+  assert.equal(top.querySelector('button').classList.contains('v2-club-crest-only'),false);
+ }
+ assert.equal(top.querySelector('img'),crest);assert.equal(top.querySelector('svg'),chevron);
+});

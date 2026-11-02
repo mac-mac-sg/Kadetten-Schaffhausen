@@ -265,16 +265,16 @@ html[data-preview='v2'][data-theme] #app { max-width:600px; margin-inline:auto; 
 html[data-preview='v2'][data-theme] .top.v1-compact-header {
   top:0; left:50%; transform:translateX(-50%); width:100%; max-width:600px; margin:0;
   padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 12px; border:0; border-radius:0;
-  display:flex; flex-wrap:nowrap; gap:8px; color:var(--text); background:var(--surface);
+  display:grid; grid-template-columns:minmax(0,1fr) auto 44px; align-items:center; gap:8px; color:var(--text); background:var(--surface);
   box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
 }
 html[data-preview='v2'][data-theme] .v2-masthead { display:inline-flex; align-items:center; min-height:44px; flex:1; min-width:0; font:400 clamp(28px,8vw,36px)/1.15 Anton,Impact,sans-serif; letter-spacing:-.045em; color:inherit; white-space:nowrap; }
 html[data-preview='v2'][data-theme] .v2-masthead span { color:var(--accent); }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { flex:0 1 auto; max-width:155px; gap:6px; padding:0 8px; border:1px solid var(--line); border-radius:30px; font-size:12px; }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { flex:0 1 auto; max-width:none; gap:6px; padding:0 8px; border:1px solid var(--line); border-radius:30px; font-size:12px; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand img { width:22px; height:26px; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand small { display:none; }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand .compact-club-chevron { width:14px; margin:0; }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .header-button { flex:0 0 36px; width:36px; padding:9px; }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .header-button { flex:0 0 44px; width:44px; padding:9px; }
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top.v1-compact-header { background:linear-gradient(#07090bba,transparent); color:#fff; }
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .v2-masthead span { color:var(--v2-cover-accent); }
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { border-color:#ffffff70; background:#101214b8; }
@@ -384,7 +384,6 @@ html[data-preview='v2'][data-theme] .dock a.active::before { background:currentC
 html[data-preview='v2'][data-theme] .dock .nav-icon { width:22px; height:22px; color:inherit; }
 @media(max-width:360px) {
   html[data-preview='v2'][data-theme] .top.v1-compact-header { padding-inline:12px; gap:5px; }
-  html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { max-width:130px; font-size:12px; padding-inline:6px; }
   html[data-preview='v2'][data-theme] .v2-magazine-cover.v2-ticket-section { padding-inline:18px; padding-top:calc(var(--app-header-height,76px) + 120px); }
   html[data-preview='v2'][data-theme] .v2-cover-fixture { flex-wrap:wrap; }
   html[data-preview='v2'][data-theme] .v2-cover-action { font-size:12px; }
@@ -517,8 +516,8 @@ html[data-preview='v2'][data-theme] body.player-mode > :is(.top,.dock) { display
 html[data-preview='v2'][data-theme] #app.v2-detail .profile-back { top:calc(env(safe-area-inset-top,0px) + 16px); }
 
 /* Stable masthead alongside long club labels, including the narrowest phones. */
-html[data-preview='v2'][data-theme] .v2-masthead { flex:0 0 auto; font-size:clamp(24px,7vw,36px); }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { flex:1 1 auto; }
+html[data-preview='v2'][data-theme] .v2-masthead { flex:0 0 auto; font-size:clamp(24px,7.5vw,36px); }
+html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { width:max-content; max-width:none; white-space:nowrap; }
 html[data-preview='v2'][data-theme] #app.v2-detail .portrait .v2-profile-label { color:#fff; text-shadow:0 1px 6px #0009; }
 html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-title { background:var(--v2-cover-accent); color:#111214; }
 @media(max-width:420px) {
@@ -544,8 +543,6 @@ html[data-preview='v2'][data-theme] #app.v2-detail .match-hero .eyebrow { margin
 /* Kopfzeile auf dem Titelfoto: Symbole hell wie die Vereinswahl. */
 html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .header-button { color:#fff; border-color:#ffffff70; background:#101214b8; }
 /* Vereinswahl: passt der Name nicht, bleibt nur das Wappen (Name im aria-label). */
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { flex:0 0 auto; }
-html[data-preview='v2'][data-theme] .top .compact-club-trigger.v2-club-crest-only > span { display:none; }
 /* Spielerkarten: Nummer über dem Namen, damit lange Namen die volle Breite haben. */
 html[data-preview='v2'][data-theme] .player-card > div { padding-right:0; }
 html[data-preview='v2'][data-theme] .player-card strong { overflow-wrap:anywhere; hyphens:auto; }
@@ -573,11 +570,6 @@ html[data-preview='v2'] :is(.player-mode .profile-jumps,.fcsg-profile-jumps) but
 /* Reference edition: large cover typography, photographs and flat editorial furniture. */
 html[data-preview='v2'][data-theme] { --v2-cover-size:clamp(76px,26vw,138px); --v2-event-size:24px; }
 html[data-preview='v2'][data-theme] #install-app { display:none; }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { max-width:130px; }
-html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top.v1-compact-header { align-items:center; padding-block:calc(env(safe-area-inset-top,0px) + 18px) 14px; gap:10px; }
-html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .v2-masthead { font-size:clamp(44px,12.8vw,70px); line-height:1; letter-spacing:-.045em; flex:none; }
-html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { flex:1 1 auto; max-width:132px; margin-left:auto; }
-html[data-preview='v2'][data-theme][data-v2-page='squad']:not(.v2-scrolled) .v2-masthead { color:var(--accent); font-size:42px; line-height:1; }
 html[data-preview='v2'][data-theme] .v2-magazine-cover.v2-ticket-section { padding-top:calc(var(--app-header-height,94px) + 145px); padding-bottom:24px; min-height:min(880px,calc(100svh - 68px)); }
 html[data-preview='v2'][data-theme] #v2-cover-title { font-size:var(--v2-cover-size); line-height:.94; letter-spacing:-.045em; }
 html[data-preview='v2'][data-theme] .v2-cover-editorial { margin-bottom:24px; }
@@ -648,7 +640,6 @@ html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inse
 html[data-preview='v2'][data-theme] [data-v2-install] { width:100%; min-height:48px; margin:8px 0 18px; }
 @media(max-width:350px) {
  html[data-preview='v2'][data-theme] .top.v1-compact-header { padding-inline:14px; gap:6px; }
- html[data-preview='v2'][data-theme][data-v2-page='home']:not(.v2-scrolled) .top .brand.compact-club-trigger { max-width:90px; }
  html[data-preview='v2'][data-theme] #app.v2-detail .v2-matchcenter-wordmark { font-size:30px; }
  html[data-preview='v2'][data-theme] #app.v2-detail .matchup { gap:6px; }
  html[data-preview='v2'][data-theme] #app.v2-detail .matchup-team :is(.crest,.clubmark) { width:36px; height:42px; }
@@ -660,7 +651,6 @@ html[data-preview='v2'][data-theme] #app.v2-detail .matchup-team > span { width:
 html[data-preview='v2'][data-theme]:is([data-v2-state='live'],[data-v2-state='post']) { --v2-cover-size:clamp(66px,22vw,116px); }
 html[data-preview='v2'][data-theme] body > .dock a:is(.active,.active:hover) { background:transparent; color:var(--accent); }
 html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { min-width:54px; }
-html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-trigger.v2-club-crest-only { gap:4px; padding-inline:5px; }
 
 /* Match deck: the club is the cover; the real fixture is its foreground. */
 html[data-preview='v2'][data-theme] #app .v2-deck-cover.v2-ticket-section { display:block; padding:0; min-height:0; background:transparent; overflow:visible; }
