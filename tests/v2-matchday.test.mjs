@@ -48,7 +48,8 @@ test('V2 neutralises V1 surfaces that leak in through html:not([data-design=v2])
 
 test('Text keeps its distance from edges on narrow phones and desktop', () => {
   assert.match(css, /#app\.v2-detail \.match-hero > div \{ left:22px; right:22px; \}/, 'match preview hero text');
-  assert.match(css, /\.player-card b \{ bottom:100%;/, 'squad number above long names');
+  assert.match(css, /grid-template-columns:minmax\(0,1fr\) auto; column-gap:6px/, 'names and numbers have separate columns');
+  assert.match(css, /\.player-card b \{ position:static; grid-column:2; grid-row:1 \/ span 2;/, 'number beside the name');
   assert.match(css, /\.settings-app-info \{ flex-wrap:wrap;/, 'settings data stamp wraps');
   assert.match(css, /\.profile-back \{ left:max\(16px,calc\(\(100vw - 600px\) \/ 2 \+ 16px\)\); \}/, 'profile back link inside the 600 px column');
   assert.match(css, /\.scoreline \.clubmark \{ width:auto; min-width:30px;/, 'three-letter badges');
