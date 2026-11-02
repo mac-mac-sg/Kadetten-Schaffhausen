@@ -215,3 +215,5 @@ Der Kader beginnt mit dem offiziellen Mannschaftsfoto 2026/27 in voller Breite u
 ### V2-Spielerkacheln
 
 Die Spielerkacheln aller drei Vereine verwenden die Fotokarten aus Variante 1: zwei Spalten, 3:4-Format, 16-Pixel-Ecken und ein dunkler Verlauf unter der Beschriftung. Vorname und Nachname stehen unten links, die Rückennummer in einer eigenen Spalte rechts. Lange Namen dürfen umbrechen und kollidieren nicht mit der Nummer. Originalfotos, Spielerlinks, Positionsgruppen und das Mannschaftsfoto bleiben erhalten.
+
+Statistikrahmen greifen auch direkt auf die ursprünglichen Statistikmodule. Damit sind nachgeladene Torverläufe, Teamvergleiche, Halbzeiten und Spielerstatistiken sofort vollständig umrahmt, bevor die zusätzliche V2-Dekoration läuft.

@@ -61,3 +61,12 @@ test('Club switcher never truncates the club name', () => {
   assert.match(js.match(/function v2MagazineChrome\(\) \{[\s\S]*?\n\}/)[0], /v2FitClubLabel\(\)/);
   assert.match(css, /\.compact-club-trigger\.v2-club-crest-only > span \{ display:none; \}/);
 });
+
+
+test('V2 statistics frames apply immediately to original asynchronous modules without waiting for decoration',()=>{
+ const line=css.split('\n').find(x=>x.includes('#app.v2-detail.v2-statistics-dashboard :is(.v2-stat-card,'));
+ assert.ok(line,'Frame rule also selects original statistic module classes');
+ for(const name of ['.report-score-card','.report-comparison','.report-player-section','.fcsg-stat-card','.finished-match-stats > .panel']) assert.ok(line.includes(name),name);
+ assert.match(line,/border:1px solid var\(--line\) !important/);
+ assert.match(line,/background:var\(--v2-stat-surface,var\(--surface-2\)\)/);
+});
