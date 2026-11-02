@@ -179,6 +179,8 @@ function v2MatchStatistics() {
   const active = page === 'match' && tab === 'stats';
   app.classList.toggle('v2-statistics-dashboard', active);
   if (!active) return;
+  app.querySelectorAll('[data-recent-team] img').forEach(image => image.alt = '');
+  app.querySelector('#fcsg-difference-title')?.setAttribute('aria-level','3');
   const body = app.querySelector('.fcsg-match-dashboard,.finished-match-stats,.live-match-body,.match > .content');
   if (!body) return;
   body.classList.add('v2-statistics-body');
