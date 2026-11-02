@@ -219,3 +219,7 @@ Die Spielerkacheln aller drei Vereine verwenden die Fotokarten aus Variante 1: z
 Statistikrahmen greifen auch direkt auf die ursprünglichen Statistikmodule. Damit sind nachgeladene Torverläufe, Teamvergleiche, Halbzeiten und Spielerstatistiken sofort vollständig umrahmt, bevor die zusätzliche V2-Dekoration läuft.
 
 Als Master für alle Flächen innerhalb der V2-Spielstatistiken gilt die Spielerstatistik des abgeschlossenen Spiels: 14-Pixel-Rundung, 1-Pixel-Rahmen in `--line`, neutrale Fläche `--surface-2` (hell: `#f1f2f3`). Hauptmodule, Kennzahlen, Formkurven-Unterkacheln und Duell-Zusammenfassungen verwenden dieselben zentralen Werte, auch ohne nachträgliche Dekoration. Inhaltliche Vereins- und Ergebnisfarben bleiben erhalten.
+
+### Reduzierte Zusatztexte in V2
+
+Wiederholte Quellen-, Berechnungs- und Aktualisierungsfussnoten sind in V2 ausgeblendet. Dazu gehören die beiden langen Texte unter der Saison-/Spielerstatistik in der Tabelle sowie vergleichbare Zusatztexte in Spiel- und Spieleransichten. Sie sind in den gemeinsamen Renderern als `data-explanation` markiert; V1 zeigt sie weiterhin. Konkrete Leerzustände, Fehlerhinweise, Warnungen vor unvollständigen Daten und benötigte Beschriftungen bleiben sichtbar.

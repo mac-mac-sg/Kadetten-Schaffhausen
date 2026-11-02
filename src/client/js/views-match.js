@@ -50,7 +50,7 @@ function matchSquad(g) {
   if (verifiedReport(g)) return reportRoster(g);
   if (g.id !== 'bukarest')
     return `<h2>${g.score ? 'Spielkader' : 'Vor dem Spiel'}</h2><p class="notice">${g.score ? 'Für diese Partie ist noch kein verifizierter Spielkader hinterlegt.' : 'Das bestätigte Spielaufgebot ist noch nicht hinterlegt. Der Saisonkader ist keine bestätigte Aufstellung.'}</p><a class="button" href="#season/squad">Zum Saisonkader</a>`;
-  return `<h2>Das Kadetten-Aufgebot</h2><p class="muted">Gemäss Vereinsbericht · gegen CSM Bucuresti</p><div class="lineup">${players
+  return `<h2>Das Kadetten-Aufgebot</h2><p class="muted data-explanation">Gemäss Vereinsbericht · gegen CSM Bucuresti</p><div class="lineup">${players
     .filter(p => Object.hasOwn(goals, p[0]))
     .map(
       p =>
@@ -298,7 +298,7 @@ function seasonPlayerLeaders() {
       .join('')}</ol>`;
   const scorers = ranking('goals'),
     penalties = ranking('twoMinutes', 2);
-  return `<section class="season-player-stats stats-block" aria-labelledby="season-players-title"><h3 id="season-players-title">Spielerstatistiken</h3><div class="player-leader-group"><h4>Top 5 Torschützen</h4>${scorers.length ? leaders(scorers, 'Tore') : '<p class="muted">Noch keine Tore erfasst.</p>'}</div><div class="player-leader-group"><h4>Meiste Strafminuten</h4>${penalties.length ? leaders(penalties, 'Min.') : '<p class="muted">Noch keine 2-Minuten-Strafen erfasst.</p>'}</div><p class="player-leader-note">QHL · Saison 2026/27 · ${season.teamGames} Spiele<br>Strafminuten aus 2-Minuten-Strafen; Disqualifikationen werden nicht zusätzlich als Minuten gezählt.<br>${ext(source, 'Quelle: SHV', '')} · ${updateLabel('players')}</p></section>`;
+  return `<section class="season-player-stats stats-block" aria-labelledby="season-players-title"><h3 id="season-players-title">Spielerstatistiken</h3><div class="player-leader-group"><h4>Top 5 Torschützen</h4>${scorers.length ? leaders(scorers, 'Tore') : '<p class="muted">Noch keine Tore erfasst.</p>'}</div><div class="player-leader-group"><h4>Meiste Strafminuten</h4>${penalties.length ? leaders(penalties, 'Min.') : '<p class="muted">Noch keine 2-Minuten-Strafen erfasst.</p>'}</div><p class="player-leader-note data-explanation">QHL · Saison 2026/27 · ${season.teamGames} Spiele<br>Strafminuten aus 2-Minuten-Strafen; Disqualifikationen werden nicht zusätzlich als Minuten gezählt.<br>${ext(source, 'Quelle: SHV', '')} · ${updateLabel('players')}</p></section>`;
 }
 function seasonBalance(wins, draws, losses) {
  const total=wins+draws+losses, values=[[wins,'Siege','win'],[draws,'Unentschieden','draw'],[losses,'Niederlagen','loss']];
@@ -316,7 +316,7 @@ function seasonNumbers() {
     home = seasonSummary(list.filter(g => isOwnHandballTeam(g.home))),
     away = seasonSummary(list.filter(g => isOwnHandballTeam(g.away))),
     avg = v => goalAverage(v, stats.games);
-  return `<section class="season-numbers"><h2>${handballClub()==='otmar'?'St. Otmar':'Kadetten'} – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3>${seasonBalance(stats.wins,stats.draws,stats.losses)}<div class="season-splits">${seasonSplit('Zu Hause',home.games,home.wins,home.draws,home.losses)}${seasonSplit('Auswärts',away.games,away.wins,away.draws,away.losses)}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
+  return `<section class="season-numbers"><h2>${handballClub()==='otmar'?'St. Otmar':'Kadetten'} – Saisonbilanz</h2><section class="season-overview stats-block" aria-labelledby="season-overview-title"><h3 id="season-overview-title">Saison auf einen Blick</h3>${seasonBalance(stats.wins,stats.draws,stats.losses)}<div class="season-splits">${seasonSplit('Zu Hause',home.games,home.wins,home.draws,home.losses)}${seasonSplit('Auswärts',away.games,away.wins,away.draws,away.losses)}</div>${seasonJourney(list)}</section><section class="season-goal-stats stats-block" aria-labelledby="season-goals-title"><h3 id="season-goals-title">Torstatistiken</h3><div class="season-number-grid"><div><strong>${avg(stats.goals)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${avg(stats.against)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>${goalDifferenceChart(list)}</section>${seasonPlayerLeaders()}<p class="season-data-note data-explanation">${tableLeague === 'QHL' ? 'QHL · Meisterschaft' : 'European League'} · Saison 2026/27<br>Aus ${stats.games} erfassten, abgeschlossenen Spielen berechnet. Testspiele sind ausgeschlossen.<br>${updateLabel('games')}</p></section>`;
 }
 
 function metric(label, a, b) {
@@ -330,7 +330,7 @@ function matchStats(g) {
     return livePlayerStats(ended,ehfArchiveFor(g),chart);
   }
   if (g.id === 'bukarest')
-    return `<h2>Das Spiel in Zahlen</h2><div class="panel">${statTeams(g)}${metric('Tore', 39, 32)}${metric('1. Halbzeit', 16, 16)}${metric('2. Halbzeit', 23, 16)}${metric('Strafminuten', 4, 4)}</div><p class="muted">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p><h2 class="subhead">Torschützen der Kadetten</h2><div class="scorers">${players
+    return `<h2>Das Spiel in Zahlen</h2><div class="panel">${statTeams(g)}${metric('Tore', 39, 32)}${metric('1. Halbzeit', 16, 16)}${metric('2. Halbzeit', 23, 16)}${metric('Strafminuten', 4, 4)}</div><p class="muted data-explanation">Zweite Halbzeit aus End- und Halbzeitstand berechnet.</p><h2 class="subhead">Torschützen der Kadetten</h2><div class="scorers">${players
       .filter(p => goals[p[0]] > 0)
       .sort((a, b) => goals[b[0]] - goals[a[0]])
       .map(
@@ -342,7 +342,7 @@ function matchStats(g) {
       )}</div><h2 class="subhead">Zwischen den Pfosten</h2><div class="facts"><div><span>Leon Bergmann</span><strong>12 Paraden · 38 %</strong></div><div><span>Mathieu Seravalli</span><strong>1 Parade · 8 %</strong></div></div><p class="notice">Wurfzahlen, Gegner-Torschützen und ein vollständiger Torverlauf sind nicht hinterlegt. Die Fangquoten stammen aus dem Vereinsbericht.</p>`;
   if (g.score)
     return `<h2>Endresultat</h2><div class="panel">${statTeams(g)}${metric('Tore', g.score[0], g.score[1])}</div><p class="notice">Weitere verifizierte Einzelstatistiken sind für dieses Spiel noch nicht hinterlegt.</p>`;
-  return `<h2>Die Ausgangslage</h2><p class="muted">${updateLabel('table')}</p>${previewComparison(g)}<h2 class="subhead">Formkurve & Direktvergleich</h2>${recentSelector(g)}`;
+  return `<h2>Die Ausgangslage</h2><p class="muted data-explanation">${updateLabel('table')}</p>${previewComparison(g)}<h2 class="subhead">Formkurve & Direktvergleich</h2>${recentSelector(g)}`;
 }
 
 function matchPreviewSlot(g,club){
@@ -359,7 +359,7 @@ async function loadMatchPreview(){
   const stamp=new Date(p.generatedAt).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const ai=p.generator!=='daten',note=p.generator==='ki'?'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert, Angaben bitte mit den Quellen prüfen':p.generator==='daten'?'Aus bestätigten Spiel- und Tabellendaten zusammengestellt':'Mit KI aus den verlinkten Quellen erstellt';
   target.setAttribute('aria-label',ai?'KI-Match-Vorschau':'Match-Vorschau');
-  target.innerHTML=`<p class="eyebrow">${ai?'KI-Match-Vorschau':'Match-Vorschau'}</p><h3>${liveEscape(p.headline)}</h3>${p.paragraphs.map(text=>`<p>${liveEscape(text)}</p>`).join('')}<details><summary>Quellen & Datenstand</summary><p class="muted">${note} · ${liveEscape(stamp)} Uhr. Einschätzungen sind keine Ergebnisprognose.</p><ul>${p.sources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<li><a href="${liveEscape(s.url)}" target="_blank" rel="noopener noreferrer">${liveEscape(s.label)}</a></li>`).join('')}</ul></details>`;
+  target.innerHTML=`<p class="eyebrow">${ai?'KI-Match-Vorschau':'Match-Vorschau'}</p><h3>${liveEscape(p.headline)}</h3>${p.paragraphs.map(text=>`<p>${liveEscape(text)}</p>`).join('')}<details class="data-explanation"><summary>Quellen & Datenstand</summary><p class="muted">${note} · ${liveEscape(stamp)} Uhr. Einschätzungen sind keine Ergebnisprognose.</p><ul>${p.sources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<li><a href="${liveEscape(s.url)}" target="_blank" rel="noopener noreferrer">${liveEscape(s.label)}</a></li>`).join('')}</ul></details>`;
  }catch{if(target.isConnected)target.innerHTML='<p class="muted">Die ausführliche Match-Vorschau ist noch nicht verfügbar. Die bestätigten Spielinformationen findest du hier.</p>'}
 }
 

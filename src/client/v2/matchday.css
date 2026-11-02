@@ -778,3 +778,6 @@ html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo > img { positio
 html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo > div { padding:22px; }
 html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo .v2-team-title { font-size:clamp(48px,16vw,84px); line-height:1.05; }
 html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo .v2-team-title > span { display:inline; }
+
+/* Reading view: omit repeated source, calculation and timestamp footnotes in V2. */
+html[data-preview='v2'] #app .data-explanation { display:none !important; }
