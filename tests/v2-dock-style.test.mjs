@@ -25,5 +25,7 @@ test('V2 navigation frosts the complete masked surface and keeps its active circ
   // A clip-path on an ancestor would prevent the glass from sampling page content.
   assert.match(rule(dock), /clip-path:none;/);
   assert.match(rule(dock), /overflow:hidden;/);
+  assert.match(rule("html[data-preview='v2'][data-theme] .v2-dock-label"), /opacity:1;/);
+  assert.match(rule(dock + ' a svg'), /transform:none;/);
   assert.match(css, /@supports not \(\(backdrop-filter:/);
 });
