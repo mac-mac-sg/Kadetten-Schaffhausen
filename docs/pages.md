@@ -211,3 +211,7 @@ Die Statistiklasche verwendet ein modulares Dashboard: Tore, Gegentore und Diffe
 ### Kadetten-Mannschaftsfoto in V2
 
 Der Kader beginnt mit dem offiziellen Mannschaftsfoto 2026/27 in voller Breite und ohne seitlichen Zuschnitt. Der Schriftzug «Das Team» folgt unter dem Bild, bevor die Spielergruppen beginnen. Das Foto wird als optimiertes WebP mit der V2-App ausgeliefert und offline vorgemerkt. Quelle: https://kadettensh.ch/downloads/ (Foto: https://kadettensh.ch/wp-content/downloads/Kadetten_Mannschaft_26_27_RGB.jpg).
+
+### V2-Spielerkacheln
+
+Die Spielerkacheln aller drei Vereine verwenden die Fotokarten aus Variante 1: zwei Spalten, 3:4-Format, 16-Pixel-Ecken und ein dunkler Verlauf unter der Beschriftung. Vorname und Nachname stehen unten links, die Rückennummer in einer eigenen Spalte rechts. Lange Namen dürfen umbrechen und kollidieren nicht mit der Nummer. Originalfotos, Spielerlinks, Positionsgruppen und das Mannschaftsfoto bleiben erhalten.
