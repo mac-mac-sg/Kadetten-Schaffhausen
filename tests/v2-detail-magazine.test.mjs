@@ -65,14 +65,15 @@ test('Detached team previews receive the same magazine cover and show the roster
 });
 
 
-test('Team cover uses the real preferred player image and inserts history before the first position group',()=>{
+test('Kadetten team cover uses the full squad photograph and preserves all roster groups',()=>{
  const {document,context}=setup('#season/squad','');
  const section=document.createElement('section');
  section.innerHTML='<h1>Kader</h1><a class="v2-club-entry" href="#club"><h2>Unser Verein</h2><p>Geschichte</p></a><h2>Torhüter</h2><div class="players" id="keepers"><a class="player-card" href="#player/1"><img src="keeper.webp" alt="Torhüter"></a></div><h2>Rückraum</h2><div class="players" id="field"><a class="player-card" href="#player/22"><img src="real-player.webp" alt="Patrik Martinovic"><div>Originalname und Nummer</div></a></div>';
  context.liveEscape=v=>v;
  const groups=[...section.querySelectorAll('.players')],cards=[...section.querySelectorAll('.player-card')],entry=section.querySelector('.v2-club-entry');
  context.v2MagazineTeamCover(section);context.v2MagazineTeamCover(section);
- assert.equal(section.querySelector('.v2-team-cover > img').getAttribute('src'),'real-player.webp');
+ assert.equal(section.querySelector('.v2-team-cover > img').getAttribute('src'),'assets/kadetten-squad-2026.webp');
+ assert.match(section.querySelector('.v2-team-cover > img').getAttribute('alt'),/Mannschaftsfoto/);assert.equal(section.querySelector('.v2-team-cover').classList.contains('is-team-photo'),true);
  assert.equal(section.querySelector('h1').getAttribute('aria-label'),'Das Team');assert.equal(section.querySelectorAll('.v2-team-title > span').length,2);
  assert.equal(section.querySelector('.v2-team-cover').nextElementSibling,entry);assert.deepEqual([...section.querySelectorAll('.player-card')],cards);
  assert.equal(section.querySelectorAll('.players').length,2);assert.equal(entry.getAttribute('href'),'#club');

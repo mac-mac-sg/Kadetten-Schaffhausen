@@ -207,3 +207,7 @@ V1 und V2 verwenden dieselbe Spieltagsauswahl. Heutige Pflichtspiele einschliess
 ### Statistiklasche in V2
 
 Die Statistiklasche verwendet ein modulares Dashboard: Tore, Gegentore und Differenz aus Sicht des gewählten Vereins stehen als drei Kennzahlen oben. Sie werden nur aus dem angezeigten bestätigten Spielstand abgeleitet; fehlende Spielstände ergeben keine Nullwerte. Torverlauf beziehungsweise FCSG-Torgefährlichkeit, Teamvergleiche und Spielerstatistiken erhalten eigene Kacheln mit 14-Pixel-Rundungen und klaren Abständen. Beim Handball steht der vorhandene Torverlauf vor dem Teamvergleich. Alle Quellen, Tabellen, Mannschaftsumschalter und Live-Aktualisierungen bleiben erhalten. Matchcenter-Titel und Resultatbereich sowie andere Laschen bleiben unverändert.
+
+### Kadetten-Mannschaftsfoto in V2
+
+Der Kader beginnt mit dem offiziellen Mannschaftsfoto 2026/27 in voller Breite und ohne seitlichen Zuschnitt. Der Schriftzug «Das Team» folgt unter dem Bild, bevor die Spielergruppen beginnen. Das Foto wird als optimiertes WebP mit der V2-App ausgeliefert und offline vorgemerkt. Quelle: https://kadettensh.ch/downloads/ (Foto: https://kadettensh.ch/wp-content/downloads/Kadetten_Mannschaft_26_27_RGB.jpg).
