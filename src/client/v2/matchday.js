@@ -85,9 +85,10 @@ function v2MagazineTeamCover(section) {
   const title = section.querySelector('h1'), groups = [...section.querySelectorAll('.players')];
   const preferred = {kadetten:'22',fcsg:'5426',otmar:'2'}[activeClub];
   const portrait = section.querySelector(`.player-card[href="#player/${preferred}"] img`) || groups[1]?.querySelector('.player-card img') || groups[0]?.querySelector('.player-card img');
-  const photo = portrait?.getAttribute('src') || v2HeaderPhoto();
-  const cover = document.createElement('div'); cover.className = 'v2-team-cover';
-  cover.innerHTML = `<img src="${liveEscape(photo)}" alt="" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
+  const teamPhoto = activeClub === 'kadetten';
+  const photo = teamPhoto ? 'assets/kadetten-squad-2026.webp' : portrait?.getAttribute('src') || v2HeaderPhoto();
+  const cover = document.createElement('div'); cover.className = 'v2-team-cover' + (teamPhoto ? ' is-team-photo' : '');
+  cover.innerHTML = `<img src="${liveEscape(photo)}" alt="${teamPhoto ? 'Mannschaftsfoto Kadetten Schaffhausen · Saison 2026/27' : ''}" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
   if (title) {
     title.className = 'v2-team-title'; title.setAttribute('aria-label','Das Team');
     title.innerHTML = '<span>DAS </span><span>TEAM.</span>'; cover.lastElementChild.append(title);
