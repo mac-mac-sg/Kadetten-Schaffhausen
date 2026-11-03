@@ -231,3 +231,7 @@ Alle Hauptbereiche zeigen die Wortmarke MATCHDAY, auch Team und Verein. Die ober
 ### Ruhige Magazin-Startseite in V2
 
 Der kompakte Bildbereich zeigt den Vereinsnamen in Leseschrift. Ein gedämpftes Foto und die dezent getönte Spielkachel mit Textabsprung halten Vorschau, Live-Spiel oder Tagesresultat im Fokus. Die ganze Spielkachel bleibt klickbar; unter «Aktuell» bleibt nur der neueste Artikel hervorgehoben.
+
+### Abgestufter Dunkelmodus in V2
+
+V2 verwendet einen getönten dunklen Grund, hellere Karten und nochmals angehobene Dialog-/Menüflächen. Gebrochenes Weiss und hellere Vereinsakzente sorgen für ruhigere Kontraste. Redaktionelle Fotos sind leicht gedämpft; Wappen und Diagramme behalten ihre Farben. Nur die aktive Menüauswahl und Live-Elemente erhalten einen schwachen Lichtschein. Die gemeinsame Statistikfläche gilt weiterhin für alle Statistikmodule. Der helle Modus und V1 bleiben unverändert.
