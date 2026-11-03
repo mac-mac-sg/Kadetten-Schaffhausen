@@ -68,15 +68,12 @@ gameControls = v2GameControls;
 v2TicketMarkup = v2MagazineTicket;
 v2Home = v2MagazineHome;
 
-/* Vereinswahl: kein abgeschnittener Name. Zuerst der Titel, sonst das Kürzel, sonst nur das Wappen. */
+/* The visible club name always accompanies its crest, including narrow home headers. */
 function v2FitClubLabel() {
   const trigger = document.querySelector('.top .compact-club-trigger'), label = trigger?.querySelector(':scope > span'), text = label?.firstChild;
   if (!text || text.nodeType !== 3) return;
-  const club = fanClubs[activeClub], overflows = () => label.scrollWidth > label.clientWidth + 1;
   trigger.classList.remove('v2-club-crest-only');
-  text.textContent = club.title + ' ';
-  if (overflows()) text.textContent = club.short.toUpperCase() + ' ';
-  if (overflows()) trigger.classList.add('v2-club-crest-only');
+  text.textContent = fanClubs[activeClub].short.toUpperCase() + ' ';
 }
 window.addEventListener('resize', v2FitClubLabel, {passive: true});
 document.fonts?.ready.then(v2FitClubLabel);
@@ -533,9 +530,8 @@ function v2SyncChrome() {
   root.dataset.v2Page = page === 'season' ? id || 'games' : page;
   const masthead = document.querySelector('.v2-masthead');
   if (masthead) {
-    const team = page === 'season' && id === 'squad';
-    masthead.innerHTML = team ? 'TEAM' : page === 'club' ? 'VEREIN' : 'MATCH<span>DAY</span>';
-    masthead.setAttribute('aria-label',team ? 'Team · Zum Magazin' : page === 'club' ? 'Verein · Zum Magazin' : 'Matchday · Magazin');
+    masthead.innerHTML = 'MATCH<span>DAY</span>';
+    masthead.setAttribute('aria-label','Matchday · Magazin');
   }
   root.classList.toggle('v2-scrolled', window.scrollY > 24);
   v2SyncDock();

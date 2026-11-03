@@ -223,3 +223,7 @@ Als Master für alle Flächen innerhalb der V2-Spielstatistiken gilt die Spieler
 ### Reduzierte Zusatztexte in V2
 
 Wiederholte Quellen-, Berechnungs- und Aktualisierungsfussnoten sind in V2 ausgeblendet. Dazu gehören die beiden langen Texte unter der Saison-/Spielerstatistik in der Tabelle sowie vergleichbare Zusatztexte in Spiel- und Spieleransichten. Sie sind in den gemeinsamen Renderern als `data-explanation` markiert; V1 zeigt sie weiterhin. Konkrete Leerzustände, Fehlerhinweise, Warnungen vor unvollständigen Daten und benötigte Beschriftungen bleiben sichtbar.
+
+### Einheitliche Titelleiste in V2
+
+Alle Hauptbereiche zeigen die Wortmarke MATCHDAY, auch Team und Verein. Die obere Zeile verwendet ein gemeinsames Raster mit eigenem Platz für Wortmarke, Vereinsauswahl und Einstellungen. Das Wappen steht immer neben dem lesbaren Vereinskurznamen (KADETTEN, FCSG oder ST. OTMAR); der frühere Rückfall auf ein Wappen ohne Namen entfällt.
