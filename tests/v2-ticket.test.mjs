@@ -274,13 +274,23 @@ test('V2 adds exactly one independent club destination after the existing four l
   assert.equal(link.querySelector('svg').getAttribute('aria-hidden'),'true');
 });
 
-test('V2 always uses the compact dock, including devices with the former band preference',()=>{
- for(const choice of [undefined,'band','compact','unknown']) {
-  const {context,document}=setup(false,new Map([['fan-v2-dock-style',choice]]));
-  assert.equal(document.documentElement.dataset.v2Dock,'compact');
-  const dialog=document.createElement('dialog');dialog.className='club-settings-dialog';
-  dialog.innerHTML='<section class="theme-settings"></section>';document.body.append(dialog);
+test('V2 menu choice restores, persists and switches without replacing navigation',()=>{
+ const key='fan-v2-navigation-style';
+ for(const choice of [undefined,'v1','compact','unknown']) {
+  const storage=new Map([[key,choice],['fan-v2-dock-style','band']]);
+  const {context,document}=setup(false,storage);
+  assert.equal(document.documentElement.dataset.v2Dock,choice==='v1'?'v1':'compact');
+  const dock=document.createElement('nav');dock.className='dock';dock.innerHTML='<a data-nav="news" class="active" href="#home"><svg></svg>Magazin</a><a data-nav="club" href="#club"><svg></svg>Verein</a>';document.body.append(dock);
+  const links=[...dock.children];
+  const dialog=document.createElement('dialog');dialog.className='club-settings-dialog';dialog.innerHTML='<section class="theme-settings"></section>';document.body.append(dialog);
   context.openClubSettings();context.openClubSettings();
-  assert.equal(dialog.querySelector('[data-v2-dock-style]'),null);
+  assert.equal(dialog.querySelectorAll('[data-v2-dock-style]').length,1);
+  const select=dialog.querySelector('select');select.querySelector('option[value="compact"]').selected=false;select.querySelector('option[value="v1"]').selected=true;select.dispatchEvent(new document.defaultView.Event('change'));
+  assert.equal(storage.get(key),'v1');assert.equal(dock.classList.contains('v2-v1-dock'),true);assert.equal(dock.classList.contains('v2-orbit-dock'),false);
+  assert.deepEqual([...dock.children],links);assert.equal(dock.querySelectorAll('.v2-dock-label').length,2);
+  assert.equal(context.v2SetDockStyle('unknown'),false);assert.equal(storage.get(key),'v1');
+  context.localStorage={getItem:()=>{throw Error('blocked');},setItem:()=>{throw Error('blocked');}};
+  assert.equal(context.v2ReadDockStyle(),'compact');assert.equal(context.v2SetDockStyle('compact'),true);
+  assert.equal(dock.classList.contains('v2-orbit-dock'),true);assert.equal(dock.classList.contains('v2-v1-dock'),false);
  }
 });

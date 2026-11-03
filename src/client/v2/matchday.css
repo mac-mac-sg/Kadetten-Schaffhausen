@@ -797,3 +797,32 @@ html[data-preview='v2'][data-theme='dark'] .v2-livebar,
 html[data-preview='v2'][data-theme='dark'] #app .v2-match-deck.is-live { box-shadow:0 0 14px color-mix(in srgb,var(--accent) 12%,transparent); }
 /* Only editorial photography: crests, sponsor marks and statistical charts keep their colours. */
 html[data-preview='v2'][data-theme='dark'] #app :is(img.v1-news-image,.v1-news-image img,.player-card img,.v2-team-cover > img,.club-chapter figure img,.article-photo) { filter:brightness(.92) saturate(.92); }
+
+
+/* Optional V1 glass band: all five V2 destinations retain their labels and links. */
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock.v2-v1-dock {
+  --v2-band-fill:#4e3023bd; --v2-band-selection:color-mix(in srgb,var(--accent) 16%,transparent);
+  bottom:max(18px,env(safe-area-inset-bottom,0px)); width:calc(100% - 28px); max-width:572px;
+  min-width:0; height:64px; min-height:64px; padding:4px; gap:2px;
+  background:var(--v2-band-fill); border:1px solid var(--line); border-radius:24px;
+  backdrop-filter:blur(16px) saturate(115%); -webkit-backdrop-filter:blur(16px) saturate(115%);
+  box-shadow:0 4px 18px #00000030; overflow:hidden; isolation:isolate; clip-path:none;
+}
+html[data-preview='v2'][data-theme][data-v2-dock='v1'][data-club='fcsg'] body > .dock.v2-v1-dock { --v2-band-fill:#1d402bbd; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'][data-club='otmar'] body > .dock.v2-v1-dock { --v2-band-fill:#43391abd; }
+html[data-preview='v2'][data-theme='light'][data-v2-dock='v1'] body > .dock.v2-v1-dock { --v2-band-fill:#fff0e3d9; --v2-band-selection:color-mix(in srgb,var(--accent) 17%,transparent); box-shadow:0 4px 18px #10211718; }
+html[data-preview='v2'][data-theme='light'][data-v2-dock='v1'][data-club='fcsg'] body > .dock.v2-v1-dock { --v2-band-fill:#eaf4ecd9; }
+html[data-preview='v2'][data-theme='light'][data-v2-dock='v1'][data-club='otmar'] body > .dock.v2-v1-dock { --v2-band-fill:#fff6d8d9; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock::before { content:none; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a { position:relative; flex:1; min-width:0; min-height:54px; padding:4px 1px; gap:4px; border-radius:18px; color:var(--text); background:transparent; transition:background-color 140ms ease,color 140ms ease; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a:is(.active,.active:hover) { background:var(--v2-band-selection); color:var(--text); }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a::before { content:none; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a.active::before { content:''; position:absolute; top:auto; bottom:2px; left:calc(50% - 8px); width:16px; height:2px; border-radius:2px; background:var(--accent); }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a svg { position:static; width:22px; height:22px; margin:0; transform:none; color:inherit; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a.active svg { color:var(--accent); }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock .v2-dock-label { position:static; margin:0; font:500 12px/16px var(--font-text); opacity:1; transform:none; }
+html[data-preview='v2'][data-theme][data-v2-dock='v1'] body > .dock a.active .v2-dock-label { font-weight:700; }
+html[data-preview='v2'][data-v2-dock='v1'] .v2-livebar { bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 80px); }
+html[data-preview='v2'] .v2-dock-setting { display:grid; gap:8px; margin-top:16px; font-size:14px; }
+html[data-preview='v2'] .v2-dock-setting select { width:100%; min-width:0; min-height:44px; padding:8px 12px; background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:8px; font:inherit; }
+@media(prefers-reduced-motion:reduce) { html[data-preview='v2'][data-v2-dock='v1'] body > .dock a { transition:none; } }

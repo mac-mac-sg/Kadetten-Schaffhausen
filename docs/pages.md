@@ -235,3 +235,7 @@ Der kompakte Bildbereich zeigt den Vereinsnamen in Leseschrift. Ein gedämpftes 
 ### Abgestufter Dunkelmodus in V2
 
 V2 verwendet einen getönten dunklen Grund, hellere Karten und nochmals angehobene Dialog-/Menüflächen. Gebrochenes Weiss und hellere Vereinsakzente sorgen für ruhigere Kontraste. Redaktionelle Fotos sind leicht gedämpft; Wappen und Diagramme behalten ihre Farben. Nur die aktive Menüauswahl und Live-Elemente erhalten einen schwachen Lichtschein. Die gemeinsame Statistikfläche gilt weiterhin für alle Statistikmodule. Der helle Modus und V1 bleiben unverändert.
+
+### Umschaltbares Menüband in V2
+
+Unter Einstellungen → Menüband stehen «V2 · Mit Aussparung» und «V1 · Schwebendes Menüband» zur Wahl. Die V1-Alternative nutzt ein getöntes Glasband mit abgerundeter aktiver Fläche und kurzem Indikator. Alle fünf V2-Ziele bleiben beschriftet. Die Einstellung wird ausschliesslich für V2 unter `fan-v2-navigation-style` gespeichert; ohne Auswahl bleibt das bisherige V2-Menü aktiv.
