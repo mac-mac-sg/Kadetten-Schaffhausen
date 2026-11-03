@@ -654,15 +654,15 @@ html[data-preview='v2'][data-theme] .top.v1-compact-header .brand.compact-club-t
 
 /* Match deck: the club is the cover; the real fixture is its foreground. */
 html[data-preview='v2'][data-theme] #app .v2-deck-cover.v2-ticket-section { display:block; padding:0; min-height:0; background:transparent; overflow:visible; }
-html[data-preview='v2'][data-theme] .v2-deck-identity { position:relative; isolation:isolate; display:flex; align-items:flex-end; min-height:clamp(350px,53svh,470px); padding:150px 22px 90px; background:#101214; }
+html[data-preview='v2'][data-theme] .v2-deck-identity { position:relative; isolation:isolate; display:flex; align-items:flex-end; min-height:clamp(260px,35svh,320px); padding:120px 22px 48px; background:#101214; }
 html[data-preview='v2'][data-theme] .v2-deck-identity .v2-hero-media { position:absolute; inset:0; overflow:hidden; }
-html[data-preview='v2'][data-theme] .v2-deck-identity .v2-hero-media::after { background:linear-gradient(180deg,#06090c25 15%,#06090c05 35%,#06090cbb 75%,#06090cee); }
+html[data-preview='v2'][data-theme] .v2-deck-identity .v2-hero-media::after { background:linear-gradient(180deg,#06090c50 0%,#06090c20 35%,#06090ca6 72%,#06090ce8 100%); }
 html[data-preview='v2'][data-theme] .v2-deck-identity .v2-cover-editorial { width:100%; margin:0; }
-html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title { font-size:clamp(52px,20vw,96px); line-height:1.03; letter-spacing:-.035em; }
-html[data-preview='v2'][data-theme][data-club='fcsg'] .v2-deck-identity #v2-cover-title { font-size:clamp(42px,14.5vw,76px); }
+html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title { max-width:290px; font:700 clamp(26px,7vw,32px)/1.15 var(--font-text); letter-spacing:-.025em; }
+html[data-preview='v2'][data-theme][data-club] .v2-deck-identity .v2-hero-media img { filter:saturate(.65) brightness(.88); }
 html[data-preview='v2'][data-theme] .v2-deck-identity #v2-cover-title span + span { margin-top:8px; font-size:clamp(22px,7vw,34px); letter-spacing:.025em; }
-html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-content { position:relative; z-index:1; width:calc(100% - 32px); margin:-60px 16px 0; }
-html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { display:grid; gap:18px; padding:18px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 13%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 7%,var(--surface))); border-color:color-mix(in srgb,var(--v2-cover-accent) 26%,var(--line)); color:var(--text); box-shadow:0 12px 32px #00000018; --ticket-ink:var(--text); --ticket-muted:var(--muted); }
+html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-content { position:relative; z-index:1; width:calc(100% - 32px); margin:-18px 16px 0; }
+html[data-preview='v2'][data-theme] #app .v2-deck-cover .v2-match-deck { display:grid; gap:14px; padding:18px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 7%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 4%,var(--surface))); border-color:color-mix(in srgb,var(--v2-cover-accent) 18%,var(--line)); color:var(--text); box-shadow:0 12px 32px #00000018; --ticket-ink:var(--text); --ticket-muted:var(--muted); }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-heading { display:flex; justify-content:space-between; gap:8px 16px; flex-wrap:wrap; color:var(--muted); font-size:12px; line-height:1.5; }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-ticket-day { color:var(--accent); font-weight:700; }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-pairing.live-sr-context { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
@@ -676,7 +676,7 @@ html[data-preview='v2'][data-theme] .v2-deck-center > strong { font:400 clamp(40
 html[data-preview='v2'][data-theme] .is-wide-score .v2-deck-center > strong { font-size:clamp(32px,10vw,48px); }
 html[data-preview='v2'][data-theme] .is-open-time .v2-deck-center > strong { font-size:36px; }
 html[data-preview='v2'][data-theme] .v2-match-deck :is(.v2-ticket-footer,.v2-deck-phase,.v2-deck-stale) { color:var(--muted); text-align:center; font:500 12px/1.5 var(--font-text); }
-html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-action { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:48px; margin:0; padding:10px; border-radius:6px; background:var(--text); color:var(--surface); font-size:13px; }
+html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-action { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:28px; margin:0; padding:2px 0; border-radius:0; background:transparent; color:var(--accent); font-size:13px; }
 html[data-preview='v2'][data-theme] .v2-match-deck .v2-cover-action > span { color:inherit; font-size:22px; }
 html[data-preview='v2'][data-theme] .v2-deck-cover .v2-ticket-empty { margin:0; padding:24px; border:1px solid var(--line); border-radius:14px; background:var(--surface); color:var(--text); }
 /* One frosted surface follows the selected destination; its circle aligns with the menu top. */
@@ -707,7 +707,7 @@ html[data-preview='v2'][data-theme] .v2-livebar { bottom:calc(env(safe-area-inse
 }
 
 /* Dark surfaces need a little more club colour to remain distinct from the page. */
-html[data-preview='v2'][data-theme='dark'] #app .v2-deck-cover .v2-match-deck { background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 19%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 11%,var(--surface))); }
+html[data-preview='v2'][data-theme='dark'] #app .v2-deck-cover .v2-match-deck { background:linear-gradient(145deg,color-mix(in srgb,var(--v2-cover-accent) 9%,var(--surface)),color-mix(in srgb,var(--v2-cover-accent) 5%,var(--surface))); }
 
 /* Light schedules need their own card surface, just as dark schedules already have. */
 html[data-preview='v2'][data-theme='light'] #app .game-timeline > .game-card:not(.current-game):not(.fcsg-game-live) {
@@ -733,7 +733,7 @@ html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-copy { d
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-copy :is(p,.v2-news-meta) { margin:0 0 9px; font-size:12px; line-height:1.5; }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v1-news-copy h2 { margin:0; }
 html[data-preview='v2'][data-theme] #app .v2-magazine .v1-news-grid .v1-news-arrow { display:none; }
-html[data-preview='v2'][data-theme] .v2-magazine-heading h2 { font-size:clamp(32px,10vw,40px); }
+html[data-preview='v2'][data-theme] .v2-magazine-heading h2 { font:700 22px/1.25 var(--font-text); }
 html[data-preview='v2'][data-theme] body > .dock.v2-orbit-dock::before { filter:drop-shadow(0 -1px 0 var(--line)); }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v2-news-lead h2 { font:400 clamp(28px,8.3vw,34px)/1.18 Anton,Impact,sans-serif; }
 html[data-preview='v2'][data-theme] .v2-magazine .v1-news-grid .v2-news-meta > p { margin:0; }

@@ -44,7 +44,7 @@ test('Magazine fixture is one complete link with both teams, crests, time and a 
     assert.equal(root.querySelectorAll('.v2-ticket-arrow,svg,button,a a').length, 0);
     assert.match(root.querySelector('.v2-ticket-footer').textContent, /2026/);
     assert.equal(root.querySelectorAll('.v1-match-action,.v2-glance').length, 0);
-    assert.match(root.querySelector('.v2-cover-action').textContent, /Spielvorschau öffnen/);
+    assert.match(root.querySelector('.v2-cover-action').textContent, /Zur Spielvorschau/);
   }
 });
 test('Live and final states preserve home-away score order and route to their details', () => {
@@ -186,8 +186,10 @@ test('Magazine retains every story once, including its original route, in all th
     context.activeClub = id;
     const markup = context.v2MagazineHome(id === 'fcsg'), root = parse(markup);
     assert.equal(root.querySelectorAll('h1').length, 1);
+    assert.equal(root.querySelector('.v2-cover-kicker'),null);
+    assert.equal(root.querySelector('.v2-magazine-heading').textContent,'Aktuell');
     assert.equal(root.querySelector('.v1-news-grid .v1-news-link').getAttribute('href'),'#news/article-0');
-    assert.equal(root.querySelector('h1').textContent,[context.fanClubs[id].title,context.fanClubs[id].subtitle].join(''));
+    assert.equal(root.querySelector('h1').textContent,context.fanClubs[id].name);
     assert.equal(root.querySelectorAll('.v1-news-card').length, news.length);
     assert.equal(root.querySelectorAll('.v2-news-lead').length,1);
     assert.equal(root.querySelector('.v2-news-lead .v1-news-link').getAttribute('href'),'#news/article-0');
@@ -203,7 +205,7 @@ test('Magazine retains every story once, including its original route, in all th
     vm.runInContext('v2State.newsExpanded=false',context);
   }
   for (const state of ['pre','live','post','everyday']) {
-    assert.deepEqual([...context.v2CoverTitle({game,state})],['ST. OTMAR','ST. GALLEN']);
+    assert.deepEqual([...context.v2CoverTitle({game,state})],['TSV St. Otmar']);
   }
   club.fixture.live=null;
 });

@@ -227,3 +227,7 @@ Wiederholte Quellen-, Berechnungs- und Aktualisierungsfussnoten sind in V2 ausge
 ### Einheitliche Titelleiste in V2
 
 Alle Hauptbereiche zeigen die Wortmarke MATCHDAY, auch Team und Verein. Die obere Zeile verwendet ein gemeinsames Raster mit eigenem Platz für Wortmarke, Vereinsauswahl und Einstellungen. Das Wappen steht immer neben dem lesbaren Vereinskurznamen (KADETTEN, FCSG oder ST. OTMAR); der frühere Rückfall auf ein Wappen ohne Namen entfällt.
+
+### Ruhige Magazin-Startseite in V2
+
+Der kompakte Bildbereich zeigt den Vereinsnamen in Leseschrift. Ein gedämpftes Foto und die dezent getönte Spielkachel mit Textabsprung halten Vorschau, Live-Spiel oder Tagesresultat im Fokus. Die ganze Spielkachel bleibt klickbar; unter «Aktuell» bleibt nur der neueste Artikel hervorgehoben.
