@@ -774,3 +774,26 @@ html[data-preview='v2'] #app .data-explanation { display:none !important; }
 
 /* The preview opens directly with the comparison; no empty introductory card. */
 html[data-preview='v2'] #app .preview-stats-intro { display:none; }
+
+/* Dark edition: soft ink, lifted surfaces and restrained light instead of deep shadows. */
+:root[data-preview='v2'][data-theme='dark'] {
+  --bg:#14171b; --surface:#14171b; --surface-2:#20252b;
+  --text:#dedfe1; --muted:#b5bac1; --line:#dce4ee29;
+  --v2-card:var(--surface-2); --v2-card-strong:#2b323a;
+  --accent:#ffad72; --accent-soft:#ffbf92; --v2-cover-accent:var(--accent);
+  --v2-status-shadow:0 0 16px #ffad721a;
+}
+:root[data-preview='v2'][data-theme='dark'][data-club='fcsg'] { --accent:#8cdeb0; --accent-soft:#afe9c8; --v2-status-shadow:0 0 16px #8cdeb01a; }
+:root[data-preview='v2'][data-theme='dark'][data-club='otmar'] { --accent:#f5dc77; --accent-soft:#f9e7a3; --v2-status-shadow:0 0 16px #f5dc771a; }
+html[data-preview='v2'][data-theme='dark'] .top.v1-compact-header,
+html[data-preview='v2'][data-theme='dark'] #app :is(#v2-cover-title,.v2-team-title,.v2-team-cover p,.v2-club-page h1,.v2-article-heading h1) { color:var(--text); }
+html[data-preview='v2'][data-theme='dark'][data-v2-page='home']:not(.v2-scrolled) .top.v1-compact-header { color:var(--text); }
+html[data-preview='v2'][data-theme='dark'] #app .v2-deck-identity { background:var(--surface); }
+html[data-preview='v2'][data-theme='dark'] #app .v2-deck-cover .v2-match-deck { box-shadow:none; }
+html[data-preview='v2'][data-theme='dark'] :is(.club-settings-dialog,.compact-club-menu,.programme-dialog) { background:var(--v2-card-strong); color:var(--text); box-shadow:0 0 0 1px var(--line); }
+html[data-preview='v2'][data-theme='dark'] body > .dock.v2-orbit-dock { --v2-orbit-fill:var(--text); --v2-orbit-ink:var(--surface); --v2-dock-surface:var(--v2-card-strong); }
+html[data-preview='v2'][data-theme='dark'] body > .dock.v2-orbit-dock a.active::before { box-shadow:0 0 14px color-mix(in srgb,var(--accent) 17%,transparent); }
+html[data-preview='v2'][data-theme='dark'] .v2-livebar,
+html[data-preview='v2'][data-theme='dark'] #app .v2-match-deck.is-live { box-shadow:0 0 14px color-mix(in srgb,var(--accent) 12%,transparent); }
+/* Only editorial photography: crests, sponsor marks and statistical charts keep their colours. */
+html[data-preview='v2'][data-theme='dark'] #app :is(img.v1-news-image,.v1-news-image img,.player-card img,.v2-team-cover > img,.club-chapter figure img,.article-photo) { filter:brightness(.92) saturate(.92); }
