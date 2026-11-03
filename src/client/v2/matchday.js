@@ -183,7 +183,7 @@ function v2MatchStatistics() {
   body.classList.add('v2-statistics-body');
   // Older match reports expose scorers and keepers as sibling blocks rather than sections.
   body.querySelectorAll(':scope > h2').forEach(heading => {
-    if (heading.textContent === 'Das Spiel in Zahlen') return;
+    if (heading.matches('.preview-stats-intro') || heading.textContent === 'Das Spiel in Zahlen') return;
     const card = document.createElement('section'); card.className = 'v2-stat-card';
     heading.before(card); card.append(heading);
     while (card.nextElementSibling && !card.nextElementSibling.matches('h2,.report-score-card,.report-comparison,.panel,.report-player-section,.actions')) card.append(card.nextElementSibling);
