@@ -551,6 +551,24 @@ document.addEventListener('keydown',event => {
 });
 document.addEventListener('pointerdown',() => document.querySelector('body > .dock')?.classList.remove('v2-dock-no-motion'),{passive:true});
 
+/* A short top-to-bottom entrance; refreshes of the same standings stay still. */
+let v2StandingsEntryKey = '', v2KeyboardNavigation = false;
+document.addEventListener('keydown', () => { v2KeyboardNavigation = true; }, true);
+document.addEventListener('pointerdown', () => { v2KeyboardNavigation = false; }, {passive:true,capture:true});
+function v2AnimateStandings() {
+  if (location.hash !== '#season/table') { v2StandingsEntryKey = ''; return; }
+  const rows = [...document.querySelectorAll('#app .standings-table tbody > tr')];
+  if (!rows.length) return; // Football data may arrive after the first render.
+  const key = activeClub + ':' + (activeClub === 'fcsg' ? 'SL' : tableLeague);
+  if (key === v2StandingsEntryKey) return;
+  v2StandingsEntryKey = key;
+  if (v2KeyboardNavigation || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  rows.forEach((row, index) => row.animate?.([
+    {opacity:0.25,transform:'translateY(-10px)'},
+    {opacity:1,transform:'translateY(0)'}
+  ], {duration:160,delay:Math.min(index,6)*18,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'}));
+}
+
 /* Kompakte Kopfzeile beim Scrollen und Merkmale für die Gestaltung. */
 function v2SyncChrome() {
   const [page, id] = v2Page();
@@ -578,6 +596,7 @@ function v2AfterRender() {
   v2AddShareButton();
   v2DecorateMedia();
   v2WatchScore();
+  v2AnimateStandings();
 }
 function v2Tick() {
   v2SyncHome();
@@ -588,6 +607,7 @@ function v2Tick() {
   v2AddShareButton();
   v2WatchScore();
   v2DecorateMedia();
+  v2AnimateStandings();
 }
 
 // V2 builds on the shared routes; its magazine renderers and chrome never load in V1.
