@@ -11,7 +11,7 @@ document.documentElement.dataset.v2Dock = 'compact';
 /* Magazine edition. Data, routes and live confirmation still come from the shared app. */
 function v2CoverTitle() {
   const club = fanClubs[activeClub];
-  return [club.title, club.subtitle].filter(Boolean);
+  return [club.name];
 }
 function v2MagazineTicket(c, info) {
   const g = info.game;
@@ -29,7 +29,7 @@ function v2MagazineTicket(c, info) {
   const stale = c.football ? fcsgLiveErrors.has(g.id) || fcsgLiveErrors.has('latest') : liveRequestFailed;
   const href = live ? c.liveHref(c.fixture.live) : c.matchHref(g, finished);
   const effect = live ? 'live' : finished ? 'result' : g.date === c.today ? 'matchday' : info.state === 'pre' ? 'soon' : 'calm';
-  const action = live ? 'Liveticker öffnen' : finished ? 'Rückblick öffnen' : 'Spielvorschau öffnen';
+  const action = live ? 'Zum Liveticker' : finished ? 'Zum Rückblick' : 'Zur Spielvorschau';
   const wide = value.length > 7 ? ' is-wide-score' : '', open = value === 'Offen' ? ' is-open-time' : '';
   return `<a id="v2-match-ticket" class="v2-match-ticket v2-match-deck${live ? ' is-live' : ''}${wide}${open}" href="${liveEscape(href)}" data-result="${finished ? c.result(g)?.state || '' : ''}" data-effect="${effect}">
     <span class="v2-ticket-heading"><span class="v2-ticket-day">${liveEscape(label)}</span><span class="v2-ticket-league">${liveEscape(g.league || '')}</span></span>
@@ -50,10 +50,10 @@ function v2MagazineHome(football = false) {
   return `<section class="home-news v2-magazine" aria-labelledby="v2-cover-title"><div class="story-feed">
     <div class="home-front-page"><section class="v2-ticket-section v2-magazine-cover v2-deck-cover" aria-label="Aktuelles Spiel">
       <div class="v2-deck-identity"><div class="v2-hero-media" aria-hidden="true"><img src="${v2HeaderPhoto()}" alt="" decoding="async" fetchpriority="high"></div>
-      <div class="v2-cover-editorial"><p class="v2-cover-kicker">${c.football ? 'Fussball' : 'Handball'} · Dein Vereinsmagazin</p><h1 id="v2-cover-title" aria-label="${liveEscape(fanClubs[activeClub].name)}">${title.map(line => `<span>${liveEscape(line)}</span>`).join('')}</h1></div></div>
+      <div class="v2-cover-editorial"><h1 id="v2-cover-title" aria-label="${liveEscape(fanClubs[activeClub].name)}">${title.map(line => `<span>${liveEscape(line)}</span>`).join('')}</h1></div></div>
       <div class="v2-ticket-content">${v2MagazineTicket(c, info)}</div>
     </section></div>
-    <header class="v2-magazine-heading"><p class="v2-editorial-kicker">Aus dem Verein</p><h2>NAH DRAN.</h2><span>News & Geschichten</span></header>
+    <header class="v2-magazine-heading"><h2>Aktuell</h2></header>
     <div class="v1-news-grid">${news.map((n, i) => homeNewsCard(n, i, football)).join('') || '<p class="notice">Noch keine News verfügbar.</p>'}</div>
   </div></section>${football ? fcsgFooter() : footer()}`;
 }
