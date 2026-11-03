@@ -5,8 +5,33 @@
 const V2_NEWS_LIMIT = 15;
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
-/* One fixed compact glass dock, independent of earlier saved menu choices. */
-document.documentElement.dataset.v2Dock = 'compact';
+/* V2 owns this preference; V1 and the former experimental menu choice stay untouched. */
+const V2_DOCK_STYLE_KEY = 'fan-v2-navigation-style';
+function v2ReadDockStyle() {
+  try { return localStorage.getItem(V2_DOCK_STYLE_KEY) === 'v1' ? 'v1' : 'compact'; }
+  catch { return 'compact'; }
+}
+function v2SetDockStyle(style) {
+  if (!['compact','v1'].includes(style)) return false;
+  document.documentElement.dataset.v2Dock = style;
+  document.querySelectorAll('[data-v2-dock-style]').forEach(select => select.value = style);
+  try { localStorage.setItem(V2_DOCK_STYLE_KEY,style); } catch { /* Keep the choice for this session. */ }
+  v2SyncDock();
+  return true;
+}
+function v2InstallDockChoice() {
+  const group = document.querySelector('.club-settings-dialog .theme-settings');
+  if (!group) return;
+  let select = group.querySelector('[data-v2-dock-style]');
+  if (!select) {
+    const label = document.createElement('label'); label.className = 'v2-dock-setting';
+    label.innerHTML = '<span>Menüband</span><select data-v2-dock-style><option value="compact">V2 · Mit Aussparung</option><option value="v1">V1 · Schwebendes Menüband</option></select>';
+    select = label.querySelector('select');
+    select.addEventListener('change',() => v2SetDockStyle(select.value)); group.append(label);
+  }
+  select.value = document.documentElement.dataset.v2Dock;
+}
+document.documentElement.dataset.v2Dock = v2ReadDockStyle();
 
 /* Magazine edition. Data, routes and live confirmation still come from the shared app. */
 function v2CoverTitle() {
@@ -124,6 +149,7 @@ function v2EditorialEvents(scope = document) {
 }
 
 function v2InstallSettings() {
+  v2InstallDockChoice();
   const dialog = document.querySelector('.club-settings-dialog'), install = document.getElementById('install-app');
   if (!dialog || !install) return;
   const existing = dialog.querySelector('[data-v2-install]');
@@ -499,7 +525,8 @@ v2EnsureClubNavigation();
 function v2SyncDock() {
   const dock = document.querySelector('body > .dock');
   if (!dock) return;
-  dock.classList.add('v2-orbit-dock');
+  dock.classList.toggle('v2-orbit-dock',document.documentElement.dataset.v2Dock !== 'v1');
+  dock.classList.toggle('v2-v1-dock',document.documentElement.dataset.v2Dock === 'v1');
   const links = [...dock.querySelectorAll('[data-nav]')];
   for (const link of links) {
     if (link.querySelector('.v2-dock-label')) continue;
