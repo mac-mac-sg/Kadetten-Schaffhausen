@@ -65,7 +65,7 @@ test('Club switcher never truncates the club name', () => {
 
 
 test('V2 statistics frames apply immediately to original asynchronous modules without waiting for decoration',()=>{
- const line=css.split('\n').find(x=>x.includes('#app.v2-detail.v2-statistics-dashboard :is(.v2-stat-card,'));
+ const line=css.split('\n').find(x=>x.includes('#app:is(.v2-statistics-dashboard,:has(.finished-match-stats)) :is(.v2-stat-card,'));
  assert.ok(line,'Frame rule also selects original statistic module classes');
  for(const name of ['.report-score-card','.report-comparison','.report-player-section','.fcsg-stat-card','.finished-match-stats > .panel']) assert.ok(line.includes(name),name);
  assert.match(line,/border:var\(--v2-stat-border\) !important/);
