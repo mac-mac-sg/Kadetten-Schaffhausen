@@ -173,7 +173,8 @@ function v2MagazineChrome() {
 function v2MatchStatistics() {
   const app = document.getElementById('app'), [page,,tab] = v2Page();
   if (!app) return;
-  const active = page === 'match' && tab === 'stats';
+  const implicitStats = [undefined,'overview','squad'].includes(tab) && !!app.querySelector('.finished-match-stats');
+  const active = page === 'match' && (tab === 'stats' || implicitStats);
   app.classList.toggle('v2-statistics-dashboard', active);
   if (!active) return;
   app.querySelectorAll('[data-recent-team] img').forEach(image => image.alt = '');

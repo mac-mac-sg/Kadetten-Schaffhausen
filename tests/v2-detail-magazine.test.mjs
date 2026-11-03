@@ -167,3 +167,16 @@ test('Preview statistics begin with the comparison without framing the hidden in
  assert.equal(document.getElementById('form').closest('.v2-stat-card').querySelector('h2').textContent,'Formkurve & Direktvergleich');
  assert.match(fs.readFileSync('src/client/js/views-match.js','utf8'),/class="preview-stats-intro">Die Ausgangslage/);
 });
+
+
+test('Finished handball default routes receive the same frames as the explicit statistics tab',()=>{
+ for(const route of ['#match/gc/overview','#match/gc/squad','#match/gc','#match/gc/stats']){
+  const {context,document}=setup(route,'<section class="match"><div class="content finished-match-stats"><section class="report-comparison">Teamwerte</section><figure class="report-score-card"><svg id="chart"></svg></figure><section class="report-player-section">Spieler</section></div></section>');
+  const chart=document.getElementById('chart');context.v2MatchStatistics();context.v2MatchStatistics();
+  assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),true,route);
+  assert.equal(document.querySelectorAll('.v2-stat-card').length,3);
+  assert.equal(document.querySelector('.v2-stat-card #chart'),chart);
+  context.location.hash='#match/gc/report';context.v2MatchStatistics();
+  assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
+ }
+});
