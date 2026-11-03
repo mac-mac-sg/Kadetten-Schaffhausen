@@ -771,3 +771,6 @@ html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo .v2-team-title 
 
 /* Reading view: omit repeated source, calculation and timestamp footnotes in V2. */
 html[data-preview='v2'] #app .data-explanation { display:none !important; }
+
+/* The preview opens directly with the comparison; no empty introductory card. */
+html[data-preview='v2'] #app .preview-stats-intro { display:none; }

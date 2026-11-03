@@ -156,3 +156,14 @@ test('Every V2 main route uses the same MATCHDAY masthead and club selection alw
  }
  assert.equal(top.querySelector('img'),crest);assert.equal(top.querySelector('svg'),chevron);
 });
+
+
+test('Preview statistics begin with the comparison without framing the hidden introduction',()=>{
+ const {context,document}=setup('#match/preview/stats','<section class="match"><div class="content"><h2 class="preview-stats-intro">Die Ausgangslage</h2><p class="data-explanation">Aktualisiert</p><div class="panel" id="comparison">Rang Punkte Spiele</div><h2>Formkurve &amp; Direktvergleich</h2><div id="form">Form</div></div></section>');
+ const comparison=document.getElementById('comparison');
+ context.v2MatchStatistics();context.v2MatchStatistics();
+ assert.equal(document.querySelector('.preview-stats-intro').closest('.v2-stat-card'),null);
+ assert.equal(document.querySelector('.v2-stat-card'),comparison);
+ assert.equal(document.getElementById('form').closest('.v2-stat-card').querySelector('h2').textContent,'Formkurve & Direktvergleich');
+ assert.match(fs.readFileSync('src/client/js/views-match.js','utf8'),/class="preview-stats-intro">Die Ausgangslage/);
+});

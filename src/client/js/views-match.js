@@ -342,7 +342,7 @@ function matchStats(g) {
       )}</div><h2 class="subhead">Zwischen den Pfosten</h2><div class="facts"><div><span>Leon Bergmann</span><strong>12 Paraden · 38 %</strong></div><div><span>Mathieu Seravalli</span><strong>1 Parade · 8 %</strong></div></div><p class="notice">Wurfzahlen, Gegner-Torschützen und ein vollständiger Torverlauf sind nicht hinterlegt. Die Fangquoten stammen aus dem Vereinsbericht.</p>`;
   if (g.score)
     return `<h2>Endresultat</h2><div class="panel">${statTeams(g)}${metric('Tore', g.score[0], g.score[1])}</div><p class="notice">Weitere verifizierte Einzelstatistiken sind für dieses Spiel noch nicht hinterlegt.</p>`;
-  return `<h2>Die Ausgangslage</h2><p class="muted data-explanation">${updateLabel('table')}</p>${previewComparison(g)}<h2 class="subhead">Formkurve & Direktvergleich</h2>${recentSelector(g)}`;
+  return `<h2 class="preview-stats-intro">Die Ausgangslage</h2><p class="muted data-explanation">${updateLabel('table')}</p>${previewComparison(g)}<h2 class="subhead">Formkurve & Direktvergleich</h2>${recentSelector(g)}`;
 }
 
 function matchPreviewSlot(g,club){
