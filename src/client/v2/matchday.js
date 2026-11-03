@@ -2,7 +2,7 @@
    Die Startseite richtet sich nach dem Spielzustand (Alltag, Vorfreude, Live, nach dem Spiel),
    eine Live-Leiste begleitet laufende Spiele, Übergänge und Ladezustände machen die App ruhiger.
    Alles hier setzt auf die bestehenden Renderer auf und ändert keine Daten. */
-const V2_NEWS_LIMIT = 6;
+const V2_NEWS_LIMIT = 15;
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
 /* One fixed compact glass dock, independent of earlier saved menu choices. */

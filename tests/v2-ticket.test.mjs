@@ -180,7 +180,7 @@ test('Magazine retains every story once, including its original route, in all th
   Object.assign(context, {
     photoUrl: x => x, snapshotText: x => x, footer: () => '', fcsgFooter: () => '',
     v2ClubIdentity: () => ({photo:'assets/team.webp'})});
-  const news = Array.from({length:9}, (_,i) => ({id:'article-'+i, title:'Vereinsbericht '+i, image:'assets/team.webp', date:'30.10.2026'}));
+  const news = Array.from({length:18}, (_,i) => ({id:'article-'+i, title:'Vereinsbericht '+i, image:'assets/team.webp', date:'30.10.2026'}));
   context.stories = news; context.fcsgData = {stories:news};
   for (const id of ['kadetten','fcsg','otmar']) {
     context.activeClub = id;
@@ -199,9 +199,9 @@ test('Magazine retains every story once, including its original route, in all th
     assert.equal(root.querySelectorAll('a[href="#club"]').length,0);
     document.getElementById('app').innerHTML = markup;
     context.v2LimitNews();
-    assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,6);
+    assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,15);
     document.querySelector('.v2-more-news').click();
-    assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,9);
+    assert.equal(document.querySelectorAll('.v1-news-card:not([hidden])').length,18);
     vm.runInContext('v2State.newsExpanded=false',context);
   }
   for (const state of ['pre','live','post','everyday']) {
