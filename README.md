@@ -33,7 +33,7 @@ Einzelschritte: `npm run check`, `npm test`, `npm run build:pages`, `node script
 
 **Aktueller Stand (6. Oktober 2026):** GitHub ist die Codebasis. Die Oberfläche wird per GitHub Actions auf GitHub Pages veröffentlicht, nach erfolgreichen Prüfungen auf main. Der Datendienst läuft als Cloudflare Worker (`kadetten-api`, Speicher Workers KV); Daten, Artikel, Matchprogramme und Match-Vorschauen (KI von Cloudflare Workers AI mit sachlichem Rückfall) aktualisiert ein Workflow in GitHub Actions nach Zeitplan. Der frühere ChatGPT-Sites-Dienst läuft unverändert weiter, wird von der App aber nicht mehr gelesen und bis zu einem ausdrücklichen Auftrag nicht abgeschaltet. Das Android-Widget liest noch von dort. Die Pages-App liest ohne Zugangsschlüssel und ohne manuellen Aktualisieren-Button. Details: [Betrieb](docs/betrieb.md), [Umzug auf Cloudflare](docs/cloudflare-umzug.md), [Pages-Betrieb](docs/pages.md). Branchschutz ist noch nicht eingerichtet.
 
-Weitere Informationen: [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Arbeitsregeln für Menschen und KI-Agenten](AGENTS.md), [Einrichtung für Claude](CLAUDE.md), [Betrieb ausserhalb des Repositorys](docs/betrieb.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
+Weitere Informationen: [Kadetten-App (V2)](docs/kadetten-app.md), [Architektur](docs/architecture.md), [Migrationsetappen](docs/migration.md), [GitHub Pages](docs/pages.md), [Arbeitsregeln für Menschen und KI-Agenten](AGENTS.md), [Einrichtung für Claude](CLAUDE.md), [Betrieb ausserhalb des Repositorys](docs/betrieb.md), [Quellen und frühere Implementierungsnotizen](docs/legacy-notes.md).
 
 ## Daten und Rechte
 

@@ -174,7 +174,7 @@ test('Countdown occupies the heading and the full Swiss date replaces the home-a
   }
 });
 
-test('Magazine retains every story once, including its original route, in all three club editions', () => {
+test('Magazine retains every story once, including its original route, in the Kadetten edition', () => {
   const {context, document, club, game, parse} = setup();
   vm.runInContext(fs.readFileSync('src/client/js/views-news.js', 'utf8'), context);
   Object.assign(context, {
@@ -182,7 +182,8 @@ test('Magazine retains every story once, including its original route, in all th
     v2ClubIdentity: () => ({photo:'assets/team.webp'})});
   const news = Array.from({length:18}, (_,i) => ({id:'article-'+i, title:'Vereinsbericht '+i, image:'assets/team.webp', date:'30.10.2026'}));
   context.stories = news; context.fcsgData = {stories:news};
-  for (const id of ['kadetten','fcsg','otmar']) {
+  // Die V2 ist die Kadetten-App; FCSG und St. Otmar bleiben in Matchday (V1).
+  for (const id of ['kadetten']) {
     context.activeClub = id;
     const markup = context.v2MagazineHome(id === 'fcsg'), root = parse(markup);
     assert.equal(root.querySelectorAll('h1').length, 1);
@@ -205,7 +206,7 @@ test('Magazine retains every story once, including its original route, in all th
     vm.runInContext('v2State.newsExpanded=false',context);
   }
   for (const state of ['pre','live','post','everyday']) {
-    assert.deepEqual([...context.v2CoverTitle({game,state})],['TSV St. Otmar']);
+    assert.deepEqual([...context.v2CoverTitle({game,state})],['Kadetten Schaffhausen']);
   }
   club.fixture.live=null;
 });

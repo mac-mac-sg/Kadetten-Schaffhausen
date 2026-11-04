@@ -17,7 +17,7 @@ assert.doesNotMatch(previewHtml,/data-design="v2"/);
 assert.match(previewHtml,/localStorage.getItem\('v2:fan-v1-theme'\)/,'Early theme must use isolated V2 preference');
 assert.ok(preview.includes('v2:'),'V2 storage namespace missing');
 const manifest=JSON.parse(fs.readFileSync('dist/client/v2/manifest.webmanifest','utf8'));
-assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Matchday');assert.equal(manifest.short_name,'Matchday');
+assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Kadetten Fan-App');assert.equal(manifest.short_name,'Kadetten');
 const v1Manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
 assert.deepEqual(v1Manifest.icons.map(i=>i.src),['assets/app-v1-scarf-glow-192.png','assets/app-v1-scarf-glow-512.png','assets/app-v1-scarf-glow-maskable-512.png']);
 assert.deepEqual(manifest.icons.map(i=>i.src),['assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'],'V2 app identity must stay unchanged');
@@ -26,14 +26,17 @@ assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.
 assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
 for(const base of ['dist/client','dist/client/v2']) {
  const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
- const appName='Matchday';
- assert.equal(appManifest.name,appName);assert.equal(appManifest.short_name,appName);
+ // V1 ist Matchday mit drei Vereinen, V2 die Kadetten-App (docs/kadetten-app.md).
+ const kadetten=base.endsWith('/v2'),appName=kadetten?'Kadetten':'Matchday',installName=kadetten?'Kadetten-App':'Matchday';
+ assert.equal(appManifest.name,kadetten?'Kadetten Fan-App':appName);assert.equal(appManifest.short_name,appName);
  const html=fs.readFileSync(base+'/index.html','utf8');
  assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+appName+'"'),'Installed app label must stay isolated per version');
  assert.ok(html.includes('<title>'+appName+' ·'),'Browser title must use the version-specific app name');
  const bundle=fs.readFileSync(base+'/js/app.js','utf8');
- assert.ok(bundle.includes(appName+' wurde installiert.'));
- assert.ok(bundle.includes('Matchday auf dem Startbildschirm'));
+ assert.ok(bundle.includes(installName+' wurde installiert.'));
+ assert.ok(bundle.includes(installName+' auf dem Startbildschirm'));
+ if(kadetten)assert.doesNotMatch(html,/FCSG|St\. Otmar|Meine Vereine/,'Kadetten-App shell names only the Kadetten');
+ if(kadetten)assert.doesNotMatch(fs.readFileSync(base+'/sw.js','utf8'),/fcsg-stadium|otmar-kreuzbleiche|v2-header-fcsg|v2-header-otmar|otmar-squad/,'Kadetten-App offline shell excludes FCSG and St. Otmar photos');
  assert.match(html,/data-club-layout="modern"/);
  if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
  for(const [,file] of html.matchAll(/(?:src|href)="((?:assets|js)\/[^"?#]+|app.css|platform-config.js|manifest.webmanifest)/g))assert.ok(fs.existsSync(base+'/'+file),'Missing asset: '+base+'/'+file);
