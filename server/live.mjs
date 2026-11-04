@@ -192,9 +192,10 @@ const reportQuery = liveStatsQuery.replace('totalSuspension useReducedResultDisp
 const reportTeamQuery = 'query($gameId:Int){gameTeamStats(gameId:$gameId){gameId teamId turnovers totalShots totalScore totalSaves throwPercentage savePercentage isHome}}';
 export const reportId = id => ({staefa:508373,stgallen:508367})[id] || (/^[1-9][0-9]{0,8}$/.test(String(id)) ? Number(id) : null);
 const reportNumber = v => typeof v === 'string' && /^\d+$/.test(v) ? nonnegative(Number(v)) : nonnegative(v);
+const hasShvFinalReport = game => game.leagueShortName === 'QHL' || /(?:^|[-\s])cup(?:$|[-\s])/i.test(game.leagueShortName || '');
 export function parseArchivedReport(data, game, teamId=41473) {
  const match = parseFinishedMatch(game,teamId);
- if (!match || game.leagueShortName !== 'QHL') throw Error('Not a completed Kadetten QHL game');
+ if (!match || !hasShvFinalReport(game)) throw Error('Not a completed team QHL or Cup game');
  const details = parseLiveDetails(data, game);
  if (!Array.isArray(data.gameTeamStats) || data.gameTeamStats.length !== 2) throw Error('Missing team statistics');
  const total = (list,key) => list.length && list.every(p=>nonnegative(p[key])!==null) ? list.reduce((n,p)=>n+p[key],0) : null;
@@ -215,7 +216,7 @@ export function parseArchivedReport(data, game, teamId=41473) {
 async function fetchArchivedReport(id, teamId=41473) {
  const d=await liveQuery(liveDetailQuery,{gameId:id,isLive:false});
  const game=Array.isArray(d.game)&&d.game.length===1&&d.game[0].gameId===id?d.game[0]:null;
- if (!parseFinishedMatch(game,teamId) || game.leagueShortName!=='QHL') throw Error('Report outside completed Kadetten QHL schedule');
+ if (!parseFinishedMatch(game,teamId) || !hasShvFinalReport(game)) throw Error('Report outside completed team QHL or Cup schedule');
  const [details,teams]=await Promise.all([liveQuery(reportQuery,{gameId:id,isLive:false}),liveQuery(reportTeamQuery,{gameId:id})]);
  return parseArchivedReport({...details,...teams},game,teamId);
 }
@@ -231,7 +232,7 @@ export async function archiveCompletedReports(bucket,club='kadetten') {
   const teamId=club==='otmar'?40900:41473;
   const data=await liveQuery(liveGamesQuery,{teamId});
   if (!Array.isArray(data.games)) throw Error('Missing report schedule');
-  const completed=data.games.filter(g=>g.leagueShortName==='QHL'&&parseFinishedMatch({...g,gameId:g.objectId},teamId)).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)));
+  const completed=data.games.filter(g=>hasShvFinalReport(g)&&parseFinishedMatch({...g,gameId:g.objectId},teamId)).sort((a,b)=>String(b.gameDateTime).localeCompare(String(a.gameDateTime)));
   const results=await Promise.all(completed.map(async(g,i)=>{
    const key=club+'/reports/'+g.objectId+'.json';
    try {
