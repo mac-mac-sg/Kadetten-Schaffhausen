@@ -294,3 +294,13 @@ test('V2 menu choice restores, persists and switches without replacing navigatio
   assert.equal(dock.classList.contains('v2-orbit-dock'),true);assert.equal(dock.classList.contains('v2-v1-dock'),false);
  }
 });
+
+test('V1 start ticket matches V2 for preview, live, final score and failed live refreshes',()=>{
+ for(const football of [false,true]){
+  const {context,club,game}=setup(football);game.score=[30,25];club.fixture.live={...game,liveScore:[12,10],score:[12,10],phase:'1. Halbzeit',clock:'22:00'};
+  for(const state of ['everyday','pre','live','post'])for(const stale of [false,true]){
+   context.liveRequestFailed=stale;if(stale)context.fcsgLiveErrors.add(game.id);else context.fcsgLiveErrors.clear();
+   const info={state,game};assert.equal(context.v1StartTicket(club,info),context.v2MagazineTicket(club,info));
+  }
+ }
+});

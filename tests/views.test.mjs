@@ -218,6 +218,11 @@ test('Alle Vereine zeigen vollständige News-Karten unter dem bestehenden Trenne
       const {document}=parseHTML(view(club==='fcsg'?'fcsgHome()':'home()'));
       assert.equal(document.querySelector('.home-news-heading h1').textContent,'Neues aus dem Verein');
       assert.ok(document.querySelector('.home-title-zone .v2-ticket-section'));
+      assert.equal(document.querySelector('.v1-start-title').textContent,run('fanClubs[activeClub].name'));
+      assert.ok(document.querySelector('.v1-start-identity .v2-hero-media img'));
+      assert.equal(document.querySelectorAll('h1').length,1);
+      const baseline=parseHTML(run("homeNewsLayout("+(club==='fcsg'?'fcsgData.stories':'stories')+",'',"+(club==='fcsg')+")")).document;
+      assert.deepEqual([...document.querySelectorAll('.v1-news-card')].map(e=>e.outerHTML),[...baseline.querySelectorAll('.v1-news-card')].map(e=>e.outerHTML));
       const cards=[...document.querySelectorAll('.v1-news-card')];assert.equal(cards.length,news.length);
       for(let i=0;i<cards.length;i++){
         const card=cards[i],link=card.querySelector('a'),title=card.querySelector('h2');
