@@ -49,6 +49,26 @@ function setupFcsgProfileViewport() {
 function measureFcsgProfileViewport() {
   if (document.body.classList.contains('fcsg-profile-mode')) setupFcsgProfileViewport();
 }
+function setupContinuousPlayerProfile() {
+  if (document.documentElement.dataset.design === 'v2' || document.documentElement.dataset.preview === 'v2') return;
+  const story = document.querySelector('.player-story,.fcsg-player');
+  if (!story || story.querySelector('.player-scroll-content')) return;
+  const intro = story.querySelector('.profile-intro,#fcsg-profile-intro');
+  const photo = intro?.querySelector('.portrait,.fcsg-player-photo');
+  if (!photo) return;
+  story.classList.add('player-scroll');
+  story.querySelector('.profile-jumps,.fcsg-profile-jumps')?.remove();
+  story.querySelector('.profile-minihero')?.remove();
+  const content = document.createElement('div');
+  content.className = 'player-scroll-content';
+  // One photo remains behind a single, naturally sized stream of profile content.
+  const back = intro.querySelector('.back-link');
+  if (back) story.prepend(back);
+  intro.before(photo, content);
+  content.append(intro);
+  const stats = story.querySelector('.player-season-screen,#fcsg-profile-stats');
+  if (stats) content.append(stats);
+}
 function setupViews() {
   setupMatchdayOrbit();
   viewObserver?.disconnect();
@@ -58,6 +78,7 @@ function setupViews() {
   document.documentElement.classList.toggle('snap-news', location.hash === '#home' || !location.hash);
   document.documentElement.classList.toggle('snap-profile', location.hash.startsWith('#player/'));
   setupFcsgProfileViewport();
+  setupContinuousPlayerProfile();
   document
     .querySelectorAll('[data-story]')
     .forEach(

@@ -688,3 +688,40 @@ html:not([data-preview='v2']):not([data-design='v2']) .settings-status .compact-
 html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover { position:static; width:auto; max-height:none; padding:0 0 16px; border:0; border-radius:0; background:transparent; color:inherit; box-shadow:none; }
 html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover .button { margin-top:12px; }
 html:not([data-preview='v2']):not([data-design='v2']) .settings-status { border-top:1px solid var(--line); margin-top:16px; padding-top:8px; }
+/* Matchday player portraits: native scrolling from the cover into all statistics. */
+html:not([data-design='v2']):not([data-preview='v2']).snap-profile { scroll-snap-type:none; }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll { isolation:isolate; }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll > :is(.portrait,.fcsg-player-photo) {
+  position:sticky;
+  top:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:60svh;
+  min-height:300px;
+  max-height:620px;
+  margin:0;
+  object-fit:cover;
+  object-position:center 20%;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player.player-scroll > .fcsg-player-photo { top:var(--fcsg-profile-top,82px); }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll-content { position:relative; z-index:1; background:var(--surface); }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll-content .source-details > summary { color:var(--muted); }
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player .player-scroll-content::before {
+  content:'';
+  position:absolute;
+  inset:-64px 0 100%;
+  background:linear-gradient(transparent,var(--surface));
+  pointer-events:none;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll .player-scroll-content > :is(.profile-slide,.fcsg-profile-slide) {
+  display:block;
+  min-height:0;
+  scroll-snap-align:none;
+  scroll-snap-stop:normal;
+  padding-block:16px;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player.player-scroll .player-scroll-content { padding-inline:16px; }
+@media (prefers-reduced-motion:reduce) {
+  html:not([data-design='v2']):not([data-preview='v2']) .player-scroll > :is(.portrait,.fcsg-player-photo) { position:relative; top:0; }
+}
