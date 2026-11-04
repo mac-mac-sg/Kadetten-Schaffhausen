@@ -1047,7 +1047,7 @@ test('Completed Cup detail requests verified reports, preserves valid data after
  context.__cupLoad=fixture;
  try{
   run('games=[__cupLoad];gameReports={};gameReportsRequest=Promise.resolve();reportAttempts.clear()');location.hash='#match/cup-load';
-  context.apiFetch=async url=>{calls.push(url);return {ok:true,json:async()=>({report:{score:[34,45],teams:[{name:fixture.home},{name:fixture.away}]}})}};
+  context.apiFetch=async url=>{calls.push(url);return {ok:true,json:async()=>({report:{score:[34,45],teams:[{name:fixture.home+' (MNLB)'},{name:fixture.away+' (QHL)'}]}})}};
   await run('loadGameReports()');assert.deepEqual(calls,['/api/reports/cup-load']);assert.ok(run('verifiedReport(__cupLoad)'));
   run('reportAttempts.clear()');context.apiFetch=async()=>{throw Error('offline')};
   await run('loadGameReports()');assert.ok(run('verifiedReport(__cupLoad)'));
