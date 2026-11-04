@@ -678,3 +678,13 @@ html:not([data-preview='v2']):not([data-design='v2'])[data-theme='light'] .handb
 html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-bar { height:4px; margin-top:14px; }
 html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section :is(.report-table,.report-table th,.report-table td) { background:transparent; }
 html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section .scorers strong { color:var(--v1-stat-team,var(--v1-stat-own)); }
+
+/* Maintenance notices live in Settings in V1, never as floating red dots. */
+html:not([data-preview='v2']):not([data-design='v2']) .compact-status { display:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status > .compact-status:not([hidden]) { display:block; position:static; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-dot { display:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .compact-status > summary { justify-content:flex-start; width:100%; min-height:44px; height:auto; padding:10px 0; border-radius:0; font-weight:600; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .compact-status > summary::after { content:attr(aria-label); }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover { position:static; width:auto; max-height:none; padding:0 0 16px; border:0; border-radius:0; background:transparent; color:inherit; box-shadow:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover .button { margin-top:12px; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status { border-top:1px solid var(--line); margin-top:16px; padding-top:8px; }

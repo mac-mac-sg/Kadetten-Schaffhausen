@@ -88,8 +88,9 @@
    if(event.data?.type==='APP_VERSION'&&version&&event.data.version!=='kadetten-offline-'+version&&!document.getElementById('app-update')){
     const notice=document.createElement('details');notice.id='app-update';notice.className='compact-status';notice.setAttribute('aria-label','App aktualisieren');
     notice.innerHTML='<summary aria-label="Neue App-Version verfügbar" title="Neue App-Version verfügbar"><span class="status-dot" aria-hidden="true"></span></summary><div class="status-popover"><p>Neue Version verfügbar</p><button type="button" class="button">Jetzt aktualisieren</button><button type="button" class="button subtle" aria-label="Aktualisierungshinweis schliessen">Später</button></div>';
-    notice.querySelector('button').onclick=()=>location.reload();notice.querySelector('.subtle').onclick=()=>{notice.hidden=true};
+    notice.querySelector('button').onclick=()=>location.reload();notice.querySelector('.subtle').onclick=()=>{notice.hidden=true;notice.open=false;if(typeof syncSettingsStatus==='function')syncSettingsStatus();};
     document.body.append(notice);
+    if(typeof syncSettingsStatus==='function')syncSettingsStatus();
     document.addEventListener('click',event=>{if(!notice.contains(event.target))notice.open=false;});
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&notice.open){notice.open=false;notice.querySelector('summary').focus();}});
    }

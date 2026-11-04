@@ -67,6 +67,16 @@ function syncSettingsUpdatedAt() {
   time.setAttribute('datetime',new Date(ms).toISOString());
   time.textContent=new Date(ms).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr';
 }
+// V1 keeps maintenance information in Settings, away from the page content.
+function syncSettingsStatus() {
+  if(document.documentElement.dataset.preview==='v2'||document.documentElement.dataset.design==='v2')return;
+  const target=clubSettingsDialog?.querySelector('[data-settings-status]');if(!target)return;
+  for(const id of ['offline-notice','app-update']){
+    const notice=document.getElementById(id);
+    if(notice&&notice.parentElement!==target)target.append(notice);
+  }
+  target.hidden=![...target.children].some(notice=>!notice.hidden);
+}
 function appDisclaimerContent() {
   return `<p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p><h3>Quellen &amp; Bildnachweise</h3><p>${ext('https://kadettensh.ch/','Kadetten Schaffhausen','')} · Spielbilder © André Frensel / Erich Mosberger.</p><p>${ext('https://www.fcsg.ch/','FC St.Gallen 1879','')} · Vereinsdaten, Artikel, Fotos und Wappen: FC St.Gallen 1879 und jeweilige Urheber.</p><p>${ext('https://otmar.ch/','TSV St. Otmar St. Gallen','')} · Fotos und Vereinsinhalte: TSV St. Otmar St. Gallen und jeweilige Urheber.</p><p>Handball-Daten: ${ext('https://www.handball.ch/de/matchcenter/','SHV','')} und ${ext('https://www.eurohandball.com/','EHF','')}. Weitere Quellen stehen bei den jeweiligen Inhalten.</p>`;
 }
@@ -104,6 +114,7 @@ function openClubSettings() {
       <section class="settings-group theme-settings" aria-labelledby="theme-settings-title"><h3 id="theme-settings-title">Darstellung</h3><label class="theme-setting"><span>Heller Modus</span><input type="checkbox" role="switch" data-v1-light-mode aria-label="Heller Modus"></label>${document.documentElement.dataset.preview==='v2'?`<label class="text-size-setting"><span>Leseschrift</span><select data-v1-text-size aria-label="Leseschrift"><option value="standard">Standard</option><option value="large">Gross</option></select></label>`:''}</section>
       ${document.documentElement.dataset.preview==='v2'?'<section class="settings-group"><button type="button" class="settings-help-row" data-open-push><span>Benachrichtigungen</span><span aria-hidden="true">→</span></button></section>':''}
       <div class="club-settings-help"><button type="button" class="settings-help-row" data-open-introduction><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 1.7-2.5 3"></path><circle cx="12" cy="16" r=".7" fill="currentColor" stroke="none"></circle></svg><span>Einführung &amp; Tipps</span><svg class="settings-help-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6"></path></svg></button></div>
+      <section class="settings-status" data-settings-status aria-label="Datenstand und App-Updates" hidden></section>
       <section class="settings-app-info" aria-label="App-Informationen"><button type="button" class="settings-info-row" data-open-disclaimer><span>Disclaimer</span>${v1ActionIcon('external','<span aria-hidden="true">↗</span>')}</button><span class="settings-update" role="group" aria-label="Zuletzt aktualisiert"><svg class="settings-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><time data-settings-updated></time></span></section>`;
     document.body.append(clubSettingsDialog);
     clubSettingsDialog.querySelector('[data-open-push]')?.addEventListener('click',openPushSettings);
@@ -114,7 +125,7 @@ function openClubSettings() {
     clubSettingsDialog.addEventListener('close',()=>{document.getElementById('club-settings')?.setAttribute('aria-expanded','false');if(!document.querySelector('.app-introduction[open]'))document.getElementById('club-settings')?.focus();});
     clubSettingsDialog.addEventListener('click',e=>{if(e.target===clubSettingsDialog){const r=clubSettingsDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)clubSettingsDialog.close();}});
   }
-  syncClubSettings();clubSettingsDialog.showModal();
+  syncClubSettings();syncSettingsStatus();clubSettingsDialog.showModal();
   document.getElementById('club-settings')?.setAttribute('aria-expanded','true');
 }
 function clubSwitchRoute(hash) {
