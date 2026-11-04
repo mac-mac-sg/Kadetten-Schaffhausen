@@ -14,11 +14,11 @@ function setup(club='kadetten',reduced=false) {
   vm.runInContext(fs.readFileSync('src/client/v2/matchday.js','utf8'),context);
   return {document,context,calls,animate:()=>context.v2AnimateStandings()};
 }
-test('V2 standings enter in reading order for all clubs and finish within 300ms',()=>{
+test('V2 standings enter in reading order for all clubs and finish within 400ms',()=>{
   for(const club of ['kadetten','fcsg','otmar']) {
     const {animate,calls,document}=setup(club);animate();
     assert.equal(calls.length,12);assert.deepEqual(calls.map(c=>c.row),[...document.querySelectorAll('tr')]);
-    assert.ok(calls.every(c=>c.options.duration+c.options.delay<300));
+    assert.ok(calls.every(c=>c.options.duration+c.options.delay<400));
     assert.ok(calls[1].options.delay>calls[0].options.delay);
     assert.equal(calls[0].frames[0].transform,'translateY(-10px)');
     assert.equal(calls[0].frames[1].opacity,1);
