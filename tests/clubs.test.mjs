@@ -356,3 +356,23 @@ test('V1 other-club hints show only selected clubs today, with confirmed live an
  a.run("selectedClubs=['kadetten']");assert.equal(a.run("otherClubMatchHints('2026-10-04').length"),0);
  a.document.documentElement.dataset.design='v2';assert.equal(a.run("otherClubMatchHints('2026-10-04').length"),0);
 });
+
+
+test('V1 maintenance notices move once into Settings and remain accessible as they appear and recover',()=>{
+ const a=app('https://example.test/');
+ a.document.body.insertAdjacentHTML('beforeend','<dialog id="status-settings"><section data-settings-status hidden></section></dialog><details id="offline-notice" class="compact-status"><summary aria-label="Hinweis zum Datenstand"></summary><p>Offline</p></details>');
+ a.run("clubSettingsDialog=document.getElementById('status-settings');syncSettingsStatus();syncSettingsStatus()");
+ const target=a.document.querySelector('[data-settings-status]'),offline=a.document.getElementById('offline-notice');
+ assert.equal(offline.parentElement,target);assert.equal(target.children.length,1);assert.equal(target.hidden,false);
+ offline.hidden=true;a.run('syncSettingsStatus()');assert.equal(target.hidden,true);
+ a.document.body.insertAdjacentHTML('beforeend','<details id="app-update" class="compact-status"><summary aria-label="Neue App-Version verfügbar"></summary><button>Jetzt aktualisieren</button></details>');
+ const update=a.document.getElementById('app-update'),button=update.querySelector('button');let clicked=false;button.onclick=()=>{clicked=true;};
+ a.run('syncSettingsStatus()');assert.equal(update.parentElement,target);assert.equal(target.hidden,false);button.onclick();assert.equal(clicked,true);
+ update.hidden=true;a.run('syncSettingsStatus()');assert.equal(target.hidden,true);
+});
+test('V2 retains its existing maintenance notice placement',()=>{
+ const a=app('https://example.test/v2/');a.document.documentElement.dataset.preview='v2';
+ a.document.body.insertAdjacentHTML('beforeend','<dialog id="status-settings"><section data-settings-status hidden></section></dialog><details id="offline-notice" class="compact-status"></details>');
+ a.run("clubSettingsDialog=document.getElementById('status-settings');syncSettingsStatus()");
+ assert.equal(a.document.getElementById('offline-notice').parentElement,a.document.body);
+});

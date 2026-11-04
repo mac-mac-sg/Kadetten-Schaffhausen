@@ -94,6 +94,7 @@ function syncOfflineNotice() {
   if(el.hidden)el.open=false;
   el.querySelector('p').textContent=messages.join(' ');
   document.body.classList.toggle('is-offline', !navigator.onLine);
+  if(typeof syncSettingsStatus==='function')syncSettingsStatus();
 
 }
 function setupEnhancements() {
