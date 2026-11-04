@@ -105,12 +105,11 @@ document.fonts?.ready.then(v2FitClubLabel);
 function v2MagazineTeamCover(section) {
   if (!section || section.querySelector('.v2-team-cover')) return;
   const title = section.querySelector('h1'), groups = [...section.querySelectorAll('.players')];
-  const preferred = {kadetten:'22',fcsg:'5426',otmar:'2'}[activeClub];
-  const portrait = section.querySelector(`.player-card[href="#player/${preferred}"] img`) || groups[1]?.querySelector('.player-card img') || groups[0]?.querySelector('.player-card img');
-  const teamPhoto = activeClub === 'kadetten';
-  const photo = teamPhoto ? 'assets/kadetten-squad-2026.webp' : portrait?.getAttribute('src') || v2HeaderPhoto();
-  const cover = document.createElement('div'); cover.className = 'v2-team-cover' + (teamPhoto ? ' is-team-photo' : '');
-  cover.innerHTML = `<img src="${liveEscape(photo)}" alt="${teamPhoto ? 'Mannschaftsfoto Kadetten Schaffhausen · Saison 2026/27' : ''}" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
+  const teamPhoto = activeClub !== 'fcsg';
+  const photo = {kadetten:'assets/kadetten-squad-2026.webp',otmar:'assets/otmar-squad-2026.webp',fcsg:'assets/v2-header-fcsg-evening.webp'}[activeClub] || v2HeaderPhoto();
+  const alt = teamPhoto ? `Mannschaftsfoto ${fanClubs[activeClub].name} · Saison 2026/27` : 'Stadion des FC St.Gallen 1879';
+  const cover = document.createElement('div'); cover.className = 'v2-team-cover ' + (teamPhoto ? 'is-team-photo' : 'is-venue-photo');
+  cover.innerHTML = `<img src="${liveEscape(photo)}" alt="${liveEscape(alt)}" decoding="async" fetchpriority="high"><div><p>${liveEscape(fanClubs[activeClub].name)}</p></div>`;
   if (title) {
     title.className = 'v2-team-title'; title.setAttribute('aria-label','Das Team');
     title.innerHTML = '<span>DAS </span><span>TEAM.</span>'; cover.lastElementChild.append(title);
