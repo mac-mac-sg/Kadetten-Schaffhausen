@@ -567,7 +567,7 @@ function v2AnimateStandings() {
   rows.forEach((row, index) => row.animate?.([
     {opacity:0.25,transform:'translateY(-10px)'},
     {opacity:1,transform:'translateY(0)'}
-  ], {duration:160,delay:Math.min(index,6)*18,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'}));
+  ], {duration:240,delay:Math.min(index,6)*24,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'}));
 }
 
 /* Kompakte Kopfzeile beim Scrollen und Merkmale für die Gestaltung. */
