@@ -1,5 +1,7 @@
 # Gemeinsamer App-Stand von V1 und V2
 
+> Die V2 wird zur reinen Kadetten-App weiterentwickelt; Ziel, Entscheide und Phasen stehen in [kadetten-app.md](kadetten-app.md).
+
 Seit 21. Oktober 2026 übernimmt die normale App den freigegebenen V2-Stand: Vereins-Kachel im Kader, Vereinsseite mit geschwungenem Bildauftakt, Erfolge und Chronik, runde diagonale Absprung-Pfeile, unten bündige News-Titel/Pfeile sowie die flachere Mannschaftskachel. Beide Oberflächen verwenden dieselben Renderer und Styles.
 
 ## Gemeinsame Basis und weitere Experimente
