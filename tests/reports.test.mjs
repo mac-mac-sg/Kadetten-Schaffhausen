@@ -33,3 +33,20 @@ test('Authorized archival refresh preserves stored final data when the source fa
   assert.equal(result.ok,false);assert.deepEqual(writes,[]);
  }finally{globalThis.fetch=original;}
 });
+
+
+test('Cup final reports use the QHL parser and are fetched and archived with the same validation',async()=>{
+ const cup={...game,leagueShortName:'Mobiliar-Cup M'},original=globalThis.fetch,writes=[];
+ assert.deepEqual(parseArchivedReport(data,cup).score,[45,34]);
+ globalThis.fetch=async(_url,options)=>{
+  const q=JSON.parse(options.body).query;
+  return Response.json({data:q.includes('games(teamId:')?{games:[cup]}:q.includes('gameTeamStats(')?{gameTeamStats:data.gameTeamStats}:q.includes('gamePlayerStats(')?{gamePlayerStats:data.gamePlayerStats,gameLog:data.gameLog}:{game:[cup]}});
+ };
+ try{
+  const bucket={get:async()=>null,put:async(...args)=>writes.push(args)};
+  const result=await getArchivedReport('508373',bucket);
+  assert.equal(result.stored,false);assert.deepEqual(result.report.score,[45,34]);
+  await archiveCompletedReports(bucket);
+  assert.equal(writes.length,1);assert.equal(writes[0][0],'kadetten/reports/508373.json');
+ }finally{globalThis.fetch=original;}
+});

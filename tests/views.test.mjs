@@ -1018,3 +1018,38 @@ test('V2 can omit calculation footnotes without losing season figures or unavail
   assert.match(fs.readFileSync('src/client/v2/matchday.css','utf8'),/html\[data-preview='v2'\] #app \.data-explanation \{ display:none !important; \}/);
  }finally{context.__notesSaved=saved;run('activeClub=__notesSaved.club;updateState=__notesSaved.state;players=__notesSaved.players;games=__notesSaved.games;tableLeague=__notesSaved.league');}
 });
+
+
+test('Completed Cup fixtures share QHL tabs and verified statistics in both editions',()=>{
+ const saved={preview:context.document.documentElement.dataset.preview,design:context.document.documentElement.dataset.design};
+ run(`globalThis.cupFixture={id:'cup-layout',image:'team.jpg',league:'Mobiliar-Cup M',home:'Handball Emmen',away:'Kadetten Schaffhausen',date:'2026-10-31',time:'20:00',venue:'Emmen Rossmoos',url:'https://www.handball.ch/',score:[34,45]}`);
+ try{
+  for(const edition of ['v1','v2']){
+   context.document.documentElement.dataset.preview=edition;
+   for(const tab of ['overview','squad','stats']){
+    const doc=parseHTML(view('match(cupFixture,"'+tab+'")')).document;
+    assert.deepEqual([...doc.querySelectorAll('.match-tabs a')].map(a=>a.textContent),['Statistiken','Rückblick']);
+    assert.equal(doc.querySelector('.match-tabs .selected').textContent,'Statistiken');
+    assert.ok(doc.querySelector('.finished-match-stats'));assert.match(doc.querySelector('.matchup').textContent,/34 : 45/);
+   }
+   assert.match(view('match(cupFixture,"report")'),/match-recap/);
+  }
+  run(`gameReports['cup-layout']={score:[34,45],half:[17,22],source:'https://www.handball.ch/',checkedAt:'2026-11-01',teams:[{id:7,name:cupFixture.home,players:[]},{id:41473,name:cupFixture.away,players:[]}],events:[]}`);
+  assert.match(view('match(cupFixture,"overview")'),/Das Spiel in Zahlen/);
+  assert.match(view('match(cupFixture,"overview")'),/Halbzeit 17:22/);
+  run('cupFixture.score=null');assert.match(view('match(cupFixture,"overview")'),/>Vorschau</);
+ }finally{run("delete gameReports['cup-layout']");Object.assign(context.document.documentElement.dataset,saved);}
+});
+
+test('Completed Cup detail requests verified reports, preserves valid data after a source failure',async()=>{
+ const saved={games:run('games'),reports:run('gameReports'),request:run('gameReportsRequest'),hash:location.hash,fetch:context.apiFetch};
+ const fixture={id:'cup-load',league:'Mobiliar-Cup M',home:'Handball Emmen',away:'Kadetten Schaffhausen',score:[34,45]},calls=[];
+ context.__cupLoad=fixture;
+ try{
+  run('games=[__cupLoad];gameReports={};gameReportsRequest=Promise.resolve();reportAttempts.clear()');location.hash='#match/cup-load';
+  context.apiFetch=async url=>{calls.push(url);return {ok:true,json:async()=>({report:{score:[34,45],teams:[{name:fixture.home+' (MNLB)'},{name:fixture.away+' (QHL)'}]}})}};
+  await run('loadGameReports()');assert.deepEqual(calls,['/api/reports/cup-load']);assert.ok(run('verifiedReport(__cupLoad)'));
+  run('reportAttempts.clear()');context.apiFetch=async()=>{throw Error('offline')};
+  await run('loadGameReports()');assert.ok(run('verifiedReport(__cupLoad)'));
+ }finally{context.__cupSaved=saved;run('games=__cupSaved.games;gameReports=__cupSaved.reports;gameReportsRequest=__cupSaved.request;reportAttempts.clear()');location.hash=saved.hash;context.apiFetch=saved.fetch;}
+});

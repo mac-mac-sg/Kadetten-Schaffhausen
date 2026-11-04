@@ -15,21 +15,24 @@ function venueFact(g) {
     url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
   return `<div class="venue-fact ${!g.score || blueprintGame(g) ? 'venue-preview' : ''}"><span>Spielort</span>${g.venue ? `<a class="venue-map" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${liveEscape(venue)} in Google Maps öffnen"><strong>${liveEscape(venue)}</strong><span>In Google Maps öffnen</span></a>` : `<strong>${venue}</strong>`}${photo ? `<figure class="venue-thumb"><a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="${liveEscape(venue)} in Google Maps öffnen"><img src="${photoUrl(photo.image)}" alt="${liveEscape(photo.alt)}" width="${photo.width}" height="${photo.height}" loading="lazy" decoding="async"></a>${photo.license ? `<figcaption class="venue-attribution"><a href="${photo.source}" target="_blank" rel="noopener noreferrer">Foto: ${liveEscape(photo.credit)}</a> · <a href="${photo.license}" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0, verkleinert</a></figcaption>` : ''}</figure>` : ''}</div>`;
 }
-// Abgeschlossene QHL-Spiele und European-League-Spiele mit Resultat haben dasselbe Layout (Vorbild: abgeschlossene QHL-Spiele).
+// Cup und European League übernehmen bei bestätigtem Endstand die QHL-Detailansicht.
+function handballCupGame(g) {
+  return /(?:^|[-\s])cup(?:$|[-\s])/i.test(g.league || '');
+}
 function blueprintGame(g) {
-  return g.league === 'QHL' || (g.league === 'EHL' && !!g.score);
+  return g.league === 'QHL' || ((g.league === 'EHL' || handballCupGame(g)) && !!g.score);
 }
 function match(g, tab) {
   // Liegt zu einem beendeten EHL-Spiel der gesicherte Eintrag vor, ersetzt die Blueprint-Ansicht die Live-Seite.
   const live=liveForFixture(g);
   if (live && live.status!=='finished' && !(g.league === 'EHL' && verifiedReport(g))) return liveMatchPage(g, tab);
   if(live?.status==='finished')g={...g,score:live.score,half:live.half||g.half};
-  const ehfDone = ['QHL', 'EHL'].includes(g.league) && !!g.score;
-  if (ehfDone && (tab === 'overview' || tab === 'squad')) tab = 'stats'; // QHL und European League: zuerst die Statistiken, der Bericht liegt im Tab «report»
+  const finishedBlueprint = blueprintGame(g) && !!g.score;
+  if (finishedBlueprint && (tab === 'overview' || tab === 'squad')) tab = 'stats'; // Einheitlicher Einstieg; bestehende Links bleiben gültig.
   const detail = verifiedReport(g);
   if (detail) g = {...g, half: detail.half};
   if (!g.score && tab === 'squad') tab = 'overview';
-  return `<section class="match">${!['overview','report'].includes(tab)?`<h1 class="live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</h1>`:''}<div class="match-top">${backLink('#season/games', 'Zurück zu den Spielen', 'back')}<div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${(ehfDone ? [['stats', 'Statistiken'], ['report', 'Rückblick']] : [['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistiken']]).map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' || tab === 'report' ? matchOverview(g) : `<div class="content narrow${tab==='stats'&&g.score?' finished-match-stats':''}"${tab==='stats'&&g.score?' data-own-side="'+(isOwnHandballTeam(g.home)?'home':'away')+'"':''}>${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
+  return `<section class="match">${!['overview','report'].includes(tab)?`<h1 class="live-sr-context">${liveEscape(g.home)} gegen ${liveEscape(g.away)}</h1>`:''}<div class="match-top">${backLink('#season/games', 'Zurück zu den Spielen', 'back')}<div class="matchup"><div class="matchup-team">${badge(g.home)}<span>${liveEscape(g.home)}</span></div><strong>${g.score ? g.score.join(' : ') : 'VS'}</strong><div class="matchup-team">${badge(g.away)}<span>${liveEscape(g.away)}</span></div></div><small>${g.half ? 'Halbzeit ' + g.half.join(':') : (g.score ? date(g) : matchDay(g)) + (g.time ? ' · ' + g.time : '')}</small></div><nav class="segments match-tabs" aria-label="Spielbereich">${(finishedBlueprint ? [['stats', 'Statistiken'], ['report', 'Rückblick']] : [['overview', g.score ? 'Rückblick' : 'Vorschau'], ...(g.score ? [['squad', 'Aufgebot']] : []), ['stats', 'Statistiken']]).map(([id, t]) => `<a href="#match/${liveEscape(g.id)}/${id}" class="${id === tab ? 'selected' : ''}">${t}</a>`).join('')}</nav>${tab === 'overview' || tab === 'report' ? matchOverview(g) : `<div class="content narrow${tab==='stats'&&g.score?' finished-match-stats':''}"${tab==='stats'&&g.score?' data-own-side="'+(isOwnHandballTeam(g.home)?'home':'away')+'"':''}>${tab === 'stats' ? matchStats(g) : matchSquad(g)}</div>`}</section>${footer()}`;
 }
 function finishedMatchRecap(g) {
   const archive=ehfArchiveFor(g), detail=verifiedReport(g);

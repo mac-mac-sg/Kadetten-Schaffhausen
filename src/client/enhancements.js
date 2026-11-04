@@ -188,7 +188,7 @@ function verifiedReport(g) {
 const reportAttempts = new Map();
 async function loadGameReports() {
   const [page, id] = location.hash.slice(1).split('/'), g = games.find(x => x.id === id);
-  if (page !== 'match' || !g?.score || g.league !== 'QHL') return;
+  if (page !== 'match' || !g?.score || !(g.league === 'QHL' || handballCupGame(g))) return;
   // One request per fixture per session; failures may retry after one minute.
   if (Date.now() - (reportAttempts.get(id) || 0) < 60000 || gameReports[id]?.events) return;
   reportAttempts.set(id, Date.now());
@@ -203,7 +203,7 @@ async function loadGameReports() {
     const response = await apiFetch(handballApiPath('/api/reports/') + encodeURIComponent(id));
     if (!response.ok) throw Error();
     const {report:r} = await response.json();
-    const normalized=n=>String(n).replace(/^TSV /,'');
+    const normalized=n=>teamName(String(n));
     if (!r || !Array.isArray(r.score) || r.score.length!==2 || !r.score.every((v,i)=>Number.isInteger(v)&&v===g.score[i]) || r.teams?.length!==2 || normalized(r.teams[0].name)!==normalized(g.home) || normalized(r.teams[1].name)!==normalized(g.away)) throw Error();
     const previous=verifiedReport(g);
     gameReports[id] = {...previous, ...r, spectators:r.spectators??previous?.spectators??null, referees:r.referees?.length?r.referees:previous?.referees||[]};
