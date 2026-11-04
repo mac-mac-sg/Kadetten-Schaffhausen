@@ -201,17 +201,27 @@ function v1StartHome(football=false) {
   const top=`<section class="v1-start v2-ticket-section" aria-label="Aktuelles Spiel"><div class="v1-start-identity"><div class="v2-hero-media" aria-hidden="true"><img src="${v2HeaderPhoto()}" alt="" decoding="async" fetchpriority="high"></div><p class="v1-start-title">${liveEscape(fanClubs[activeClub].name)}</p></div><div class="v2-ticket-content">${v1StartTicket(c,info)}</div></section>`;
   return homeNewsLayout(football?fcsgData.stories:stories,top,football);
 }
-function v1StartChrome() {
+function v1HeaderChrome() {
   const top=document.querySelector('body > .top');if(!top)return;
-  const home=v2Page()[0]==='home';
-  if(home)document.documentElement.dataset.v1Home='magazine';else delete document.documentElement.dataset.v1Home;
+  document.documentElement.dataset.v1Header='matchday';
   let brand=top.querySelector('.v1-start-masthead');
-  if(home&&!brand){brand=document.createElement('a');brand.className='v1-start-masthead';brand.href='#home';brand.setAttribute('aria-label','Matchday · Startseite');brand.innerHTML='MATCH<span>DAY</span>';top.prepend(brand);}
-  if(home){const label=top.querySelector('.compact-club-trigger > span');if(label)label.textContent=fanClubs[activeClub].short.toUpperCase();}
+  if(!brand){brand=document.createElement('a');brand.className='v1-start-masthead';brand.href='#home';brand.setAttribute('aria-label','Matchday · Startseite');brand.innerHTML='MATCH<span>DAY</span>';top.prepend(brand);}
+  const label=top.querySelector('.compact-club-trigger > span');if(label)label.textContent=fanClubs[activeClub].short.toUpperCase();
   if(typeof measureAppChrome==='function')measureAppChrome();
 }
 
-/* V1 adopts the approved header only; V2 keeps its own remaining page hooks. */
+
+function v1HeaderInstallAction() {
+  const dialog=document.querySelector('.club-settings-dialog'),install=document.getElementById('install-app');
+  if(!dialog||!install)return;
+  const existing=dialog.querySelector('[data-v1-install]');
+  if(install.hidden){existing?.remove();return;}
+  if(existing)return;
+  const button=document.createElement('button');button.type='button';button.className='button';button.dataset.v1Install='';button.textContent='Matchday installieren';
+  button.onclick=()=>{dialog.querySelector('[aria-label="Einstellungen schliessen"]')?.click();install.click();};
+  dialog.append(button);
+}
+/* V1 shares the approved header across routes; V2 keeps its own chrome hooks. */
 function homeTitleMedia() {
   document.querySelectorAll('.v2-hero-media img:not([data-home-title-media])').forEach(img=>{
     img.dataset.homeTitleMedia='1';
@@ -224,13 +234,15 @@ if(document.documentElement.dataset.preview!=='v2') {
   v2TicketMarkup=v1StartTicket;
   home=()=>v1StartHome();fcsgHome=()=>v1StartHome(true);
   const titleBaseRender=render;
-  render=function(...args){const result=titleBaseRender(...args);v2SyncHome();homeTitleMedia();v1StartChrome();return result;};
+  render=function(...args){const result=titleBaseRender(...args);v2SyncHome();homeTitleMedia();v1HeaderChrome();return result;};
   const titleBaseShowLive=showLiveMatch;
   showLiveMatch=function(...args){const result=titleBaseShowLive(...args);v2SyncHome();return result;};
   const titleBaseFcsgLive=updateFcsgLiveView;
   updateFcsgLiveView=function(...args){const result=titleBaseFcsgLive(...args);v2SyncHome();return result;};
   const titleBaseFcsgData=loadFcsgData;
   loadFcsgData=async function(...args){const result=await titleBaseFcsgData(...args);v2SyncHome();return result;};
+  const headerBaseSettings=openClubSettings;
+  openClubSettings=function(...args){const result=headerBaseSettings(...args);v1HeaderInstallAction();return result;};
   setInterval(()=>{if(!document.hidden)v2SyncHome();},30000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)v2SyncHome();});
 }
