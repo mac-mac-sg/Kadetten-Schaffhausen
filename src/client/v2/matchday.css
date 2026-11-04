@@ -762,13 +762,13 @@ html[data-preview='v2'][data-theme] #app:is(.v2-statistics-dashboard,:has(.finis
 html[data-preview='v2'][data-theme] #app:is(.v2-statistics-dashboard,:has(.finished-match-stats)) .v2-stat-card .report-score-team > strong { font-size:22px; }
 
 /* A squad photograph stays fully visible; the title never covers the players. */
-html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo { display:block; min-height:0; padding:0; }
-html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo::after { content:none; }
-html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo > img { position:relative; z-index:auto; display:block; width:100%; height:auto; inset:auto; object-fit:contain; object-position:center; }
+html[data-preview='v2'][data-theme] .v2-team-cover:is(.is-team-photo,.is-venue-photo) { display:block; min-height:0; padding:0; }
+html[data-preview='v2'][data-theme] .v2-team-cover:is(.is-team-photo,.is-venue-photo)::after { content:none; }
+html[data-preview='v2'][data-theme] .v2-team-cover:is(.is-team-photo,.is-venue-photo) > img { position:relative; z-index:auto; display:block; width:100%; height:auto; inset:auto; object-fit:contain; object-position:center; }
 html[data-preview='v2'][data-theme] .v2-team-cover > div { padding:0; }
 html[data-preview='v2'][data-theme] .v2-team-cover > div > p { display:none; }
-html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo .v2-team-title { font-size:clamp(48px,16vw,84px); line-height:1.05; }
-html[data-preview='v2'][data-theme] .v2-team-cover.is-team-photo .v2-team-title > span { display:inline; }
+html[data-preview='v2'][data-theme] .v2-team-cover:is(.is-team-photo,.is-venue-photo) .v2-team-title { font-size:clamp(48px,16vw,84px); line-height:1.05; }
+html[data-preview='v2'][data-theme] .v2-team-cover:is(.is-team-photo,.is-venue-photo) .v2-team-title > span { display:inline; }
 
 /* Reading view: omit repeated source, calculation and timestamp footnotes in V2. */
 html[data-preview='v2'] #app .data-explanation { display:none !important; }

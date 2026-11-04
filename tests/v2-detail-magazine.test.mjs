@@ -180,3 +180,14 @@ test('Finished handball default routes receive the same frames as the explicit s
   assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
  }
 });
+
+test('Otmar uses its official squad photo and FCSG uses the stadium without a player portrait fallback',()=>{
+ for(const [club,name,photo,alt] of [['otmar','TSV St. Otmar St. Gallen','otmar-squad-2026.webp','Mannschaftsfoto'],['fcsg','FC St.Gallen 1879','v2-header-fcsg-evening.webp','Stadion']]){
+  const {document,context}=setup('#season/squad','');context.activeClub=club;context.fanClubs[club]={name};context.liveEscape=v=>v;
+  const section=document.createElement('section');section.innerHTML='<h1>Kader</h1><h2>Torhüter</h2><div class="players"><a class="player-card" href="#player/1"><img src="portrait.webp"></a></div>';
+  const card=section.querySelector('.player-card');context.v2MagazineTeamCover(section);context.v2MagazineTeamCover(section);
+  assert.equal(section.querySelectorAll('.v2-team-cover').length,1);assert.equal(section.querySelector('.v2-team-cover > img').getAttribute('src'),'assets/'+photo);
+  assert.match(section.querySelector('.v2-team-cover > img').getAttribute('alt'),new RegExp(alt));assert.equal(section.querySelector('.player-card'),card);
+  assert.equal(section.querySelectorAll('h1').length,1);
+ }
+});
