@@ -66,6 +66,12 @@ function seasonJourney(input) {
 }
 function syncOfflineNotice() {
   if(typeof syncSourceNotices==='function')syncSourceNotices();
+  document.body.classList.toggle('is-offline', !navigator.onLine);
+  if(document.documentElement.dataset.preview!=='v2'&&document.documentElement.dataset.design!=='v2'){
+    document.getElementById('offline-notice')?.remove();
+    if(typeof syncSettingsStatus==='function')syncSettingsStatus();
+    return;
+  }
   let el = document.getElementById('offline-notice');
   if (!el) {
     el = document.createElement('details');
@@ -93,7 +99,6 @@ function syncOfflineNotice() {
   el.hidden=!messages.length;
   if(el.hidden)el.open=false;
   el.querySelector('p').textContent=messages.join(' ');
-  document.body.classList.toggle('is-offline', !navigator.onLine);
   if(typeof syncSettingsStatus==='function')syncSettingsStatus();
 
 }

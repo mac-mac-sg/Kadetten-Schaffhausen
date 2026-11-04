@@ -76,8 +76,8 @@ test('Browser history restores the club and weekly route on popstate without ren
  a.run("render=()=>{throw Error('Duplicate render');}");assert.doesNotThrow(()=>events.hashchange());
 });
 
-test('Stale and offline notices become a small opt-in status indicator and recover without losing data',()=>{
- const a=app();a.run("selectedClubs=['kadetten'];mode='list';dataLoadFailed=true;syncOfflineNotice();");
+test('V2 stale and offline notices remain available and recover without losing data',()=>{
+ const a=app();a.document.documentElement.dataset.preview='v2';a.run("selectedClubs=['kadetten'];mode='list';dataLoadFailed=true;syncOfflineNotice();");
  const notice=a.document.getElementById('offline-notice');assert.equal(notice.tagName,'DETAILS');assert.equal(notice.open,undefined);assert.equal(notice.hidden,false);assert.match(notice.textContent,/nicht aktualisiert/);assert.ok(notice.querySelector('.status-dot'));
  a.run('dataLoadFailed=false;syncOfflineNotice()');assert.equal(notice.hidden,true);
  a.run("document.getElementById('app').innerHTML=sourceNotice('games');updateState={checkedAt:'2020-01-01T12:00:00Z',status:{games:{ok:false,updatedAt:'2020-01-01T12:00:00Z'}}};syncOfflineNotice();");
@@ -118,4 +118,18 @@ test('Every club competition filter includes source competitions, escapes them a
   assert.deepEqual(options.map(o=>o.getAttribute('value')),['Alle','QHL','Mobiliar-Cup M','A & B']);
   assert.equal(doc.querySelector('option[selected]').getAttribute('value'),'Mobiliar-Cup M');
  }
+});
+
+
+test('V1 omits the redundant data notice and preserves the settings timestamp and saved data',()=>{
+ const a=app();a.location.hash='#season/squad';
+ a.document.body.insertAdjacentHTML('beforeend','<dialog id="test-settings"><section data-settings-status></section><time data-settings-updated></time></dialog><details id="offline-notice">Veralteter Hinweis</details>');
+ a.run("clubSettingsDialog=document.getElementById('test-settings');mode='list';updateState={checkedAt:'2026-11-04T18:00:00Z',status:{players:{ok:false,updatedAt:'2026-10-31T20:20:00Z'}}};dataLoadFailed=true;syncOfflineNotice();syncSettingsUpdatedAt();");
+ const snapshot=a.run('updateState');
+ assert.equal(a.document.getElementById('offline-notice'),null);
+ assert.equal(a.document.querySelector('[data-settings-updated]').getAttribute('datetime'),'2026-11-04T18:00:00.000Z');
+ assert.match(a.document.querySelector('[data-settings-updated]').textContent,/04.11.2026/);
+ a.context.navigator.onLine=false;a.run('syncOfflineNotice()');
+ assert.equal(a.document.getElementById('offline-notice'),null);assert.equal(a.run('updateState'),snapshot);
+ assert.equal(a.document.body.classList.contains('is-offline'),true);
 });
