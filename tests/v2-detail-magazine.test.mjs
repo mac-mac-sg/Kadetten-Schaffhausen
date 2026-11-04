@@ -122,10 +122,17 @@ test('Statistics dashboard keeps matchcenter and score nodes unchanged, groups o
  score.textContent='– : –';decorate();assert.equal(document.querySelector('.v2-match-metrics'),null);
  context.location.hash='#match/a/report';decorate();assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
 });
-test('Football statistics use own-side goals including zero, and never decorate preview tabs',()=>{
+test('Football metrics retain live goals including zero, disappear at full time, and skip previews',()=>{
  const {context,document}=setup('#match/f/stats','<header class="fcsg-match-header"><div class="matchup"><div class="matchup-team"><span>FC St. Gallen</span></div><strong>0 : 2</strong></div></header><div class="fcsg-match-dashboard"><section class="fcsg-stat-card"><h2>Pässe</h2></section></div>');
  context.activeClub='fcsg';context.v2MatchStatistics();
  assert.deepEqual([...document.querySelectorAll('.v2-match-metrics dd')].map(e=>e.textContent),['0','2','-2']);
+ context.fcsgGame=()=>({score:[0,2],live:false});
+ const header=document.querySelector('.fcsg-match-header'),card=document.querySelector('.fcsg-stat-card');
+ context.v2MatchStatistics();context.v2MatchStatistics();
+ assert.equal(document.querySelector('.v2-match-metrics'),null);
+ assert.equal(document.querySelector('.fcsg-match-header'),header);assert.equal(document.querySelector('.fcsg-stat-card'),card);
+ context.fcsgGame=()=>({score:[0,2],live:true});context.v2MatchStatistics();
+ assert.equal(document.querySelectorAll('.v2-match-metrics dd').length,3);
  context.location.hash='#match/f/overview';context.v2MatchStatistics();assert.equal(document.getElementById('app').classList.contains('v2-statistics-dashboard'),false);
 });
 test('Older statistical reports keep scorer links and keeper facts inside separate modules without duplicate wrappers',()=>{

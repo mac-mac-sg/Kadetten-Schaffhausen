@@ -224,6 +224,8 @@ function v2MatchStatistics() {
   const homeName = header?.querySelector('.matchup-team > span')?.textContent || '';
   const ownSide = body.dataset.ownSide || (homeName ? (activeClub === 'fcsg' ? (/St[. ]?\s*Gallen/i.test(homeName) ? 'home' : 'away') : typeof isOwnHandballTeam === 'function' ? (isOwnHandballTeam(homeName) ? 'home' : 'away') : null) : null);
   let metrics = body.querySelector('.v2-match-metrics');
+  const footballGame = activeClub === 'fcsg' && typeof fcsgGame === 'function' ? fcsgGame(v2Page()[1]) : null;
+  if (footballGame?.score && !footballGame.live) { metrics?.remove(); return; }
   if (!score || !ownSide) { metrics?.remove(); return; }
   const own = Number(score[ownSide === 'home' ? 1 : 2]), opponent = Number(score[ownSide === 'home' ? 2 : 1]);
   const diff = own - opponent, signature = `${own}:${opponent}`;
