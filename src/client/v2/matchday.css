@@ -838,3 +838,10 @@ html[data-preview='v2'][data-theme] #app .standings-season:has(> .qhl-view-switc
 html[data-preview='v2'][data-theme] #app .standings-season > .qhl-view-switch a { flex:1; min-width:0; min-height:44px; padding:0 4px; font-size:12px; }
 html[data-preview='v2'][data-theme] #app .standings-season:has(> .qhl-view-switch) > .league-toggle button { flex:1; min-width:0; min-height:44px; padding:4px; font-size:12px; white-space:normal; }
 html[data-preview='v2'][data-theme] #app .standings-season:has(> .qhl-view-switch) > .league-toggle button[data-league='QHL'] { flex:0 0 44px; }
+
+/* ---------- Kadetten-App: ein Verein, keine Vereinswahl (docs/kadetten-app.md) ---------- */
+html[data-preview='v2'][data-theme] .top .compact-club-trigger,
+html[data-preview='v2'][data-theme] #compact-club-menu,
+html[data-preview='v2'][data-theme] #club-switch { display:none !important; }
+html[data-preview='v2'][data-theme] .v2-masthead { gap:10px; }
+html[data-preview='v2'][data-theme] .v2-masthead-crest { flex:none; width:24px; height:auto; }

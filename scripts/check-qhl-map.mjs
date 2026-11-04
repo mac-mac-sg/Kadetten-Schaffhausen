@@ -45,13 +45,17 @@ try{
   await p.locator('[data-qhl-all]').click();assert.equal(await p.locator('.qhl-club-card').count(),0);
   await p.locator('[data-qhl-list]').click();assert.equal(await p.locator('.qhl-list-row').count(),10);await p.locator('[data-qhl-team="'+club+'"]').click();await p.locator('.qhl-club-card').click();
   if(process.env.QHL_MAP_SCREENSHOTS&&width===390)await p.screenshot({path:path.join(process.env.QHL_MAP_SCREENSHOTS,club+'-'+theme+'-profile.png')});
-  await p.locator('[data-qhl-club]').click();await p.locator('.v2-club-hero').waitFor();await p.goBack();await ready();assert.equal(await p.locator('.qhl-club-card strong').textContent(),club==='otmar'?'TSV St. Otmar St. Gallen':'Kadetten Schaffhausen');
+  // Kadetten-App: nur das Kadetten-Profil führt zur Vereinsseite; St. Otmar bleibt ein Ligaprofil ohne Vereinswechsel.
+  if(club==='kadetten'){await p.locator('[data-qhl-club]').click();await p.locator('.v2-club-hero').waitFor();await p.goBack();await ready();}
+  else assert.equal(await p.locator('[data-qhl-club]').count(),0,'St. Otmar profile does not switch the Kadetten app');
+  assert.equal(await p.locator('.qhl-club-card strong').textContent(),club==='otmar'?'TSV St. Otmar St. Gallen':'Kadetten Schaffhausen');
   results.push({width,club,theme});
  }
  await p.goto(origin+'/v2/?club=kadetten#season/table',{waitUntil:'domcontentloaded'});await p.getByRole('button',{name:'European League',exact:true}).click();assert.equal(await p.locator('.qhl-view-switch').count(),0);await p.getByRole('button',{name:'QHL',exact:true}).click();await p.locator('.qhl-view-switch a').last().click();await ready();
  await p.locator('#club-settings').click();const lightMode=p.locator('[data-v1-light-mode]');await lightMode.check();await p.keyboard.press('Escape');await ready();assert.equal(await p.locator('html').getAttribute('data-theme'),'light');
  await p.locator('.dock [data-nav="news"]').click();await p.locator('.v2-magazine').waitFor();assert.equal(await p.locator('.qhl-map-screen,.maplibregl-canvas').count(),0);
- await p.goto(origin+'/v2/?club=fcsg#season/table',{waitUntil:'domcontentloaded'});assert.equal(await p.locator('.qhl-view-switch').count(),0);
+ // Die Kadetten-App ignoriert ?club=fcsg und zeigt die Kadetten-Tabelle mit Kartenumschalter.
+ await p.goto(origin+'/v2/?club=fcsg#season/table',{waitUntil:'domcontentloaded'});await p.locator('.qhl-view-switch').waitFor();assert.equal(await p.locator('html').getAttribute('data-club'),'kadetten');
  for(const club of ['kadetten','otmar']){await pages[0].goto(origin+'/?club='+club+'#season/table',{waitUntil:'domcontentloaded'});assert.equal(await pages[0].locator('.qhl-view-switch,.qhl-map-screen').count(),0);}
  // Style unavailable: every club and its details remain reachable without a map or location permission.
  await context.route('https://tiles.openfreemap.org/**',r=>r.fulfill({status:503,body:'Unavailable'}));

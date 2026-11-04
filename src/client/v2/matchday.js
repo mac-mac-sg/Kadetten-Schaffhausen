@@ -1,8 +1,33 @@
-/* V2-Designentwurf «Matchday»: nur in der Testversion unter /v2/ eingebunden (scripts/build.mjs).
+/* Kadetten-App (V2): nur unter /v2/ eingebunden (scripts/build.mjs), Spezifikation in docs/kadetten-app.md.
    Die Startseite richtet sich nach dem Spielzustand (Alltag, Vorfreude, Live, nach dem Spiel),
    eine Live-Leiste begleitet laufende Spiele, Übergänge und Ladezustände machen die App ruhiger.
    Alles hier setzt auf die bestehenden Renderer auf und ändert keine Daten. */
 const V2_NEWS_LIMIT = 15;
+
+/* Nur die Kadetten. FC St. Gallen und St. Otmar bleiben in Matchday (V1 unter ../); gemeinsame Module,
+   Daten und Server bleiben dafür unverändert. Läuft vor restoreActiveClub() in main.js. */
+const V2_CLUB = 'kadetten';
+const V2_CLUB_NOTICE_KEY = 'kadetten-only-notice-v1';
+const v2ReturningUser = (() => {
+  try { return [CLUB_SELECTION_KEY, CLUB_CHOICE_KEY, 'fan-v1-theme'].some(key => localStorage.getItem(key) !== null); }
+  catch { return false; }
+})();
+function v2LockClub() {
+  if (typeof fanClubs === 'undefined') return;
+  for (const id of Object.keys(fanClubs)) if (id !== V2_CLUB) delete fanClubs[id];
+  selectedClubs = [V2_CLUB];
+  try { localStorage.setItem(CLUB_SELECTION_KEY, JSON.stringify([V2_CLUB])); localStorage.setItem(CLUB_CHOICE_KEY, V2_CLUB); } catch {}
+}
+v2LockClub();
+/* Einmalig für bisherige Nutzer: Hinweis auf Matchday und Push-Abo auf die Kadetten beschränken. */
+function v2ClubNotice() {
+  let shown = true;
+  try { shown = localStorage.getItem(V2_CLUB_NOTICE_KEY) === 'seen'; localStorage.setItem(V2_CLUB_NOTICE_KEY, 'seen'); } catch {}
+  if (shown || !v2ReturningUser) return;
+  appFeedback('Diese App zeigt jetzt nur noch die Kadetten. FC St. Gallen und St. Otmar findest du in Matchday (Einstellungen).');
+  if (typeof readPushDevice === 'function' && readPushDevice()) updatePushPreferences().catch(() => {});
+}
+window.addEventListener?.('load', v2ClubNotice, {once: true});
 const v2State = {newsExpanded: false, lastScore: '', ticker: 0};
 
 /* V2 owns this preference; V1 and the former experimental menu choice stay untouched. */
@@ -150,26 +175,35 @@ function v2EditorialEvents(scope = document) {
 function v2InstallSettings() {
   v2InstallDockChoice();
   const dialog = document.querySelector('.club-settings-dialog'), install = document.getElementById('install-app');
-  if (!dialog || !install) return;
+  if (!dialog) return;
+  dialog.querySelector('[aria-labelledby="settings-clubs-title"]')?.remove();
+  if (!dialog.querySelector('[data-v2-matchday]')) {
+    const link = document.createElement('a'); link.className = 'settings-help-row'; link.dataset.v2Matchday = '';
+    link.href = '../'; link.innerHTML = '<span>FC St. Gallen und St. Otmar in Matchday</span><span aria-hidden="true">↗</span>';
+    dialog.querySelector('.club-settings-help')?.before(link);
+  }
+  if (!install) return;
   const existing = dialog.querySelector('[data-v2-install]');
   if (install.hidden) { existing?.remove(); return; }
   if (existing) return;
   const button = document.createElement('button'); button.type = 'button'; button.className = 'settings-help-row';
-  button.dataset.v2Install = ''; button.innerHTML = install.innerHTML + '<span>Matchday installieren</span>';
+  button.dataset.v2Install = ''; button.innerHTML = install.innerHTML + '<span>App installieren</span>';
   button.onclick = () => { dialog.querySelector('[aria-label="Einstellungen schliessen"]')?.click(); install.click(); };
   dialog.querySelector('.settings-app-info')?.before(button);
 }
 const v2BaseOpenClubSettings = openClubSettings;
 openClubSettings = function (...args) { const result = v2BaseOpenClubSettings(...args); v2InstallSettings(); return result; };
 
+const V2_MASTHEAD = '<img class="v2-masthead-crest" src="assets/logo.png" alt="" width="24" height="34">KADETTEN';
+const V2_MASTHEAD_LABEL = 'Kadetten Schaffhausen · Startseite';
 function v2MagazineChrome() {
   document.querySelectorAll('#app aside.notice').forEach(note => note.setAttribute('role', 'note'));
   const top = document.querySelector('body > .top');
   if (top && !top.querySelector('.v2-masthead')) {
     const brand = document.createElement('a');
     brand.className = 'v2-masthead'; brand.href = '#home';
-    brand.setAttribute('aria-label', 'Matchday · Magazin');
-    brand.innerHTML = 'MATCH<span>DAY</span>';
+    brand.setAttribute('aria-label', V2_MASTHEAD_LABEL);
+    brand.innerHTML = V2_MASTHEAD;
     top.prepend(brand);
   }
   v2FitClubLabel();
@@ -452,7 +486,7 @@ async function v2ShareResult(gameId) {
     ctx.fillText(r.label.toUpperCase(), 540, 1100);
   }
   ctx.fillStyle = '#ffffff99'; ctx.font = '500 34px system-ui, sans-serif';
-  ctx.fillText('Matchday · ' + fanClubs[activeClub].name, 540, 1250);
+  ctx.fillText(fanClubs[activeClub].name + ' · Fan-App', 540, 1250);
   const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
   if (!blob) return;
   const file = new File([blob], `resultat-${g.date}.jpg`, {type: 'image/jpeg'});
@@ -577,8 +611,8 @@ function v2SyncChrome() {
   root.dataset.v2Page = page === 'season' ? id || 'games' : page;
   const masthead = document.querySelector('.v2-masthead');
   if (masthead) {
-    masthead.innerHTML = 'MATCH<span>DAY</span>';
-    masthead.setAttribute('aria-label','Matchday · Magazin');
+    if (masthead.innerHTML !== V2_MASTHEAD) masthead.innerHTML = V2_MASTHEAD;
+    masthead.setAttribute('aria-label', V2_MASTHEAD_LABEL);
   }
   root.classList.toggle('v2-scrolled', window.scrollY > 24);
   v2SyncDock();

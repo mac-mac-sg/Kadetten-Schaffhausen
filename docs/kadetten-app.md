@@ -66,6 +66,14 @@ Jede Phase besteht aus kleinen PRs nach [AGENTS.md](../AGENTS.md). Für Oberflä
 
 Datenschutzerklärung und Impressum mit Vermerk «inoffizielle Fan-App» gehören in Phase 1 oder 2.
 
+## Stand Phase 1 (Kadetten-Sperre)
+
+- `src/client/v2/matchday.js` beschränkt `fanClubs` und `selectedClubs` vor `restoreActiveClub()` auf `kadetten` und setzt die gespeicherte Auswahl zurück. `?club=fcsg` und `?club=otmar` werden in V2 ignoriert.
+- Bisherige Nutzer sehen einmalig den Hinweis auf Matchday; ein bestehendes Push-Abo wird auf die Kadetten beschränkt. Die Einstellungen zeigen statt «Meine Vereine» einen Link «FC St. Gallen und St. Otmar in Matchday» (`../`).
+- Kopfzeile: Wappen und Wortmarke «KADETTEN» statt «MATCHDAY» und Vereinswahl. Einführung, Teilen-Bild, Installationstexte, Manifest («Kadetten Fan-App»/«Kadetten»), Titel, Beschreibung und Offline-Seite nennen nur die Kadetten; Installations-ID und Scope bleiben.
+- QHL-Karte: Nur das Kadetten-Profil verlinkt die Vereinsseite. Bilder von FCSG und St. Otmar sind nicht mehr im V2-Offline-Paket.
+- Gemeinsame Module, Daten, Server-Endpunkte und die V1 (Matchday) bleiben unverändert. Regressionstest: `tests/v2-kadetten-only.test.mjs`; Build-Prüfung in `scripts/check-preview.mjs`.
+
 ## Bewusst nicht vorgesehen
 
 Lärmmesser, Fanwand, Navigation in der Halle, Wartezeiten, Bestellen vom Sitzplatz, Chats, öffentliche Ranglisten, Mitgliederkarte ohne Vereinsdaten, flächendeckendes Glas und 3D-Symbole, native Live Activities, Wallet-Pässe.
@@ -75,3 +83,4 @@ Lärmmesser, Fanwand, Navigation in der Halle, Wartezeiten, Bestellen vom Sitzpl
 - Haltestelle und Linien zur BBC Arena für die ÖV-Abfahrten.
 - Ob die SHV-Daten Wurfpositionen und Daten von Nachwuchs- und Frauenteams liefern.
 - Kontakt zum Club für Arena-Fakten, Ticket-Links und Bildrechte.
+- `check-v2-ticket.mjs`, `check-v2-readability.mjs` und `check-v2-mobile.mjs` scheitern bereits auf `main` (Stand #311) an Änderungen aus #270–#307 (Ticket-Beschriftung, Datumsgrösse, News-Layout). Sie sind vor Phase 2 auf den aktuellen Stand zu bringen.

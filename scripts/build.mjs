@@ -30,7 +30,9 @@ if(!v2){
 }
 // V2-Designentwurf «Matchday» (v2/matchday.*): eigene Stile und Verhalten, nur in der Testversion unter /v2/.
 if(v2){
-  shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css','v2/matchday.css','v2/matchday.js','assets/team.webp','assets/kadetten-squad-2026.webp','assets/otmar-squad-2026.webp');
+  shellFiles.push('v2/qhl-clubs.js','v2/qhl-map.js','v2/qhl-map.css','v2/matchday.css','v2/matchday.js','assets/team.webp','assets/kadetten-squad-2026.webp');
+  // Kadetten-App: Bilder von FC St. Gallen und St. Otmar gehören nicht ins Offline-Paket (docs/kadetten-app.md).
+  for(const file of ['assets/fcsg-stadium.webp','assets/otmar-kreuzbleiche.webp','assets/v2-header-fcsg-evening.webp','assets/v2-header-otmar-heart.webp'])shellFiles.splice(shellFiles.indexOf(file),1);
   html=html.replace('</head>','<link rel="preload" href="assets/anton.woff2" as="font" type="font/woff2" crossorigin></head>');
   html=html.replace('</head>','<link rel="stylesheet" href="v2/qhl-map.css"><link rel="stylesheet" href="v2/matchday.css"></head>').replace('<script src="js/main.js"></script>','<script src="v2/qhl-clubs.js"></script><script src="v2/qhl-map.js"></script><script src="v2/matchday.js"></script><script src="js/main.js"></script>');
   html=html.replace("connect-src 'self'", "connect-src 'self' https://tiles.openfreemap.org");
@@ -39,17 +41,20 @@ if(v2){
   const themeInit=html.match(/<script data-v1-theme-init>([\s\S]*?)<\/script>/)[1];
   html=html.replace("script-src 'self'","script-src 'self' 'sha256-"+createHash('sha256').update(themeInit).digest('base64')+"'");
   const manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
-  html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Matchday"').replace('<title>Meine Vereine ·','<title>Matchday ·');
-  Object.assign(manifest,{name:'Matchday',short_name:'Matchday',description:'Matchday V2: News, Spiele, Tabellen und Teams deiner Vereine im Magazin-Stil.'});
+  html=html.replace('name="apple-mobile-web-app-title" content="Meine Vereine"','name="apple-mobile-web-app-title" content="Kadetten"').replace(/<title>Meine Vereine ·[^<]*<\/title>/,'<title>Kadetten · Fan-App Kadetten Schaffhausen</title>');
+  html=html.replace(/<meta name="description" content="[^"]*">/,'<meta name="description" content="Inoffizielle Fan-App für Kadetten Schaffhausen: News, Spiele, Liveticker, Tabellen, Team und Verein.">').replace('aria-label="Meine Vereine einstellen"','aria-label="Einstellungen"');
+  // Installations-ID und Scope bleiben, damit installierte V2-Apps weiterlaufen.
+  Object.assign(manifest,{name:'Kadetten Fan-App',short_name:'Kadetten',description:'Inoffizielle Fan-App für Kadetten Schaffhausen: News, Spiele, Liveticker, Tabellen, Team und Verein.'});
   fs.writeFileSync('dist/client/manifest.webmanifest',JSON.stringify(manifest,null,2));
 }
 let sw=fs.readFileSync('dist/client/sw.js','utf8').replace("const API_ORIGIN='';",'const API_ORIGIN='+JSON.stringify(apiOrigin)+';').replace(/const CACHE='[^']+';/,"const CACHE='kadetten-offline-build';").replace(/\?v=[a-f0-9]+/g,'');
-sw=sw.replaceAll('Meine Vereine · Offline','Matchday · Offline').replace('<h1>Meine Vereine</h1>','<h1>Matchday</h1>');
+const appName=v2?'Kadetten':'Matchday';
+sw=sw.replaceAll('Meine Vereine · Offline',appName+' · Offline').replace('<h1>Meine Vereine</h1>','<h1>'+appName+'</h1>').replace("'Meine Vereine · V2'",JSON.stringify(v2?'Kadetten':'Matchday'));
 // Die Quellmodule bleiben getrennt; die öffentliche Hülle lädt zwei verzögerte Skripte und ein Stylesheet.
 const scripts=[...html.matchAll(/<script src="([^"?]+)"[^>]*><\/script>/g)].map(m=>m[1]).filter(file=>file!=='platform-config.js');
 const styles=[...html.matchAll(/<link rel="stylesheet" href="([^"?]+)"[^>]*>/g)].map(m=>m[1]);
 fs.mkdirSync('dist/client/js',{recursive:true});
-await build({stdin:{contents:(v2?`const v2Storage={getItem:k=>window.localStorage.getItem('v2:'+k),setItem:(k,v)=>window.localStorage.setItem('v2:'+k,v),removeItem:k=>window.localStorage.removeItem('v2:'+k)};\n`:'')+scripts.map(file=>{let text=fs.readFileSync('dist/client/'+file,'utf8');if(!v2&&file==='pwa.js')text=text.replace('assets/icon-192.png','assets/app-v1-scarf-glow-192.png').replace('Deine Vereine auf dem Startbildschirm','Matchday auf dem Startbildschirm').replace('Meine Vereine wurde installiert.','Matchday wurde installiert.');return v2?text.replace(/\blocalStorage\b/g,'v2Storage'):text;}).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
+await build({stdin:{contents:(v2?`const v2Storage={getItem:k=>window.localStorage.getItem('v2:'+k),setItem:(k,v)=>window.localStorage.setItem('v2:'+k,v),removeItem:k=>window.localStorage.removeItem('v2:'+k)};\n`:'')+scripts.map(file=>{let text=fs.readFileSync('dist/client/'+file,'utf8');if(v2&&file==='pwa.js')text=text.replace('Matchday auf dem Startbildschirm','Kadetten-App auf dem Startbildschirm').replace('Matchday wurde installiert.','Kadetten-App wurde installiert.');if(!v2&&file==='pwa.js')text=text.replace('assets/icon-192.png','assets/app-v1-scarf-glow-192.png').replace('Deine Vereine auf dem Startbildschirm','Matchday auf dem Startbildschirm').replace('Meine Vereine wurde installiert.','Matchday wurde installiert.');return v2?text.replace(/\blocalStorage\b/g,'v2Storage'):text;}).join('\n;\n'),sourcefile:'client-source.js'},outfile:'dist/client/js/app.js',format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
 const {transform}=await import('esbuild');
 const css=await transform(styles.map(file=>fs.readFileSync('dist/client/'+file,'utf8')).join('\n'),{loader:'css',target:'es2022',minify:true,legalComments:'none'});
 fs.writeFileSync('dist/client/app.css',css.code);
