@@ -239,3 +239,6 @@ V2 verwendet einen getönten dunklen Grund, hellere Karten und nochmals angehobe
 ### Umschaltbares Menüband in V2
 
 Unter Einstellungen → Menüband stehen «V2 · Mit Aussparung» und «V1 · Schwebendes Menüband» zur Wahl. Die V1-Alternative nutzt ein getöntes Glasband mit abgerundeter aktiver Fläche und kurzem Indikator. Alle fünf V2-Ziele bleiben beschriftet. Die Einstellung wird ausschliesslich für V2 unter `fan-v2-navigation-style` gespeichert; ohne Auswahl bleibt das bisherige V2-Menü aktiv.
+
+### Matchday: durchgängige Spielerprofile
+In V1 bilden das grosse Spielerfoto, der Steckbrief und sämtliche Saisonstatistiken einen durchgängigen Scrollverlauf ohne Einrasten. Das Foto bleibt beim Herunterscrollen hinter den nachfolgenden Inhalten stehen; ein zweites Portrait und die bisherigen Abschnittspunkte entfallen. Bei reduzierter Bewegung scrollt das Foto normal mit. Die separate V2 behält ihre bisherige Darstellung und Abschnittsnavigation.
