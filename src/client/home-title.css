@@ -106,13 +106,13 @@ html[data-home-title='modern'] .v2-match-ticket[data-effect='result']::before { 
 
 /* V1: approved V2 start area; every selector is confined to the home cover or its chrome. */
 .v1-start-masthead { display:none; }
-html[data-v1-home='magazine'][data-theme] body > .top.v1-compact-header { inset:0 0 auto; width:100%; max-width:none; min-height:68px; padding:calc(10px + env(safe-area-inset-top,0px)) 18px 10px; border:0; border-radius:0; display:grid; grid-template-columns:minmax(0,1fr) auto 44px; gap:8px; background:#10141899; color:#fff; box-shadow:none; backdrop-filter:blur(12px); }
-html[data-v1-home='magazine'][data-theme] .v1-start-masthead { display:inline-flex; align-items:center; min-height:44px; color:#fff; font:400 clamp(24px,7.5vw,36px)/1 Anton,Impact,sans-serif; letter-spacing:-.04em; text-decoration:none; }
-html[data-v1-home='magazine'] .v1-start-masthead span { color:#ff7900; }
-html[data-v1-home='magazine'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { display:flex; flex:none; gap:7px; padding:5px 10px; border:1px solid #ffffff50; border-radius:30px; color:#fff; font-size:12px; text-transform:uppercase; white-space:nowrap; }
-html[data-v1-home='magazine'][data-theme] .top.v1-compact-header .brand small { display:none; }
-html[data-v1-home='magazine'][data-theme] .top.v1-compact-header .brand img { width:22px; height:28px; object-fit:contain; }
-html[data-v1-home='magazine'][data-theme] .top #club-settings { width:44px; height:44px; padding:10px; margin:0; color:#fff; background:#10141860; border-radius:12px; }
+html[data-v1-header='matchday'][data-theme] body > .top.v1-compact-header { inset:0 0 auto; width:100%; max-width:none; min-height:68px; padding:calc(10px + env(safe-area-inset-top,0px)) 18px 10px; border:0; border-radius:0; display:grid; grid-template-columns:minmax(0,1fr) auto 44px; gap:8px; background:#10141899; color:#fff; box-shadow:none; backdrop-filter:blur(12px); }
+html[data-v1-header='matchday'][data-theme] .v1-start-masthead { display:inline-flex; align-items:center; min-height:44px; color:#fff; font:400 clamp(24px,7.5vw,36px)/1 Anton,Impact,sans-serif; letter-spacing:-.04em; text-decoration:none; }
+html[data-v1-header='matchday'] .v1-start-masthead span { color:#ff7900; }
+html[data-v1-header='matchday'][data-theme] .top.v1-compact-header .brand.compact-club-trigger { display:flex; flex:none; gap:7px; padding:5px 10px; border:1px solid #ffffff50; border-radius:30px; color:#fff; font-size:12px; text-transform:uppercase; white-space:nowrap; }
+html[data-v1-header='matchday'][data-theme] .top.v1-compact-header .brand small { display:none; }
+html[data-v1-header='matchday'][data-theme] .top.v1-compact-header .brand img { width:22px; height:28px; object-fit:contain; }
+html[data-v1-header='matchday'][data-theme] .top #club-settings { width:44px; height:44px; padding:10px; margin:0; color:#fff; background:#10141860; border-radius:12px; }
 html:not([data-preview='v2'])[data-theme] #app .v1-start.v2-ticket-section { padding:0 0 24px; min-height:0; border-radius:0; background:transparent; overflow:visible; }
 html:not([data-preview='v2'])[data-theme] #app .v1-start::before,html:not([data-preview='v2'])[data-theme] #app .v1-start::after { content:none; }
 html:not([data-preview='v2'])[data-theme] .v1-start-identity { position:relative; isolation:isolate; display:flex; align-items:flex-end; min-height:clamp(260px,35svh,320px); padding:120px 22px 48px; background:#101214; }
@@ -143,5 +143,8 @@ html:not([data-preview='v2'])[data-theme] #app .v1-start .v2-match-deck::after {
 html:not([data-preview='v2'])[data-theme] #app .v1-start .v2-cover-action > span { color:inherit; font-size:22px; }
 html:not([data-preview='v2'])[data-theme] #app .v1-start .v2-ticket-empty { padding:24px; margin:0; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
 
-html[data-v1-home='magazine'][data-theme] .top :is(#install-app,.edition,.club-entry) { display:none; }
-html[data-v1-home='magazine'][data-theme] .top .brand > span { color:#fff; }
+html[data-v1-header='matchday'][data-theme] .top :is(#install-app,.edition,.club-entry) { display:none; }
+html[data-v1-header='matchday'][data-theme] .top .brand > span { color:#fff; }
+
+html[data-v1-header='matchday'] .top.v1-compact-header .club-match-hints { display:none !important; }
+html[data-v1-header='matchday'][data-theme]:not(.snap-news) body > .top.v1-compact-header { background:#101418ed; }
