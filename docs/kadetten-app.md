@@ -158,6 +158,29 @@ Für Schritt 6 offen: `scripts/build-pages.mjs` legt dann `dist/app` statt der b
 - Kopfzeile, Einführung, Teilen-Bild, Installationstexte, Manifest («Kadetten Fan-App»/«Kadetten»), Titel, Beschreibung und Offline-Seite nennen nur die Kadetten; Installations-ID und Scope bleiben.
 - Regressionstest: `tests/v2-kadetten-only.test.mjs`; Build-Prüfung in `scripts/check-preview.mjs`.
 
+## Feature-Backlog
+
+Ideen für nach dem Grundumfang (Schritte 1–6). Noch nicht entschieden und nicht eingeplant.
+
+### Fan-Wahl «Spieler des Matchs»
+
+Fans wählen nach dem Spiel den besten Kadetten-Spieler.
+
+| Punkt | Vorschlag |
+|---|---|
+| Ort | Spielseite · Bericht und «Jetzt» · Nachspiel |
+| Auswahl | Kadetten-Spieler mit Einsatz laut bestätigtem Spielbericht, mit Toren und Paraden als Entscheidungshilfe |
+| Zeitfenster | ab bestätigtem Endresultat bis etwa 24 Stunden danach |
+| Ergebnis | Sieger und Anteile erst nach Abschluss der Wahl; auf dem Spielerprofil «Spieler des Matchs» pro Saison |
+| Stimmen | eine Stimme pro Gerät und Spiel, ohne Konto |
+
+Zu klären vor der Umsetzung:
+- **Schreibzugriff:** Bisher schreibt die Öffentlichkeit nie in den Datendienst (AGENTS.md). Die Wahl bräuchte erstmals einen öffentlichen, schreibenden Endpunkt unter eigenem Präfix (z. B. `POST /api/votes/…`) mit eigenem Speicher. Das ist ein Entscheid des Eigentümers.
+- **Missbrauch:** Ohne Konto lässt sich Mehrfachabstimmen nur erschweren, nicht verhindern (Gerätekennung, Ratenbegrenzung, allenfalls Cloudflare Turnstile). Das Ergebnis ist deshalb ein Stimmungsbild, keine offizielle Auszeichnung.
+- **Datenschutz:** keine Personendaten speichern; die Gerätekennung bleibt zufällig und lokal, Stimmen nur gezählt.
+- **Abgrenzung:** «Öffentliche Ranglisten» sind bewusst nicht vorgesehen; eine Wahl pro Spiel ohne Nutzerranglisten widerspricht dem nicht.
+- **Charakter:** Inoffizielle Fan-Wahl, klar als solche bezeichnet; kein Bezug zu einer allfälligen offiziellen Auszeichnung des Clubs.
+
 ## Bewusst nicht vorgesehen
 
 Anreise- und Hallenführer, ÖV-Abfahrten, Tor-für-Tor-Ticker, Lärmmesser, Fanwand, Navigation in der Halle, Bestellen vom Sitzplatz, Chats, öffentliche Ranglisten, Mitgliederkarte ohne Vereinsdaten, native Live Activities, Wallet-Pässe.
