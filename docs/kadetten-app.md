@@ -67,6 +67,30 @@ Spielseite (von Jetzt, Spielplan, Spieler, Artikel) ─ Vorschau → Live → Be
 | Live | Spielstand, Phase und Spielzeit, Halbzeitstand, Live-Tabelle, «Stand vor x Sekunden» |
 | Bericht | Endresultat und Halbzeit, Torschützen, Paraden, 7-m, Zeitstrafen, Teamvergleich, Tabelle danach, Artikel zum Spiel |
 
+## Seitenaufbau
+
+Abgenommen anhand der Skizzen in Graustufen (5. November 2026). Reihenfolge von oben nach unten.
+
+| Seite | Aufbau |
+|---|---|
+| Jetzt · Alltag | Nächstes Spiel mit Countdown · Letztes Resultat mit S/U/N · News (3 Artikel, «Alle News») · Tabelle in Kürze |
+| Jetzt · Spieltag | Spielkarte (Wettbewerb, Halle, Anpfiff, Countdown) mit Ticket ↗ und «Push zum Anpfiff» · Ausgangslage (Tabellenplätze, Form, Punkte bei Sieg) · Vorschau-Auszug · «Wo läuft das Spiel?» |
+| Jetzt · Live | Spielstand, Phase, Spielzeit, Halbzeitstand, «Stand vor x s» · Live-Tabelle («Bei diesem Stand: n. Platz») · Andere Spiele der Runde |
+| Jetzt · Nachspiel | Endresultat mit Halbzeit und S/U/N · «Spielbericht» und «Resultat teilen» · Auszug aus dem Spielbericht · Tabelle danach · Nächstes Spiel |
+| Spielseite | Kopf mit Datum, Wettbewerb, Halle und Paarung; Zustandsanzeige Vorschau · Live · Bericht (wechselt automatisch) |
+| Spielseite · Vorschau | Ausgangslage mit Form beider Teams · Vorschau-Text · Direkte Duelle · Letzte Spiele beider Teams · Sender ↗ · Matchprogramm ↗ |
+| Spielseite · Live | Grosser Spielstand mit Phase, Spielzeit, Halbzeit · «Stand vor x s, alle 30 s» · Live-Tabelle · Hinweis «Spielbericht folgt nach Abpfiff» · Stand teilen |
+| Spielseite · Bericht | Endresultat und Halbzeit · Torschützen (mit 7-m, verlinkt auf Spieler) · Teamvergleich Paraden, 7-m, Zeitstrafen · Tabelle danach · Artikel zum Spiel |
+| Saison | Umschalter Spielplan · Tabellen · Statistik |
+| Saison · Spielplan | Filter Alle/QHL/EHL/Cup/Test · Spiele nach Monat mit Resultat und S/U/N · springt zum nächsten Spiel |
+| Saison · Tabellen | QHL/EHL · Rang, Team, Spiele, Form, Punkte, Kadetten hervorgehoben · Live-Tabelle während eines Spiels · QHL-Vereinskarte |
+| Team | Kader/Staff · Spielerkarten nach Position (Tor, Rückraum, Flügel/Kreis) |
+| Spieler | Bild, Name, Nummer, Position · Saisonwerte (Spiele, Tore, 7-m) · Steckbrief · Letzte Spiele · «Als Lieblingsspieler merken» |
+| Verein | Bild · Titel (Meister, Cup, Supercup) · Geschichte mit Archivbildern · Heimhalle |
+| Ich | Benachrichtigungen (Anpfiff, Endresultat, Halbzeitstand, News) · Meine Spiele · Lieblingsspieler · Kalender-Abo · Darstellung System/Hell/Dunkel · App installieren · Datenschutz & Impressum · Link zu Matchday |
+
+Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rechts. Unterseiten haben oben links «← zurück».
+
 ## Inhalte
 
 | Bereich | Inhalt | Stand |
@@ -99,14 +123,14 @@ Spielseite (von Jetzt, Spielplan, Spieler, Artikel) ─ Vorschau → Live → Be
 
 ## Vorgehen
 
-| Schritt | Inhalt | Abnahme |
-|---|---|---|
-| 1 | Struktur und Inhalte (dieses Dokument) | Entscheid Variante «Jetzt, Saison, Team, Verein» mit Spielseite im Mittelpunkt |
-| 2 | Einfache Skizzen in Graustufen: Jetzt (Alltag, Spieltag, Live, Nachspiel), Spielseite (Vorschau, Live, Bericht), Saison, Team, Spieler, Verein, Ich | Aufbau abgenommen |
-| 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen |
-| 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün |
-| 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung |
-| 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht |
+| Schritt | Inhalt | Abnahme | Stand |
+|---|---|---|---|
+| 1 | Struktur und Inhalte (dieses Dokument) | Entscheid Variante «Jetzt, Saison, Team, Verein» mit Spielseite im Mittelpunkt | abgenommen |
+| 2 | Einfache Skizzen in Graustufen: Jetzt (Alltag, Spieltag, Live, Nachspiel), Spielseite (Vorschau, Live, Bericht), Saison, Team, Spieler, Verein, Ich | Aufbau abgenommen | abgenommen 5.11.2026, siehe [Seitenaufbau](#seitenaufbau) |
+| 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen | in Arbeit |
+| 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün | offen |
+| 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung | offen |
+| 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht | offen |
 
 ## Bisheriger Stand: Kadetten-Sperre in der alten V2 (#314)
 
