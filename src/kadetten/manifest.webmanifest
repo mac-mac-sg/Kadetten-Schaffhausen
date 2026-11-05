@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Kadetten Fan-App",
+  "short_name": "Kadetten",
+  "description": "Inoffizielle Fan-App für Kadetten Schaffhausen: Spiele, Live-Stand, Tabellen, Team und Verein.",
+  "lang": "de-CH",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14110e",
+  "theme_color": "#14110e",
+  "icons": [
+    {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -130,9 +130,26 @@ Richtung «Abend» (dunkel mit Hallenfoto, schmale grosse Zahlen, runde und warm
 | 1 | Struktur und Inhalte (dieses Dokument) | Entscheid Variante «Jetzt, Saison, Team, Verein» mit Spielseite im Mittelpunkt | abgenommen |
 | 2 | Einfache Skizzen in Graustufen: Jetzt (Alltag, Spieltag, Live, Nachspiel), Spielseite (Vorschau, Live, Bericht), Saison, Team, Spieler, Verein, Ich | Aufbau abgenommen | abgenommen 5.11.2026, siehe [Seitenaufbau](#seitenaufbau) |
 | 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen | Richtung «Abend» abgenommen 5.11.2026; Designsystem und alle Seiten gestaltet |
-| 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün | offen |
+| 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün | umgesetzt, siehe [Technik](#technik) |
 | 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung | offen |
 | 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht | offen |
+
+## Technik
+
+Stand Schritt 4 (Gerüst). Die neue App ist gebaut und geprüft, aber noch nicht veröffentlicht: `/v2/` zeigt bis Schritt 6 weiterhin die bisherige V2.
+
+| Teil | Umsetzung |
+|---|---|
+| Quellen | `src/kadetten/`: `index.html`, `theme-init.js`, `manifest.webmanifest`, `sw.js`, `css/` (Layer `reset, tokens, base, components, views`; Tokens aus dem [Designsystem](kadetten-app-design.md)), `js/` (ES-Module), `assets/` (eigene Kopien von Wappen, Hallenfoto, App-Symbolen) |
+| Module | `logic.js` (Zürcher Zeit, Zustände von «Jetzt», Form S/U/N, Tabelle, Countdown), `api.js` (nur GET, ohne Anmeldedaten, Zeitlimit, nur JSON), `store.js` (Datenstand mit letztem gültigem Stand unter `v2:app-snapshot`), `live.js` (30 s nur bei sichtbarer App und im Spielfenster), `router.js` (Hash-Routen `#/`, `#/saison[/tabellen\|/statistik]`, `#/team[/id]`, `#/verein`, `#/ich`, `#/spiel/id`), `theme.js` (System/Hell/Dunkel unter `v2:app-theme`), `text.js` (Entitäten beim Einlesen dekodieren, bei der Ausgabe maskieren), `views/` |
+| Build | `npm run build:app` (esbuild, minimiert) nach `dist/app`; `KADETTEN_TARGET=pages` setzt den Datendienst `kadetten-api`. Inhaltsversion über alle Dateien der Hülle |
+| Schriften | Inter und Barlow Condensed aus `@fontsource` (SIL OFL), lateinisch und erweitert lateinisch, mit der App ausgeliefert; keine Drittserver |
+| Service Worker | Hülle aus dem Cache; `/api/data`, Berichte, Vorschauen u. a. zuerst aus dem Netz mit letztem gültigem Stand; `/api/live`, `/api/push/*` nie aus dem Cache; alte Hüllen-Caches werden beim Aktivieren gelöscht |
+| Sicherheit | CSP ohne Inline-Skripte, `connect-src` nur eigener Host und `kadetten-api`; Manifest-ID und Scope `./` wie bisher |
+| Prüfung | `tests/app-logic.test.mjs`, `tests/app-data.test.mjs`, `tests/app-build.test.mjs`; `scripts/check-v1-frozen.mjs` vergleicht die V1-Ausgabe (191 Dateien) mit `tests/fixtures/v1-pages.sha256`; alles in `npm run verify` |
+| Vorschau | `npm run dev:app` baut nach `dist/app-dev` und liefert `/api/*` über den lokalen, schreibgeschützten Adapter auf http://127.0.0.1:3001 |
+
+Für Schritt 6 offen: `scripts/build-pages.mjs` legt dann `dist/app` statt der bisherigen V2 unter `dist/client/v2` ab; der neue Service Worker räumt dabei die Caches der alten V2 (`kadetten-offline-*`, `kadetten-articles-v2-*`) ab.
 
 ## Bisheriger Stand: Kadetten-Sperre in der alten V2 (#314)
 

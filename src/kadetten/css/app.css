@@ -1,0 +1,6 @@
+/* Kadetten Companion App · Designsystem «Abend» (docs/kadetten-app-design.md) */
+@layer reset, tokens, base, components, views;
+@import './fonts.css' layer(base);
+@import './tokens.css' layer(tokens);
+@import './base.css' layer(base);
+@import './components.css' layer(components);
