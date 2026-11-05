@@ -2,7 +2,7 @@
 // Das ist der einzige Schreibweg der App; er gehört dem Gerät (zufälliger Schlüssel) und enthält keine Personendaten.
 // Gleicher Geräteeintrag wie in der bisherigen V2, damit bestehende Abos weiterlaufen.
 export const PUSH_DEVICE_KEY = 'match-push-device-v1';
-export const PUSH_TYPES = [['reminder', '30 Minuten vor Anpfiff'], ['start', 'Anpfiff'], ['half', 'Halbzeitstand'], ['final', 'Endresultat']];
+export const PUSH_TYPES = [['reminder', '30 Minuten vor Anpfiff'], ['start', 'Anpfiff'], ['half', 'Halbzeitstand'], ['final', 'Endresultat'], ['favourite', 'Tore deines Lieblingsspielers (QHL)']];
 
 const storage = () => { try { return globalThis.localStorage || null; } catch { return null; } };
 
@@ -38,7 +38,7 @@ export function createPush({origin = '', fetchImpl = globalThis.fetch} = {}) {
   return {
     device: readDevice,
     /** Erlaubnis wird nur als direkte Folge eines Tipps angefragt. */
-    async enable(types) {
+    async enable(types, favourite) {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') throw Error('Mitteilungen wurden nicht erlaubt. Du kannst sie später in den Einstellungen des Geräts aktivieren.');
       const config = await call('config');
@@ -49,13 +49,13 @@ export function createPush({origin = '', fetchImpl = globalThis.fetch} = {}) {
       const previous = readDevice();
       const device = {token: previous?.token || token(), subscription: subscription.toJSON(), types, active: false};
       saveDevice(device);
-      await call('device', 'PUT', {subscription: device.subscription, clubs: ['kadetten'], types}, device.token);
+      await call('device', 'PUT', {subscription: device.subscription, clubs: ['kadetten'], types, ...(favourite ? {favourite: {shv: favourite}} : {})}, device.token);
       saveDevice({...device, active: true});
     },
-    async update(types) {
+    async update(types, favourite) {
       const device = readDevice();
       if (!device) return;
-      await call('device', 'PUT', {subscription: device.subscription, clubs: ['kadetten'], types}, device.token);
+      await call('device', 'PUT', {subscription: device.subscription, clubs: ['kadetten'], types, ...(favourite ? {favourite: {shv: favourite}} : {})}, device.token);
       saveDevice({...device, types});
     },
     async disable() {

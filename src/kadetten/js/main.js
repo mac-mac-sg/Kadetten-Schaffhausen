@@ -6,9 +6,18 @@ import {startLive} from './live.js';
 import {parseRoute} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
-import {toggleFavourite, toggleMyGame} from './personal.js';
+import {toggleFavourite, toggleMyGame, changeTip, myGames, tips} from './personal.js';
+import {resultImage, seasonCard, shareImage} from './share-image.js';
+import {seasonSummary} from './moments.js';
+import {outcome, shortTeam} from './logic.js';
+import {withFinished} from './match.js';
+import {crestSrc, RESULT_TEXT} from './views/parts.js';
+import {shareText} from './views/jetzt.js';
 import {createPush, PUSH_TYPES} from './push.js';
+import {createVotes} from './fan-vote.js';
+import {favourite} from './personal.js';
 import {buildCalendar} from './calendar.js';
+import {RULES} from './rules.js';
 import {nav, setLogos} from './views/parts.js';
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
@@ -22,8 +31,9 @@ const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
 const store = createStore({api});
 const app = document.getElementById('app');
-const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false};
+const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false, votes: createVotes({origin: API_ORIGIN}), voteBusy: false, voteMessage: '', calendarUrl: '', pushFavourite: false};
 let installPrompt = null, lastView = '', scheduled = false;
+const celebrated = new Map();
 
 const VIEWS = {
   jetzt: renderJetzt, news: renderNews, artikel: renderArtikel, spiel: renderSpiel,
@@ -41,6 +51,17 @@ function render() {
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
   app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
+  // Siegmoment nur beim ersten Anzeigen eines Resultats.
+  for (const hero of app.querySelectorAll('.hero.celebrate')) {
+    const key = hero.dataset.celebrate;
+    if (!celebrated.has(key)) celebrated.set(key, performance.now());
+    if (performance.now() - celebrated.get(key) > 2500 || matchMedia('(prefers-reduced-motion: reduce)').matches) { hero.classList.remove('celebrate'); hero.querySelector('.spark')?.remove(); }
+  }
+  // Berechnete Breiten und Anteile per CSSOM setzen: Die CSP erlaubt keine style-Attribute.
+  for (const el of app.querySelectorAll('[data-style]')) for (const decl of el.dataset.style.split(';')) {
+    const [prop, value] = decl.split(':').map(x => x?.trim());
+    if (/^(width|flex)$/.test(prop || '') && /^[0-9.]+%?$/.test(value || '')) el.style.setProperty(prop, value);
+  }
   const key = route.view + ':' + (route.id || '') + ':' + (route.tab || '');
   if (key !== lastView) {
     if (lastView) { window.scrollTo(0, 0); document.getElementById('main')?.focus({preventScroll: true}); }
@@ -54,20 +75,40 @@ function focusSelector(el) {
 }
 const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(render); } };
 
+const favouriteShv = () => { const nr = favourite(); return nr ? store.state.data?.playerSeason?.players?.[nr]?.shvPlayerId || null : null; };
+
 async function pushAction(action) {
   if (ui.pushBusy) return;
-  const types = [...app.querySelectorAll('[data-push-type]:checked')].map(i => i.dataset.pushType);
+  const shv = favouriteShv();
+  const types = [...app.querySelectorAll('[data-push-type]:checked')].map(i => i.dataset.pushType).filter(t => t !== 'favourite' || shv);
   Object.assign(ui, {pushBusy: true, pushMessage: 'Wird eingerichtet …'}); render();
   try {
-    if (action === 'enable') { await push.enable(types.length ? types : PUSH_TYPES.map(t => t[0])); ui.pushMessage = 'Benachrichtigungen sind eingeschaltet.'; }
+    if (action === 'enable') { await push.enable(types.length ? types : PUSH_TYPES.map(t => t[0]).filter(t => t !== 'favourite' || (shv && ui.pushFavourite)), shv); ui.pushMessage = 'Benachrichtigungen sind eingeschaltet.'; }
     if (action === 'disable') { await push.disable(); ui.pushMessage = 'Benachrichtigungen sind ausgeschaltet.'; }
     if (action === 'test') { await push.test(); ui.pushMessage = 'Test an den Push-Dienst übergeben. Bitte die Mitteilungen auf dem Gerät prüfen.'; }
-    if (action === 'update') { await push.update(types); ui.pushMessage = 'Auswahl gespeichert.'; }
+    if (action === 'update') { await push.update(types, shv); ui.pushMessage = 'Auswahl gespeichert.'; }
   } catch (error) {
     ui.pushMessage = error.message || 'Das hat nicht geklappt. Bitte erneut versuchen.';
   }
   ui.pushBusy = false; render();
 }
+
+async function castVote(player) {
+  const id = parseRoute(location.hash).id;
+  if (!id || ui.voteBusy) return;
+  Object.assign(ui, {voteBusy: true, voteMessage: 'Stimme wird gespeichert …'}); render();
+  try { await ui.votes.vote(id, player); ui.voteMessage = 'Danke für deine Stimme!'; }
+  catch (error) { ui.voteMessage = error.message; }
+  ui.voteBusy = false; store.invalidate('votes:' + id); render();
+}
+
+// Kalender-Abo und Tor-Mitteilungen erst anbieten, wenn der Datendienst die neuen Endpunkte bereitstellt.
+fetch((API_ORIGIN || '') + '/api/app/calendar.ics', {method: 'HEAD', credentials: 'omit', cache: 'no-store'}).then(r => {
+  if (!r.ok) return;
+  const url = new URL((API_ORIGIN || location.origin) + '/api/app/calendar.ics');
+  ui.calendarUrl = url.protocol === 'https:' ? 'webcal://' + url.host + url.pathname : url.href;
+  ui.pushFavourite = true; schedule();
+}).catch(() => {});
 
 async function share(text) {
   const url = new URL('./', location.href).href;
@@ -76,10 +117,40 @@ async function share(text) {
     else { await navigator.clipboard.writeText(`${text} ${url}`); ui.pushMessage = ''; announce('Resultat kopiert.'); }
   } catch {}
 }
+async function shareResult(id) {
+  const raw = store.state.data?.games.find(g => String(g.id) === id);
+  const game = raw && withFinished(raw, store.state.live, Date.now());
+  if (!game?.score) return;
+  announce('Bild wird erstellt …');
+  const blob = await resultImage({game: {...game, homeShort: shortTeam(game.home), awayShort: shortTeam(game.away)}, label: RESULT_TEXT[outcome(game)] || '', crests: [crestSrc(game.home), crestSrc(game.away)]});
+  await shareImage(blob, `kadetten-${game.date}.png`, shareText(game));
+}
+async function shareSeason() {
+  const summary = seasonSummary({games: store.state.data?.games || [], visited: myGames(), tips: tips(), now: Date.now()});
+  announce('Bild wird erstellt …');
+  await shareImage(await seasonCard(summary), 'kadetten-meine-saison.png', 'Meine Kadetten-Saison');
+}
+
 function announce(text) {
   let live = document.getElementById('announce');
   if (!live) { live = Object.assign(document.createElement('p'), {id: 'announce', className: 'sr'}); live.setAttribute('role', 'status'); document.body.append(live); }
   live.textContent = text;
+}
+
+function openRule(id, trigger) {
+  const rule = RULES[id];
+  if (!rule) return;
+  let dialog = document.getElementById('rule-dialog');
+  if (!dialog) {
+    dialog = Object.assign(document.createElement('dialog'), {id: 'rule-dialog', className: 'sheet'});
+    dialog.setAttribute('aria-labelledby', 'rule-title');
+    dialog.addEventListener('click', e => { if (e.target === dialog || e.target.closest('[data-close]')) dialog.close(); });
+    dialog.addEventListener('close', () => dialog._trigger?.focus());
+    document.body.append(dialog);
+  }
+  dialog._trigger = trigger;
+  dialog.innerHTML = String(html`<div class="sheet-body"><h2 class="h2" id="rule-title">${rule[0]}</h2><p>${rule[1]}</p><button type="button" class="btn" data-close autofocus>Schliessen</button></div>`);
+  dialog.showModal();
 }
 
 function downloadCalendar() {
@@ -94,11 +165,23 @@ function downloadCalendar() {
 app.addEventListener('click', event => {
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
+  if (t.dataset.rule) { openRule(t.dataset.rule, t); return; }
   if (t.dataset.themeChoice) { applyTheme(t.dataset.themeChoice); render(); }
   else if (t.dataset.ui) { const [k, v] = t.dataset.ui.split(':'); ui[k] = v; render(); }
-  else if (t.dataset.favourite) { const next = toggleFavourite(Number(t.dataset.favourite)); announce(next ? 'Als Lieblingsspieler gemerkt.' : 'Lieblingsspieler entfernt.'); render(); }
+  else if (t.dataset.favourite) {
+    const next = toggleFavourite(Number(t.dataset.favourite));
+    announce(next ? 'Als Lieblingsspieler gemerkt.' : 'Lieblingsspieler entfernt.');
+    // Ein bestehendes Push-Abo mit Tor-Mitteilungen folgt dem neuen Lieblingsspieler.
+    const device = push.device();
+    if (device?.active && device.types?.includes('favourite')) { const shv = favouriteShv(); push.update(shv ? device.types : device.types.filter(x => x !== 'favourite'), shv).catch(() => {}); }
+    render();
+  }
+  else if (t.dataset.vote) castVote(t.dataset.vote);
   else if (t.dataset.myGame) { toggleMyGame(t.dataset.myGame); render(); }
   else if (t.dataset.share) share(t.dataset.share);
+  else if (t.dataset.tip) { const [id, team, delta] = t.dataset.tip.split(':'); changeTip(id, Number(team), Number(delta)); render(); }
+  else if (t.dataset.shareImage) shareResult(t.dataset.shareImage);
+  else if (t.hasAttribute('data-season-image')) shareSeason();
   else if (t.dataset.push) pushAction(t.dataset.push);
   else if (t.hasAttribute('data-calendar')) downloadCalendar();
   else if (t.hasAttribute('data-install') && installPrompt) { installPrompt.prompt(); installPrompt = null; ui.canInstall = false; render(); }

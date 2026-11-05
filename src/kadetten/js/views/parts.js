@@ -12,6 +12,7 @@ export const RESULT_TEXT = {S: 'S · Sieg', U: 'U · Unentschieden', N: 'N · Ni
 let logos = {};
 /** Wappen aus dem Datenstand (clubLogos), auf die eigenen WebP-Kopien abgebildet. */
 export function setLogos(map) { logos = map && typeof map === 'object' ? map : {}; }
+export function crestSrc(team) { return team === OWN_TEAM ? LOGO : logoFor(team); }
 function logoFor(team) {
   const file = /club-(\d+)\.(png|webp)$/.exec(logos[team] || '')?.[1];
   return file ? `assets/clubs/club-${file}.webp` : null;
@@ -40,10 +41,10 @@ export function formRow(results, small = false) {
 export const formBadge = (result, small = true) => result ? formRow([result], small) : '';
 
 /** Spielkarte (Hero) mit Hallenfoto. middle: Anpfiffzeit oder Spielstand. */
-export function heroCard({meta, pill, live = false, home, away, middle, foot = '', actions = '', link, label}) {
+export function heroCard({meta, pill, live = false, home, away, middle, foot = '', actions = '', link, label, celebrate = false}) {
   const body = html`<div class="meta"><span>${meta}</span>${pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : ''}</div>
     <div class="vs"><span class="team">${crest(home)}${shortTeam(home)}</span>${middle}<span class="team">${crest(away)}${shortTeam(away)}</span></div>${foot}`;
-  return html`<div class="hero">${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
+  return html`<div class="hero${celebrate ? ' celebrate' : ''}"${celebrate ? html` data-celebrate="${home + ':' + away + ':' + (meta || '')}"` : ''}>${celebrate ? html`<span class="spark" aria-hidden="true">${Array.from({length: 14}, () => html`<i></i>`)}</span>` : ''}${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
 }
 
 export const kickoffTime = (time, label = 'Anpfiff') => html`<span class="kick num">${time || '–'}<small>${label}</small></span>`;
@@ -88,4 +89,22 @@ export function storyRow(story) {
 
 export function segment(items, current, label) {
   return html`<nav class="seg" aria-label="${label}">${items.map(([id, text, target, extra]) => html`<a href="${target}"${id === current ? html` class="on" aria-current="page"` : ''}>${extra || ''}${text}</a>`)}</nav>`;
+}
+
+/** Momente als waagrecht scrollbare Karten. */
+export function momentCards(list) {
+  if (!list.length) return '';
+  return html`<section class="sec" aria-labelledby="j-mom"><div class="sh"><h2 class="h2" id="j-mom">Momente</h2></div>
+    <ul class="moments" role="list">${list.map(m => html`<li class="moment">${m.link ? html`<a href="${href.spiel(m.link)}">${momentBody(m)}</a>` : m.player ? html`<a href="${href.spieler(m.player)}">${momentBody(m)}</a>` : html`<div>${momentBody(m)}</div>`}</li>`)}</ul></section>`;
+}
+const momentBody = m => html`<span class="tag">${m.tag}</span><b>${m.title}</b><span>${m.text}</span>`;
+
+/** Tippspiel-Karte: vor Anpfiff veränderbar, danach gesperrt; nach dem Spiel mit Punkten. */
+export function tipCard({game, tip, points, locked}) {
+  const value = tip || [28, 26];
+  const pts = points === null || points === undefined ? '' : html`<p class="tip-result"><b class="num">${points}</b> ${points === 1 ? 'Punkt' : 'Punkte'} · ${['daneben', 'richtige Tendenz', 'richtige Differenz', 'exakt getippt'][points]}</p>`;
+  const side = (i, name) => html`<div class="tip-side"><span>${shortTeam(name)}</span>${locked ? '' : html`<button type="button" class="tip-btn" data-tip="${game.id + ':' + i + ':-1'}" aria-label="${shortTeam(name) + ' ein Tor weniger'}">−</button>`}<b class="num" aria-live="polite">${value[i]}</b>${locked ? '' : html`<button type="button" class="tip-btn" data-tip="${game.id + ':' + i + ':1'}" aria-label="${shortTeam(name) + ' ein Tor mehr'}">+</button>`}</div>`;
+  return html`<section class="sec" aria-labelledby="${'tip-' + game.id}"><div class="sh"><h2 class="h2" id="${'tip-' + game.id}">Dein Tipp</h2></div>
+    <div class="card tip">${side(0, game.home)}${side(1, game.away)}
+      <p class="fine">${locked ? (tip ? 'Tipp abgegeben. ' : 'Kein Tipp abgegeben. ') : 'Ohne Einsatz, nur für dich. Gespeichert auf diesem Gerät, bis zum Anpfiff änderbar. '}3 Punkte exakt, 2 für die richtige Differenz, 1 für die Tendenz.</p>${pts}</div></section>`;
 }

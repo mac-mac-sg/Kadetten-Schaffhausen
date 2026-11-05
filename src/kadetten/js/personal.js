@@ -22,3 +22,18 @@ export function toggleMyGame(id, s) {
   write(MY_GAMES_KEY, next, s);
   return next.includes(key);
 }
+
+/** Tippspiel ohne Einsatz: Tipps bleiben auf dem Gerät, gesperrt ab Anpfiff. */
+export const TIPS_KEY = 'v2:app-tips';
+export function tips(s) {
+  const v = read(TIPS_KEY, {}, s);
+  return v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).filter(([, t]) => Array.isArray(t) && t.length === 2 && t.every(n => Number.isInteger(n) && n >= 0 && n <= 99)).slice(-300)) : {};
+}
+export function changeTip(id, team, delta, s) {
+  const all = tips(s), current = all[id] || [28, 26];
+  const next = [...current];
+  next[team] = Math.max(0, Math.min(99, next[team] + delta));
+  all[id] = next;
+  write(TIPS_KEY, all, s);
+  return next;
+}
