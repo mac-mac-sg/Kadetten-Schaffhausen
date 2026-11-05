@@ -1,86 +1,126 @@
-# Kadetten-App (V2) – Spezifikation
+# Kadetten Companion App (V2) – Spezifikation
 
-Stand: 4. November 2026. Grundlage: [Recherche Vereins- und Fan-Apps](research/vereins-und-fan-apps.md) und [Designanalyse und Funktionskatalog](research/designanalyse-und-funktionen.md).
+Stand: 5. November 2026. Grundlage: [Recherche Vereins- und Fan-Apps](research/vereins-und-fan-apps.md) und [Designanalyse und Funktionskatalog](research/designanalyse-und-funktionen.md).
 
 ## Ziel
 
-Die V2 unter `/v2/` wird zur eigenständigen App für Kadetten Schaffhausen: Spieltag-Begleiter, Magazin und Nachschlagewerk für einen Club. Sie bündelt, was Fans heute an fünf Orten zusammensuchen (handball.ch, RED+, SRF/Blick, EHF und kadettensh.ch), und ist in den rund drei Stunden um den Anpfiff verlässlich.
+Die V2 unter `/v2/` wird als eigenständige Kadetten Companion App neu aufgebaut: Spieltag-Begleiter und Nachschlagewerk für einen Club. Sie bündelt, was Fans heute an mehreren Orten zusammensuchen (handball.ch, RED+, SRF/Blick, EHF und kadettensh.ch), und ist rund um den Anpfiff verlässlich.
 
 ## Entscheide
 
 | Thema | Entscheid |
 |---|---|
-| Matchday | Die V1 unter `/` ist die App «Matchday» mit Kadetten, FC St. Gallen und St. Otmar. Sie bleibt bestehen und wird durch diese Arbeit nicht verändert. |
-| Ort der Kadetten-App | Weiter unter `/v2/`. Die Installations-ID, der Scope und die Speicherschlüssel mit `v2:`-Präfix bleiben, damit installierte Apps weiterlaufen. |
-| Rückbau | Nur in der V2: Vereinswahl, Vereinsmenü, Einführungsschritt «Vereinswahl», FCSG-/Otmar-Push und -Bilder entfallen dort. Gemeinsame Module, Daten und Server-Endpunkte für FCSG und St. Otmar bleiben für Matchday bestehen. |
+| Matchday | Die V1 unter `/` ist die App «Matchday» mit Kadetten, FC St. Gallen und St. Otmar. An der V1 werden keine Änderungen mehr vorgenommen. |
+| Neuaufbau | Die Kadetten-App wird komplett neu gestaltet und neu aufgebaut. Die bisherige V2 dient nur als Fundus (Datenlogik, Prüfwissen); sie gibt Struktur und Gestaltung nicht vor. |
+| Ort | Die neue App ersetzt die bisherige V2 direkt unter `/v2/`. Installations-ID, Scope und `v2:`-Speicherschlüssel bleiben, damit installierte Apps weiterlaufen. |
+| Technik | Ohne Framework: ES-Module, CSS mit Layern und Tokens, esbuild. Eigene Codebasis ohne gemeinsame Client-Dateien mit V1; die V1-Ausgabe bleibt nachweisbar bytegleich. |
+| Datendienst | Die App liest den bestehenden Datendienst `kadetten-api`. Neue Funktionen erhalten nur zusätzliche Endpunkte unter eigenem Präfix; bestehende Routen bleiben unverändert. |
 | Charakter | Inoffizielle Fan-App. Kein Auftreten als offizielles Club-Angebot, Videos nur verlinken (Rechte bei SHV/RED), keine Werbung und kein Drittanbieter-Tracking. |
 
-## Informationsarchitektur
+## Fragen der Fans
 
-Fünf Ziele in der unteren Navigation, reine Navigation ohne Aktionen:
+1. Wann spielen wir, und wie steht es?
+2. Wie stehen wir da?
+3. Was ist passiert, was kommt?
+4. Wer spielt für uns?
+5. Wer sind wir?
+6. Was betrifft mich?
 
-| Ziel | Inhalt |
+## Struktur
+
+Vier Bereiche in der Hauptnavigation, reine Navigation ohne Aktionen. Persönliches liegt hinter einem Profilsymbol oben rechts. Die Spielseite ist der Mittelpunkt und von überall erreichbar.
+
+```
+Jetzt ──── nächstes oder laufendes Spiel, News, Tabelle in Kürze      (beantwortet 1, 3)
+Saison ─── Spielplan & Resultate · Tabellen · Statistik               (beantwortet 1, 2)
+Team ───── Kader · Spielerprofile mit Saisonwerten                    (beantwortet 4)
+Verein ─── Geschichte · Titel · Heimhalle                             (beantwortet 5)
+Ich (oben rechts) ─ Benachrichtigungen · Meine Spiele · Lieblingsspieler · Kalender-Abo · Einstellungen · Datenschutz/Impressum   (beantwortet 6)
+
+Spielseite (von Jetzt, Spielplan, Spieler, Artikel) ─ Vorschau → Live → Bericht
+```
+
+### Kernobjekte und Verknüpfungen
+
+| Objekt | Verweist auf |
 |---|---|
-| Magazin | Startseite mit Spieldeck (Zustände unten), News |
-| Spiele | Liste, Kalender, «Meine Woche»; Matchcenter mit Vorschau, Ticker, Aufstellung, Statistik |
-| Tabelle | QHL, European League, QHL-Karte |
-| Team | Mannschaftsfoto, Spielergruppen, Spielerprofile |
-| Verein | Geschichte, Erfolge, Heimstätte |
+| Spiel | Wettbewerb und Tabelle, Spieler (Bericht), Artikel, Matchprogramm |
+| Wettbewerb/Tabelle | Spiele, Gegner |
+| Spieler | Spiele (Saisonwerte), Artikel |
+| Artikel | Spiel, Spieler |
+| Verein | Titel, Geschichte, Heimhalle |
 
-Einstellungen (Zahnrad): Darstellung, Benachrichtigungen, Installation, Einführung, Datenschutz und Impressum.
+### Jetzt: Zustände
 
-## Spieltag-Zustände der Startseite
-
-| Zustand | Zeitraum | Inhalt und Hauptaktion |
+| Zustand | Zeitraum | Inhalt |
 |---|---|---|
-| Normalbetrieb | ausserhalb der übrigen Zustände | Titelfoto, nächstes Spiel mit Countdown, News |
-| Spieltag | etwa 24 h vor Anpfiff | Spieldeck ersetzt das Titelbild; Hauptaktion «Ticket»; Spieltagsleiste mit Anreise, ÖV, «Wo läuft das Spiel?» |
-| Live | Anpfiff bis bestätigtes Endresultat | Spielstand als feste Leiste mit Text «LIVE» und Minute; Ticker und Statistik |
-| Nachspiel | bis etwa 24 h nach Spielende | Resultat (nach Sieg Fläche in Orange), Bericht, Spieler des Spiels, Teilen-Bild, nächstes Spiel |
+| Alltag | ausserhalb der übrigen Zustände | nächstes Spiel mit Countdown, letztes Resultat, News, Tabelle in Kürze |
+| Spieltag | etwa 24 h vor Anpfiff | Spiel im Vordergrund: Ausgangslage (Tabelle, Form), Vorschau, «Wo läuft das Spiel?», Ticket-Link, Push zum Anpfiff |
+| Live | Anpfiff bis bestätigtes Endresultat | Spielstand, Spielphase und Spielzeit, Halbzeitstand, Live-Tabelle, Zeitpunkt der letzten Aktualisierung |
+| Nachspiel | bis etwa 24 h nach Spielende | Endresultat, Spielbericht mit Torschützen und Teamwerten, Tabelle danach, Teilen-Bild, nächstes Spiel |
 
-Der letzte gültige Stand bleibt bei Ausfällen sichtbar; Live-Antworten werden nie aus dem Cache gezeigt.
+### Spielseite: Zustände
 
-## Gestaltungsgrundsätze
+| Zustand | Inhalt |
+|---|---|
+| Vorschau | Ausgangslage, Vorschau-Text, direkte Duelle, letzte Spiele beider Teams, «Wo läuft das Spiel?», Matchprogramm |
+| Live | Spielstand, Phase und Spielzeit, Halbzeitstand, Live-Tabelle, «Stand vor x Sekunden» |
+| Bericht | Endresultat und Halbzeit, Torschützen, Paraden, 7-m, Zeitstrafen, Teamvergleich, Tabelle danach, Artikel zum Spiel |
 
-- Ein Orange (`#ff790e`) und ein Schwarz, sonst neutrale Flächen. Orange vollflächig nur in Momenten wie Spieltag, Sieg oder Titel.
-- Kontrast: Schrift auf Orange ist immer fast schwarz (7,19:1). Im hellen Modus steht Text in einem dunkleren Orange, etwa `#c2410c` (5,18:1 auf Weiss); `#ff790e` auf Weiss erreicht nur 2,63:1.
-- Anton für Titel und Spielstände, ruhige Textschrift mit Tabellenziffern für Text, Tabellen und Statistik; Ersatzschrift mit angepassten Metriken gegen Layoutsprünge.
-- Ein Handball-Erkennungszeichen (Schnitt nach der Freiwurflinie) für Abschnittstitel, Live-Leiste und Teilen-Bild.
-- Glas nur auf dem schwebenden Navigationsdock, mit undurchsichtiger Rückfallebene bei reduzierter Transparenz oder erhöhtem Kontrast.
+## Inhalte
+
+| Bereich | Inhalt | Stand |
+|---|---|---|
+| Spiele | Spielplan aller Wettbewerbe (QHL, EHL, Cup, Testspiele) mit Datum, Zeit, Ort, Resultat und Halbzeitresultat | vorhanden |
+| | Live: Stand, Phase und Spielzeit | vorhanden (Abruf alle 30 Sekunden) |
+| | Spielbericht nach dem Spiel | vorhanden (QHL, EHL) |
+| | Vorschau, direkte Duelle, letzte Spiele beider Teams | vorhanden |
+| | Matchprogramm (PDF) | vorhanden, wenn veröffentlicht |
+| | «Wo läuft das Spiel?» | neu, redaktionell |
+| Tabellen | QHL, EHL | vorhanden |
+| | Live-Tabelle, Form (S/U/N) | neu, berechnet |
+| News | Vereinsartikel mit Volltext und Bild | vorhanden |
+| Team | Kader, Steckbrief | vorhanden |
+| | Saisonstatistik pro Spieler | aus Spielberichten summiert |
+| Verein | Geschichte, Titel, Archivbilder, Heimhalle, QHL-Vereinskarte | vorhanden |
+| Persönlich | Push, Kalender-Abo, «Meine Spiele», Lieblingsspieler | Push vorhanden (Neuaufbau), Rest neu |
+
+## Einschränkungen
+
+- **Keine Angaben zu Anreise, Türöffnung oder Abreise.**
+- **Live nur auf Ebene Spielstand.** Der Liveticker wird alle 30 Sekunden abgerufen; in dieser Zeit fallen im Handball oft mehrere Tore. Einzelne Tore, Torschützen und Tor-für-Tor-Abläufe werden live deshalb nicht dargestellt. Torschützen und Spielerwerte erscheinen erst im bestätigten Spielbericht.
+- Der letzte gültige Stand bleibt bei Ausfällen sichtbar; Live-Antworten werden nie aus dem Cache gezeigt.
+
+## Gestaltung (vorläufig, wird in der Designphase festgelegt)
+
+- Kadetten-Orange (`#ff790e`) als Markenkern. Kontrast: Schrift auf Orange ist fast schwarz (7,19:1); im hellen Modus braucht Text ein dunkleres Orange, etwa `#c2410c` (5,18:1 auf Weiss); `#ff790e` auf Weiss erreicht nur 2,63:1.
 - Ergebnisse nie nur über Farbe: Formkurve als S/U/N mit Buchstabe, Form und Farbe.
-- Bewegung als kleines System mit Tokens; bei «Bewegung reduzieren» Dauer null.
-- Eigene V2-Grundschicht in `@layer` mit Token-Satz statt Ausnahmen über `html:not([data-design='v2'])`. Der Token-Vorschlag steht in der Designanalyse.
+- Tabellenziffern für alle Zahlen; Antippziele mindestens 44 px; Bewegung abschaltbar über «Bewegung reduzieren».
 
-## Umsetzungsphasen
+## Vorgehen
 
-Jede Phase besteht aus kleinen PRs nach [AGENTS.md](../AGENTS.md). Für Oberflächenänderungen gelten zusätzlich die Browser-Skripte aus [design-v2.md](design-v2.md).
-
-| Phase | Inhalt | Abnahme |
+| Schritt | Inhalt | Abnahme |
 |---|---|---|
-| 0 | Diese Spezifikation, Recherche unter `docs/research/` | Dokumente im Repository |
-| 1 | Kadetten-Sperre in V2: nur `kadetten` aktiv, Vereinswahl und -menü entfallen, gespeicherte Auswahl und FCSG-/Otmar-Push bereinigt, Hinweis auf Matchday, App-Name und Beschreibung, keine FCSG-/Otmar-Bilder im V2-Offline-Paket | Test, der ohne Sperre fehlschlägt; V1 unverändert; Browser-Prüfung aller V2-Routen |
-| 2 | Gestaltungsgrundlage: Tokens, `@layer`-Grundschicht, Kontrastregeln, Ersatzschrift, ein Navigationsstil; Korrektur von `--font-display` in `style.css` als eigener PR | Layout-Audit ohne neue Befunde, axe ohne Verstösse |
-| 3 | Startseiten-Zustände, einheitliche Spielkarte, Live-Leiste, Tabelle mit fixierter Teamspalte, Formkurve, Handball-Diagramme | Zustände mit gestellter Uhr geprüft |
-| 4 | Begleitfunktionen: Kalender-Abo, «Wo läuft das Spiel?», Regel-Erklärer, ÖV-Abfahrten, Offline-Spieltagspaket, «Ich war dabei», Push-Neuaufbau, Spieler des Spiels, Auswärtsführer, Arena-Karte | je Funktion Test und Browser-Prüfung |
-| 5 | Mit dem Club: Arena-Fakten, Ticket-Links, Topscorer-Zähler, Matchprogramm, Bildrechte | schriftliche Zustimmung |
+| 1 | Struktur und Inhalte (dieses Dokument) | Entscheid Variante «Jetzt, Saison, Team, Verein» mit Spielseite im Mittelpunkt |
+| 2 | Einfache Skizzen in Graustufen: Jetzt (Alltag, Spieltag, Live, Nachspiel), Spielseite (Vorschau, Live, Bericht), Saison, Team, Spieler, Verein, Ich | Aufbau abgenommen |
+| 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen |
+| 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün |
+| 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung |
+| 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht |
 
-Datenschutzerklärung und Impressum mit Vermerk «inoffizielle Fan-App» gehören in Phase 1 oder 2.
-
-## Stand Phase 1 (Kadetten-Sperre)
+## Bisheriger Stand: Kadetten-Sperre in der alten V2 (#314)
 
 - `src/client/v2/matchday.js` beschränkt `fanClubs` und `selectedClubs` vor `restoreActiveClub()` auf `kadetten` und setzt die gespeicherte Auswahl zurück. `?club=fcsg` und `?club=otmar` werden in V2 ignoriert.
 - Bisherige Nutzer sehen einmalig den Hinweis auf Matchday; ein bestehendes Push-Abo wird auf die Kadetten beschränkt. Die Einstellungen zeigen statt «Meine Vereine» einen Link «FC St. Gallen und St. Otmar in Matchday» (`../`).
-- Kopfzeile: Wappen und Wortmarke «KADETTEN» statt «MATCHDAY» und Vereinswahl. Einführung, Teilen-Bild, Installationstexte, Manifest («Kadetten Fan-App»/«Kadetten»), Titel, Beschreibung und Offline-Seite nennen nur die Kadetten; Installations-ID und Scope bleiben.
-- QHL-Karte: Nur das Kadetten-Profil verlinkt die Vereinsseite. Bilder von FCSG und St. Otmar sind nicht mehr im V2-Offline-Paket.
-- Gemeinsame Module, Daten, Server-Endpunkte und die V1 (Matchday) bleiben unverändert. Regressionstest: `tests/v2-kadetten-only.test.mjs`; Build-Prüfung in `scripts/check-preview.mjs`.
+- Kopfzeile, Einführung, Teilen-Bild, Installationstexte, Manifest («Kadetten Fan-App»/«Kadetten»), Titel, Beschreibung und Offline-Seite nennen nur die Kadetten; Installations-ID und Scope bleiben.
+- Regressionstest: `tests/v2-kadetten-only.test.mjs`; Build-Prüfung in `scripts/check-preview.mjs`.
 
 ## Bewusst nicht vorgesehen
 
-Lärmmesser, Fanwand, Navigation in der Halle, Wartezeiten, Bestellen vom Sitzplatz, Chats, öffentliche Ranglisten, Mitgliederkarte ohne Vereinsdaten, flächendeckendes Glas und 3D-Symbole, native Live Activities, Wallet-Pässe.
+Anreise- und Hallenführer, ÖV-Abfahrten, Tor-für-Tor-Ticker, Lärmmesser, Fanwand, Navigation in der Halle, Bestellen vom Sitzplatz, Chats, öffentliche Ranglisten, Mitgliederkarte ohne Vereinsdaten, native Live Activities, Wallet-Pässe.
 
 ## Offene Punkte
 
-- Haltestelle und Linien zur BBC Arena für die ÖV-Abfahrten.
-- Ob die SHV-Daten Wurfpositionen und Daten von Nachwuchs- und Frauenteams liefern.
-- Kontakt zum Club für Arena-Fakten, Ticket-Links und Bildrechte.
-- `check-v2-ticket.mjs`, `check-v2-readability.mjs` und `check-v2-mobile.mjs` scheitern bereits auf `main` (Stand #311) an Änderungen aus #270–#307 (Ticket-Beschriftung, Datumsgrösse, News-Layout). Sie sind vor Phase 2 auf den aktuellen Stand zu bringen.
+- Ob die SHV-Daten Daten von Nachwuchs- und Frauenteams liefern.
+- Kontakt zum Club für Ticket-Links, «Wo läuft das Spiel?» und Bildrechte.
+- `check-v2-ticket.mjs`, `check-v2-readability.mjs` und `check-v2-mobile.mjs` prüfen die alte V2 und scheitern bereits auf `main`; sie werden mit dem Neuaufbau ersetzt.
