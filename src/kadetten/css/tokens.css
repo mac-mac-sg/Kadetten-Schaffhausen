@@ -1,0 +1,47 @@
+/* Farben: Hell ist die Grundlage, Dunkel folgt dem System oder der Wahl unter «Ich». */
+:root {
+  color-scheme: light;
+  --c-bg: #f3ede4;
+  --c-surface: #fffaf3;
+  --c-surface-2: #e9e0d3;
+  --c-text: #1d1914;
+  --c-text-muted: #665e54;
+  --c-line: #e6ddd0;
+  --c-accent: #ff790e;
+  --c-on-accent: #1d1914;
+  --c-accent-text: #b23c08;
+  --c-highlight: #ffe2c8;
+  --c-win: #ff790e;
+  --c-on-win: #1d1914;
+  --c-loss: #1d1914;
+  --c-on-loss: #fffaf3;
+  --c-live: #d4202a;
+  --c-nav-bg: #fffaf3f0;
+  --c-seg-on: #1d1914;
+  --c-on-seg-on: #fffaf3;
+  --c-shadow: 0 18px 36px -20px #3b231066;
+
+  /* Spielkarte: in beiden Modi dunkel mit Hallenfoto */
+  --c-hero-text: #f6f1ea;
+  --c-hero-muted: #e6ddd0;
+  --c-hero-glass: #ffffff1f;
+  --c-hero-glass-line: #ffffff2e;
+
+  --f-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px;
+  --r-tile: 14px; --r-card: 24px; --r-hero: 28px; --r-pill: 999px;
+  --tap: 44px;
+  --nav-h: 78px;
+  --t-fast: 150ms; --t-base: 250ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { color-scheme: dark; --c-bg: #14110e; --c-surface: #1f1b17; --c-surface-2: #2a241f; --c-text: #f6f1ea; --c-text-muted: #ada395; --c-line: #2f2924; --c-accent-text: #ff9a45; --c-highlight: #ff790e24; --c-loss: #3d352e; --c-on-loss: #f6f1ea; --c-live: #ff4d4d; --c-nav-bg: #14110ee8; --c-seg-on: #f6f1ea; --c-on-seg-on: #14110e; --c-shadow: 0 18px 40px -18px #ff790e55; }
+}
+:root[data-theme='dark'] { color-scheme: dark; --c-bg: #14110e; --c-surface: #1f1b17; --c-surface-2: #2a241f; --c-text: #f6f1ea; --c-text-muted: #ada395; --c-line: #2f2924; --c-accent-text: #ff9a45; --c-highlight: #ff790e24; --c-loss: #3d352e; --c-on-loss: #f6f1ea; --c-live: #ff4d4d; --c-nav-bg: #14110ee8; --c-seg-on: #f6f1ea; --c-on-seg-on: #14110e; --c-shadow: 0 18px 40px -18px #ff790e55; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 0ms; --t-base: 0ms; }
+}
