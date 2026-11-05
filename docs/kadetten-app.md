@@ -115,9 +115,11 @@ Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rech
 - **Live nur auf Ebene Spielstand.** Der Liveticker wird alle 30 Sekunden abgerufen; in dieser Zeit fallen im Handball oft mehrere Tore. Einzelne Tore, Torschützen und Tor-für-Tor-Abläufe werden live deshalb nicht dargestellt. Torschützen und Spielerwerte erscheinen erst im bestätigten Spielbericht.
 - Der letzte gültige Stand bleibt bei Ausfällen sichtbar; Live-Antworten werden nie aus dem Cache gezeigt.
 
-## Gestaltung (vorläufig, wird in der Designphase festgelegt)
+## Gestaltung
 
-- Kadetten-Orange (`#ff790e`) als Markenkern. Kontrast: Schrift auf Orange ist fast schwarz (7,19:1); im hellen Modus braucht Text ein dunkleres Orange, etwa `#c2410c` (5,18:1 auf Weiss); `#ff790e` auf Weiss erreicht nur 2,63:1.
+Richtung «Abend» (dunkel mit Hallenfoto, schmale grosse Zahlen, runde und warme Formen), Hell- und Dunkelmodus. Farben, Schrift, Abstände und Bausteine: [Designsystem](kadetten-app-design.md).
+
+- Kadetten-Orange (`#ff790e`) als Fläche mit fast schwarzer Schrift; als Text auf Hell `#b23c08`, auf Dunkel `#ff9a45`.
 - Ergebnisse nie nur über Farbe: Formkurve als S/U/N mit Buchstabe, Form und Farbe.
 - Tabellenziffern für alle Zahlen; Antippziele mindestens 44 px; Bewegung abschaltbar über «Bewegung reduzieren».
 
@@ -127,7 +129,7 @@ Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rech
 |---|---|---|---|
 | 1 | Struktur und Inhalte (dieses Dokument) | Entscheid Variante «Jetzt, Saison, Team, Verein» mit Spielseite im Mittelpunkt | abgenommen |
 | 2 | Einfache Skizzen in Graustufen: Jetzt (Alltag, Spieltag, Live, Nachspiel), Spielseite (Vorschau, Live, Bericht), Saison, Team, Spieler, Verein, Ich | Aufbau abgenommen | abgenommen 5.11.2026, siehe [Seitenaufbau](#seitenaufbau) |
-| 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen | in Arbeit |
+| 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen | Richtung «Abend» abgenommen 5.11.2026; Designsystem und alle Seiten gestaltet |
 | 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün | offen |
 | 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung | offen |
 | 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht | offen |
