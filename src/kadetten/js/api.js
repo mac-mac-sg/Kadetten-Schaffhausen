@@ -4,7 +4,7 @@ import {decodeDeep} from './text.js';
 export const TIMEOUT = 10000;
 
 export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = TIMEOUT} = {}) {
-  async function get(path, {fresh = false} = {}) {
+  async function get(path, {fresh = false, decode = true} = {}) {
     if (typeof path !== 'string' || !path.startsWith('/api/') || path.includes('..')) throw Error('Ungültiger API-Pfad');
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
@@ -19,7 +19,8 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
       });
       if (!response.ok) throw Object.assign(Error(`Datendienst antwortet mit ${response.status}`), {status: response.status});
       if (!/json/.test(response.headers.get('content-type') || '')) throw Error('Datendienst liefert kein JSON');
-      return decodeDeep(await response.json());
+      const body = await response.json();
+      return decode ? decodeDeep(body) : body;
     } finally {
       clearTimeout(timer);
     }
@@ -36,6 +37,7 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
     recentGames: team => get('/api/recent-games?team=' + id(team)),
     preview: gameId => get('/api/previews/kadetten/' + id(gameId)),
     programme: gameId => get('/api/programmes/' + id(gameId)),
-    article: (storyId, version) => get('/api/articles/' + id(storyId) + (version ? '?v=' + id(version) : ''))
+    // Artikel-HTML bleibt unverändert und läuft durch sanitize.js.
+    article: (storyId, version) => get('/api/articles/' + id(storyId) + (version ? '?v=' + id(version) : ''), {decode: false})
   };
 }

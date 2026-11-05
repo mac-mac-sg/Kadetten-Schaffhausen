@@ -56,5 +56,41 @@ self.addEventListener('fetch', event => {
     })());
     return;
   }
-  event.respondWith((async () => (await caches.match(request, {ignoreSearch: true})) || fetch(request))());
+  event.respondWith((async () => {
+    const saved = await caches.match(request, {ignoreSearch: true});
+    if (saved) return saved;
+    const response = await fetch(request);
+    // Bilder (Spielerfotos, Wappen) beim ersten Ansehen für offline zwischenspeichern.
+    if (response.ok && request.destination === 'image') (await caches.open(SHELL_CACHE)).put(request, response.clone());
+    return response;
+  })());
+});
+
+// Push-Mitteilungen zu Kadetten-Spielen (server/push-subscriptions.mjs). Ziel nur innerhalb dieser App.
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    let data = null;
+    try { data = event.data?.json(); } catch {}
+    const scope = new URL(self.registration.scope);
+    let target = null;
+    try { target = new URL(data?.url); if (target.origin !== scope.origin || !target.pathname.startsWith(scope.pathname)) target = null; } catch {}
+    await self.registration.showNotification(typeof data?.title === 'string' ? data.title.slice(0, 100) : 'Kadetten', {
+      body: typeof data?.body === 'string' ? data.body.slice(0, 300) : 'Ein neuer Spielhinweis ist verfügbar.',
+      icon: new URL('assets/icon-192.png', scope).href, badge: new URL('assets/icon-192.png', scope).href,
+      tag: typeof data?.tag === 'string' ? data.tag.slice(0, 120) : 'kadetten-match', data: {url: (target || scope).href}
+    });
+  })());
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const scope = new URL(self.registration.scope);
+    let target = scope;
+    try { const url = new URL(event.notification.data?.url); if (url.origin === scope.origin && url.pathname.startsWith(scope.pathname)) target = url; } catch {}
+    const windows = await self.clients.matchAll({type: 'window', includeUncontrolled: true});
+    const open = windows.find(c => new URL(c.url).pathname.startsWith(scope.pathname));
+    if (open) { await open.focus(); if ('navigate' in open) await open.navigate(target.href); return; }
+    await self.clients.openWindow(target.href);
+  })());
 });

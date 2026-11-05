@@ -19,6 +19,8 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
   await build({entryPoints: [join(src, 'css/app.css')], outfile: join(outDir, 'app.css'), bundle: true, minify: true, external: ['fonts/*', 'assets/*'], target: ['safari15', 'chrome100', 'firefox100'], logLevel: 'warning'});
 
   cpSync(join(src, 'assets'), join(outDir, 'assets'), {recursive: true});
+  mkdirSync(join(outDir, 'data'), {recursive: true});
+  cpSync(join(src, 'data/game-reports.json'), join(outDir, 'data/game-reports.json'));
   for (const file of ['theme-init.js', 'manifest.webmanifest']) cpSync(join(src, file), join(outDir, file));
   for (const [family, weights] of FONTS) {
     for (const weight of weights) for (const subset of ['latin', 'latin-ext']) {
@@ -40,7 +42,7 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
   writeFileSync(join(outDir, 'index.html'), html);
 
   // Die 512-px-Symbole braucht nur das Betriebssystem beim Installieren; sie werden nicht vorgeladen.
-  const shell = ['./', 'index.html', ...files.filter(f => f !== 'index.html' && !f.startsWith('fonts/LICENSE') && !f.includes('-512'))];
+  const shell = ['./', 'index.html', ...files.filter(f => f !== 'index.html' && !f.startsWith('fonts/LICENSE') && !f.includes('-512') && !f.startsWith('assets/players/') && !f.startsWith('assets/clubs/') && f !== 'assets/squad.webp' && f !== 'assets/team.webp')];
   const sw = readFileSync(join(src, 'sw.js'), 'utf8')
     .replace("'__VERSION__'", JSON.stringify(version)).replace('__SHELL__', JSON.stringify(shell)).replace("'__API_ORIGIN__'", JSON.stringify(apiOrigin));
   if (/__[A-Z_]+__/.test(sw)) throw Error('Platzhalter im Service Worker nicht ersetzt');

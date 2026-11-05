@@ -15,8 +15,24 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
     if (validSnapshot(saved?.data)) Object.assign(state, {data: saved.data, savedAt: saved.savedAt || null});
   } catch {}
   const emit = () => listeners.forEach(fn => fn(state));
+  const extras = new Map();
   return {
     state,
+    /**
+     * Zusätzliche Daten (Berichte, Vorschauen, Duelle …) einmal laden und zwischenspeichern.
+     * Liefert sofort den bekannten Stand {status:'loading'|'ready'|'error', value}; nach dem Laden wird neu gezeichnet.
+     * Ein Fehler behält einen früheren gültigen Wert.
+     */
+    load(key, fn, maxAge = 300000) {
+      const known = extras.get(key);
+      if (known && (known.pending || now() - known.at < (known.status === 'error' ? 60000 : maxAge))) return known;
+      const entry = {status: known?.value !== undefined ? 'ready' : 'loading', value: known?.value, at: now(), pending: true};
+      extras.set(key, entry);
+      Promise.resolve().then(fn).then(value => Object.assign(entry, {value, status: 'ready', error: null}))
+        .catch(error => Object.assign(entry, {status: entry.value !== undefined ? 'ready' : 'error', error}))
+        .finally(() => { entry.pending = false; entry.at = now(); emit(); });
+      return entry;
+    },
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     async refresh() {
       try {
