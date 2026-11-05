@@ -1,47 +1,27 @@
+// Prüft nach `npm run build:pages`, dass unter /v2/ die Kadetten Companion App liegt und sauber von V1 getrennt ist.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createHash} from 'node:crypto';
-const original=fs.readFileSync('dist/client/js/app.js','utf8'),preview=fs.readFileSync('dist/client/v2/js/app.js','utf8');
-assert.ok(!original.includes('v2-match-layers'),'Original must not load V2');
-assert.ok(!preview.includes('v2-match-layers'),'Retired V2 layer code must not load');
-assert.ok(!original.includes('v2Storage'),'Original must retain existing storage');
-const originalCss=fs.readFileSync('dist/client/app.css','utf8'),previewCss=fs.readFileSync('dist/client/v2/app.css','utf8');
-assert.ok(!originalCss.includes('.qhl-map-screen')&&previewCss.includes('.qhl-map-screen'),'QHL explorer must remain V2-only');
-assert.ok(!original.includes('qhl-map-screen')&&preview.includes('qhl-map-screen'),'QHL explorer code must remain V2-only');
-for(const bundle of [original,preview])assert.ok(bundle.includes('v2-match-ticket'),'Shared match ticket missing');
-for(const css of [originalCss,previewCss])assert.ok(css.includes('data-home-title=modern'),'Shared title styles missing');
-assert.ok(originalCss.includes('.v2-club-entry')&&originalCss.includes('data-club-layout=modern'),'Shared club layout missing');
-const previewHtml=fs.readFileSync('dist/client/v2/index.html','utf8');
-assert.match(previewHtml,/data-preview="v2"/);
-assert.doesNotMatch(previewHtml,/data-design="v2"/);
-assert.match(previewHtml,/localStorage.getItem\('v2:fan-v1-theme'\)/,'Early theme must use isolated V2 preference');
-assert.ok(preview.includes('v2:'),'V2 storage namespace missing');
-const manifest=JSON.parse(fs.readFileSync('dist/client/v2/manifest.webmanifest','utf8'));
-assert.equal(manifest.scope,'./');assert.equal(manifest.id,'./');assert.equal(manifest.name,'Kadetten Fan-App');assert.equal(manifest.short_name,'Kadetten');
-const v1Manifest=JSON.parse(fs.readFileSync('dist/client/manifest.webmanifest','utf8'));
-assert.deepEqual(v1Manifest.icons.map(i=>i.src),['assets/app-v1-scarf-glow-192.png','assets/app-v1-scarf-glow-512.png','assets/app-v1-scarf-glow-maskable-512.png']);
-assert.deepEqual(manifest.icons.map(i=>i.src),['assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'],'V2 app identity must stay unchanged');
-assert.ok(original.includes('assets/app-v1-scarf-glow-192.png')&&!preview.includes('assets/app-v1-scarf-glow-192.png'),'Install introduction must use the new app icon only in V1');
-assert.match(previewHtml,/rel="apple-touch-icon" href="assets\/apple-touch-icon.png"/);
-assert.match(previewHtml,/rel="icon" href="assets\/logo.png"/);
-for(const base of ['dist/client','dist/client/v2']) {
- const appManifest=JSON.parse(fs.readFileSync(base+'/manifest.webmanifest','utf8'));
- // V1 ist Matchday mit drei Vereinen, V2 die Kadetten-App (docs/kadetten-app.md).
- const kadetten=base.endsWith('/v2'),appName=kadetten?'Kadetten':'Matchday',installName=kadetten?'Kadetten-App':'Matchday';
- assert.equal(appManifest.name,kadetten?'Kadetten Fan-App':appName);assert.equal(appManifest.short_name,appName);
- const html=fs.readFileSync(base+'/index.html','utf8');
- assert.ok(html.includes('name="apple-mobile-web-app-title" content="'+appName+'"'),'Installed app label must stay isolated per version');
- assert.ok(html.includes('<title>'+appName+' ·'),'Browser title must use the version-specific app name');
- const bundle=fs.readFileSync(base+'/js/app.js','utf8');
- assert.ok(bundle.includes(installName+' wurde installiert.'));
- assert.ok(bundle.includes(installName+' auf dem Startbildschirm'));
- if(kadetten)assert.doesNotMatch(html,/FCSG|St\. Otmar|Meine Vereine/,'Kadetten-App shell names only the Kadetten');
- if(kadetten)assert.doesNotMatch(fs.readFileSync(base+'/sw.js','utf8'),/fcsg-stadium|otmar-kreuzbleiche|v2-header-fcsg|v2-header-otmar|otmar-squad/,'Kadetten-App offline shell excludes FCSG and St. Otmar photos');
- assert.match(html,/data-club-layout="modern"/);
- if(base==='dist/client')assert.doesNotMatch(html,/data-preview="v2"/);
- for(const [,file] of html.matchAll(/(?:src|href)="((?:assets|js)\/[^"?#]+|app.css|platform-config.js|manifest.webmanifest)/g))assert.ok(fs.existsSync(base+'/'+file),'Missing asset: '+base+'/'+file);
- const csp=html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)[1];
- if(base.endsWith('/v2'))for(const [,code] of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)){if(code)assert.ok(csp.includes("'sha256-"+createHash('sha256').update(code).digest('base64')+"'"),'V2 inline script blocked by CSP');}
- const sw=fs.readFileSync(base+'/sw.js','utf8');assert.ok(sw.includes('<h1>'+appName+'</h1>'));assert.ok(sw.includes(appName+' · Offline'));assert.ok(sw.includes('encodeURIComponent(BASE.pathname)'),'Worker cache scope missing');
-}
-console.log('Original/V2 isolation, PWA scopes, cache namespaces and assets verified.');
+const v2='dist/client/v2/';
+const html=fs.readFileSync(v2+'index.html','utf8');
+assert.match(html,/<title>Kadetten<\/title>/,'V2 muss die Kadetten Companion App sein');
+assert.match(html,/name="apple-mobile-web-app-title" content="Kadetten"/);
+assert.doesNotMatch(html,/FCSG|St\. Otmar|Meine Vereine|data-preview/,'Kein Rest der bisherigen V2');
+assert.match(html,/connect-src 'self' https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev;/);
+for(const [,file] of html.matchAll(/(?:src|href)="([^"#?]+)/g)){assert.ok(!file.startsWith('/')&&!file.startsWith('..'),'Pfad verlässt /v2/: '+file);assert.ok(fs.existsSync(v2+file),'Fehlt: '+v2+file);}
+const manifest=JSON.parse(fs.readFileSync(v2+'manifest.webmanifest','utf8'));
+// Installierte V2-Apps laufen weiter: gleiche ID, gleicher Scope, gleiche Symbole.
+assert.deepEqual([manifest.id,manifest.scope,manifest.start_url],['./','./','./']);
+assert.deepEqual([manifest.name,manifest.short_name],['Kadetten Fan-App','Kadetten']);
+assert.deepEqual(manifest.icons.map(i=>i.src),['assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png']);
+for(const icon of manifest.icons)assert.ok(fs.existsSync(v2+icon.src));
+const sw=fs.readFileSync(v2+'sw.js','utf8');
+assert.doesNotMatch(sw,/__[A-Z_]+__/);
+assert.match(sw,/const NS = encodeURIComponent\(SCOPE\.pathname\)/,'Caches sind auf /v2/ beschränkt');
+assert.match(sw,/OLD_V2 = /,'Caches der bisherigen V2 werden abgeräumt');
+for(const file of JSON.parse(sw.match(/const SHELL = (\[[^\]]*\])/)[1]).filter(f=>f!=='./'))assert.ok(fs.existsSync(v2+file),'Hülle fehlt: '+file);
+// V1 lädt nichts aus der neuen App und umgekehrt.
+const v1=fs.readFileSync('dist/client/index.html','utf8');
+assert.doesNotMatch(v1,/kadetten-app|app\.js\?v=.*type="module"/);
+assert.ok(!fs.readFileSync(v2+'app.js','utf8').includes('platform-config.js'));
+assert.ok(!fs.existsSync(v2+'js/app.js'),'Bundle der bisherigen V2 darf nicht mehr ausgeliefert werden');
+console.log('V2 = Kadetten Companion App: Pfade, Manifest, Offline-Hülle und Trennung von V1 geprüft.');

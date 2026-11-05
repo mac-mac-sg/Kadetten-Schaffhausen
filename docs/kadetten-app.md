@@ -132,11 +132,11 @@ Richtung «Abend» (dunkel mit Hallenfoto, schmale grosse Zahlen, runde und warm
 | 3 | Visuelles Design und Designsystem (Tokens, Typografie, Bausteine, Hell/Dunkel) | Richtung abgenommen | Richtung «Abend» abgenommen 5.11.2026; Designsystem und alle Seiten gestaltet |
 | 4 | Technisches Gerüst: eigene Codebasis, Build, Service Worker, Datenzugriff, Tests, V1 bytegleich | `npm run verify` grün | umgesetzt, siehe [Technik](#technik) |
 | 5 | Aufbau der Bereiche und der Spielseite | je Bereich Test und Browser-Prüfung | umgesetzt, siehe [Stand Schritt 5](#stand-schritt-5) |
-| 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht | offen |
+| 6 | Umstellung `/v2/` auf die neue App | Funktionsumfang erreicht | vorbereitet, wird mit dem Merge veröffentlicht |
 
 ## Technik
 
-Die neue App ist gebaut und geprüft, aber noch nicht veröffentlicht: `/v2/` zeigt bis Schritt 6 weiterhin die bisherige V2.
+`npm run build:pages` legt die neue App unter `dist/client/v2` ab; nach dem Merge auf `main` ersetzt sie die bisherige V2 unter `/v2/`.
 
 | Teil | Umsetzung |
 |---|---|
@@ -174,7 +174,14 @@ Push: Die App übernimmt den Geräteeintrag `match-push-device-v1` der bisherige
 
 Prüfung: `tests/app-match.test.mjs` (Zuordnung Live/Endstand, Live-Tabelle, Berichte, Artikel zum Spiel, Kalender, Persönliches, Bereinigung), `tests/app-views.test.mjs` (alle 18 Routen in den Zuständen Alltag, Spieltag, Live, Nachspiel und offline). Im Browser (390 px hell/dunkel, 1280 px): keine Skriptfehler, kein horizontaler Überlauf, eine `<h1>`, axe ohne Verstösse; Zustände mit gestellter Uhr und gestelltem Live-Stand geprüft; Bedienelemente (Filter, Lieblingsspieler, Meine Spiele, Darstellung, Kalenderdatei) geprüft. Der echte Datendienst war aus der Prüfumgebung nicht erreichbar; geprüft wurde mit dem mitgelieferten Datenstand.
 
-Für Schritt 6 offen: `scripts/build-pages.mjs` legt dann `dist/app` statt der bisherigen V2 unter `dist/client/v2` ab; der neue Service Worker räumt dabei die Caches der alten V2 (`kadetten-offline-*`, `kadetten-articles-v2-*`) ab.
+### Schritt 6: Umstellung
+
+- `scripts/build-pages.mjs` baut V1 wie bisher und legt danach die neue App mit `buildApp({outDir: 'dist/client/v2', target: 'pages'})` unter `/v2/` ab. `scripts/check-preview.mjs` prüft die neue V2 (Titel, Pfade, Manifest-ID/Scope/Symbole, Offline-Hülle, Trennung von V1).
+- Installierte Apps: gleiche Adresse, Manifest-ID `./`, Scope `./` und Symbole. Der Browser ersetzt den alten Service Worker unter `/v2/sw.js` beim nächsten Update-Check durch den neuen. Dieser löscht die Caches der bisherigen V2 (`kadetten-offline-*-<Pfad>`, `kadetten-articles-v2-<Pfad>`) und benennt eigene Caches mit dem Pfad der App, damit Caches von V1 auf derselben Domain unberührt bleiben.
+- Push: Das Abo hängt an der Service-Worker-Registrierung und bleibt erhalten; der neue Service Worker zeigt die Mitteilungen an. Der Geräteeintrag `match-push-device-v1` wird weiterverwendet.
+- Alte Hash-Adressen der bisherigen V2 (`#home`, `#season/…`) führen auf «Jetzt».
+- Im Browser geprüft (Chromium, lokaler Server unter `/Kadetten-Schaffhausen/v2/`): bisherige V2 mit aktivem Service Worker geladen, Dateien durch die neue App ersetzt, Update ausgelöst → neuer Service Worker steuert die Seite, alter V2-Cache gelöscht, ein V1-Cache bleibt, neue Oberfläche erscheint, Neuladen ohne Netz zeigt die App aus der Offline-Hülle. Safari/iOS nicht geprüft.
+- Nicht entfernt: Quellen der bisherigen V2 in `src/client/v2`, ihre Tests (`tests/v2-*.test.mjs`) und die manuellen Browser-Skripte `scripts/check-v2-*.mjs` und weitere, die `dist/client/v2` als alte V2 erwarten. `src/client` ist eingefroren; das Aufräumen ist ein eigener Schritt.
 
 ## Bisheriger Stand: Kadetten-Sperre in der alten V2 (#314)
 

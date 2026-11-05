@@ -10,6 +10,8 @@ Ein Pull Request prüft Syntax, Tests, Pages-Build und Projektpfade. Nach Merge 
 
 Die App verwendet relative Assetpfade, Manifest-Scope und Service-Worker-Scope für `/Kadetten-Schaffhausen/`. `npm run build:pages` erzeugt die öffentliche Oberfläche; `npm run build` behält den bisherigen Sites-Build bei.
 
+Seit Schritt 6 der [Kadetten Companion App](kadetten-app.md) liegen zwei getrennte Apps in `dist/client`: unter `/` V1 «Matchday» aus `src/client` (eingefroren, `scripts/check-v1-frozen.mjs`) und unter `/v2/` die Kadetten Companion App aus `src/kadetten` (`scripts/build-app.mjs`, geprüft von `scripts/check-preview.mjs`). Die Abschnitte «V2: …» weiter unten beschreiben die bisherige V2 und gelten nicht mehr für `/v2/`.
+
 Die einmalige Repository-Einstellung ist Settings → Pages → Source → GitHub Actions. Der Workflow versucht die Einrichtung über configure-pages. Wenn GitHub diese administrative Aktion mit seinem Workflow-Token nicht zulässt, muss der Eigentümer die Einstellung einmal selbst setzen und den Workflow erneut ausführen.
 
 ## Datendienst

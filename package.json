@@ -14,7 +14,7 @@
     "test": "node --test",
     "check": "node scripts/check.mjs",
     "build:pages": "node scripts/build-pages.mjs",
-    "verify": "npm run check && npm test && npm run build:pages && node scripts/check-pages.mjs && node scripts/check-v1-frozen.mjs && KADETTEN_TARGET=pages npm run build:app"
+    "verify": "npm run check && npm test && npm run build:pages && node scripts/check-pages.mjs && node scripts/check-v1-frozen.mjs"
   },
   "dependencies": {
     "jose": "^6.2.12"
