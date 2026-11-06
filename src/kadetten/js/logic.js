@@ -132,3 +132,26 @@ export function initials(name) {
   const words = shortTeam(name).replace(/[^\p{L}\s-]/gu, '').split(/[\s-]+/).filter(Boolean);
   return (words.length > 1 ? words.slice(0, 2).map(w => w[0]).join('') : (words[0] || '?').slice(0, 2)).toUpperCase();
 }
+
+/** Alter der Quelldaten, nie der lokalen Empfangszeit. 12 Stunden decken die Nachtpause ab. */
+export function dataFreshness(data, now = Date.now()) {
+  const time = value => {
+    const at = typeof value === 'string' ? Date.parse(value) : NaN;
+    const valid = Number.isFinite(at) && at <= now + 300000;
+    const label = valid ? new Intl.DateTimeFormat('de-CH', {timeZone: ZONE, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'}).format(at) + ' Uhr' : 'Zeitpunkt unbekannt';
+    return {stale: !valid || now - at > 12 * HOUR, label};
+  };
+  const snapshot = time(data?.checkedAt);
+  const names = {games: 'Spielplan', table: 'Tabellen', news: 'News', players: 'Spielerwerte'};
+  const sources = Object.entries(names).filter(([key]) => data?.status?.[key]).map(([key, name]) => {
+    const status = data.status[key], value = time(status.updatedAt);
+    return {name, label: value.label, stale: value.stale || status.ok !== true};
+  });
+  const delayed = sources.filter(s => s.stale).map(s => s.name);
+  return {
+    stale: snapshot.stale || delayed.length > 0,
+    label: 'Daten aktualisiert: ' + snapshot.label,
+    message: delayed.length ? 'Verzögerte oder unvollständige Datenquellen: ' + delayed.join(', ') + '. Der letzte verfügbare Stand bleibt sichtbar.' : 'Die Angaben sind möglicherweise nicht aktuell.',
+    sources
+  };
+}

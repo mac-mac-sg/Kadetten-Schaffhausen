@@ -72,7 +72,7 @@ export function tipFor(game, now) {
 }
 
 function momentsFor(data, now) {
-  return momentCards(moments({data, now, squad: SQUAD, history: HISTORY, favourite: favourite()}));
+  return momentCards(moments({data, now, squad: SQUAD, history: HISTORY, favourite: favourite()}).slice(0, 2));
 }
 
 function newsBlock(data, count = 3) {
@@ -114,7 +114,7 @@ export function renderJetzt({state, now, load, api, ui}) {
     return html`${topBar('Jetzt')}
       <section class="sec" aria-labelledby="j-heute"><h2 class="sr" id="j-heute">Heute</h2>${previewHero(game, now, {actions})}</section>
       <section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}
-        ${stats([[own && opp ? `${own.rank}. – ${opp.rank}.` : (own ? own.rank + '.' : '–'), own && opp ? 'Tabelle' : 'QHL-Platz'], [formRow(form(data.games, OWN_TEAM, 3)), 'Form'], [own?.points != null && game.league === 'QHL' ? own.points + 2 : '–', 'Punkte mit Sieg']])}</section>
+        ${stats([[own && opp ? `${own.rank}. – ${opp.rank}.` : (own ? own.rank + '.' : '–'), own && opp ? 'Tabelle' : 'QHL-Platz'], [formRow(form(data.games, OWN_TEAM, 3, ['QHL', 'EHL'].includes(game.league) ? game.league : undefined)), `Form · letzte 3 ${['QHL', 'EHL'].includes(game.league) ? game.league : 'Spiele'}`], [own?.points != null && game.league === 'QHL' ? own.points + 2 : '–', 'Punkte mit Sieg']])}</section>
       ${tipFor(game, now)}
       ${preview?.value?.paragraphs?.length ? html`<section class="sec" aria-labelledby="j-vor">${sectionHead('Vorschau', 'Ganze Vorschau', href.spiel(game.id), 'j-vor')}<a class="card" href="${href.spiel(game.id)}"><p class="clamp">${preview.value.paragraphs[0]}</p></a></section>` : ''}
       ${momentsFor(data, now)}

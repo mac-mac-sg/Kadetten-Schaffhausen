@@ -40,3 +40,32 @@ export const href = {
   news: () => '#/news',
   artikel: id => '#/news/' + encodeURIComponent(id)
 };
+
+/** Sitzungsnavigation: echte History-Einträge behalten Herkunft und Scrollposition.
+ * Ein Direktlink hat keine Herkunft und fällt auf die normale Bereichsadresse zurück.
+ */
+export function createNavigation(session = String(Date.now()) + Math.random().toString(36).slice(2)) {
+  const entries = new Map();
+  let current = null, sequence = 0;
+  const gameId = hash => { const r = parseRoute(hash); return r.view === 'spiel' ? r.id : null; };
+  return {
+    get current() { return current; },
+    enter(hash, id, scroll = 0) {
+      if (current) current.scroll = scroll;
+      if (id && entries.has(id)) { current = entries.get(id); current.restore = true; return current; }
+      const previous = current;
+      const game = gameId(hash);
+      current = {id: session + ':' + ++sequence, hash, scroll: 0, restore: false, autoNext: parseRoute(hash).view === 'spielplan'};
+      if (game && previous) current.origin = gameId(previous.hash) === game ? previous.origin : previous;
+      entries.set(current.id, current);
+      return current;
+    },
+    backTarget() { return current?.origin?.hash || null; },
+    backDistance() {
+      if (!current?.origin) return null;
+      // Count actual entries on this branch; numeric IDs may have gaps after browser back + new navigation.
+      return current.depth - current.origin.depth;
+    },
+    setDepth(depth) { if (current) current.depth = depth; }
+  };
+}

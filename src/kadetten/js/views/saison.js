@@ -32,7 +32,7 @@ function spielplan({state, now, ui}) {
   }
   return html`${chips('comp', [['Alle', 'Alle'], ...present.map(c => [c, c])], filter, 'Wettbewerb')}
     ${[...months].map(([key, items]) => html`<section class="sec" aria-labelledby="${'m-' + key}">${sectionHead(`${MONTHS[+key.slice(5) - 1]} ${key.slice(0, 4)}`, '', '', 'm-' + key)}
-      <div class="card list">${items.map(g => g === next ? html`<div class="next-wrap"><span class="tag">Nächstes Spiel</span>${gameRow(g, now, {cls: 'next'})}</div>` : gameRow(g, now))}</div></section>`)}
+      <div class="card list">${items.map(g => g === next ? html`<div class="next-wrap" data-next-game tabindex="-1"><span class="tag">Nächstes Spiel</span>${gameRow(g, now, {cls: 'next'})}</div>` : gameRow(g, now))}</div></section>`)}
     ${list.length ? '' : html`<section class="sec">${notice('Keine Spiele in diesem Wettbewerb.', 'cal')}</section>`}`;
 }
 

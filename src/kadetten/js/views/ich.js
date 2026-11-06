@@ -3,7 +3,7 @@ import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {THEMES} from '../theme.js';
-import {OWN_TEAM, ownGames, shortTeam} from '../logic.js';
+import {OWN_TEAM, ownGames, shortTeam, dataFreshness} from '../logic.js';
 import {favourite, myGames, tips} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
 import {RULES} from '../rules.js';
@@ -30,6 +30,7 @@ export function renderIch({theme, state, ui, now}) {
   const fav = playerByNumber(favourite());
   const favShv = fav ? state.data?.playerSeason?.players?.[fav.number]?.shvPlayerId : null;
   const visited = myGames(), games = ownGames(state.data?.games).filter(g => visited.includes(String(g.id)));
+  const freshness = dataFreshness(state.data, now);
   const blocked = supported && globalThis.Notification?.permission === 'denied';
   return html`${backBar('Zurück', href.jetzt())}<h1 class="h1 pad">Ich</h1>
     <section class="sec" id="push" aria-labelledby="i-push">${sectionHead('Benachrichtigungen', '', '', 'i-push')}
@@ -63,6 +64,8 @@ export function renderIch({theme, state, ui, now}) {
         ${listRow({title: 'FC St. Gallen und St. Otmar', sub: 'in der App Matchday', link: '../', end: icon('ext')})}
         ${listRow({title: 'Datenschutz', sub: 'Keine Werbung, kein Tracking. Persönliches bleibt auf diesem Gerät.', end: ''})}
       </div>
+      ${freshness.sources.length ? html`<div class="card list pad-top-s">${freshness.sources.map(source => listRow({title: source.name, sub: source.label + ' · Schweizer Zeit', end: source.stale ? 'Verzögert' : 'Aktuell', cls: 'compact'}))}</div>` : ''}
+      <p class="fine pad-top">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
       <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.</p>
     </section>`;
 }

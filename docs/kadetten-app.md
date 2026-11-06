@@ -221,3 +221,11 @@ Anreise- und Hallenführer, ÖV-Abfahrten, Tor-für-Tor-Ticker, Lärmmesser, Fan
 - Ob die SHV-Daten Daten von Nachwuchs- und Frauenteams liefern.
 - Kontakt zum Club für Ticket-Links, «Wo läuft das Spiel?» und Bildrechte.
 - `check-v2-ticket.mjs`, `check-v2-readability.mjs` und `check-v2-mobile.mjs` prüfen die alte V2 und scheitern bereits auf `main`; sie werden mit dem Neuaufbau ersetzt.
+
+### Qualitätsverbesserungen 6. November 2026
+
+- Unter «Ich» stehen der Zeitpunkt des Gesamtdatenstands und die einzelnen Quellenstände in Schweizer Zeit. Auch ein erfolgreicher Gesamtabruf kann verzögerte Spielerwerte enthalten: `status.*.ok` und `status.*.updatedAt` werden deshalb separat ausgewertet. Fehlende Zeitangaben, Quellenfehler und Stände über zwölf Stunden werden gekennzeichnet; das Zeitfenster berücksichtigt die Nachtpause des Datenlaufs.
+- Der Spielplan springt nach dem Laden einmal zum nächsten Spiel, auch nach einem Wettbewerbswechsel. Vergangene Spiele bleiben darüber erreichbar. Beim Zurückkehren über den Browser oder den Zurück-Link der Spielseite gilt die gespeicherte Scrollposition. Spiellaschen behalten die Herkunft; Direktlinks fallen auf «Jetzt» zurück.
+- Torhüterprofile zeigen zuerst Paraden und Fangquote aus den letzten verfügbaren QHL-Berichten, einschliesslich der Abdeckung (z. B. zwei von fünf Berichten). Fehlende Werte werden nicht geschätzt. Tore entfallen als führende QHL-Kennzahl für Torhüter.
+- Die Kadetten-Form in QHL-/EHL-Vorschauen wird auf diesen Wettbewerb begrenzt. Die separat gelieferte Gegnerform nennt ihren Datenumfang ausdrücklich. Tabellenszenarien gelten nur beim aktuellen Tabellenstand; Punktgleichheit wird nicht als gesicherter Rang ausgegeben.
+- «Jetzt» zeigt höchstens zwei Momente. Auf der Vorschauseite steht der persönliche Tipp nach der Ausgangslage.
