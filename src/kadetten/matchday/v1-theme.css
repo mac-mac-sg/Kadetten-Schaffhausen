@@ -1,0 +1,727 @@
+/* V1 settings and complete light palette. V2 owns its theme independently. */
+.theme-settings { margin:20px 0; border-block:1px solid var(--line); padding:16px 0; }
+.theme-settings h3 { margin:0 0 8px; font-size:16px; }
+.theme-setting { display:flex; align-items:center; gap:16px; min-height:60px; cursor:pointer; }
+.theme-setting > span { flex:1; font-size:15px; font-weight:650; }
+.theme-setting small { display:block; margin-top:5px; font-size:12px; line-height:1.5; font-weight:400; color:var(--muted); }
+.theme-setting input { appearance:none; position:relative; flex:none; width:46px; height:28px; margin:0; border:1px solid var(--line); border-radius:18px; background:#656b61; cursor:pointer; }
+.theme-setting input::before { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:white; }
+.theme-setting input:checked { background:var(--accent); }
+.theme-setting input:checked::before { transform:translateX(18px); }
+html:not([data-design='v2']) .club-settings-dialog { max-height:calc(100dvh - 32px); overflow-y:auto; }
+:root:not([data-design='v2'])[data-theme='light'] {
+ --surface:#e8ece5; --surface-2:#ffffff; --text:#25312a; --muted:#536258; --line:#233a292b;
+ --accent:#99470f; --accent-soft:#92491b; --win:#376d29; --draw:#806416; --loss:#a53d35;
+ --v1-selection:#efbd98; --v1-dock-glass:#fff0e39e; --v1-filter-surface:#e4d8cbf5; --panel:#ffffff;
+ --match-green:#246d45;
+}
+:root:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] { --accent:#23663e; --accent-soft:#276c46; --v1-selection:#b7d9c2; --v1-dock-glass:#eaf4ec9e; --v1-filter-surface:#d4e0d3f5; }
+:root:not([data-design='v2'])[data-theme='light'][data-club='otmar'] { --accent:#746016; --accent-soft:#746016; --v1-selection:#eadb9f; --v1-dock-glass:#fff6d89e; --v1-filter-surface:#e8dfc4f5; }
+html:not([data-design='v2'])[data-theme='light'] body { background:var(--surface); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.top.v1-compact-header,.season-header,.match-top,.article-bar,.player-sticky,.profile-jumps,.fcsg-profile-jumps) { background:#f6f5f0e8; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#58664f42; box-shadow:0 6px 22px #26352626,inset 0 1px 0 #ffffffcc; }
+html:not([data-design='v2'])[data-theme='light'] :is(.button.subtle,.header-button) { background:#25312a06; color:var(--text); border-color:#25312a36; }
+html:not([data-design='v2'])[data-theme='light'] :is(.button.subtle,.header-button):hover { background:#25312a10; }
+html:not([data-design='v2'])[data-theme='light'] :is(select,.calendar-head button,.journey-controls button,.segments,.toggle) { background:#ebece6; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .segments a { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .segments a.selected { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .game-card { background:linear-gradient(115deg,#ffffff 0 48%,#f1f3ee 48%); border-color:var(--line); box-shadow:0 3px 12px #2834290c; }
+html:not([data-design='v2'])[data-theme='light'] .game-card.finished { background:linear-gradient(115deg,#fafbf7 0 48%,#f0f2ec 48%); }
+html:not([data-design='v2'])[data-theme='light'] .game-card.current-game { background:linear-gradient(115deg,color-mix(in srgb,var(--v1-selection) 24%,white) 0 48%,color-mix(in srgb,var(--v1-selection) 38%,white) 48%); border-color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(.game-card .meta,.game-card .venue,.game-card .scoreline small,.game-result-label,.current-game .meta,.current-game .venue,.current-game .scoreline small,.eyebrow,.heading > a,.footer-updated,.record-text,.record-legend,.game-derby) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .current-label { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.match-calendar .day,.report-player,.live-event,.report-comparison-row) { border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.match-calendar .day > span.calendar-date,.calendar-legend,.calendar-hint,.matchday-panel p) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .match-calendar .day.today > span { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(th,td,.table-wrap thead th,.report-table thead th,.report-table td,.report-table tbody th) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table tbody tr { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap :is(.our-team th,.our-team td) { background:color-mix(in srgb,var(--v1-selection) 40%,white); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.stats-block,.season-split,.season-number-grid > div,.bento-metric,.bento-panel,.fcsg-bento-tile,.journey-streaks > div,.journey-chart,.duel-summary,.notice,.report-comparison,.report-score-card,.ehf-zone,.ehf-shooting-detail,.live-match-header) { background:var(--surface-2); border-color:var(--line); box-shadow:0 3px 12px #2834290c; }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-primary,.fcsg-bento-primary) { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-primary,.fcsg-bento-primary) :is(span,strong,small) { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.bento-metric > small,.bento-panel small,.fcsg-bento-tile > small,.season-number-grid span,.stats-table .num,.report-comparison-row > div > span,.report-score-card p,.report-score-legend,.live-status) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a,.form-result) { background:var(--win); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a.loss,.form-result.loss) { background:var(--loss); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.season-form a.draw,.form-result.draw) { background:var(--draw); color:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-game,.journey-game.loss,.journey-game.draw) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-game small,.journey-streaks span,.journey-controls button,.journey-game em) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.journey-chart text,.goal-difference-chart text) { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.record-bar,.difference-track,.report-bars > span,.stat-bar,.fcsg-stat-track) { background:#25312a13; }
+html:not([data-design='v2'])[data-theme='light'] :is(.status-popover,.app-feedback,.source-health,.programme-dialog,.programme-toolbar,.programme-tools,.programme-pages) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.programme-status,.programme-toolbar p,.programme-tools a) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .programme-dialog button { background:#ebece6; color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-settings-dialog,.app-introduction,.install-intro) { box-shadow:0 16px 56px #26352626; }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-settings-dialog,.app-introduction,.install-intro)::backdrop { background:#22332766; }
+html:not([data-design='v2'])[data-theme='light'] :is(.guide-visual,.guide-preview-news,.guide-preview-tabs,.guide-preview-roster,.guide-tip) { background:#eef0e9; color:var(--text); border-color:var(--line); }
+/* Keep photographic overlays and matchday surfaces readable in either page theme. */
+html:not([data-design='v2'])[data-theme='light'] .home-title-zone .home-news-heading h1 { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .home-matchday { --text:#f2f3ee; --muted:#c4cec6; --accent:#ff790e; --accent-soft:#ffbb80; --surface:#171b18; --surface-2:#242b26; --win:#a2cf75; --draw:#d5c778; --loss:#f07d6c; }
+html:not([data-design='v2'])[data-theme='light'][data-club='fcsg'] .home-matchday { --accent:#66d99b; --accent-soft:#a3edc2; }
+html:not([data-design='v2'])[data-theme='light'][data-club='otmar'] .home-matchday { --accent:#efcc32; --accent-soft:#ffe477; }
+html:not([data-design='v2'])[data-theme='light'] :is(.story-copy,.photo-feature,.player-card) { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] .story-copy > p { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] .story-copy .button { background:#17211999; color:#fff9f0; border-color:#fff9f080; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { color:#fff9f0; --text:#fff9f0; --muted:#d5e1d5; }
+/* Club history: all reading surfaces follow the light palette; archival photos stay original. */
+html:not([data-design='v2'])[data-theme='light'] :is(.club-title-panel,.club-trophy,.club-chapter figure,.club-more,.fcsg-history-mark) { background:var(--surface-2); color:var(--text); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-hero-text,.club-intro-copy) { color:#fff9f0; }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-topline,.club-chapter-position,.club-chapter figcaption,.club-years button,.club-next,.club-more summary,.club-credits,.club-chapter-copy > p:not(.club-chapter-year),.club-more p) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-chapter-year,.club-years button[aria-pressed='true'],.club-trophy strong) { color:var(--accent); }
+/* Legacy detail labels use explicit colours in V1 and need light counterparts. */
+html:not([data-design='v2'])[data-theme='light'] :is(.notice,.club-page) { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] :is(.standing-meta,.record-legend,.season-data-note,.season-split small,.player-leader-note,.stat-scope,.stat-note,.facts span,.stat-facts span,.comparison span,.recent small,.recent-game small,.match-top > small,.season-balance-values span,.venue-thumb figcaption) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] :is(.stat-facts strong,.comparison strong:first-child,.news-link,.text-link,.club-text-button) { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .clubmark { color:var(--muted); border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-live-notice.is-stale { color:#78551b; }
+html:not([data-design='v2'])[data-theme='light'] .club-cabinet { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-trophy span,.club-count-note,.club-year-hint,.club-cabinet > p,.club-history-heading > p:last-child,.club-title-years button,.club-topline span) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .club-cabinet .club-eyebrow { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] :is(.club-trophy[aria-pressed='true'],.club-title-years button[aria-pressed='true']) { background:color-mix(in srgb,var(--v1-selection) 40%,white); color:var(--text); border-color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .club-history .club-eyebrow { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .profile-back.back-link { color:#fff9f0; background:#172119b3; }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table tbody tr.our-team { background:color-mix(in srgb,var(--v1-selection) 30%,white); }
+html:not([data-design='v2'])[data-theme='light'] .table-wrap .standings-table .our-team :is(th,td) { background:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-match-dashboard { --match-green:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-pitch { --match-green:#a9e877; }
+/* Diagram ink and grid lines need their own light contrast, independently of text. */
+html:not([data-design='v2'])[data-theme='light'] .report-score-card { --score-orange:#a94d13; --score-purple:var(--v1-stat-opponent); }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart text { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-grid { stroke:#25312a1c; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-half { stroke:#25312a40; }
+html:not([data-design='v2'])[data-theme='light'] .report-score-chart .chart-end { fill:white; }
+html:not([data-design='v2'])[data-theme='light'] :is(.report-score-status,.ehf-shot-map,.ehf-keeper-zones,.ehf-half-quotes) { border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] :is(.report-score-card .eyebrow,.report-score-legend) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .report-bars i { background:#78529a; }
+html:not([data-design='v2'])[data-theme='light'] .report-bars .is-kadetten i { background:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-bar { background:#25312a16; }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-card { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .fcsg-stat-values .is-leading { background:color-mix(in srgb,var(--v1-selection) 45%,white); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch { background:#ebece6; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch button { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch button[aria-pressed='true'] { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .team-switch-slider { background:var(--v1-selection); }
+
+/* Match reports and previews also contain legacy dark-only colours. */
+html:not([data-design='v2'])[data-theme='light'] :is(.scorers small,.form-team small) { color:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .scorers strong { color:var(--accent); }
+html:not([data-design='v2'])[data-theme='light'] .recent .recent-game { background:var(--surface-2); }
+html:not([data-design='v2'])[data-theme='light'] .recent-score .result-label { background:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .record-0,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:first-child::before { background:var(--win); }
+html:not([data-design='v2'])[data-theme='light'] .record-1,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:nth-child(2)::before { background:var(--muted); }
+html:not([data-design='v2'])[data-theme='light'] .record-2,
+html:not([data-design='v2'])[data-theme='light'] .record-legend span:nth-child(3)::before { background:var(--loss); }
+
+/* V2's editorial news cards, below V1's unchanged arena entry and divider. */
+html:not([data-design='v2']) .v1-news-layout { --news-card-surface:#243027; --news-card-text:#f4f1e9; --news-card-muted:#b9c5b9; }
+html:not([data-design='v2'])[data-theme='light'] .v1-news-layout { --news-card-surface:#ebe7de; --news-card-text:#222b25; --news-card-muted:#596259; }
+html.snap-news:not([data-design='v2']) { scroll-snap-type:none; }
+html:not([data-design='v2']) .v1-news-layout .home-front-page { display:block; min-height:0; scroll-snap-align:none; scroll-snap-stop:normal; }
+html:not([data-design='v2']) .v1-news-layout .story-feed { background:transparent; }
+html:not([data-design='v2']) .v1-news-card { margin:0 auto 28px; max-width:1136px; padding:0 22px; }
+html:not([data-design='v2']) .v1-news-link { display:block; border-radius:18px; overflow:hidden; background:var(--news-card-surface); color:var(--news-card-text); text-decoration:none; transition:opacity 150ms ease; }
+html:not([data-design='v2']) .v1-news-image { overflow:hidden; border-radius:18px 18px 0 0; }
+html:not([data-design='v2']) .v1-news-image img { display:block; width:100%; height:auto; aspect-ratio:16/10; object-fit:cover; }
+html:not([data-design='v2']) .v1-news-copy { padding:18px 18px 22px; }
+html:not([data-design='v2']) .v1-news-copy p { color:var(--news-card-muted); font-size:13px; margin:0 0 8px; }
+html:not([data-design='v2']) .v1-news-copy h2 { display:grid; grid-template-columns:minmax(0,1fr) 24px; gap:16px; align-items:start; font:600 clamp(25px,3.5vw,40px)/1.15 Georgia,'Times New Roman',serif; margin:0; text-wrap:balance; overflow-wrap:anywhere; }
+html:not([data-design='v2']) .v1-news-arrow { display:grid; place-items:center; width:24px; height:28px; margin-top:1px; }
+html:not([data-design='v2']) .v1-news-arrow svg { width:22px; height:22px; }
+html:not([data-design='v2']) .v1-news-link:active { opacity:.78; }
+html:not([data-design='v2']) .v1-news-link:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+@media(min-width:800px) {
+ html:not([data-design='v2']) .v1-news-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); max-width:1180px; margin:auto; }
+ html:not([data-design='v2']) .v1-news-grid .v1-news-card { width:100%; }
+}
+@media(prefers-reduced-motion:reduce) { html:not([data-design='v2']) .v1-news-link { transition:none; } }
+
+/* One quiet frame for the two views and competition filter. */
+html:not([data-design='v2']) .season-header .game-control-bar { display:flex; align-items:stretch; gap:4px; padding:4px; margin-top:14px; border:1px solid var(--line); border-radius:16px; background:transparent; }
+html:not([data-design='v2']) .game-control-bar .game-view-toggle { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); flex:2; gap:4px; width:auto; min-width:0; margin:0; padding:0; border:0; border-radius:0; background:transparent; }
+html:not([data-design='v2']) .game-control-bar .game-view-toggle button { min-width:0; min-height:44px; padding:8px 6px; border:1px solid transparent; border-radius:12px; font-size:14px; line-height:1.3; color:var(--muted); background:transparent; }
+html:not([data-design='v2']) .game-control-bar .game-view-toggle button[aria-pressed='true'] { color:#182019; font-weight:650; background:var(--v1-selection); border-color:transparent; }
+html:not([data-design='v2']) .game-control-bar .game-view-toggle button[aria-pressed='true']:hover { background:color-mix(in srgb,var(--v1-selection) 90%,white); }
+html:not([data-design='v2']) .game-control-bar .game-filter { flex:1.1; min-width:0; }
+html:not([data-design='v2']) .game-control-bar select { width:100%; max-width:100%; min-width:0; min-height:44px; height:100%; margin:0; padding:8px 6px; border:1px solid transparent; border-radius:12px; color:var(--text); background:transparent; font-size:14px; text-overflow:ellipsis; }
+html:not([data-design='v2']) .game-control-bar :is(button,select):focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+
+/* The bottom navigation identifies these sections; keep one semantic heading. */
+html:not([data-design='v2']) .season.content { padding-top:0; }
+html:not([data-design='v2']) .season-header { position:static; z-index:auto; top:auto; margin:0; padding:0; border:0; background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; transform:none; }
+html:not([data-design='v2']) .season-header > .eyebrow { display:none; }
+html:not([data-design='v2']) .season-header > h1 { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+html:not([data-design='v2']) .games-mode .season.content { padding-top:calc(var(--v1-games-controls-height,54px) + 12px); }
+html:not([data-design='v2']) .games-mode .season-header { position:static; top:auto; padding:0; }
+html:not([data-design='v2']) .games-mode .season-header .game-control-bar { position:fixed; z-index:25; top:var(--v1-content-top); left:var(--v1-games-left,20px); width:var(--v1-games-width,calc(100% - 40px)); margin:0; background:#354138e6; border-color:#d4e0d247; box-shadow:0 6px 20px #00000026,inset 0 1px 0 #ffffff0a; backdrop-filter:blur(26px) saturate(125%); -webkit-backdrop-filter:blur(26px) saturate(125%); }
+html:not([data-design='v2']):has(body.games-mode) { scroll-padding-top:calc(var(--v1-content-top) + var(--v1-games-controls-height,54px) + 12px); }
+
+/* Match the breathing room above the first roster position heading. */
+html:not([data-design='v2']) .standings-season.content { padding-top:40px; }
+html:not([data-design='v2']) .standings-season .season-header + * { margin-top:0; }
+
+/* Keep the pinned games navigation distinct from the cards moving underneath. */
+html:not([data-design='v2']) body.games-mode::before { content:''; position:fixed; z-index:24; top:0; left:0; width:100%; height:calc(var(--v1-content-top) + var(--v1-games-controls-height,54px)); background:var(--surface); pointer-events:none; }
+html:not([data-design='v2']) .game-control-bar .game-view-toggle button:not([aria-pressed='true']) { color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .games-mode .season-header .game-control-bar { background:var(--v1-filter-surface); border-color:#41554247; box-shadow:0 5px 16px #26352624,inset 0 1px 0 #ffffffb3; }
+
+
+/* V1 refinement: reading surfaces stay quiet; statistics retain their own styling. */
+html:not([data-design='v2']) .v1-news-link { border-radius:18px; box-shadow:none; }
+html:not([data-design='v2']) .v1-news-copy { padding:18px 18px 20px; }
+html:not([data-design='v2']) .v1-news-copy h2 { font-size:clamp(24px,4vw,34px); font-weight:500; line-height:1.18; letter-spacing:-.018em; }
+html:not([data-design='v2']) .v1-news-copy p { font-size:12px; line-height:1.5; }
+html:not([data-design='v2']) .home-news-heading h1 { font-family:var(--font-text); font-size:20px; font-weight:600; letter-spacing:-.02em; }
+html:not([data-design='v2']) .news-article h1 { font:650 clamp(30px,5vw,48px)/1.15 var(--font-text); letter-spacing:-.025em; text-wrap:balance; }
+html:not([data-design='v2']) .season > .subhead:has(+ .players) { font-size:22px; font-weight:600; letter-spacing:-.02em; }
+html:not([data-design='v2']) .player-card { border-radius:18px; box-shadow:none; }
+html:not([data-design='v2']) .player-card strong { font-weight:600; }
+html:not([data-design='v2']) .games-mode .season > p.muted { font-size:13px; line-height:1.5; margin-bottom:16px; }
+html:not([data-design='v2']) .games-mode .notice { background:transparent; box-shadow:none; border:0; border-top:1px solid var(--line); border-radius:0; padding:20px 0; }
+html:not([data-design='v2']) .game-timeline { gap:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) {
+ position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; padding:14px 16px 8px;
+ background:var(--surface-2); border:0; border-left:2px solid var(--result-color,var(--line)); border-radius:14px; box-shadow:none; text-align:left;
+}
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.meta,.scoreline) { grid-column:1/-1; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .meta { margin:0 0 4px; font-size:12px; line-height:1.5; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .game-result-label { padding:0; background:transparent; border-radius:0; font-weight:600; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div { flex-direction:row; justify-content:flex-start; gap:8px; font-size:13px; line-height:1.35; min-width:0; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div:last-child { flex-direction:row-reverse; text-align:right; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div > span { overflow-wrap:anywhere; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.crest,.clubmark) { flex:none; width:28px; height:36px; object-fit:contain; font-size:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > strong { font-size:24px; font-weight:650; line-height:1.25; text-align:center; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline small { font-size:11px; line-height:1.4; margin-top:3px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .venue { margin:0; align-self:center; font-size:12px; line-height:1.4; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) > p.muted { grid-column:1/-1; margin:0; font-size:12px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions { align-self:center; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions .button { min-height:44px; padding:8px 0 8px 4px; font-size:12px; font-weight:600; color:var(--text); background:transparent; border:0; border-radius:0; transform:none; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions a::after { content:''; position:absolute; inset:0; border-radius:14px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):has(a:focus-visible) { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .game-timeline .game-card.current-game { box-shadow:none; }
+html:not([data-design='v2']) .game-timeline .game-card.current-game .scoreline > strong { font-weight:650; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .games-mode .season-header .game-control-bar { box-shadow:0 3px 12px #17211914; }
+
+/* Club tint remains in the glass; selection is a smaller, quieter layer. */
+html:not([data-design='v2']) .dock { box-shadow:0 4px 16px #17211924,inset 0 1px 0 #ffffff12; }
+html:not([data-design='v2']) .dock a { position:relative; font-size:12px; font-weight:500; transition:background-color 140ms ease,color 140ms ease; }
+html:not([data-design='v2']) .dock a.active,
+html:not([data-design='v2']) .dock a.active:hover { color:var(--text); background:color-mix(in srgb,var(--v1-selection) 18%,transparent); font-weight:650; }
+html:not([data-design='v2']) .dock a.active::before { content:''; position:absolute; bottom:3px; left:calc(50% - 8px); width:16px; height:2px; border-radius:2px; background:var(--v1-selection); }
+html:not([data-design='v2']) .dock a.active .nav-icon { color:var(--v1-selection); }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active .nav-icon,
+html:not([data-design='v2'])[data-theme='light'] .dock a.active::before { color:var(--accent); background-color:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active::before { background:var(--accent); }
+html:not([data-design='v2']) .dock a:active { transform:none; background:color-mix(in srgb,var(--v1-selection) 28%,transparent); }
+
+/* Frequent club changes use a short fade instead of a full-screen circle. */
+:root:not([data-design='v2']).club-transition::view-transition-new(root) { animation:club-soft-fade 160ms cubic-bezier(.23,1,.32,1) both; }
+:root:not([data-design='v2']).club-transition-reduced::view-transition-new(root) { animation:club-soft-fade 120ms ease-out both; }
+@media(hover:hover) and (pointer:fine) {
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):hover { background:color-mix(in srgb,var(--text) 4%,var(--surface-2)); }
+}
+@media(max-width:600px) {
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div { flex-direction:column; align-items:flex-start; gap:4px; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div:last-child { flex-direction:column; align-items:flex-end; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div > span { overflow-wrap:normal; hyphens:auto; }
+ html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.crest,.clubmark) { width:24px; height:30px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ html:not([data-design='v2']) .dock a { transition:none; }
+ :root:not([data-design='v2']).club-transition::view-transition-new(root) { animation:club-soft-fade 120ms ease-out both; }
+}
+
+
+/* App notices live in settings, away from the reading surfaces. */
+html:not([data-design='v2']) .settings-app-info { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0; border-block:1px solid var(--line); }
+html:not([data-design='v2']) .settings-info-row { display:inline-flex; flex:none; align-items:center; justify-content:space-between; gap:6px; width:auto; min-height:48px; margin:0; padding:12px 0; border:0; border-radius:0; background:transparent; color:var(--text); text-align:left; font-size:13px; line-height:1.5; }
+html:not([data-design='v2']) .settings-update { display:inline-flex; align-items:center; gap:6px; min-width:0; color:var(--muted); white-space:nowrap; }
+html:not([data-design='v2']) .settings-clock { flex:none; width:16px; height:16px; }
+html:not([data-design='v2']) .settings-update time { color:var(--muted); font-size:12px; text-align:right; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2']) .settings-info-row[data-open-disclaimer]:active { background:color-mix(in srgb,var(--text) 5%,transparent); }
+html:not([data-design='v2']) .settings-info-row:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .app-disclaimer-dialog { width:calc(100% - 28px); max-width:480px; max-height:calc(100dvh - 32px); overflow:auto; padding:24px; border:1px solid var(--line); border-radius:24px; color:var(--text); background:var(--surface); box-shadow:0 16px 56px #17211940; }
+html:not([data-design='v2']) .app-disclaimer-dialog::backdrop { background:#17211988; backdrop-filter:blur(6px); }
+html:not([data-design='v2']) .app-disclaimer-dialog > header { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+html:not([data-design='v2']) .app-disclaimer-dialog h2 { margin:0; font:600 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2']) .disclaimer-copy { margin:20px 0; font-size:14px; line-height:1.6; }
+html:not([data-design='v2']) .disclaimer-copy h3 { margin:24px 0 12px; font-size:16px; }
+html:not([data-design='v2']) .disclaimer-copy p { margin:0 0 12px; }
+html:not([data-design='v2']) .disclaimer-copy a { text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2']) .app-disclaimer-dialog form .button { width:100%; }
+
+
+/* A compact native-style settings sheet, with consistent groups and rows. */
+html:not([data-design='v2']) .club-settings-dialog { padding:22px; }
+html:not([data-design='v2']) .club-settings-dialog > header { margin-bottom:24px; }
+html:not([data-design='v2']) .club-settings-dialog h2 { margin:0; font:650 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2']) .club-settings-dialog .settings-group { margin:0 0 22px; padding:0; border:0; }
+html:not([data-design='v2']) .club-settings-dialog .settings-group h3 { margin:0 0 8px; color:var(--muted); font-size:12px; line-height:1.5; font-weight:600; letter-spacing:.02em; }
+html:not([data-design='v2']) .club-settings-list label { min-height:64px; gap:12px; padding:10px 0; border:0; }
+html:not([data-design='v2']) .club-settings-list label + label { border-top:1px solid var(--line); }
+html:not([data-design='v2']) .club-settings-list img { width:30px; height:36px; }
+html:not([data-design='v2']) .club-settings-list span { min-width:0; font-size:14px; line-height:1.4; font-weight:500; }
+html:not([data-design='v2']) .club-settings-list small { margin-top:2px; font-size:12px; line-height:1.4; }
+html:not([data-design='v2']) .club-settings-dialog .theme-setting { min-height:64px; gap:12px; }
+html:not([data-design='v2']) .club-settings-dialog .theme-setting > span { font-size:14px; font-weight:500; }
+html:not([data-design='v2']) .club-settings-help { margin:0; padding:12px 0 0; border-top:1px solid var(--line); }
+html:not([data-design='v2']) .settings-help-row { display:flex; align-items:center; gap:12px; width:100%; min-height:52px; padding:10px 0; color:var(--text); background:transparent; border:0; border-radius:0; text-align:left; font-size:14px; font-weight:500; }
+html:not([data-design='v2']) .settings-help-row > svg { flex:none; width:20px; height:20px; color:var(--muted); }
+html:not([data-design='v2']) .settings-help-row > span { flex:1; }
+html:not([data-design='v2']) .settings-help-row .settings-help-arrow { width:16px; height:16px; }
+html:not([data-design='v2']) .settings-help-row:active { background:color-mix(in srgb,var(--text) 5%,transparent); transform:none; }
+html:not([data-design='v2']) .settings-help-row:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .club-settings-dialog .settings-app-info { margin:12px 0 0; border-bottom:0; }
+
+/* Keep the short swipe entrance inside the viewport without creating a scroll container. */
+html:not([data-design='v2']) #app { overflow-x:clip; }
+
+/* Preview frames contain only page content; the real club bar, filters and dock stay above. */
+html:not([data-design='v2']) .main-tab-pager { position:fixed; inset:0; z-index:-1; visibility:hidden; overflow:hidden; pointer-events:none; background:var(--surface); }
+html:not([data-design='v2']) .main-tab-pager.is-dragging { z-index:18; visibility:visible; }
+html:not([data-design='v2']) .main-tab-pager > iframe { position:absolute; inset:0; width:100%; height:100%; border:0; visibility:hidden; pointer-events:none; background:var(--surface); }
+
+/* Quiet shortcuts, visible only where they help in the long fixture list. */
+html:not([data-design='v2']) :is(.return-current-game,.new-stories) { position:fixed; z-index:19; left:50%; translate:-50% 0; min-height:44px; width:max-content; max-width:calc(100% - 32px); padding:10px 18px; border:1px solid var(--line); border-radius:24px; background:var(--surface); color:var(--text); font:600 13px/1.4 var(--font-text); box-shadow:0 4px 18px #0002; }
+html:not([data-design='v2']) .return-current-game { bottom:calc(94px + env(safe-area-inset-bottom,0px)); }
+html:not([data-design='v2']) .new-stories { top:calc(var(--app-header-height,80px) + 20px); }
+html:not([data-design='v2']) .text-size-setting { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:64px; border-top:1px solid var(--line); font-size:14px; font-weight:500; }
+html:not([data-design='v2']) .text-size-setting select { min-height:44px; width:auto; max-width:60%; padding:8px 30px 8px 12px; border:1px solid var(--line); border-radius:12px; background-color:var(--surface); color:var(--text); font:inherit; }
+html:not([data-design='v2']) .article-fulltext { font-size:17px; line-height:1.8; }
+html:not([data-design='v2'])[data-text-size='large'] .article-fulltext { font-size:20px; line-height:1.8; }
+html:not([data-design='v2']) .article-fulltext :is(h2,h3,h4,h5) { line-height:1.3; }
+html:not([data-design='v2']) .article-placeholder { display:grid; gap:14px; margin:24px 0 32px; }
+html:not([data-design='v2']) .article-placeholder i { display:block; height:12px; border-radius:6px; background:var(--line); }
+html:not([data-design='v2']) .article-placeholder i:nth-child(2) { width:94%; }
+html:not([data-design='v2']) .article-placeholder i:last-child { width:68%; }
+html:not([data-design='v2']) :is(.v1-news-image,.article-photo) { background:var(--surface-2); }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) :is(.meta,.venue) { font-size:13px; }
+html:not([data-design='v2']) .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline small { font-size:12px; }
+html:not([data-design='v2']) :is(.return-current-game,.new-stories):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2']) .article-fulltext .article-lead { color:var(--text); }
+
+/* Gentle chronological markers directly around the current fixture. */
+html:not([data-design='v2']) .game-list-divider { grid-column:1/-1; display:flex; align-items:center; gap:12px; min-height:18px; color:var(--muted); font:500 12px/1.5 var(--font-text); }
+html:not([data-design='v2']) .game-list-divider::before,
+html:not([data-design='v2']) .game-list-divider::after { content:''; flex:1; border-top:1px solid var(--line); }
+html:not([data-design='v2']) .game-list-divider span { display:flex; align-items:center; gap:5px; }
+html:not([data-design='v2']) .game-list-divider svg { width:14px; height:14px; }
+
+/* No layout shrink on scroll: the compact row overlaps the outgoing header's last 56px. */
+html:not([data-design='v2']) .match-top[data-match-full] { position:static; z-index:auto; }
+html:not([data-design='v2']) .match-sticky-bar { position:sticky; top:var(--v1-content-top); z-index:12; margin-top:-56px; margin-bottom:22px; isolation:isolate; }
+html:not([data-design='v2']) .match-compact-header { display:flex; align-items:center; gap:8px; height:56px; padding:0 max(12px,5%); box-sizing:border-box; background:var(--surface); color:var(--text); border-bottom:1px solid var(--line); opacity:0; visibility:hidden; transform:translateY(6px); pointer-events:none; transition:opacity 140ms ease,transform 140ms cubic-bezier(.23,1,.32,1),visibility 140ms; }
+html:not([data-design='v2']) .match-sticky-bar.is-collapsed .match-compact-header { opacity:1; visibility:visible; transform:none; pointer-events:auto; }
+html:not([data-design='v2']) .match-compact-back { display:grid; place-items:center; flex:none; width:44px; min-height:44px; color:var(--text); border-radius:10px; }
+html:not([data-design='v2']) .match-compact-back svg { width:20px; height:20px; }
+html:not([data-design='v2']) .match-compact-back:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+html:not([data-design='v2']) .match-compact-crest { display:grid; place-items:center; flex:none; width:26px; }
+html:not([data-design='v2']) .match-compact-crest :is(.crest,.clubmark) { width:24px; height:28px; object-fit:contain; font-size:10px; }
+html:not([data-design='v2']) .match-compact-copy { flex:1; min-width:0; text-align:left; }
+html:not([data-design='v2']) .match-compact-names { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:600; line-height:1.4; }
+html:not([data-design='v2']) .match-compact-detail { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px; line-height:1.5; }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs { display:flex; flex-wrap:nowrap; gap:6px; width:100%; max-width:none; margin:0; padding:4px max(12px,5%); box-sizing:border-box; background:var(--surface); border-bottom:1px solid var(--line); }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs a { flex:1; min-width:0; min-height:44px; display:flex; align-items:center; justify-content:center; padding:8px 6px; box-sizing:border-box; text-align:center; font-size:13px; }
+html:not([data-design='v2']) .match-sticky-bar > .match-tabs a:not(.selected) { color:var(--muted); }
+@media(prefers-reduced-motion:reduce) { html:not([data-design='v2']) .match-compact-header { transition:none; transform:none; } }
+
+/* Light-mode hierarchy: muted canvas, white cards, club-tinted navigation and solid selection. */
+html:not([data-design='v2'])[data-theme='light'] .top.v1-compact-header { background:#fffffff0; border-color:#41554238; }
+html:not([data-design='v2'])[data-theme='light'] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { background:#ffffff; box-shadow:0 1px 3px #213a2912; }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true'],
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar select { background:#fffffff2; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme='light'] .game-control-bar .game-view-toggle { background:transparent; }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active,
+html:not([data-design='v2'])[data-theme='light'] .dock a.active:hover { background:var(--v1-selection); color:var(--text); }
+html:not([data-design='v2'])[data-theme='light'] .return-current-game { background:var(--accent); color:#ffffff; border-color:var(--accent); box-shadow:0 5px 16px #213a2926; }
+
+/* Both competition choices must read as buttons, including the unselected one. */
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button { min-height:44px; background:#ffffff; color:var(--text); border:1px solid #778178; }
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true'],
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button[aria-pressed='true']:hover { background:var(--accent); color:#ffffff; border-color:var(--accent); font-weight:650; }
+html:not([data-design='v2'])[data-theme='light'] .league-toggle button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+/* Match V2's translucent club glass while retaining V1's navigation layout. */
+:root:not([data-design='v2'])[data-theme='dark'] { --v1-dock-glass:#4e3023bd; }
+:root:not([data-design='v2'])[data-theme='dark'][data-club='fcsg'] { --v1-dock-glass:#1d402bbd; }
+:root:not([data-design='v2'])[data-theme='dark'][data-club='otmar'] { --v1-dock-glass:#43391abd; }
+html:not([data-design='v2']) .dock { background:var(--v1-dock-glass); border:1px solid #ffffff1a; box-shadow:0 8px 28px #00000055; backdrop-filter:blur(16px) saturate(1.15); -webkit-backdrop-filter:blur(16px) saturate(1.15); }
+html:not([data-design='v2'])[data-theme='light'] .dock { border-color:#24312614; box-shadow:0 8px 28px #10211724; }
+/* Clip glass and selected tabs to one antialiased contour on mobile compositors. */
+html:not([data-design='v2']) .dock { overflow:hidden; background-clip:padding-box; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translate3d(-50%,0,0); }
+
+/* Shared V1 roles: themes change colours, not the hierarchy of the components. */
+:root:not([data-design='v2']) {
+ --v1-control-fill:var(--v1-selection); --v1-control-ink:#182019;
+ --v1-control-tray:#354138e6;
+ --v1-card-surface:var(--surface-2); --v1-inset-surface:color-mix(in srgb,var(--text) 4%,var(--surface-2));
+ --v1-heading-size:22px; --v1-section-size:20px; --v1-card-heading-size:18px; --v1-meta-size:13px;
+}
+:root:not([data-design='v2'])[data-theme='light'] { --v1-control-fill:var(--accent); --v1-control-ink:#ffffff; --v1-control-tray:var(--v1-filter-surface); }
+html:not([data-design='v2'])[data-theme] :is(.league-toggle,.match-tabs.segments) { background:var(--v1-control-tray); border:1px solid var(--line); border-radius:16px; padding:4px; gap:4px; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a) { min-height:44px; border:1px solid transparent; border-radius:12px; font:500 14px/1.3 var(--font-text); color:var(--text); background:transparent; display:flex; align-items:center; justify-content:center; text-align:center; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected),
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):is([aria-pressed='true'],.selected):hover { background:var(--v1-control-fill); color:var(--v1-control-ink); border-color:var(--v1-control-fill); font-weight:650; }
+html:not([data-design='v2'])[data-theme] :is(.game-control-bar .game-view-toggle button,.league-toggle button,.match-tabs a):focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+html:not([data-design='v2'])[data-theme] .v1-news-layout { --news-card-surface:var(--v1-card-surface); --news-card-text:var(--text); --news-card-muted:var(--muted); }
+html:not([data-design='v2'])[data-theme] :is(.club-settings-dialog,.app-disclaimer-dialog,.app-introduction,.install-intro) { background:var(--v1-card-surface); color:var(--text); }
+html:not([data-design='v2'])[data-theme] :is(.stats-block .season-split,.stats-block .season-number-grid > div,.bento-panel .bento-metric:not(.bento-primary)) { background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .v1-news-copy h2 { font:600 24px/1.2 var(--font-text); letter-spacing:-.018em; text-wrap:balance; }
+html:not([data-design='v2'])[data-theme] :is(.home-news-heading h1,.season > .subhead,.season-numbers > h2,.match .content > h2,.match .match-preview-content > h1,.season-stats-content > h2,.fcsg-player-bento > h2) { font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .stats-block > h3 { font:600 var(--v1-section-size)/1.3 var(--font-text); letter-spacing:-.015em; }
+html:not([data-design='v2'])[data-theme] :is(.stats-block > h4,.player-leader-group > h4) { font:600 var(--v1-card-heading-size)/1.35 var(--font-text); }
+html:not([data-design='v2'])[data-theme] .club-settings-dialog h2 { font:600 24px/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-copy > p,.game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .meta,.game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .venue,.standing-meta,.record-text,.season-data-note,.player-leader-note) { font-size:var(--v1-meta-size); line-height:1.5; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .game-control-bar .game-filter { flex:1.35; }
+
+
+/* Shared geometry: content, inset surfaces and overlays have distinct roles. */
+:root:not([data-design='v2']) {
+ --v1-content-gutter:20px;
+ --v1-space-small:12px; --v1-space-card:16px; --v1-space-section:32px;
+ --v1-radius-card:18px; --v1-radius-inset:12px; --v1-radius-dialog:24px;
+ --v1-card-shadow:0 2px 8px #00000018;
+ --v1-dialog-shadow:0 16px 56px #00000066;
+}
+:root:not([data-design='v2'])[data-theme='light'] {
+ --v1-card-shadow:0 2px 8px #213a2910;
+ --v1-dialog-shadow:0 16px 56px #17211940;
+}
+html:not([data-design='v2'])[data-theme] :is(.content,.v1-news-card,.home-news-heading) { padding-inline:var(--v1-content-gutter); }
+html:not([data-design='v2'])[data-theme] .v1-news-card { max-width:1180px; margin-bottom:var(--v1-space-section); }
+html:not([data-design='v2'])[data-theme] .home-news-heading { max-width:1180px; margin-inline:auto; }
+html:not([data-design='v2'])[data-theme] .v1-news-copy { padding:var(--v1-space-card); }
+html:not([data-design='v2'])[data-theme] .season > .subhead { margin:40px 0 var(--v1-space-card); }
+html:not([data-design='v2'])[data-theme] :is(.season-numbers > h2,.season-stats-content > h2) { margin-block:var(--v1-space-section) var(--v1-space-card); }
+html:not([data-design='v2'])[data-theme] :is(.game-timeline,.players) { gap:var(--v1-space-small); }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-link,.player-card,.stats-block,.bento-metric:not(.bento-panel .bento-metric),.fcsg-bento-tile:not(.fcsg-bento-duo > *):not(.fcsg-bento-cards > *),.bento-panel,.report-comparison,.report-score-card,.journey-chart,.duel-summary,.fcsg-stat-card) {
+ border-radius:var(--v1-radius-card); border:1px solid var(--line); box-shadow:var(--v1-card-shadow);
+}
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { border-radius:var(--v1-radius-card); box-shadow:var(--v1-card-shadow); }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions a::after { border-radius:var(--v1-radius-card); }
+html:not([data-design='v2'])[data-theme] :is(.stats-block .season-split,.stats-block .season-number-grid > div,.bento-panel .bento-metric:not(.bento-primary)) { border:1px solid var(--line); border-radius:var(--v1-radius-inset); box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .season-numbers .stats-block { padding:var(--v1-space-card); margin-top:24px; }
+html:not([data-design='v2'])[data-theme] :is(.club-settings-dialog,.app-disclaimer-dialog,.app-introduction,.install-intro) { padding:24px; border:1px solid var(--line); border-radius:var(--v1-radius-dialog); box-shadow:var(--v1-dialog-shadow); }
+@media(max-width:359px) { :root:not([data-design='v2']) { --v1-content-gutter:16px; } }
+@media(min-width:800px) { :root:not([data-design='v2']) { --v1-content-gutter:32px; } }
+
+@media(max-width:640px) {
+ html:not([data-design='v2'])[data-theme] .standings-table tbody { gap:var(--v1-space-small); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr { border-radius:var(--v1-radius-card); box-shadow:var(--v1-card-shadow); }
+}
+
+@media(min-width:800px) {
+ html:not([data-design='v2'])[data-theme] .v1-news-grid { padding-inline:var(--v1-content-gutter); gap:24px; }
+ html:not([data-design='v2'])[data-theme] .v1-news-grid .v1-news-card { padding-inline:0; }
+}
+@media(max-width:640px) {
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team { box-shadow:inset 3px 0 var(--accent),var(--v1-card-shadow); }
+}
+
+
+/* One touch vocabulary. Large cards stay stable; compact controls compress gently. */
+:root:not([data-design='v2']) { --v1-touch-size:44px; --v1-press-opacity:.82; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a) {
+ min-height:var(--v1-touch-size); touch-action:manipulation; cursor:pointer;
+ transition:transform 140ms var(--ease-ui),opacity 140ms var(--ease-ui),background-color 140ms ease,color 140ms ease,border-color 140ms ease;
+}
+html:not([data-design='v2'])[data-theme] :is(.button,.club-intro-actions button) { border-radius:var(--v1-radius-inset); font:600 14px/1.4 var(--font-text); gap:8px; }
+html:not([data-design='v2'])[data-theme] .button { padding:10px 16px; }
+html:not([data-design='v2'])[data-theme] :is(.header-button,.calendar-head button,.match-compact-back):not([hidden]) { display:inline-flex; align-items:center; justify-content:center; width:44px; min-width:44px; height:44px; padding:10px; border-radius:var(--v1-radius-inset); }
+html:not([data-design='v2'])[data-theme] :is(.v1-action-icon,.back-link > svg,.header-button > svg,.calendar-head button > svg,.match-compact-back > svg) { flex:none; width:20px; height:20px; stroke-width:1.7; }
+html:not([data-design='v2'])[data-theme] .settings-info-row .v1-action-icon { width:16px; height:16px; }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-link,.player-card,.live-match,.v1-match-action,.game-timeline .game-card) { touch-action:manipulation; transition:opacity 140ms var(--ease-ui); }
+/* Override floating hover motion, including sticky touch-hover on phones. */
+html:not([data-design='v2'])[data-theme] :is(.button,.club-trophy):hover { transform:none; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { opacity:var(--v1-press-opacity); transform:scale(.98); }
+html:not([data-design='v2'])[data-theme] :is(.v1-news-link,.player-card,.live-match,.v1-match-action):active,
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:has(.actions a:active) { opacity:var(--v1-press-opacity); }
+/* The stretched fixture link must keep its complete hit area during a press. */
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .actions .button { transform:none; opacity:1; }
+html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a,.v1-news-link,.player-card,.live-match,.v1-match-action):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+html:not([data-design='v2'])[data-theme] :is(button,.button):is(:disabled,[aria-disabled='true']) { cursor:default; opacity:.5; transform:none; }
+html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a,.v1-news-link,.player-card,.live-match,.v1-match-action) { transition:none; }
+html:not([data-design='v2'])[data-theme].keyboard-input :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { transform:none; }
+@media(prefers-reduced-motion:reduce) {
+ html:not([data-design='v2'])[data-theme] :is(button,.button,.back-link,.club-entry,.match-compact-back,.match-tabs a):active:not(:disabled):not([aria-disabled='true']) { transform:none; }
+}
+
+
+/* An optional second row, measured with the club bar by the pinned controls. */
+html:not([data-design='v2']) .top.v1-compact-header:has(.club-match-hints:not([hidden])) { flex-wrap:wrap; }
+html:not([data-design='v2']) .club-match-hints { flex:0 0 100%; order:10; display:flex; gap:8px; margin-top:6px; padding-top:6px; border-top:1px solid var(--line); }
+html:not([data-design='v2']) .club-match-hints[hidden] { display:none; }
+html:not([data-design='v2']) .club-match-hint { flex:1; min-width:0; min-height:44px; display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:12px; color:var(--text); background:color-mix(in srgb,var(--text) 5%,transparent); touch-action:manipulation; transition:opacity 140ms var(--ease-ui); }
+html:not([data-design='v2']) .club-match-hint img { flex:none; object-fit:contain; }
+html:not([data-design='v2']) .club-match-hint > span { min-width:0; }
+html:not([data-design='v2']) .club-match-hint strong { display:block; font:600 12px/1.4 var(--font-text); }
+html:not([data-design='v2']) .club-match-hint small { display:block; font:400 11px/1.4 var(--font-text); color:var(--muted); }
+html:not([data-design='v2']) .club-match-hint i { width:6px; height:6px; border-radius:50%; background:#dd4747; flex:none; margin-left:auto; }
+html:not([data-design='v2']) .club-match-hint:active { opacity:.82; }
+html:not([data-design='v2']) .club-match-hint:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+
+/* Light-touch polish: ordinary fixtures recede; live/current games and statistic tiles keep their emphasis. */
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) { padding:12px 14px 4px; gap:4px 10px; box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline { margin-block:6px; gap:8px; }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live) .scoreline > div { font-size:14px; font-weight:500; }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):not(.finished) .scoreline > strong { font-size:18px; font-weight:500; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card:not(.current-game):not(.fcsg-game-live):not(.finished) .scoreline small { display:none; }
+html:not([data-design='v2'])[data-theme] .game-timeline .game-card .meta { font-weight:400; }
+html:not([data-design='v2'])[data-theme] .v1-news-copy h2 { font-weight:550; line-height:1.25; text-wrap:pretty; }
+html:not([data-design='v2'])[data-theme] .news-article .content > .muted { font-size:13px; font-weight:400; line-height:1.5; }
+/* Reading/support content needs separators, not another enclosing card. */
+html:not([data-design='v2'])[data-theme] .news-article .notice,
+html:not([data-design='v2'])[data-theme] .club-title-panel { border:0; border-top:1px solid var(--line); border-radius:0; background:transparent; box-shadow:none; padding:20px 0; }
+html:not([data-design='v2'])[data-theme] .club-match-hint { background:transparent; border-radius:8px; }
+html:not([data-design='v2'])[data-theme] .club-match-hint + .club-match-hint { border-left:1px solid var(--line); border-radius:0; }
+html:not([data-design='v2'])[data-theme] .club-match-hint small { font-size:12px; }
+html:not([data-design='v2'])[data-theme] .dock { box-shadow:0 4px 18px #00000030; }
+html:not([data-design='v2'])[data-theme='light'] .dock { box-shadow:0 4px 18px #10211718; }
+html:not([data-design='v2'])[data-theme] .dock a.active,
+html:not([data-design='v2'])[data-theme] .dock a.active:hover { background:color-mix(in srgb,var(--v1-selection) 16%,transparent); }
+html:not([data-design='v2'])[data-theme='light'] .dock a.active,
+html:not([data-design='v2'])[data-theme='light'] .dock a.active:hover { background:color-mix(in srgb,var(--v1-selection) 55%,transparent); }
+html:not([data-design='v2'])[data-theme] .top.v1-compact-header { box-shadow:0 4px 18px #00000012; }
+/* Stable media slots, including failed downloads. Never substitute another player's portrait. */
+html:not([data-design='v2']) .v1-news-image { aspect-ratio:16/10; background:var(--v1-inset-surface); }
+html:not([data-design='v2']) .article-photo { aspect-ratio:16/10; object-fit:cover; }
+html:not([data-design='v2']) .v1-image-fallback { display:inline-flex; align-items:center; justify-content:center; background:var(--v1-inset-surface); color:var(--muted); font:500 13px/1.4 var(--font-text); text-align:center; }
+html:not([data-design='v2']) .v1-news-image > .v1-image-fallback { width:100%; height:100%; }
+html:not([data-design='v2']) .player-card > .v1-image-fallback { width:100%; height:100%; aspect-ratio:3/4; background:var(--surface-2); }
+html:not([data-design='v2']) .v1-image-fallback.article-photo { display:flex; width:100%; }
+html:not([data-design='v2']) .article-fulltext { transition:opacity 160ms var(--ease-ui); }
+html:not([data-design='v2']) .article-fulltext[aria-busy='true'] { min-height:180px; }
+@media(prefers-reduced-motion:reduce) { html:not([data-design='v2']) .article-fulltext { transition:none; } }
+@keyframes v1-content-ready { from { opacity:.65; } to { opacity:1; } }
+@media(prefers-reduced-motion:no-preference) {
+ html:not([data-design='v2']) .article-fulltext[aria-busy='false'] { animation:v1-content-ready 160ms var(--ease-ui); }
+}
+
+html:not([data-design='v2']) .related-story > .v1-image-fallback { flex:none; width:100px; height:85px; border-radius:10px; }
+
+/* Match statistics belong to the app's existing card family. Colour is a light accent, never glass. */
+:root:not([data-design='v2']) {
+ --v1-stat-own:var(--accent-soft); --v1-stat-opponent:#a4b8c8;
+ --v1-stat-wash:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--v1-stat-own) 6%,transparent),transparent 65%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--v1-stat-opponent) 4%,transparent),transparent 65%);
+}
+:root:not([data-design='v2'])[data-theme='light'] { --v1-stat-own:var(--accent); --v1-stat-opponent:#496579; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats { --v1-stat-home:var(--v1-stat-own); --v1-stat-away:var(--v1-stat-opponent); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats[data-own-side='away'] { --v1-stat-home:var(--v1-stat-opponent); --v1-stat-away:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > :is(.report-comparison,.panel,.report-player-section),
+html:not([data-design='v2'])[data-theme] .match .report-score-card {
+ min-width:0; margin:24px 0; padding:var(--v1-space-card); border:1px solid var(--line); border-radius:var(--v1-radius-card);
+ background:var(--v1-stat-wash),var(--v1-card-surface); box-shadow:var(--v1-card-shadow);
+}
+html:not([data-design='v2'])[data-theme] .match .report-score-card {
+ --score-orange:var(--v1-stat-own); --score-purple:var(--v1-stat-opponent);
+ background:radial-gradient(ellipse at 0% 0%,color-mix(in srgb,var(--v1-stat-own) 9%,transparent),transparent 65%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--v1-stat-opponent) 6%,transparent),transparent 65%),var(--v1-card-surface);
+}
+html:not([data-design='v2'])[data-theme] .report-score-card .eyebrow { display:none; }
+html:not([data-design='v2'])[data-theme] :is(.finished-match-stats > h2,.report-player-section > h2,.report-score-card h2) { margin:0 0 16px; font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .report-score-card h2 { margin:0; }
+html:not([data-design='v2'])[data-theme] .report-score-status { font-size:12px; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-score-caption { margin-top:8px; font-size:var(--v1-meta-size); line-height:1.5; }
+html:not([data-design='v2'])[data-theme] .report-score-chart text { fill:var(--muted); }
+html:not([data-design='v2'])[data-theme] .report-score-chart :is(.chart-grid,.chart-half) { stroke:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-score-chart :is(.chart-kadetten,.chart-opponent) { filter:none; }
+html:not([data-design='v2'])[data-theme] .report-score-chart .chart-end { fill:var(--v1-card-surface); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row { padding:16px 0; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong { font-size:16px; font-weight:600; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong:first-child,
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong:first-child { color:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-comparison-row strong:last-child,
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong:last-child { color:var(--v1-stat-away); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-bars i { background:var(--v1-stat-opponent); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .report-bars .is-kadetten i { background:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison { padding:16px 0; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .comparison strong { font-size:28px; font-weight:600; font-variant-numeric:tabular-nums; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats :is(.comparison span,.report-comparison-row > div > span) { color:var(--muted); font-size:var(--v1-meta-size); }
+html:not([data-design='v2'])[data-theme] .report-player-section > .team-switch { margin:0 0 24px; }
+html:not([data-design='v2'])[data-theme] .report-player-section .live-team-stats > h3 { font:600 var(--v1-card-heading-size)/1.35 var(--font-text); margin:24px 0 12px; }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.report-table-wrap,.report-table,.report-table th,.report-table td) { background:transparent; border-color:var(--line); }
+html:not([data-design='v2'])[data-theme] .report-player-section .report-table thead th { color:var(--muted); font-weight:500; }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts { gap:12px; margin:16px 0 0; }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts > div { min-width:0; padding:16px; border:1px solid var(--line); border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts strong { font-size:22px; font-weight:600; color:var(--v1-stat-own); }
+html:not([data-design='v2'])[data-theme] .report-player-section [data-stats-panel='home'] { --v1-stat-team:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .report-player-section [data-stats-panel='away'] { --v1-stat-team:var(--v1-stat-away); }
+html:not([data-design='v2'])[data-theme] .report-player-section .facts strong { color:var(--v1-stat-team,var(--v1-stat-own)); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats .ehf-shot-results > h2 { font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.ehf-shot-map,.ehf-keeper-zones) { padding:16px; border-color:var(--line); border-radius:var(--v1-radius-inset); background:transparent; box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .report-player-section .ehf-zone { border-color:var(--line); border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); }
+html:not([data-design='v2'])[data-theme] .report-player-section :is(.ehf-zone b,.ehf-keeper-zones summary strong) { color:var(--v1-stat-team,var(--v1-stat-own)); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel > h2 { margin:0 0 16px; font:600 var(--v1-heading-size)/1.25 var(--font-text); letter-spacing:-.02em; }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:first-child { color:var(--v1-stat-home); }
+html:not([data-design='v2'])[data-theme] .finished-match-stats > .panel .report-table tbody td:last-child { color:var(--v1-stat-away); }
+
+/* A completed recap is a reading surface: the concrete match report starts immediately. */
+html:not([data-design='v2'])[data-theme] .match-recap { padding-top:24px; padding-bottom:32px; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report { margin:0 0 24px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > h1 { margin:8px 0 20px; font:600 clamp(28px,5vw,40px)/1.2 var(--font-text); letter-spacing:-.025em; text-wrap:balance; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > p:not(.eyebrow) { max-width:68ch; margin:0 0 20px; font-size:16px; line-height:1.75; color:var(--text); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > h1 + p { font-size:18px; line-height:1.65; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report > .eyebrow { margin:0; font-size:12px; font-weight:500; letter-spacing:.04em; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report details { margin-top:16px; font-size:13px; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report summary { min-height:44px; display:list-item; padding:10px 0; line-height:1.5; color:var(--muted); cursor:pointer; }
+html:not([data-design='v2'])[data-theme] .match-recap .ai-match-report details a { color:var(--accent-soft); text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2'])[data-theme='light'] .match-recap .ai-match-report details a { color:var(--accent); }
+html:not([data-design='v2'])[data-theme] .match-recap-waiting > .lead { margin:0 0 16px; font-size:18px; line-height:1.6; }
+html:not([data-design='v2'])[data-theme] .match-recap-waiting .notice { margin:0; border:0; padding:0; background:transparent; color:var(--muted); }
+html:not([data-design='v2'])[data-theme] .match-recap-details { display:grid; gap:0; margin:24px 0; padding:12px 0; border-block:1px solid var(--line); }
+html:not([data-design='v2'])[data-theme] .match-recap-details > div { display:grid; grid-template-columns:88px minmax(0,1fr); align-items:baseline; gap:12px; padding:8px 0; }
+html:not([data-design='v2'])[data-theme] .match-recap-details dt { color:var(--muted); font-size:13px; }
+html:not([data-design='v2'])[data-theme] .match-recap-details dd { margin:0; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+html:not([data-design='v2'])[data-theme] .match-recap-details a { display:inline-flex; align-items:center; min-height:44px; color:var(--accent-soft); text-decoration:underline; text-underline-offset:3px; }
+html:not([data-design='v2'])[data-theme='light'] .match-recap-details a { color:var(--accent); }
+html:not([data-design='v2'])[data-theme] .match-recap .report-history { margin-top:24px; }
+
+html:not([data-design='v2'])[data-theme] .match-recap .report-feed > summary { min-height:44px; font:600 var(--v1-section-size)/1.4 var(--font-text); }
+
+/* FCSG shares the same neutral opponent role as handball. */
+html:not([data-design='v2']) :is(.fcsg-match-dashboard,.fcsg-lineup-dashboard) { --match-opponent:var(--v1-stat-opponent); }
+
+/* Matchday previews share a two-line heading slot, independently of club/league length. */
+html:not([data-design='v2']) .home-matchday .live-match:not([hidden]) { grid-template-rows:2.5rem 4.125rem 2.25rem 1.5rem; }
+html:not([data-design='v2']) .home-matchday .live-heading { align-items:center; gap:8px; }
+html:not([data-design='v2']) .home-matchday .live-heading > span { flex:0 1 auto; min-width:0; max-width:65%; white-space:normal; line-height:1.2; }
+html:not([data-design='v2']) .home-matchday .live-heading small { flex:1; min-width:0; text-align:right; overflow-wrap:anywhere; }
+
+/* Compact mobile standings: rank, crest/name + record, goals and points. */
+@media(max-width:640px) {
+ html:not([data-design='v2'])[data-theme] .standings-table tbody { gap:6px; }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr {
+  grid-template-columns:20px minmax(0,1fr) 50px 30px; gap:8px;
+  min-height:60px; padding:10px; border-radius:var(--v1-radius-inset);
+  box-shadow:none;
+ }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team { box-shadow:inset 3px 0 var(--accent); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:first-child { font-size:16px; line-height:1.25; color:var(--text); }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:nth-child(4) { font-size:12px; color:var(--muted); }
+ html:not([data-design='v2'])[data-theme] .standings-table .standing-played { display:block; margin-top:3px; font:400 12px/1.25 var(--font-text); color:var(--muted); white-space:nowrap; }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:last-child { font-size:24px; line-height:1.1; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team { gap:8px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > .crest { flex:none; width:28px; height:32px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > div { min-width:0; font-size:14px; line-height:1.25; }
+ html:not([data-design='v2'])[data-theme] .standings-table .standing-name { overflow-wrap:anywhere; font-weight:600; }
+ html:not([data-design='v2'])[data-theme] .standings-table .record-bar { height:4px; margin-top:6px; }
+ /* Keep the numerical balance and match count available to assistive technology. */
+ html:not([data-design='v2'])[data-theme] .standings-table :is(.record-text,.standing-meta) {
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+ }
+}
+@media(max-width:359px) {
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr { grid-template-columns:18px minmax(0,1fr) 46px 26px; gap:6px; padding-inline:8px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team { gap:6px; }
+ html:not([data-design='v2'])[data-theme] .standings-table .table-team > .crest { width:24px; height:30px; }
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody td:last-child { font-size:22px; }
+}
+@media(min-width:641px) {
+ html:not([data-design='v2'])[data-theme] .table-wrap .standings-table tbody tr.our-team .table-team .record-text { color:var(--text); }
+}
+
+/* Season balance numbers use the readable result palette on light cards. */
+html:not([data-design='v2'])[data-theme='light'] .season-balance-values .win strong { color:var(--win); }
+html:not([data-design='v2'])[data-theme='light'] .season-balance-values .draw strong { color:var(--draw); }
+
+/* Nested season charts keep their content clear of the card edge. */
+html:not([data-design='v2'])[data-theme] .season-goal-stats .goal-difference-chart {
+ min-width:0; padding:var(--v1-space-card); border:1px solid var(--line);
+ border-radius:var(--v1-radius-inset); background:var(--v1-inset-surface); box-shadow:none;
+}
+/* Match the value's optical inset to the centred rank at the left edge. */
+html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader {
+ min-width:0; grid-template-columns:20px 38px minmax(0,1fr) minmax(44px,max-content);
+}
+html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader > strong { padding-right:6px; }
+@media(max-width:400px) {
+ html:not([data-design='v2'])[data-theme] .season-player-stats .player-leader { grid-template-columns:18px 32px minmax(0,1fr) minmax(40px,max-content); }
+}
+/* V2 device notification preferences use the existing settings surface and switches. */
+[data-preview='v2'] .push-settings-dialog .push-intro { margin:0 0 10px; font-size:15px; line-height:1.5; }
+[data-preview='v2'] .push-clubs,[data-preview='v2'] .push-note { color:var(--muted); font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+[data-preview='v2'] .push-types { margin:20px 0 12px; padding:0; }
+[data-preview='v2'] .push-types .theme-setting + .theme-setting { border-top:1px solid var(--line); }
+[data-preview='v2'] .push-status { min-height:24px; font-size:14px; line-height:1.5; }
+[data-preview='v2'] .push-actions { display:flex; gap:10px; flex-wrap:wrap; }
+[data-preview='v2'] .push-actions .button { min-height:44px; white-space:normal; }
+[data-preview='v2'] .push-actions [hidden] { display:none; }
+
+/* V1 handball match statistics use the FCSG card/row language in club colours. */
+html:not([data-preview='v2']):not([data-design='v2'])[data-club='kadetten'] {
+ --hb-stat-surface:linear-gradient(150deg,#a64e1d50,#422315ad),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-club='otmar'] {
+ --hb-stat-surface:linear-gradient(150deg,#91802350,#343011ad),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme='light']:is([data-club='kadetten'],[data-club='otmar']) {
+ --hb-stat-surface:linear-gradient(150deg,color-mix(in srgb,var(--accent) 11%,transparent),color-mix(in srgb,var(--accent) 3%,transparent)),var(--v1-card-surface);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .match {
+ --match-green:var(--v1-stat-own); --match-opponent:var(--v1-stat-opponent);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats { --v1-stat-home:var(--v1-stat-own); --v1-stat-away:var(--v1-stat-opponent); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats[data-own-side='away'] { --v1-stat-home:var(--v1-stat-opponent); --v1-stat-away:var(--v1-stat-own); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .match :is(.handball-stat-card,.finished-match-stats > .panel,.handball-match-stats > .panel,.report-score-card,.report-player-section) {
+ min-width:0; margin:24px 0; padding:var(--v1-space-card); border:1px solid var(--line); border-radius:var(--v1-radius-card);
+ background:var(--hb-stat-surface); box-shadow:var(--v1-card-shadow);
+}
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-card > h2 { margin:0 0 20px; font:600 var(--v1-heading-size)/1.25 var(--font-text); text-align:center; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-values { grid-template-columns:minmax(48px,1fr) minmax(0,2fr) minmax(48px,1fr); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-values strong { color:var(--text); text-align:center; font-weight:600; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-compound .fcsg-stat-values strong { font-size:16px; overflow-wrap:anywhere; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .is-leading { background:color-mix(in srgb,var(--text) 9%,transparent); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme='light'] .handball-stat-row .is-leading { background:color-mix(in srgb,var(--accent) 12%,white); }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-stat-row .fcsg-stat-bar { height:4px; margin-top:14px; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section :is(.report-table,.report-table th,.report-table td) { background:transparent; }
+html:not([data-preview='v2']):not([data-design='v2'])[data-theme] .handball-match-stats .report-player-section .scorers strong { color:var(--v1-stat-team,var(--v1-stat-own)); }
+
+/* Maintenance notices live in Settings in V1, never as floating red dots. */
+html:not([data-preview='v2']):not([data-design='v2']) .compact-status { display:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status > .compact-status:not([hidden]) { display:block; position:static; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-dot { display:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .compact-status > summary { justify-content:flex-start; width:100%; min-height:44px; height:auto; padding:10px 0; border-radius:0; font-weight:600; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .compact-status > summary::after { content:attr(aria-label); }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover { position:static; width:auto; max-height:none; padding:0 0 16px; border:0; border-radius:0; background:transparent; color:inherit; box-shadow:none; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status .status-popover .button { margin-top:12px; }
+html:not([data-preview='v2']):not([data-design='v2']) .settings-status { border-top:1px solid var(--line); margin-top:16px; padding-top:8px; }
+/* Matchday player portraits: native scrolling from the cover into all statistics. */
+html:not([data-design='v2']):not([data-preview='v2']).snap-profile { scroll-snap-type:none; }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll { isolation:isolate; }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll > :is(.portrait,.fcsg-player-photo) {
+  position:sticky;
+  top:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:60svh;
+  min-height:300px;
+  max-height:620px;
+  margin:0;
+  object-fit:cover;
+  object-position:center 20%;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player.player-scroll > .fcsg-player-photo { top:var(--fcsg-profile-top,82px); }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll-content { position:relative; z-index:1; background:var(--surface); }
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll-content .source-details > summary { color:var(--muted); }
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player .player-scroll-content::before {
+  content:'';
+  position:absolute;
+  inset:-64px 0 100%;
+  background:linear-gradient(transparent,var(--surface));
+  pointer-events:none;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .player-scroll .player-scroll-content > :is(.profile-slide,.fcsg-profile-slide) {
+  display:block;
+  min-height:0;
+  scroll-snap-align:none;
+  scroll-snap-stop:normal;
+  padding-block:16px;
+}
+html:not([data-design='v2']):not([data-preview='v2']) .fcsg-player.player-scroll .player-scroll-content { padding-inline:16px; }
+@media (prefers-reduced-motion:reduce) {
+  html:not([data-design='v2']):not([data-preview='v2']) .player-scroll > :is(.portrait,.fcsg-player-photo) { position:relative; top:0; }
+}

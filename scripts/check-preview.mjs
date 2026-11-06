@@ -5,7 +5,8 @@ const v2='dist/client/v2/';
 const html=fs.readFileSync(v2+'index.html','utf8');
 assert.match(html,/<title>Kadetten<\/title>/,'V2 muss die Kadetten Companion App sein');
 assert.match(html,/name="apple-mobile-web-app-title" content="Kadetten"/);
-assert.doesNotMatch(html,/FCSG|St\. Otmar|Meine Vereine|data-preview/,'Kein Rest der bisherigen V2');
+assert.match(html,/data-club-layout="modern" data-home-title="modern"/,'V2 verwendet die Matchday-Hülle');
+assert.doesNotMatch(html,/data-preview|arena-head/,'Kein eigener Designentwurf über Matchday');
 assert.match(html,/connect-src 'self' https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev;/);
 for(const [,file] of html.matchAll(/(?:src|href)="([^"#?]+)/g)){assert.ok(!file.startsWith('/')&&!file.startsWith('..'),'Pfad verlässt /v2/: '+file);assert.ok(fs.existsSync(v2+file),'Fehlt: '+v2+file);}
 const manifest=JSON.parse(fs.readFileSync(v2+'manifest.webmanifest','utf8'));
@@ -24,4 +25,4 @@ const v1=fs.readFileSync('dist/client/index.html','utf8');
 assert.doesNotMatch(v1,/kadetten-app|app\.js\?v=.*type="module"/);
 assert.ok(!fs.readFileSync(v2+'app.js','utf8').includes('platform-config.js'));
 assert.ok(!fs.existsSync(v2+'js/app.js'),'Bundle der bisherigen V2 darf nicht mehr ausgeliefert werden');
-console.log('V2 = Kadetten Companion App: Pfade, Manifest, Offline-Hülle und Trennung von V1 geprüft.');
+console.log('V2 = Matchday-Layout mit Companion-Funktionen: Pfade, Manifest, Offline-Hülle und Trennung von V1 geprüft.');

@@ -1,5 +1,7 @@
 # Kadetten Companion App – Designsystem «Abend»
 
+**Aktuell ab 6. November 2026:** Auf ausdrücklichen Wunsch ersetzt das [Matchday-Layout mit vier Companion-Funktionen](v2-matchday-layout.md) die bisherige Oberfläche. Die folgenden älteren Design- und Seitenbeschreibungen dokumentieren den vorherigen Stand.
+
 Stand: 6. November 2026. Richtung abgenommen am 5. November: «B (Nacht) kombiniert mit der Leichtigkeit von C (Kadettenorange)». Am 6. November nach dem Skill [unslop](https://github.com/heydamir/unslop) von Damir Sokolovsky (@heydamir, CC BY 4.0) überarbeitet: neutrale Flächen, kleinere Radien, ruhigere Schrift (Entscheid des Eigentümers). Gilt für die neue App unter `/v2/`; V1 bleibt unverändert. Aufbau der Seiten: [Spezifikation](kadetten-app.md#seitenaufbau).
 
 ## Gewählte Weiterentwicklung am 6. November 2026

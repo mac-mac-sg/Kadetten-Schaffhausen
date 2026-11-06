@@ -1,0 +1,31 @@
+/* Nur die vier zusätzlichen QHL-Funktionen. Matchday-Stile bleiben unverändert. */
+.companion-features { padding-top:0; padding-bottom:24px; }
+.companion-features .stats-block { margin:20px 0; padding:16px; }
+.companion-features h2 { margin:0 0 16px; }
+.companion-features .muted { font-size:13px; line-height:1.5; margin:14px 0 0; }
+.companion-features button { font:inherit; }
+.companion-vote summary { min-height:48px; display:flex; align-items:center; gap:12px; font-size:20px; font-weight:700; cursor:pointer; }
+.companion-vote summary::after { content:'+'; margin-left:auto; }
+.companion-vote[open] summary::after { content:'−'; }
+.companion-vote-body { padding-top:16px; }
+.companion-candidates { display:grid; gap:12px; }
+.companion-player { width:100%; display:flex; align-items:center; gap:12px; padding:8px 12px 8px 8px; text-align:left; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:16px; cursor:pointer; }
+.companion-player.selected { outline:2px solid var(--accent); outline-offset:-2px; background:color-mix(in srgb,var(--accent) 10%,var(--panel)); }
+.companion-player img { width:72px; height:88px; object-fit:cover; border-radius:10px; }
+.companion-player > span:not(.companion-check) { min-width:0; flex:1; }
+.companion-player strong,.companion-player small { display:block; overflow-wrap:anywhere; }
+.companion-player small { margin-top:6px; color:var(--muted); font-size:13px; }
+.companion-check { font-size:22px; }
+.companion-submit,.companion-attendance { width:100%; min-height:48px; margin-top:16px; }
+.companion-features button:disabled { opacity:.5; cursor:default; }
+.companion-results > div { display:flex; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--line); }
+.companion-results small { display:block; }
+.companion-tip { display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:center; }
+.companion-tip > div { min-width:0; }
+.companion-tip > div > span { font-size:14px; }
+.companion-tip > div > div { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; }
+.companion-tip button { width:44px; height:44px; flex:none; border:1px solid var(--line); border-radius:50%; color:var(--text); background:var(--panel); cursor:pointer; }
+.companion-tip-value { min-width:30px; font-size:26px; }
+.companion-features button:focus-visible,.companion-vote summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.companion-features button:active { opacity:.8; }
+@media(max-width:370px) { .companion-tip { gap:8px; }.companion-tip > div > div { gap:4px; } }
