@@ -87,8 +87,8 @@ test('Fan-Wahl: zufälliger Geräteschlüssel bleibt auf dem Gerät', () => {
 });
 
 test('Push-Adressen des Datendienstes führen auf die Spielseite', () => {
-  assert.deepEqual(parseRoute('#match/508393/overview'), {area: 'jetzt', view: 'spiel', id: '508393'});
-  assert.deepEqual(parseRoute('#/spiel/508393/live'), {area: 'jetzt', view: 'spiel', id: '508393', tab: 'live'});
+  assert.deepEqual(parseRoute('#match/508393/overview'), {area: 'saison', view: 'spiel', id: '508393'});
+  assert.deepEqual(parseRoute('#/spiel/508393/live'), {area: 'saison', view: 'spiel', id: '508393', tab: 'live'});
 });
 
 test('Keine style-Attribute im Markup: die CSP der App erlaubt sie nicht', () => {

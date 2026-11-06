@@ -1,5 +1,6 @@
 // Spielseite: Mittelpunkt der App. Zustand Vorschau → Live → Bericht wechselt automatisch.
 import {html} from '../text.js';
+import {renderTicker} from '../ticker.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
@@ -12,7 +13,7 @@ import {myGames} from '../personal.js';
 import {backBar, sectionHead, formRow, formBadge, notice, loading, listRow, gameRow, segment, crest} from './parts.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 
-const GAME_TABS = [['vorschau', 'Vorschau'], ['live', 'Live'], ['bericht', 'Bericht']];
+const GAME_TABS = [['vorschau', 'Übersicht'], ['live', 'Ticker'], ['bericht', 'Statistik']];
 
 function opponentOf(game) { return isOwn(game.home) ? game.away : game.home; }
 
@@ -62,16 +63,13 @@ function vorschau({game, data, load, api, now}) {
 }
 
 function liveTab({game, phase, data, state, now, ui}) {
-  if (phase === 'vorschau') return html`<section class="sec">${notice('Der Live-Stand erscheint ab Anpfiff und wird alle 30 Sekunden aktualisiert. Einzelne Tore werden live nicht angezeigt.', 'jetzt')}</section>`;
-  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Zum Spielbericht</a></section>`;
-  const table = liveTable(data.tables?.QHL, {...state.live.match, league: state.live.match.league || game.league});
-  return html`
-    ${table ? html`<section class="sec" aria-labelledby="g-lt">${sectionHead('Live-Tabelle', 'Ganze Tabelle', href.saison('tabellen'), 'g-lt')}<div class="card list"><div class="tbl">${table.slice(0, 5).map(r => html`<div class="tr${sameTeam(r.team, OWN_TEAM) ? ' me' : ''}"><span class="p num">${r.rank}</span><span class="tn">${shortTeam(r.team)}</span><span class="sp num">${r.played}</span><span></span><span class="pt num">${r.points}</span></div>`)}</div></div></section>` : ''}
-    ${state.liveError ? html`<section class="sec">${notice('Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.')}</section>` : ''}
-    ${renderLiveStats({match: state.live.match, data, ui})}`;
+  if (phase === 'vorschau') return html`<section class="sec">${notice('Der Liveticker erscheint ab Anpfiff, sobald die Quelle einzelne Ereignisse liefert.', 'jetzt')}</section>`;
+  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet. Spielverlauf und Rückblick findest du in der Übersicht.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id)}">Zum Rückblick</a></section>`;
+  return html`${state.liveError ? html`<section class="sec">${notice('Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.')}</section>` : ''}${renderTicker(state.live.match)}<section class="sec"><a class="btn wide" href="${href.spiel(game.id,'bericht')}">Alle Spielwerte</a></section>`;
 }
 
-function bericht({game, phase, data, load, api, ui}) {
+function bericht({game, phase, data, load, api, ui, state, now}) {
+  if (phase === 'live') return renderLiveStats({match: state.live.match, data, ui});
   if (phase !== 'bericht') return html`<section class="sec">${notice('Der Spielbericht mit Matchbericht, Spielverlauf, Teamvergleich und Spielerwerten erscheint nach Abpfiff.', 'doc')}</section>`;
   const supported = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '');
   const entry = supported ? loadReportFor(load, api, game) : null;
@@ -81,7 +79,7 @@ function bericht({game, phase, data, load, api, ui}) {
     normalized = fitsGame(candidate, game) ? candidate : null;
   }
   const vote = ui.votes ? load('votes:' + game.id, () => ui.votes.status(game.id), 60000) : null;
-  const voting = vote ? voteSection({vote, mine: myVotes()[game.id] || null, now: Date.now(), busy: ui.voteBusy, message: ui.voteMessage}) : '';
+  const voting = vote?.value?.candidates?.length ? html`<section class="sec"><a class="card rowcard vote-teaser" href="${href.spiel(game.id, 'wahl')}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">Spieler des Matchs</span><span class="s">${vote.value.open ? 'Deine Stimme zählt' : 'Zum Ergebnis der Fan-Wahl'}</span></span>${icon('go')}</a></section>` : '';
   return renderBericht({game, data, entry, ui, normalized, voting});
 }
 
@@ -92,18 +90,21 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   if (!game && live?.match && String(live.match.id) === route.id) game = findGame(data.games, live.match, now) || {...live.match, date: null};
   if (!game) return html`${backBar('Jetzt', href.jetzt())}<h1 class="h1 pad">Spiel</h1><section class="sec">${notice('Dieses Spiel ist im aktuellen Spielplan nicht vorhanden.', 'cal')}</section>`;
   game = withFinished(game, live, now);
-  const phase = gamePhase(game, live, now), tab = route.tab || phase;
+  const phase = gamePhase(game, live, now), tab = route.tab || (phase === 'live' ? 'live' : 'vorschau');
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
   const share = hasScore(game) ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share')}</button>` : '';
   const hero = phase === 'live' ? liveHero(live.match, game, state, now, false) : phase === 'bericht' ? resultHero(game, now, {link: false, celebrate: outcome(game) === 'S'}) : previewHero(game, now, {link: false});
   const visited = myGames().includes(String(game.id));
   const started = kickoff(game) !== null && kickoff(game) <= now;
   const tabs = GAME_TABS.map(([id, label]) => [id, label, href.spiel(game.id, id), id === 'live' && phase === 'live' ? html`<i class="dot"></i>` : '']);
-  const content = tab === 'live' ? liveTab({game, phase, data, state, now, ui}) : tab === 'bericht' ? bericht({game, phase, data, load, api, ui}) : vorschau({game, data, load, api, now, ui});
+  const vote = tab === 'wahl' && ui.votes ? load('votes:' + game.id, () => ui.votes.status(game.id), 30000) : null;
+  if (tab === 'wahl') return html`${backBar('Zum Spiel', href.spiel(game.id))}<h1 class="h1 pad">Spieler des Matchs</h1><section class="sec"><p class="vote-context">${title}</p></section>${voteSection({vote, mine: myVotes()[game.id], now, busy: ui.voteBusy, selected: ui.voteSelections?.[game.id], message: ui.voteGame === String(game.id) ? ui.voteMessage : '', data})}`;
+  const report = () => bericht({game, phase, data, load, api, ui, state, now});
+  const content = tab === 'live' ? liveTab({game, phase, data, state, now, ui}) : tab === 'bericht' ? report() : phase === 'bericht' ? report() : phase === 'live' ? html`<section class="sec"><a class="btn pri" href="${href.spiel(game.id,'live')}">Zum Liveticker</a></section>${renderLiveStats({match: live.match, data, ui})}` : vorschau({game,data,load,api,now,ui});
   return html`${backBar('Zurück', ui.backTarget || href.jetzt(), share, true)}<h1 class="sr">${title}</h1>
+    <section class="sec match-score${phase === 'live' ? ' match-live' : ''}">${hero}</section>
     ${segment(tabs, tab, 'Spielseite')}
-    <section class="sec">${hero}</section>
-    ${tab === 'bericht' && phase === 'bericht' ? tipFor(game, now) : ''}
+    ${tab === 'vorschau' && phase === 'bericht' ? tipFor(game, now) : ''}
     ${content}
     ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein')}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
 }

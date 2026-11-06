@@ -6,7 +6,7 @@ import {shortTeam} from '../logic.js';
 import {isOwn, displayName, storiesForGame} from '../match.js';
 import {reportText, goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
 import {favourite} from '../personal.js';
-import {sectionHead, notice, loading, listRow, storyRow, playerByNumber} from './parts.js';
+import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
 
 export const ruleButton = id => html`<button type="button" class="rule" data-rule="${id}" aria-label="Erklärung anzeigen">?</button>`;
 const minute = sec => `${Math.floor(sec / 60) + 1}.`;
@@ -95,24 +95,32 @@ function shotAnalysis(shotStats, report) {
 }
 
 /** Fan-Wahl «Spieler des Matchs». vote: Ergebnis von load('votes:…'); mine: eigene Stimme (Spieler-ID) oder null. */
-export function voteSection({vote, mine, now, busy, message}) {
+export function voteSection({vote, mine, now, busy, message, selected, data}) {
   const v = vote?.value;
   if (!v || !Array.isArray(v.candidates) || !v.candidates.length) {
     if (v && v.opensAt && now < v.opensAt) return html`<section class="sec" aria-labelledby="g-vote">${sectionHead('Spieler des Matchs', '', '', 'g-vote')}${notice('Die Fan-Wahl öffnet nach Spielende, sobald der Spielbericht vorliegt.', 'star')}</section>`;
-    return '';
+    return html`<section class="sec">${vote?.status === 'loading' ? loading('Die Fan-Wahl wird geladen …') : notice('Die Fan-Wahl ist derzeit nicht geöffnet. Sie erscheint nach Spielende, sobald der bestätigte Spielbericht vorliegt.', 'star')}</section>`;
   }
   const total = v.total || 0, counts = v.counts || {};
-  const showResults = Boolean(mine) || !v.open;
+  const showResults = !v.open;
   const sorted = [...v.candidates].sort((a, b) => showResults ? (counts[b.id] || 0) - (counts[a.id] || 0) : (b.goals ?? b.saves ?? 0) - (a.goals ?? a.saves ?? 0));
   const detail = c => [Number.isInteger(c.goals) && c.goals > 0 ? `${c.goals} ${c.goals === 1 ? 'Tor' : 'Tore'}` : '', Number.isInteger(c.saves) && c.saves > 0 ? `${c.saves} Paraden` : ''].filter(Boolean).join(' · ');
   const closes = v.closesAt ? new Date(v.closesAt).toLocaleString('de-CH', {timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit'}) : '';
-  return html`<section class="sec" aria-labelledby="g-vote">${sectionHead('Spieler des Matchs', '', '', 'g-vote')}
+  const playerInfo = c => {
+    const nr = Object.entries(data?.playerSeason?.players || {}).find(([,p]) => String(p.shvPlayerId) === String(c.id))?.[0] || Object.entries(data?.ehlPlayerSeason?.players || {}).find(([,p]) => String(p.ehfPlayerId) === String(c.id))?.[0];
+    return nr ? playerByNumber(nr) : null;
+  };
+  return html`<section class="sec vote-panel" aria-labelledby="g-vote">${sectionHead('Deine Stimme zählt', '', '', 'g-vote')}
+    ${mine && v.open ? html`<p class="note" role="status">Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.</p>` : ''}
     <div class="card list vote">${sorted.map(c => {
       const share = total ? Math.round((counts[c.id] || 0) / total * 100) : 0;
       if (showResults) return html`<div class="rl compact${mine === c.id ? ' mine' : ''}"><span class="grow"><span class="t">${displayName(c.name)}${mine === c.id ? html` <span class="tag">Deine Stimme</span>` : ''}</span><span class="vbar" aria-hidden="true"><b data-style="${'width:' + share + '%'}"></b></span></span><span class="res num">${share}<small> %</small></span></div>`;
-      return html`<button type="button" class="rl compact" data-vote="${c.id}"${busy ? html` disabled` : ''}><span class="grow"><span class="t">${displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}</span>${icon('star')}</button>`;
+      if (mine) return '';
+      const player = playerInfo(c), chosen = String(selected) === String(c.id);
+      return html`<button type="button" class="vote-player${chosen ? ' selected' : ''}" data-vote-select="${c.id}" aria-pressed="${String(chosen)}"${busy ? html` disabled` : ''}>${player ? html`<img src="${playerPhoto(player.number)}" alt="" width="88" height="108" loading="lazy">` : html`<span class="vote-avatar" aria-hidden="true">${icon('team',32)}</span>`}<span class="grow"><span class="t">${player ? '#' + player.number + ' ' : ''}${player?.name || displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}</span><span class="vote-check" aria-hidden="true">${chosen ? '✓' : ''}</span></button>`;
     })}</div>
-    <p class="fine pad-top" role="status">${message || (showResults ? `${total} ${total === 1 ? 'Stimme' : 'Stimmen'}${v.open ? ` · Wahl offen bis ${closes}` : ' · Wahl beendet'}` : `Tippe auf deinen Spieler des Matchs. Eine Stimme pro Gerät, offen bis ${closes}.`)} Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins.</p>
+    ${v.open && !mine ? html`<div class="vote-confirm"><button class="btn pri wide" type="button" data-vote-confirm${!selected || !v.candidates.some(c => String(c.id) === String(selected)) || busy ? html` disabled` : ''}>${busy ? 'Wird gespeichert …' : 'Stimme abgeben'}</button></div>` : ''}
+    <p class="fine pad-top" role="status">${message || (showResults ? `${total} ${total === 1 ? 'Stimme' : 'Stimmen'}${v.open ? ` · Wahl offen bis ${closes}` : ' · Wahl beendet'}` : mine ? 'Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.' : `Wähle deinen Spieler und bestätige die Stimme. Eine Stimme pro Gerät, offen bis ${closes}.`)} Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins.</p>
   </section>`;
 }
 
