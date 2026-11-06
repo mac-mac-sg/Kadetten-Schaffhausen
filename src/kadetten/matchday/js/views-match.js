@@ -23,6 +23,10 @@ function blueprintGame(g) {
   return g.league === 'QHL' || ((g.league === 'EHL' || handballCupGame(g)) && !!g.score);
 }
 function match(g, tab) {
+  if(activeClub==='kadetten'&&window.KADETTEN_COMPANION?.match)return window.KADETTEN_COMPANION.match(g,tab,matchdayGame);
+  return matchdayGame(g,tab);
+}
+function matchdayGame(g, tab) {
   // Liegt zu einem beendeten EHL-Spiel der gesicherte Eintrag vor, ersetzt die Blueprint-Ansicht die Live-Seite.
   const live=liveForFixture(g);
   if (live && live.status!=='finished' && !(g.league === 'EHL' && verifiedReport(g))) return liveMatchPage(g, tab);

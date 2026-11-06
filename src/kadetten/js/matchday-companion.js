@@ -1,3 +1,4 @@
+import {matchCenterMarkup,centerBody,centerFeatures,centerTab} from './match-center.js';
 import {API_ORIGIN} from './config.js';
 import {featureMarkup,qhlFeatureState} from './matchday-features.js';
 import {tips,changeTip,myGames,toggleMyGame} from './personal.js';
@@ -22,10 +23,30 @@ function refresh(){
  const ctx=context(),root=document.getElementById('companion-qhl');if(!root||!ctx)return;
  const focus=document.activeElement?.closest('[data-companion-player],[data-companion-confirm],[data-companion-tip],[data-companion-attendance]');
  const selector=focus?[...focus.attributes].filter(a=>a.name.startsWith('data-companion-')).map(a=>'['+a.name+'="'+CSS.escape(a.value)+'"]').join(''):null;
- root.outerHTML=markup(ctx);
+ root.outerHTML=document.querySelector('.mc-view')?centerFeatures(markup(ctx),centerTab(ctx.tab,!!ctx.live)==='vote'):markup(ctx);
+ const subtitle=document.querySelector('.mc-vote-teaser small');if(subtitle)subtitle.textContent=cache.get(String(ctx.game.id))?.value?.open?'Wähle deinen Spieler':'Zum Ergebnis der Fan-Wahl';
  if(selector)document.querySelector(selector)?.focus({preventScroll:true});
 }
-window.KADETTEN_COMPANION={markup:game=>{const ctx=context();return ctx?markup({...ctx,game}):''}};
+let renderingSource=false;
+window.KADETTEN_COMPANION={markup:game=>{const ctx=context();return ctx&&!renderingSource?markup({...ctx,game}):''},match(game,tab,legacy){
+ const ctx=context();let live=ctx?.live?ctx.match:null;
+ if(live?.status==='finished')live=null;
+ if(ctx?.match?.status==='finished')game={...game,score:ctx.match.score,half:ctx.match.half||game.half};
+ const current=centerTab(tab,!!live),features=centerFeatures(markup({...ctx,game}),current==='vote');
+ let body='';
+ if(current==='ticker')body=window.KADETTEN_MATCHDAY.ticker(game);
+ else if(current!=='vote'){
+  renderingSource=true;
+  try{body=centerBody(legacy(game,current==='stats'?'stats':game.score&&!live?'report':'overview'),current)}finally{renderingSource=false}
+ }
+ return String(matchCenterMarkup({game,tab,live,stale:ctx.liveError,crest:window.KADETTEN_MATCHDAY.crest,body,features,voteOpen:cache.get(String(game.id))?.value?.open}));
+}};
+document.addEventListener('click',async e=>{
+ if(!e.target.closest('[data-mc-share]'))return;
+ const game=context()?.game;if(!game?.score)return;
+ const text=game.home+' – '+game.away+' '+game.score.join(':');
+ try{if(navigator.share)await navigator.share({title:'Kadetten',text,url:location.href});else{await navigator.clipboard.writeText(text+' '+location.href);const feedback=document.querySelector('[data-mc-feedback]');if(feedback)feedback.textContent='Resultat kopiert.'}}catch{}
+});
 document.addEventListener('toggle',e=>{
  if(!e.target.matches?.('.companion-vote'))return;
  const id=context()?.game?.id;if(!id)return;

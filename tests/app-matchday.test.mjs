@@ -12,9 +12,9 @@ const ctx={club:'kadetten',game,tab:'overview',data:{playerSeason:{players:{6:{s
 test('V2 verwendet die echten Matchday-Styles und Vorlagen ohne neues Design darüber',()=>{
  const shell=JSON.parse(read('src/kadetten/matchday/shell.json'));
  for(const file of shell.styles)assert.equal(read('src/kadetten/matchday/'+file),read('src/client/'+file),file);
- for(const file of shell.scripts.filter(f=>!['js/views-match.js','pwa.js'].includes(f)))assert.equal(read('src/kadetten/matchday/'+file),read('src/client/'+file),file);
+ for(const file of shell.scripts.filter(f=>!['js/views-match.js','js/router.js','pwa.js'].includes(f)))assert.equal(read('src/kadetten/matchday/'+file),read('src/client/'+file),file);
  const original=read('src/client/js/views-match.js');
- assert.equal(read('src/kadetten/matchday/js/views-match.js').replace("${window.KADETTEN_COMPANION?.markup(g,tab)||''}",'').replace("import('./vendor/pdf.mjs')","import('../vendor/pdf.mjs')"),original);
+ assert.equal(read('src/kadetten/matchday/js/views-match.js').replace("function match(g, tab) {\n  if(activeClub==='kadetten'&&window.KADETTEN_COMPANION?.match)return window.KADETTEN_COMPANION.match(g,tab,matchdayGame);\n  return matchdayGame(g,tab);\n}\nfunction matchdayGame(g, tab) {",'function match(g, tab) {').replace("${window.KADETTEN_COMPANION?.markup(g,tab)||''}",'').replace("import('./vendor/pdf.mjs')","import('../vendor/pdf.mjs')"),original);
 });
 test('Zusätze nur für Kadetten-QHL: Tipp vor Anpfiff, Besuch und Wahl nach bestätigtem Ergebnis',()=>{
  assert.equal(qhlFeatureState(ctx,now),'preview');
