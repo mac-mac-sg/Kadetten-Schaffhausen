@@ -1,0 +1,524 @@
+/* Vereinswahl bleibt getrennt von den Kadetten-Snapshots und Live-Daten.
+   Etappe 1: gemeinsamer Einstieg; FCSG-Daten werden separat angebunden. */
+const fanClubs = {
+  kadetten: {name: 'Kadetten Schaffhausen', title: 'KADETTEN', subtitle: 'SCHAFFHAUSEN', logo: 'assets/logo.png', short: 'Kadetten'},
+  fcsg: {name: 'FC St. Gallen', title: 'FC ST. GALLEN', subtitle: '1879', logo: 'assets/fcsg-logo.svg', short: 'FCSG'},
+  otmar: {name:'TSV St. Otmar St. Gallen',title:'ST. OTMAR',subtitle:'ST. GALLEN',logo:'assets/club-140684.webp',short:'St. Otmar'}
+};
+const CLUB_CHOICE_KEY = 'fan-app-active-club-v1';
+let activeClub = 'kadetten';
+const CLUB_SELECTION_KEY = 'fan-app-selected-clubs-v1';
+let selectedClubs = Object.keys(fanClubs);
+function restoreActiveClub() {
+  let choice;
+  try {
+    const saved=JSON.parse(localStorage.getItem(CLUB_SELECTION_KEY));
+    if(Array.isArray(saved)) {const valid=Object.keys(fanClubs).filter(id=>saved.includes(id));if(valid.length)selectedClubs=valid;}
+  } catch {}
+  try { choice = new URL(location.href).searchParams.get('club'); } catch {}
+  if(Object.hasOwn(fanClubs,choice) && !selectedClubs.includes(choice))selectedClubs.push(choice);
+  activeClub = Object.hasOwn(fanClubs,choice) ? choice : selectedClubs.includes('kadetten') ? 'kadetten' : selectedClubs[0];
+}
+function setClubSelected(id, checked) {
+  if(!Object.hasOwn(fanClubs,id))return;
+  const next=Object.keys(fanClubs).filter(key=>key===id?checked:selectedClubs.includes(key));
+  if(!next.length)return;
+  selectedClubs=next;
+  if(typeof updatePushPreferences==='function')updatePushPreferences().catch(()=>{if(typeof appFeedback==='function')appFeedback('Benachrichtigungen konnten nicht aktualisiert werden. Bitte die Einstellungen prüfen.');});
+  try {localStorage.setItem(CLUB_SELECTION_KEY,JSON.stringify(next));} catch {}
+  if(!next.includes(activeClub))applyClubChange(next[0]);
+  updateClubHeader();
+  syncClubSettings();
+}
+const V1_THEME_KEY='fan-v1-theme';
+function setV1Theme(theme,persist=true) {
+  if(document.documentElement.dataset.design==='v2')return;
+  const value=theme==='light'?'light':'dark';
+  document.documentElement.dataset.theme=value;
+  document.documentElement.style.colorScheme=value;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',value==='light'?'#f6f5f0':'#171b18');
+  if(persist)try{localStorage.setItem(V1_THEME_KEY,value);}catch{}
+  const input=clubSettingsDialog?.querySelector?.('[data-v1-light-mode]');if(input)input.checked=value==='light';
+}
+function restoreV1Theme() {
+  if(document.documentElement.dataset.design==='v2')return;
+  let theme='dark';try{theme=localStorage.getItem(V1_THEME_KEY);}catch{}
+  setV1Theme(theme,false);
+}
+const V1_TEXT_SIZE_KEY='fan-v1-text-size';
+function setV1TextSize(value,persist=true){
+  if(document.documentElement.dataset.design==='v2')return;
+  if(document.documentElement.dataset.preview!=='v2'){
+    document.documentElement.dataset.textSize='standard';
+    try{localStorage.removeItem(V1_TEXT_SIZE_KEY);}catch{}
+    return;
+  }
+  const size=value==='large'?'large':'standard';document.documentElement.dataset.textSize=size;
+  if(persist)try{localStorage.setItem(V1_TEXT_SIZE_KEY,size);}catch{}
+}
+function restoreV1TextSize(){let size;try{size=localStorage.getItem(V1_TEXT_SIZE_KEY);}catch{}setV1TextSize(size,false);}
+let clubSettingsDialog=null;
+function syncSettingsUpdatedAt() {
+  const time=clubSettingsDialog?.querySelector('[data-settings-updated]');if(!time)return;
+  const snapshot=activeClub==='fcsg'?fcsgData:typeof updateState!=='undefined'?updateState:null;
+  const stamp=snapshot?.checkedAt,ms=typeof stamp==='string'?Date.parse(stamp):NaN;
+  time.title=fanClubs[activeClub].name+' · Datenstand';
+  if(!Number.isFinite(ms)){time.textContent='Noch nicht verfügbar';time.removeAttribute('datetime');return;}
+  time.setAttribute('datetime',new Date(ms).toISOString());
+  time.textContent=new Date(ms).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+// V1 keeps app updates in Settings; the existing timestamp covers the data status.
+function syncSettingsStatus() {
+  if(document.documentElement.dataset.preview==='v2'||document.documentElement.dataset.design==='v2')return;
+  document.getElementById('offline-notice')?.remove();
+  const target=clubSettingsDialog?.querySelector('[data-settings-status]');if(!target)return;
+  const notice=document.getElementById('app-update');
+  if(notice&&notice.parentElement!==target)target.append(notice);
+  target.hidden=![...target.children].some(notice=>!notice.hidden);
+}
+function appDisclaimerContent() {
+  return `<p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p><h3>Quellen &amp; Bildnachweise</h3><p>${ext('https://kadettensh.ch/','Kadetten Schaffhausen','')} · Spielbilder © André Frensel / Erich Mosberger.</p><p>${ext('https://www.fcsg.ch/','FC St.Gallen 1879','')} · Vereinsdaten, Artikel, Fotos und Wappen: FC St.Gallen 1879 und jeweilige Urheber.</p><p>${ext('https://otmar.ch/','TSV St. Otmar St. Gallen','')} · Fotos und Vereinsinhalte: TSV St. Otmar St. Gallen und jeweilige Urheber.</p><p>Handball-Daten: ${ext('https://www.handball.ch/de/matchcenter/','SHV','')} und ${ext('https://www.eurohandball.com/','EHF','')}. Weitere Quellen stehen bei den jeweiligen Inhalten.</p>`;
+}
+let appDisclaimerDialog=null;
+function openAppDisclaimer() {
+  if(!appDisclaimerDialog){
+    appDisclaimerDialog=document.createElement('dialog');
+    appDisclaimerDialog.className='app-disclaimer-dialog';
+    appDisclaimerDialog.setAttribute('aria-labelledby','app-disclaimer-title');
+    appDisclaimerDialog.innerHTML=`<header><h2 id="app-disclaimer-title">Disclaimer</h2><button type="button" class="header-button" data-close-disclaimer aria-label="Disclaimer schliessen">${v1ActionIcon('close','×')}</button></header><div class="disclaimer-copy">${appDisclaimerContent()}</div><form method="dialog"><button class="button" type="submit">Schliessen</button></form>`;
+    document.body.append(appDisclaimerDialog);
+    appDisclaimerDialog.querySelector('[data-close-disclaimer]').onclick=()=>appDisclaimerDialog.close();
+    appDisclaimerDialog.addEventListener('close',()=>clubSettingsDialog?.querySelector('[data-open-disclaimer]')?.focus());
+    appDisclaimerDialog.addEventListener('click',e=>{if(e.target!==appDisclaimerDialog)return;const r=appDisclaimerDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)appDisclaimerDialog.close();});
+  }
+  appDisclaimerDialog.showModal();
+}
+function syncClubSettings() {
+  syncSettingsUpdatedAt();
+  const textSize=clubSettingsDialog?.querySelector?.('[data-v1-text-size]');if(textSize)textSize.value=document.documentElement.dataset.textSize||'standard';
+  const theme=clubSettingsDialog?.querySelector?.('[data-v1-light-mode]');if(theme)theme.checked=document.documentElement.dataset.theme==='light';
+  clubSettingsDialog?.querySelectorAll('[data-club-choice]').forEach(input=>{
+    input.checked=selectedClubs.includes(input.dataset.clubChoice);
+    input.disabled=input.checked && selectedClubs.length===1;
+  });
+}
+function openClubSettings() {
+  if(!clubSettingsDialog) {
+    clubSettingsDialog=document.createElement('dialog');
+    clubSettingsDialog.className='club-settings-dialog';
+    clubSettingsDialog.setAttribute('aria-labelledby','club-settings-title');
+    const clubOptions=Object.entries(fanClubs).map(([id,c])=>`<label><img src="${c.logo}" alt="" width="38" height="42"><span>${c.name}<small>${id==='fcsg'?'Fussball':'Handball'}</small></span><input type="checkbox" role="switch" data-club-choice="${id}" aria-label="${c.name} anzeigen"></label>`).join('');
+    clubSettingsDialog.innerHTML=document.documentElement.dataset.design==='v2'?`<header><div><p class="eyebrow">DEINE FAN-APP</p><h2 id="club-settings-title">Meine Vereine</h2></div><button type="button" class="header-button" data-close-clubs aria-label="Vereinsauswahl schliessen">×</button></header><p>Wähle die Vereine, die du in der App sehen möchtest.</p><div class="club-settings-list">${clubOptions}</div><div class="club-settings-help"><button class="button subtle" type="button" data-open-introduction>Einführung &amp; Tipps</button></div><form method="dialog"><button class="button" type="submit">Fertig</button></form>`:`<header><h2 id="club-settings-title">Einstellungen</h2><button type="button" class="header-button" data-close-clubs aria-label="Einstellungen schliessen">${v1ActionIcon('close','×')}</button></header>
+      <section class="settings-group" aria-labelledby="settings-clubs-title"><h3 id="settings-clubs-title">Meine Vereine</h3><div class="club-settings-list">${clubOptions}</div></section>
+      <section class="settings-group theme-settings" aria-labelledby="theme-settings-title"><h3 id="theme-settings-title">Darstellung</h3><label class="theme-setting"><span>Heller Modus</span><input type="checkbox" role="switch" data-v1-light-mode aria-label="Heller Modus"></label>${document.documentElement.dataset.preview==='v2'?`<label class="text-size-setting"><span>Leseschrift</span><select data-v1-text-size aria-label="Leseschrift"><option value="standard">Standard</option><option value="large">Gross</option></select></label>`:''}</section>
+      ${document.documentElement.dataset.preview==='v2'?'<section class="settings-group"><button type="button" class="settings-help-row" data-open-push><span>Benachrichtigungen</span><span aria-hidden="true">→</span></button></section>':''}
+      <div class="club-settings-help"><button type="button" class="settings-help-row" data-open-introduction><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 1.7-2.5 3"></path><circle cx="12" cy="16" r=".7" fill="currentColor" stroke="none"></circle></svg><span>Einführung &amp; Tipps</span><svg class="settings-help-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6"></path></svg></button></div>
+      <section class="settings-status" data-settings-status aria-label="App-Updates" hidden></section>
+      <section class="settings-app-info" aria-label="App-Informationen"><button type="button" class="settings-info-row" data-open-disclaimer><span>Disclaimer</span>${v1ActionIcon('external','<span aria-hidden="true">↗</span>')}</button><span class="settings-update" role="group" aria-label="Zuletzt aktualisiert"><svg class="settings-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><time data-settings-updated></time></span></section>`;
+    document.body.append(clubSettingsDialog);
+    clubSettingsDialog.querySelector('[data-open-push]')?.addEventListener('click',openPushSettings);
+    clubSettingsDialog.querySelector('[data-open-introduction]').onclick=()=>{clubSettingsDialog.close();window.showAppIntroduction?.();};
+    const disclaimer=clubSettingsDialog.querySelector('[data-open-disclaimer]');if(disclaimer)disclaimer.onclick=openAppDisclaimer;
+    clubSettingsDialog.querySelector('[data-close-clubs]').onclick=()=>clubSettingsDialog.close();
+    clubSettingsDialog.addEventListener('change',e=>{if(e.target.matches('[data-club-choice]'))setClubSelected(e.target.dataset.clubChoice,e.target.checked);if(e.target.matches('[data-v1-light-mode]'))setV1Theme(e.target.checked?'light':'dark');if(e.target.matches('[data-v1-text-size]'))setV1TextSize(e.target.value);});
+    clubSettingsDialog.addEventListener('close',()=>{document.getElementById('club-settings')?.setAttribute('aria-expanded','false');if(!document.querySelector('.app-introduction[open]'))document.getElementById('club-settings')?.focus();});
+    clubSettingsDialog.addEventListener('click',e=>{if(e.target===clubSettingsDialog){const r=clubSettingsDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)clubSettingsDialog.close();}});
+  }
+  syncClubSettings();syncSettingsStatus();clubSettingsDialog.showModal();
+  document.getElementById('club-settings')?.setAttribute('aria-expanded','true');
+}
+function clubSwitchRoute(hash) {
+  const [page, id] = (hash.slice(1) || 'home').split('/');
+  if (page === 'match') return '#season/games';
+  if (page === 'player') return '#season/squad';
+  if (page === 'news') return '#home';
+  if (page === 'club') return '#club';
+  if (page === 'season' && ['games', 'table', 'squad'].includes(id)) return '#season/' + id;
+  return '#home';
+}
+function updateClubHeader() {
+  const club=fanClubs[activeClub];
+  document.documentElement.dataset.club=activeClub;
+  const brand=document.querySelector('.brand');
+  if(brand) {
+    brand.innerHTML=`<img src="${club.logo}" alt="" width="38" height="54"><span>${club.title} <small>${club.subtitle}</small></span>`;
+    brand.setAttribute('aria-label',club.title+' '+club.subtitle+' · Startseite');
+  }
+  const picker=document.getElementById('club-switch');
+  if(picker) {
+    picker.hidden=selectedClubs.length===1;
+    const markup=selectedClubs.map(id=>`<button type="button" data-select-club="${id}" aria-pressed="${id===activeClub}" aria-label="${id===activeClub?'Aktueller Verein: ':'Wechseln zu: '}${fanClubs[id].short} · ${fanClubs[id].name}"><img src="${fanClubs[id].logo}" alt="" width="24" height="28"><span>${fanClubs[id].short}</span></button>`).join('');
+    if(picker.innerHTML!==markup)picker.innerHTML=markup;
+  }
+  const hash=location.hash || '#home';
+  const settings=document.getElementById('club-settings');if(settings)settings.hidden=hash!=='#home';
+  const entry=document.querySelector('.club-entry');
+  if(entry){entry.hidden=hash!=='#season/squad';entry.innerHTML=`<img src="${club.logo}" alt="" width="24" height="28"><span>Verein</span>`;entry.setAttribute('aria-label','Verein · '+club.name+': Geschichte und Erfolge');}
+  updateClubDot();
+  if(document.documentElement.dataset.design!=='v2')setupCompactClubHeader();
+}
+/* The original app shares V2's compact header pattern, with its own dropdown. */
+function closeCompactClubMenu(restoreFocus=false){
+  const menu=document.getElementById('compact-club-menu');
+  const focused=!!menu?.contains(document.activeElement);
+  if(menu)menu.hidden=true;
+  const trigger=document.querySelector('[data-compact-clubs]');
+  trigger?.setAttribute('aria-expanded','false');
+  if(restoreFocus||focused)trigger?.focus({preventScroll:true});
+}
+function setupCompactClubHeader(){
+  const top=document.querySelector('body > .top');if(!top)return;
+  closeCompactClubMenu();top.classList.add('v1-compact-header');
+  let trigger=top.querySelector('[data-compact-clubs]');
+  if(!trigger){
+    const brand=top.querySelector('.brand');if(!brand)return;
+    trigger=document.createElement('button');trigger.type='button';trigger.className=brand.className+' compact-club-trigger';
+    trigger.setAttribute('data-compact-clubs','');trigger.setAttribute('aria-label','Verein wechseln');
+    trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','compact-club-menu');
+    trigger.innerHTML=brand.innerHTML;brand.replaceWith(trigger);
+    const menu=document.createElement('nav');menu.id='compact-club-menu';menu.className='compact-club-menu';menu.hidden=true;menu.setAttribute('aria-label','Verein auswählen');top.append(menu);
+  }
+  if(!trigger.querySelector('.compact-club-chevron'))trigger.insertAdjacentHTML('beforeend','<svg class="compact-club-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>');
+  trigger.setAttribute('aria-label',fanClubs[activeClub].name+(activeClub==='fcsg'?' 1879':'')+' · Verein wechseln');
+  const picker=document.getElementById('club-switch');if(picker)picker.hidden=true;
+  const settings=document.getElementById('club-settings');if(settings)settings.hidden=false;
+}
+function openCompactClubMenu(){
+  const menu=document.getElementById('compact-club-menu');if(!menu)return;
+  if(!menu.hidden){closeCompactClubMenu();return;}
+  menu.innerHTML=`<div class="compact-club-options">${selectedClubs.map(id=>{
+    const native=document.querySelector('[data-select-club="'+id+'"]'),state=native?.dataset.dot;
+    const status=state?({soon:'spielt heute',live:'spielt gerade',pending:'hat heute gespielt',win:'heute gewonnen',draw:'heute unentschieden',loss:'heute verloren'}[state]||''):'';
+    return `<button type="button" data-compact-pick="${id}" aria-pressed="${id===activeClub}"><img src="${fanClubs[id].logo}" alt="" width="32" height="38"><span>${liveEscape(fanClubs[id].name)}<small>${id==='fcsg'?'Fussball':'Handball'}${id===activeClub?' · Ausgewählt':''}${status?' · '+status:''}</small></span><i aria-hidden="true">${id===activeClub?'✓':'→'}</i></button>`;
+  }).join('')}</div><a href="#club" class="compact-club-action">Verein · Geschichte und Erfolge</a><button type="button" class="compact-club-action" data-compact-manage>Meine Vereine verwalten</button>`;
+  menu.hidden=false;document.querySelector('[data-compact-clubs]')?.setAttribute('aria-expanded','true');
+}
+document.addEventListener('click',event=>{
+  if(document.documentElement.dataset.design==='v2')return;
+  if(event.target.closest('[data-compact-clubs]'))openCompactClubMenu();
+  else if(!event.target.closest('.compact-club-menu'))closeCompactClubMenu();
+  const hint=event.target.closest('.club-match-hint');
+  if(hint&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey&&event.button===0){event.preventDefault();applyClubChange(hint.dataset.hintClub,new URL(hint.href).hash,true);}
+  const pick=event.target.closest('[data-compact-pick]');
+  if(pick){closeCompactClubMenu(true);applyClubChange(pick.dataset.compactPick,clubSwitchRoute(location.hash),true);}
+  if(event.target.closest('[data-compact-manage]')){closeCompactClubMenu();openClubSettings();}
+  if(event.target.closest('.compact-club-menu a'))closeCompactClubMenu();
+});
+document.addEventListener('keydown',event=>{
+  if(document.documentElement.dataset.design==='v2')return;
+  const menu=document.getElementById('compact-club-menu'),trigger=document.querySelector('[data-compact-clubs]');
+  if(event.key==='Escape'&&menu&&!menu.hidden){event.preventDefault();closeCompactClubMenu(true);}
+  if(event.key==='ArrowDown'&&document.activeElement===trigger){event.preventDefault();if(menu?.hidden)openCompactClubMenu();menu?.querySelector('button')?.focus();}
+});
+window.addEventListener?.('scroll',()=>{if(document.documentElement.dataset.design!=='v2')closeCompactClubMenu();},{passive:true});
+/* Punkt am Vereinsknopf: der andere Verein hat heute ein Spiel.
+   Vor der Anspielzeit ruhig, ab Anspielzeit 2 Stunden pulsierend, danach in der Farbe des Resultats (Sieg grün, Unentschieden blau,
+   Niederlage rot) bis Mitternacht. Ohne Resultat bleibt der Punkt grau; der andere Verein wird dann höchstens alle 10 Minuten neu geladen. */
+const CLUB_DOT_MINUTES = 120, CLUB_DOT_RETRY_MS = 600000;
+let clubDotRefreshedAt = 0;
+function clubMatchDot(game, nowMinutes, resultState) {
+  const m = /^(\d{2}):(\d{2})$/.exec(game?.time || '');
+  if (!m) return {state: 'soon'};
+  const elapsed = nowMinutes - (Number(m[1]) * 60 + Number(m[2]));
+  if (elapsed < 0) return {state: 'soon'};
+  if (elapsed < CLUB_DOT_MINUTES) return {state: 'live'};
+  return resultState ? {state: resultState} : {state: 'pending'};
+}
+function otherClubTodayGame(today) {
+  const list = (activeClub === 'kadetten' ? (typeof fcsgData !== 'undefined' && fcsgData.games) : (typeof games !== 'undefined' && games)) || [];
+  return list.filter(g => g.date === today).sort((a, b) => String(a.time).localeCompare(String(b.time)))[0] || null;
+}
+function otherClubResultState(game) {
+  if (activeClub === 'kadetten') return fcsgResult(game)?.state || null;
+  if (!Array.isArray(game.score)) return null;
+  const home = game.home === 'Kadetten Schaffhausen', diff = game.score[home ? 0 : 1] - game.score[home ? 1 : 0];
+  return diff > 0 ? 'win' : diff < 0 ? 'loss' : 'draw';
+}
+function syncMatchdayNavigation() {
+  const badge=document.querySelector('[data-nav="games"]');
+  if(!badge)return;
+  const list=activeClub==='fcsg'?fcsgData.games:typeof games!=='undefined'?games:[];
+  const matchday=document.documentElement.dataset.design==='v2'&&list.some(g=>g.date===swissToday());
+  badge.classList.toggle('is-matchday',matchday);
+  badge.setAttribute('aria-label',matchday?'Spiele · Heute · Matchday':'Spiele');
+}
+/* Other selected clubs remain visible without opening the club switcher. */
+function otherClubMatchHints(today=swissToday()) {
+  if(document.documentElement.dataset.design==='v2')return [];
+  const entries=typeof weekFixtures==='function'?weekFixtures(selectedClubs.filter(id=>id!==activeClub)):[];
+  return entries.filter(entry=>entry.game.date===today).flatMap(entry=>entry.references.map(reference=>{
+    const club=reference.club,game=entry.game,state=entry.state;
+    const stale=!!state?.failed || !!state?.checkedAt&&Date.now()-Date.parse(state.checkedAt)>120000;
+    const score=entry.live?(game.liveScore||game.score):game.score;
+    const valid=Array.isArray(score)&&score.length===2&&score.every(n=>Number.isInteger(n)&&n>=0);
+    const status=entry.live?(stale?'Zuletzt live':'Live')+(valid?' · '+score.join(':'):''):valid?score.join(':')+' · Ende':game.confirmed===false||!game.time?'Zeit offen':game.time+' Uhr';
+    const url=new URL(location.href);url.searchParams.set('club',club);url.hash='#match/'+encodeURIComponent(reference.id)+'/overview';
+    return {club,game,status,live:entry.live&&!stale,url:url.href};
+  }));
+}
+function syncOtherClubMatchHints() {
+  if(document.documentElement.dataset.design==='v2')return;
+  const top=document.querySelector('body > .top');if(!top)return;
+  let nav=top.querySelector('.club-match-hints');const entries=otherClubMatchHints();
+  if(!nav&&!entries.length)return;
+  if(!nav){nav=document.createElement('nav');nav.className='club-match-hints';nav.setAttribute('aria-label','Heute bei deinen anderen Vereinen');top.append(nav);}
+  nav.hidden=!entries.length;
+  const html=entries.map(({club,game,status,live,url})=>`<a class="club-match-hint" data-hint-club="${club}" data-live="${live}" href="${liveEscape(url)}" aria-label="${liveEscape(fanClubs[club].name+' · Heute · '+game.home+' gegen '+game.away+' · '+status)}"><img src="${fanClubs[club].logo}" alt="" width="20" height="24"><span><strong>${liveEscape(fanClubs[club].short)}</strong><small>${liveEscape(status)}</small></span>${live?'<i aria-hidden="true"></i>':''}</a>`).join('');
+  // Keep focused links and their current hit area stable as scores update.
+  if(nav.innerHTML!==html&&!nav.contains(document.activeElement))nav.innerHTML=html;
+  refreshOtherClubHintLive();
+}
+const otherClubHintChecks=new Map();let otherClubHintBusy=false;
+async function refreshOtherClubHintLive() {
+  if(otherClubHintBusy||document.hidden||!navigator.onLine)return;
+  const clubs=[...new Set(otherClubMatchHints().map(e=>e.club))].filter(id=>Date.now()-(otherClubHintChecks.get(id)||0)>=30000);
+  if(!clubs.length)return;otherClubHintBusy=true;
+  await Promise.all(clubs.map(async club=>{
+    otherClubHintChecks.set(club,Date.now());const previous=weekLive.get(club);
+    try {
+      const response=await apiFetch(club==='fcsg'?'/api/fcsg/live':handballApiPath('/api/live',club),{cache:'no-store',signal:AbortSignal.timeout(20000)}),data=await response.json();
+      if(!response.ok||!data.ok||!Number.isFinite(Date.parse(data.checkedAt)))throw Error('Live unavailable');
+      const current=data.match||data.finished||previous?.data?.match||previous?.data?.finished;
+      const source=current&&club!=='fcsg'?(current.league==='QHL'?'SHV':'EHF'):null;
+      if(source?data.sources?.[source]?.ok===false:Object.values(data.sources||{}).some(s=>s.ok===false))throw Error('Live source unavailable');
+      for(const match of [data.match,data.finished].filter(Boolean))if(!match.home||!match.away||!/^\d{4}-\d{2}-\d{2}$/.test(match.date))throw Error('Invalid match');
+      weekLive.set(club,{data,checkedAt:data.checkedAt,failed:false});
+      if(club==='fcsg'){for(const [id,g] of fcsgLiveGames)if(g.live&&String(id)!==String(data.match?.id))fcsgLiveGames.delete(id);if(data.match)fcsgLiveGames.set(String(data.match.id),data.match);}
+    }catch{weekLive.set(club,{...previous,failed:true});}
+  }));
+  otherClubHintBusy=false;syncOtherClubMatchHints();
+}
+function updateClubDot() {
+  syncMatchdayNavigation();
+  syncOtherClubMatchHints();
+  const today=swissToday();
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+  const minutes=Number(parts.find(p=>p.type==='hour').value)*60+Number(parts.find(p=>p.type==='minute').value);
+  document.querySelectorAll('[data-select-club]').forEach(button=>{
+    const id=button.dataset.selectClub;
+    const list=id==='fcsg'?(typeof fcsgData!=='undefined'?fcsgData.games:[]):typeof handballSnapshots!=='undefined'?handballSnapshots.get(id)?.games || []:[];
+    const game=list.filter(g=>g.date===today).sort((a,b)=>String(a.time).localeCompare(String(b.time)))[0];
+    const own=id==='kadetten'?'Kadetten Schaffhausen':id==='otmar'?'TSV St. Otmar St. Gallen':'FC St.Gallen 1879';
+    const info=id!==activeClub && game?clubMatchDot(game,minutes,game.score?teamResult(game,own).state:null):null;
+    let dot=button.querySelector('.club-dot');
+    if(!info){dot?.remove();delete button.dataset.dot;return;}
+    if(!dot){dot=document.createElement('i');dot.className='club-dot';dot.setAttribute('aria-hidden','true');button.append(dot);}
+    button.dataset.dot=info.state;
+    const note={soon:'spielt heute',live:'spielt gerade',pending:'hat heute gespielt',win:'hat heute gewonnen',draw:'hat heute unentschieden gespielt',loss:'hat heute verloren'}[info.state];
+    button.setAttribute('aria-label','Wechseln zu: '+fanClubs[id].short+' · '+fanClubs[id].name+' · '+note);
+  });
+}
+setInterval(updateClubDot, 30000);
+let clubTransitionBusy = false;
+function switchClub(id) {
+  if (clubTransitionBusy || !Object.hasOwn(fanClubs, id) || id === activeClub) return;
+  const root = document.documentElement, button = document.querySelector('[data-select-club="'+id+'"]') || document.getElementById('club-switch');
+  const bounds = button?.getBoundingClientRect?.();
+  const x = bounds ? bounds.left + bounds.width / 2 : window.innerWidth / 2;
+  const y = bounds ? bounds.top + bounds.height / 2 : 0;
+  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (root.classList.contains('keyboard-input')) { applyClubChange(id); return; }
+  let changed = false;
+  const change = () => { if (!changed) { changed = true; applyClubChange(id); } };
+  const finish = () => {
+    clubTransitionBusy = false;
+    if (button) button.disabled = false;
+    root.classList.remove('club-transition', 'club-transition-reduced');
+    for (const key of ['--club-wave-x', '--club-wave-y', '--club-wave-radius']) root.style.removeProperty(key);
+  };
+  const fallback = () => {
+    change();
+    if (typeof document.getElementById('app')?.animate !== 'function') { finish(); return; }
+    const soft = reduced || root.dataset.design !== 'v2';
+    const target = soft ? document.getElementById('app') : document.createElement('div');
+    if (!soft) {
+      target.className = 'club-color-wave';
+      target.setAttribute('aria-hidden', 'true');
+      target.style.setProperty('--club-wave-x', x + 'px');
+      target.style.setProperty('--club-wave-y', y + 'px');
+      target.style.setProperty('--club-wave-radius', radius + 'px');
+      document.body.append(target);
+    }
+    try {
+      const frames = soft ? [{opacity: 0.85}, {opacity: 1}] : [
+        {clipPath: `circle(0px at ${x}px ${y}px)`, opacity: 0.65},
+        {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0.3, offset: 0.7},
+        {clipPath: `circle(${radius}px at ${x}px ${y}px)`, opacity: 0}
+      ];
+      target.animate(frames, {duration: reduced ? 120 : soft ? 160 : 280, easing: 'cubic-bezier(.22,1,.36,1)'})
+        .finished.catch(() => {}).finally(() => { if (!soft) target.remove(); finish(); });
+    } catch { if (!soft) target.remove(); finish(); }
+  };
+  clubTransitionBusy = true;
+  if (button) button.disabled = true;
+  if (typeof document.startViewTransition !== 'function') { fallback(); return; }
+  root.style.setProperty('--club-wave-x', x + 'px');
+  root.style.setProperty('--club-wave-y', y + 'px');
+  root.style.setProperty('--club-wave-radius', radius + 'px');
+  root.classList.add('club-transition');
+  if (reduced) root.classList.add('club-transition-reduced');
+  try {
+    const transition = document.startViewTransition(change);
+    transition.ready.catch(() => {});
+    transition.finished.catch(() => {}).finally(() => { change(); finish(); });
+  } catch { fallback(); }
+}
+function applyClubChange(id, targetRoute=null, push=false) {
+  if (!Object.hasOwn(fanClubs, id) || id === activeClub) return;
+  activeClub = id;
+  if(typeof activateHandballData==='function' && id!=='fcsg')activateHandballData(id);
+  if(typeof resetHandballLive==='function')resetHandballLive();
+  if(id==='otmar')tableLeague='QHL';
+  try { localStorage.setItem(CLUB_CHOICE_KEY, id); } catch {}
+  clearTimeout(liveTimer);
+  clearInterval(dayTimer);
+  highlightObserver?.disconnect();
+  competition = 'Alle';
+  const url = new URL(location.href);
+  url.searchParams.set('club', id);
+  url.hash = targetRoute || clubSwitchRoute(location.hash);
+  history[push?'pushState':'replaceState'](null, '', url.href);
+  if(targetRoute?.startsWith('#match/'))adoptWeekLive(id);
+  render();
+  if(document.documentElement.dataset.design==='v2')window.scrollTo({top: 0, behavior: 'instant'});
+  document.getElementById('app')?.focus({preventScroll: true});
+  if (id !== 'fcsg') {loadCurrentData();checkLiveMatch();}
+  else {loadFcsgData();loadFcsgLive(true);}
+}
+const fcsgArticles = new Map();
+let fcsgOffline = false, fcsgBusy = false, fcsgDataLoadFailed = false;
+function fcsgStamp(key) {
+ const state=fcsgData.status?.[key],stamp=state?.updatedAt||fcsgData.checkedAt;
+ if(!stamp)return 'Stand nicht verfügbar';
+ const stale=snapshotDelayed(stamp);
+ return `${state?.ok===false||stale?'Letzter gültiger Stand':'Aktualisiert'}: ${new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})} Uhr${stale?' · Aktualisierung verzögert':''}`;
+}
+function fcsgFooter(key='news') {
+ if(document.documentElement.dataset.design!=='v2')return '';
+ return `<footer><span class="footer-updated" data-fcsg-update-key="${key}">${fcsgStamp(key)}</span><details class="source-details"><summary>Quellen & Bildnachweise</summary><p>Inoffizielles, nicht-kommerzielles Fan-Projekt und privater Designentwurf · kein offizieller Vereinsauftritt · keine Verbindung zu den Vereinen.</p><p>Alle Marken- und Bildrechte liegen bei den Kadetten Schaffhausen, dem FC St.Gallen 1879 bzw. den jeweiligen Vereinen und Urhebern.</p><p>${ext('https://www.fcsg.ch/','FC St.Gallen 1879','')} · Vereinsdaten, Artikel, Fotos und Wappen: FC St.Gallen 1879 und jeweilige Urheber.</p></details></footer>`;
+}
+function fcsgBadge(name, logo) {return logo?`<img class="crest" src="${liveEscape(safeUrl(logo))}" alt="${liveEscape(name)}" width="48" height="60" loading="lazy" decoding="async">`:`<span class="clubmark" aria-hidden="true">${liveEscape(name.split(' ').map(w=>w[0]).slice(0,3).join(''))}</span>`;}
+function fcsgResult(g){const home=g.home==='FC St.Gallen 1879';const diff=g.score?g.score[home?0:1]-g.score[home?1:0]:null;return diff===null?null:{state:diff>0?'win':diff<0?'loss':'draw',label:diff>0?'Sieg':diff<0?'Niederlage':'Unentschieden'};}
+function fcsgFixture(){const today=swissToday(),current=[...fcsgLiveGames.values()].find(g=>g.date===today&&(g.live||g.score));return current||fcsgData.games.find(g=>g.date===today&&g.score)||fcsgData.games.find(g=>!g.score&&g.date>=today);}
+function fcsgMatchday(){const g=fcsgFixture();if(!g)return '';const phase=fcsgPulsePhase(g),today=g.date===swissToday(),result=!g.live&&g.score?fcsgResult(g):null;
+ return `<section class="home-matchday" aria-label="Aktuelles FCSG-Spiel"><a data-pulse="${phase}" class="live-match fcsg-matchday ${g.live?'is-live is-matchday':'match-preview'+(today&&!g.score?' is-matchday':'')}${result?' matchday-'+result.state:''}" href="#match/${g.id}/${g.live?'ticker':'overview'}"><div class="live-heading"><span>${g.live?'<i aria-hidden="true"></i>JETZT LIVE':g.score?'HEUTE GESPIELT':document.documentElement.dataset.design!=='v2'?liveEscape(matchPreviewLabel(g)):today?'MATCHDAY':'NÄCHSTES SPIEL'}</span><small>${liveEscape(g.league)}${g.live?' · '+liveEscape(g.phase)+(g.clock?' · '+g.clock:''):''}</small></div><div class="live-score"><span class="${g.home.replace(/\s/g,'')==='FCSt.Gallen1879'?'arena-team':''}">${fcsgBadge(g.home,g.homeLogo)}<b>${liveEscape(g.home)}</b></span><strong>${fcsgDisplayScore(g)}</strong><span class="${g.away.replace(/\s/g,'')==='FCSt.Gallen1879'?'arena-team':''}">${fcsgBadge(g.away,g.awayLogo)}<b>${liveEscape(g.away)}</b></span></div><p class="match-preview-time">${g.live?'Spiel live verfolgen':!g.score&&document.documentElement.dataset.design!=='v2'?liveEscape(matchPreviewSchedule(g,!!g.confirmed)):date(g)+' · '+(g.confirmed?g.time+' Uhr':'Anspielzeit noch offen')+(g.score?' · Rückblick':'')}${fcsgLiveErrors.has(g.id)?' · Letzter verfügbarer Stand':''}</p></a></section>`;
+}
+function fcsgHome(){return homeNewsLayout(fcsgData.stories,fcsgMatchday(),true);}
+function fcsgArticle(id){const n=fcsgData.stories.find(n=>n.id===id);if(!n)return notFound();
+ return `<article class="news-article"><div class="article-bar">${backLink('#home','Zurück zu den News','back')}</div><img class="article-photo" src="${liveEscape(n.image||'assets/fcsg-logo.svg')}" alt="${liveEscape(n.title)}" fetchpriority="high" decoding="async"><div class="content narrow"><p class="muted">${n.date} · Vereinsnews</p><h1>${liveEscape(n.title)}</h1>${sourceNotice('news')}<div id="fcsg-article-body" class="article-fulltext" aria-busy="${!fcsgArticles.has(id)}">${fcsgArticles.has(id)?sanitiseArticle(fcsgArticles.get(id),n.url):articleLoadingMarkup()}</div><p>${ext(n.url,'Originalartikel beim FCSG','news-link')}</p><h2>Mehr News</h2>${fcsgData.stories.filter(x=>x.id!==id).slice(0,4).map(x=>`<a class="related-story" href="#news/${x.id}"><img src="${liveEscape(x.image||'assets/fcsg-logo.svg')}" alt="" loading="lazy"><span>${liveEscape(x.title)}<small>${x.date}</small></span></a>`).join('')}</div></article>${fcsgFooter()}`;
+}
+async function loadFcsgArticle(){const [page,id]=location.hash.slice(1).split('/');const target=document.getElementById('fcsg-article-body');if(page!=='news'||!target||fcsgArticles.has(id))return;
+ markArticleLoading(target);
+ try{const r=await apiFetch('/api/fcsg/articles/'+encodeURIComponent(id)+(fcsgData.stories.find(n=>n.id===id)?.articleVersion?'?v='+encodeURIComponent(fcsgData.stories.find(n=>n.id===id).articleVersion):''),{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error();const d=await r.json();if(d.id!==id||typeof d.html!=='string')throw Error();fcsgArticles.set(id,d.html);if(fcsgArticles.size>30)fcsgArticles.delete(fcsgArticles.keys().next().value);if(target===document.getElementById('fcsg-article-body')){target.innerHTML=sanitiseArticle(d.html,d.url);target.setAttribute('aria-busy','false');}
+ }catch{if(target===document.getElementById('fcsg-article-body')){target.setAttribute('aria-busy','false');const n=fcsgData.stories.find(n=>n.id===id);target.innerHTML=`<p class="notice">Der vollständige Artikel ist gerade nicht verfügbar.</p><button id="fcsg-retry-article" class="button subtle">Erneut laden</button>${n?ext(n.url,'Originalartikel öffnen','text-link'):''}`;document.getElementById('fcsg-retry-article').onclick=loadFcsgArticle;}}
+}
+function fcsgCard(g,current=false){g=fcsgGame(g.id)||g;const r=fcsgResult(g);
+ return `<article class="game-card ${g.live?'fcsg-game-live':''} ${r?'finished result-'+r.state:''} ${current?'current-game':''}" data-fcsg-game="${g.id}">${current?'<p class="current-label">'+(g.live?'Jetzt live':'Nächstes Spiel')+'</p>':''}<p class="meta">${r?`<span class="game-result-label">${r.label}</span> · `:''}${liveEscape(g.league)} · ${date(g)} · ${g.confirmed?g.time+' Uhr':'Termin noch nicht bestätigt'}</p><div class="scoreline"><div>${fcsgBadge(g.home,g.homeLogo)}<span>${liveEscape(g.home)}</span></div><strong><span data-fcsg-score="${g.id}">${fcsgDisplayScore(g)}</span><small data-fcsg-phase="${g.id}">${fcsgLiveState(g)}</small></strong><div>${fcsgBadge(g.away,g.awayLogo)}<span>${liveEscape(g.away)}</span></div></div>${g.penalties&&!g.penalties.includes(null)?`<p class="muted">Elfmeterschiessen: ${g.penalties.join(' : ')}</p>`:''}<p class="venue">${liveEscape(g.venue)}</p><div class="actions"><a class="button ${g.score?'subtle':''}" href="#match/${g.id}/overview">${g.live?'Live verfolgen':g.score?'Rückblick':'Vorschau'}</a></div></article>`;
+}
+function fcsgGames(){const filtered=fcsgData.games.filter(g=>competition==='Alle'||g.league===competition).slice().sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||''))),next=filtered.find(g=>fcsgGame(g.id)?.live||!g.score&&g.date>=swissToday());
+ if(mode==='calendar')return fcsgCalendar(filtered);
+ return `<p class="muted data-explanation">${fcsgData.games.length} veröffentlichte Partien · <span data-fcsg-update-key="games">${fcsgStamp('games')}</span></p><div class="games game-timeline">${gameTimelineCards(filtered,next,fcsgCard)}</div>`;
+}
+function fcsgCalendar(list){const days=new Date(calendarYear,month+1,0).getDate(),offset=(new Date(calendarYear,month,1).getDay()+6)%7;
+ return `<div class="calendar-panel"><div class="calendar match-calendar" style="--calendar-weeks:${Math.ceil((offset+days)/7)}">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(d=>`<b>${d}</b>`).join('')}${'<div class="day empty-day"></div>'.repeat(offset)}${Array.from({length:days},(_,i)=>{const key=`${calendarYear}-${String(month+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`,found=list.filter(g=>g.date===key);return `<div class="day ${found.length?'has-game':''} ${key===swissToday()?'today':''}"><span class="fixture-date">${i+1}</span>${found.map(g=>{const home=g.home==='FC St.Gallen 1879',other=home?g.away:g.home;return `<a class="calendar-fixture ${home?'fixture-home':'fixture-away'}" href="#match/${g.id}/overview" aria-label="${liveEscape(date(g)+' · '+other+' · '+(g.confirmed?g.time:'Termin noch offen'))}"><span class="calendar-crest">${fcsgBadge(other,home?g.awayLogo:g.homeLogo)}</span><span class="fixture-location" aria-hidden="true"></span></a>`}).join('')}</div>`}).join('')}${'<div class="day empty-day"></div>'.repeat((7-((offset+days)%7))%7)}</div><p class="calendar-legend"><span class="legend-home">Heimspiel</span><span class="legend-away">Auswärtsspiel</span></p></div>`;
+}
+function fcsgRecord(r){return `<div class="record-bar" role="img" aria-label="${r.w} Siege, ${r.d} Unentschieden, ${r.l} Niederlagen">${[r.w,r.d,r.l].map((n,i)=>`<span class="record-${i}" style="width:${r.played?n/r.played*100:0}%"></span>`).join('')}</div><small class="record-text">${r.w} S · ${r.d} U · ${r.l} N</small>`;}
+function fcsgStanding(){return `<p class="muted">Brack Super League · <span data-fcsg-update-key="table">${fcsgStamp('table')}</span></p><p class="record-legend"><span>Siege</span><span>Unentschieden</span><span>Niederlagen</span></p><div class="table-wrap"><table class="standings-table"><colgroup><col class="rank-col"><col class="team-col"><col class="games-col"><col class="goals-col"><col class="diff-col"><col class="points-col"></colgroup><thead><tr><th aria-label="Rang">#</th><th>Team</th><th>Sp.</th><th>Tore</th><th>+/−</th><th>Pkt.</th></tr></thead><tbody>${fcsgData.table.map(r=>`<tr class="${r.name==='FC St.Gallen 1879'?'our-team':''}"><td>${r.rank}</td><th scope="row"><div class="table-team">${fcsgBadge(r.name,r.logo)}<div><span class="standing-name">${liveEscape(r.name)}</span>${fcsgRecord(r)}<small class="standing-meta">${r.played} Spiele · ${r.gf-r.ga>0?'+':''}${r.gf-r.ga} Tore</small></div></div></th><td>${r.played}</td><td>${r.gf}:${r.ga}<small class="standing-played" aria-hidden="true">${r.played} ${r.played === 1 ? 'Spiel' : 'Spiele'}</small></td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><strong>${r.points}</strong></td></tr>`).join('')}</tbody></table></div>${fcsgSeasonNumbers()}`;}
+function fcsgGoalDifferenceChart(list) {
+ const rows=list.map(g=>{const home=g.home==='FC St.Gallen 1879';return {g,home,result:fcsgResult(g),diff:g.score[home?0:1]-g.score[home?1:0]};});
+ const limit=Math.max(1,...rows.map(r=>Math.abs(r.diff))),signed=v=>v>0?'+'+v:v<0?'−'+Math.abs(v):'0';
+ return `<section class="goal-difference-chart football-differences" aria-labelledby="fcsg-difference-title"><h4 id="fcsg-difference-title">Tordifferenz pro Spiel</h4><div class="difference-heading" aria-hidden="true"><span>Spiel</span><span class="difference-axis"><span>−${limit}</span><span>0</span><span>+${limit}</span></span><span>Tore</span></div><ol class="difference-games">${rows.map(({g,home,result,diff})=>`<li><a class="difference-game ${result.state}" href="#match/${liveEscape(g.id)}/stats" aria-label="${liveEscape((home?g.away:g.home)+', '+date(g)+' · '+(home?'Heim':'Auswärts')+' '+signed(diff)+'. Resultat '+g.score.join(':')+', Tordifferenz')}"><span class="difference-fixture"><strong>${liveEscape(home?g.away:g.home)}</strong> <small>${liveEscape(date(g))} · ${home?'Heim':'Auswärts'}</small></span> <span class="difference-track" aria-hidden="true"><span class="difference-bar" style="--difference-width:${Math.abs(diff)/limit*50}%"></span></span> <strong class="difference-value">${signed(diff)}</strong></a></li>`).join('')}</ol><p class="muted data-explanation">Eigene Tore minus Gegentore · Skala von −${limit} bis +${limit}, angepasst an die bisherigen Ligaspiele. Grün: Sieg · Rot: Niederlage · Gelb: Unentschieden.</p></section>`;
+}
+function fcsgSeasonNumbers(){const all=fcsgData.games.filter(g=>g.score&&g.leagueId===24).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)),summary=list=>{const r={played:list.length,w:0,d:0,l:0};for(const g of list)r[fcsgResult(g).state==='win'?'w':fcsgResult(g).state==='draw'?'d':'l']++;return r},r=fcsgData.table.find(r=>r.name==='FC St.Gallen 1879');
+ const eventGames=all.filter(g=>g.eventsAvailable),tallies=new Map();for(const g of eventGames)for(const e of g.events){if(e.home!==(g.home==='FC St.Gallen 1879')||!e.player)continue;const p=tallies.get(e.player)||{name:e.player,goals:0,yellow:0,red:0};if(e.type==='Tor'&&!e.ownGoal)p.goals++;if(e.type==='Gelb')p.yellow++;if(['Rot','Gelb-Rot'].includes(e.type))p.red++;tallies.set(e.player,p)}
+ const top=[...tallies.values()].filter(p=>p.goals).sort((a,b)=>b.goals-a.goals).slice(0,5),cards=[...tallies.values()].filter(p=>p.yellow||p.red).sort((a,b)=>(b.yellow+b.red)-(a.yellow+a.red)).slice(0,5);
+ return `<section class="season-numbers"><h2>FCSG – Saisonbilanz</h2><div class="fcsg-stat-grid"><section class="season-overview stats-block"><h3>Saison auf einen Blick</h3>${r?seasonBalance(r.w,r.d,r.l):'<p>Bilanz noch nicht verfügbar.</p>'}<div class="season-splits">${[['Zu Hause',all.filter(g=>g.home==='FC St.Gallen 1879')],['Auswärts',all.filter(g=>g.away==='FC St.Gallen 1879')]].map(([title,list])=>{const r=summary(list);return seasonSplit(title,r.played,r.w,r.d,r.l)}).join('')}</div><h4>Letzte 5 Spiele</h4><p class="muted data-explanation">Ältestes Spiel links · neuestes rechts</p><div class="season-form">${all.slice(-5).map(g=>`<a class="${fcsgResult(g).state}" href="#match/${g.id}/overview" aria-label="${liveEscape(date(g)+' · '+fcsgResult(g).label)}">${{win:'S',draw:'U',loss:'N'}[fcsgResult(g).state]}</a>`).join('')}</div></section><section class="season-goal-stats stats-block"><h3>Torstatistiken</h3>${r&&r.played?`<div class="season-number-grid"><div><strong>${goalAverage(r.gf,r.played)}</strong><span>Tore pro Spiel im Schnitt</span></div><div><strong>${goalAverage(r.ga,r.played)}</strong><span>Gegentore pro Spiel im Schnitt</span></div></div>`:'<p>Noch nicht verfügbar.</p>'}${fcsgGoalDifferenceChart(all)}</section><section class="stats-block"><h3>Spielerstatistiken</h3><h4>Top 5 Torschützen</h4>${top.length?`<ol class="fcsg-ranking">${top.map(p=>`<li><span>${liveEscape(p.name)}</span><strong>${p.goals} Tore</strong></li>`).join('')}</ol>`:'<p>Noch keine bestätigten Einzelwerte verfügbar.</p>'}<h4>Gelbe und rote Karten</h4>${cards.length?`<ol class="fcsg-ranking">${cards.map(p=>`<li><span>${liveEscape(p.name)}</span><strong>${p.yellow} Gelb · ${p.red} Rot</strong></li>`).join('')}</ol>`:'<p>Noch keine bestätigten Einzelwerte verfügbar.</p>'}<p class="muted data-explanation">Aus ${eventGames.length} Spielen mit vollständig erfasster Torfolge von ${r?.played??all.length} Ligaspielen. Karten gemäss gemeldeten Ereignissen; fehlende Ereignisse werden nicht ergänzt.</p></section></div><p class="muted data-explanation">Saison 2026/27 · Super League · Heim-/Auswärtswerte und Verlauf aus ${all.length} bestätigten Ligaspielen. <span data-fcsg-update-key="games">${fcsgStamp('games')}</span></p></section>`;
+}
+function fcsgSquad(){return ['Tor','Verteidigung','Mittelfeld','Sturm'].map(group=>`<h2 class="subhead">${group==='Tor'?'Torhüter':group}</h2><div class="players">${fcsgData.players.filter(p=>p.position===group).map(p=>`<a class="player-card" href="#player/${p.id}"><img src="${liveEscape(p.image||'assets/fcsg-logo.svg')}" alt="${liveEscape(p.name)}" width="600" height="400" loading="lazy" decoding="async"><div><span>${liveEscape(p.firstName)}</span><strong>${liveEscape(p.lastName)}</strong><b>${p.number??'–'}</b></div></a>`).join('')}</div>`).join('');}
+let fcsgPlayerDetails = new Map(), fcsgPlayerDetailsAt = 0, fcsgPlayerDetailsBusy = false, fcsgPlayerDetailsError = false;
+function fcsgPlayerFacts(p){
+ const dateFact=v=>/^\d{4}-\d\d-\d\d$/.test(String(v))?new Date(v+'T12:00:00').toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}):liveEscape(v);
+ const facts=[['Geburtsdatum',p.birthDate],['Körpergrösse',p.height?`${p.height} cm`:null],['Nationalität',p.nationality],['Beim FCSG seit',p.since],['Vertrag bis',p.contract],['FCSG-Debüt',p.debutDate],['Debüt gegen',p.debutOpponent]];
+ return `<h2>Steckbrief</h2><dl class="facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${dateFact(v)}</dd></div>`).join('')}</dl>`;
+}
+const fcsgPlayerStatChoices = new Map();
+function fcsgPlayerStatRow(p, choice = fcsgPlayerStatChoices.get(p.id)) {
+ const rows = p.seasons || [];
+ const season = rows.some(r => r.season === choice?.season) ? choice.season : rows[0]?.season;
+ const available = rows.filter(r => r.season === season);
+ return available.find(r => r.competition === choice?.competition) || available.find(r => r.competition === 'Super League') || available[0];
+}
+function fcsgPlayerBento(p, row) {
+ const value = (v, decimals = 0) => Number.isFinite(v) && v >= 0 ? v.toLocaleString('de-CH', {minimumFractionDigits: decimals, maximumFractionDigits: decimals}).replace('.', ',') : '–';
+ const average = Number.isFinite(row.minutes) && row.appearances > 0 ? row.minutes / row.appearances : null;
+ const per90 = row.minutes > 0 && Number.isFinite(row.goals) && Number.isFinite(row.assists) ? (row.goals + row.assists) / row.minutes * 90 : null;
+ const metric = (label, v, classes = '', note = '') => `<div class="fcsg-bento-tile ${classes}"><span>${label}</span><strong>${value(v)}</strong>${note ? `<small>${note}</small>` : ''}</div>`;
+ return `<div class="fcsg-bento-grid">${metric('Spielminuten', row.minutes, 'fcsg-bento-primary', `${value(average, 1)} Minuten pro Einsatz`)}${metric('Einsätze', row.appearances, '', 'In dieser Saison · gewählter Wettbewerb')}<section class="fcsg-bento-tile fcsg-bento-wide fcsg-bento-offense"><h3>Offensivbeitrag</h3><div class="fcsg-bento-duo">${metric('Tore', row.goals)}${metric('Vorlagen', row.assists)}</div><div class="fcsg-bento-rate"><div><span>Tor + Vorlage pro 90 Min.</span><small>Aus Toren, Vorlagen und Minuten</small></div><strong>${value(per90, 2)}</strong></div></section><section class="fcsg-bento-tile fcsg-bento-wide"><h3>Disziplin</h3><div class="fcsg-bento-cards">${metric('Gelbe Karten', row.yellow)}${metric('Gelb-Rot', row.secondYellow)}${metric('Rote Karten', row.red)}</div></section></div><p class="fcsg-bento-note">Die Vereinsquelle liefert Saisonwerte; Einzelspielverläufe sind nicht verfügbar.</p>${p.position === 'Tor' ? '<p class="fcsg-bento-note">Die Spielerstatistik liefert keine Paraden oder Fangquoten.</p>' : ''}`;
+}
+function fcsgPlayerStats(p){
+ const rows = p.seasons || [];
+ if(p.seasons===undefined&&!fcsgPlayerDetailsError)return '<h2>Daten & Fakten</h2><p class="muted" role="status">Weitere Spielerfakten werden geladen.</p>';
+ if(!rows.length)return `<h2>Daten & Fakten</h2><p class="notice">${fcsgPlayerDetailsError?'Weitere Spielerfakten sind gerade nicht verfügbar.':'Für diesen Spieler sind noch keine Saisonstatistiken verfügbar.'}</p>`;
+ const row = fcsgPlayerStatRow(p), seasons = [...new Set(rows.map(r => r.season))];
+ const label = competition => competition === 'Schweizer Pokal' ? 'Schweizer Cup' : competition;
+ return `<section class="fcsg-player-bento" data-fcsg-bento-player="${liveEscape(p.id || '')}"><h2>Saison auf einen Blick</h2><div class="fcsg-bento-filters"><label>Saison<select data-fcsg-stat-season>${seasons.map(season => `<option value="${liveEscape(season)}"${season === row.season ? ' selected' : ''}>${liveEscape(season)}</option>`).join('')}</select></label><label>Wettbewerb<select data-fcsg-stat-competition>${rows.filter(r => r.season === row.season).map(r => `<option value="${liveEscape(r.competition)}"${r.competition === row.competition ? ' selected' : ''}>${liveEscape(label(r.competition))}</option>`).join('')}</select></label></div><div class="fcsg-bento-values" aria-live="polite" aria-atomic="true">${fcsgPlayerBento(p, row)}</div><details class="source-details"><summary>Quelle & Datenstand</summary><p>Offizielle Vereinsstatistik nach Saison und Wettbewerb. <span data-fcsg-update-key="players">${fcsgStamp('players')}</span> · ${ext(p.url || 'https://www.fcsg.ch/pages/1-mannschaft', 'FCSG', '')}</p><p>Minuten pro Einsatz und Tor + Vorlage pro 90 Minuten sind aus den Saisonwerten berechnet. – = Wert nicht verfügbar.</p></details></section>`;
+}
+function changeFcsgPlayerStats(event) {
+ const select = event.target;
+ if(!select?.matches?.('[data-fcsg-stat-season], [data-fcsg-stat-competition]'))return;
+ const dashboard = select.closest('.fcsg-player-bento');
+ const id = dashboard?.dataset.fcsgBentoPlayer;
+ if(activeClub !== 'fcsg' || !id)return;
+ const base = fcsgData.players.find(p => p.id === id);
+ if(!base)return;
+ const p = {...base, ...fcsgPlayerDetails.get(id)};
+ const choice = {season: dashboard.querySelector('[data-fcsg-stat-season]').value, competition: dashboard.querySelector('[data-fcsg-stat-competition]').value};
+ const row = fcsgPlayerStatRow(p, choice);
+ if(!row)return;
+ fcsgPlayerStatChoices.set(id, {season: row.season, competition: row.competition});
+ if(select.matches('[data-fcsg-stat-season]')) {
+  const competition = dashboard.querySelector('[data-fcsg-stat-competition]');
+  competition.innerHTML = (p.seasons || []).filter(r => r.season === row.season).map(r => `<option value="${liveEscape(r.competition)}"${r.competition === row.competition ? ' selected' : ''}>${liveEscape(r.competition === 'Schweizer Pokal' ? 'Schweizer Cup' : r.competition)}</option>`).join('');
+ }
+ dashboard.querySelector('.fcsg-bento-values').innerHTML = fcsgPlayerBento(p, row);
+}
+document.addEventListener('change', changeFcsgPlayerStats);
+function fcsgPlayer(id){
+ const base=fcsgData.players.find(p=>p.id===id);if(!base)return notFound();
+ const p={...base,...fcsgPlayerDetails.get(id)};
+ return `<section class="fcsg-player content narrow"><section class="fcsg-profile-slide" id="fcsg-profile-intro" aria-label="Portrait und Steckbrief">${backLink('#season/squad','Zurück zum Kader')}<img class="fcsg-player-photo" src="${liveEscape(p.cover||p.image||'assets/fcsg-logo.svg')}" alt="${liveEscape(p.name)}"><p class="eyebrow">${liveEscape(p.position)} · Nr. ${p.number??'–'}</p><h1>${liveEscape(p.name)}</h1><div id="fcsg-player-facts" data-player-id="${liveEscape(id)}">${fcsgPlayerFacts(p)}</div></section><section class="fcsg-profile-slide" id="fcsg-profile-stats" aria-label="Spielerstatistik"><div id="fcsg-player-stats" data-player-id="${liveEscape(id)}">${fcsgPlayerStats(p)}</div>${ext(p.url,'Offizielles Spielerprofil','button subtle')}${fcsgFooter('players')}</section><nav class="fcsg-profile-jumps" aria-label="Spielerabschnitte"><button type="button" data-section="fcsg-profile-intro" aria-label="Steckbrief" aria-pressed="true"><span></span></button><button type="button" data-section="fcsg-profile-stats" aria-label="Statistik" aria-pressed="false"><span></span></button></nav></section>`;
+}
+async function loadFcsgPlayerDetails(){
+ if(activeClub!=='fcsg'||!location.hash.startsWith('#player/')||document.hidden||fcsgPlayerDetailsBusy||Date.now()-fcsgPlayerDetailsAt<1800000)return;
+ const id=location.hash.split('/')[1];if(!fcsgData.players.some(p=>p.id===id))return;
+ fcsgPlayerDetailsBusy=true;fcsgPlayerDetailsAt=Date.now();
+ try{const r=await apiFetch('/api/fcsg/players',{cache:'no-store',signal:AbortSignal.timeout(25000)});if(!r.ok)throw Error();const d=await r.json();if(!d.ok||!Array.isArray(d.players)||d.players.length<20||d.players.some(p=>!p.id||!p.name||!Array.isArray(p.seasons)))throw Error();fcsgPlayerDetails=new Map(d.players.map(p=>[p.id,p]));fcsgPlayerDetailsError=false;}
+ catch{fcsgPlayerDetailsError=true;fcsgPlayerDetailsAt=Date.now()-1770000;}
+ finally{fcsgPlayerDetailsBusy=false;const target=document.getElementById('fcsg-player-facts');if(activeClub==='fcsg'&&target?.dataset.playerId===id){const p={...fcsgData.players.find(p=>p.id===id),...fcsgPlayerDetails.get(id)};target.innerHTML=fcsgPlayerFacts(p);const stats=document.getElementById('fcsg-player-stats');if(stats?.dataset.playerId===id)stats.innerHTML=fcsgPlayerStats(p);}}
+}
+
+function fcsgView(page,id,tab='overview'){
+ if(page==='season'&&id==='games'&&mode==='week')return season('games');
+ if(page==='home')return fcsgHome();
+ if(page==='news')return fcsgArticle(id);
+ if(page==='player')return fcsgPlayer(id);
+ if(page==='match')return fcsgMatch(id,tab);
+ if(page==='club')return fcsgClubPage();
+ const section=['games','table','squad'].includes(id)?id:'games',calendarView=section==='games'&&mode==='calendar';
+
+ return `<section class="content season ${section==='table'?'standings-season':''} ${calendarView?'calendar-season':''}"><div class="season-header">${seasonHeading({games:'Spiele',table:'Tabelle',squad:'Kader'}[section])}${section==='games'?gameControls()+(calendarView?calendarNavigation():''):''}${sourceNotice(section==='squad'?'players':section==='table'?'table':'games')}</div>${section==='table'?fcsgStanding():section==='squad'?fcsgSquad():fcsgGames()}</section>${fcsgFooter(section==='squad'?'players':section)}`;
+}
+function restoreFcsgData(){try{const d=JSON.parse(localStorage.getItem('fcsg-public-data-v1'));if(validFcsgData(d))fcsgData=d}catch{}}
+function validFcsgData(d){return d?.club==='fcsg'&&Array.isArray(d.stories)&&Array.isArray(d.games)&&Array.isArray(d.players)&&Array.isArray(d.table)&&d.table.length===12;}
+function fcsgViewSignature(d) {
+ const [page='home',id]=location.hash.slice(1).split('/');
+ return JSON.stringify(page==='home'||!page?d.stories:page==='news'?d.stories.find(n=>n.id===id):page==='match'?d.games.find(g=>g.id===id):page==='player'?d.players.find(p=>p.id===id):page==='club'?null:id==='squad'?d.players:id==='table'?{table:d.table,games:d.games}:d.games);
+}
+function syncFcsgLabels(){if(typeof syncSettingsUpdatedAt==='function')syncSettingsUpdatedAt();document.querySelectorAll('[data-fcsg-update-key]').forEach(el=>el.textContent=fcsgStamp(el.dataset.fcsgUpdateKey));syncSourceNotices();}
+async function loadFcsgData(){if(fcsgBusy)return;fcsgBusy=true;
+ try{const r=await apiFetch('/api/fcsg/data',{cache:'no-store',signal:AbortSignal.timeout(25000)});if(!r.ok)throw Error();const d=await r.json();if(!validFcsgData(d))throw Error();const nextStories=typeof deferUpdatedStories==='function'?deferUpdatedStories('fcsg',d.stories,fcsgData.stories):d.stories;const incoming={...d,stories:nextStories};const changed=fcsgViewSignature(fcsgData)!==fcsgViewSignature(incoming);for(const story of d.stories)if(story.articleVersion!==fcsgData.stories.find(n=>n.id===story.id)?.articleVersion)fcsgArticles.delete(story.id);for(const g of d.games){const old=fcsgData.games.find(x=>x.id===g.id);if(JSON.stringify(old)!==JSON.stringify(g)&&!fcsgLiveGames.get(g.id)?.live)fcsgLiveGames.delete(g.id);}fcsgData=incoming;fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=r.headers.get('X-Kadetten-Offline')==='1';try{localStorage.setItem('fcsg-public-data-v1',JSON.stringify(d))}catch{}if(activeClub==='fcsg'){if(changed){if(location.hash.startsWith('#match/'))updateFcsgLiveView();else render();}syncFcsgLabels();}}
+ catch{fcsgOffline=!navigator.onLine;fcsgDataLoadFailed=true;}
+ finally{fcsgBusy=false;syncOfflineNotice();if(fcsgDataLoadFailed)weekDataFailures.add('fcsg');else weekDataFailures.delete('fcsg');refreshWeekView();}
+}
+setInterval(()=>{if(activeClub==='fcsg'&&!document.hidden&&navigator.onLine)loadFcsgData()},120000);

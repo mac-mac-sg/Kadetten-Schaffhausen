@@ -1,5 +1,7 @@
 # Kadetten Companion App (V2) – Spezifikation
 
+**Aktuell ab 6. November 2026:** Auf ausdrücklichen Wunsch ersetzt das [Matchday-Layout mit vier Companion-Funktionen](v2-matchday-layout.md) die bisherige Oberfläche. Die folgenden älteren Design- und Seitenbeschreibungen dokumentieren den vorherigen Stand.
+
 Stand: 5. November 2026. Grundlage: [Recherche Vereins- und Fan-Apps](research/vereins-und-fan-apps.md) und [Designanalyse und Funktionskatalog](research/designanalyse-und-funktionen.md).
 
 ## Ziel
