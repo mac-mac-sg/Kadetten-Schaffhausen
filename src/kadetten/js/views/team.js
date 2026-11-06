@@ -46,8 +46,8 @@ export function recentForm({games, number, data, load, api, now, count = 5}) {
 
 function formSection({form, keeper, now}) {
   const valid = form.rows.filter(r => r.value && (keeper ? Number.isInteger(r.value.keeperShots) : Number.isInteger(r.value.shots)));
-  if (!form.rows.length) return '';
-  if (!valid.length) return html`<section class="sec">${form.pending ? loading('Werte der letzten Spiele werden geladen …') : ''}</section>`;
+  if (!form.rows.length) return keeper ? html`<section class="sec" aria-labelledby="sp-form">${sectionHead('Fangquote · letzte QHL-Spiele', '', '', 'sp-form')}${notice('Für diesen Torhüter liegen noch keine zuordenbaren Spielberichte vor. Paraden und Fangquote sind deshalb nicht verfügbar.', 'team')}</section>` : '';
+  if (!valid.length) return html`<section class="sec">${form.pending ? loading('Werte der letzten Spiele werden geladen …') : notice('Für die letzten QHL-Spiele fehlen verwertbare Spielberichte. Fang- und Wurfquoten werden nicht geschätzt.', 'team')}</section>`;
   const num = keeper ? 'saves' : 'goals', den = keeper ? 'keeperShots' : 'shots';
   const a = valid.reduce((n, r) => n + (r.value[num] || 0), 0), b = valid.reduce((n, r) => n + (r.value[den] || 0), 0);
   const max = Math.max(1, ...valid.map(r => r.value[den] || 0));
@@ -74,8 +74,9 @@ export function renderSpieler({route, state, load, api, now}) {
   const known = season && Number.isInteger(season.fieldGoals) && Number.isInteger(season.sevenMeterGoals) && season.goals > 0;
   return html`${backBar('Team', href.team(), star)}
     <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="pill num">#${p.number}</span><div class="bh-text"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)}</p></div></div></section>
+    ${keeper ? formSection({form, keeper, now}) : ''}
     <section class="sec" aria-labelledby="sp-saison">${sectionHead('Saison 2026/27 · QHL', '', '', 'sp-saison')}
-      ${season ? stats(keeper ? [[season.games, 'Spiele'], [season.goals, 'Tore']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}
+      ${season ? stats(keeper ? [[season.games, 'Spiele']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}
       ${known ? html`<div class="card pad-top-s"><div class="split" role="img" aria-label="${`${season.fieldGoals} Feldtore, ${season.sevenMeterGoals} 7-m-Tore`}"><i data-style="${'flex:' + season.fieldGoals}"></i><i data-style="${'flex:' + season.sevenMeterGoals}"></i></div><ul class="legend"><li><i class="st-g"></i>Feldtore <b class="num">${season.fieldGoals}</b></li><li><i class="st-s"></i>7-m-Tore <b class="num">${season.sevenMeterGoals}</b></li></ul></div>` : ''}
       ${season ? html`<div class="card list pad-top-s">
         ${listRow({title: html`Verwarnungen ${ruleButton('gelb')}`, end: html`<span class="res num">${season.yellowCards ?? '–'}</span>`, cls: 'compact'})}
@@ -83,7 +84,7 @@ export function renderSpieler({route, state, load, api, now}) {
         ${listRow({title: html`Disqualifikationen ${ruleButton('rot')}`, end: html`<span class="res num">${season.disqualifications ?? '–'}</span>`, cls: 'compact'})}
       </div><p class="fine pad-top">Quelle: Schweizerischer Handball-Verband. – = nicht gemeldet.</p>` : ''}
     </section>
-    ${formSection({form, keeper, now})}
+    ${!keeper ? formSection({form, keeper, now}) : ''}
     ${ehl ? html`<section class="sec" aria-labelledby="sp-ehl">${sectionHead('European League', '', '', 'sp-ehl')}${stats([[ehl.goals, 'Tore'], [ehl.twoMinutes, 'Zeitstrafen'], [ehl.yellowCards, 'Verwarnungen']])}<p class="fine pad-top">Quelle: EHF. Würfe und Einsätze liefert die EHF für diese Saison nicht verlässlich.</p></section>` : ''}
     ${p.facts.length ? html`<section class="sec" aria-labelledby="sp-steck">${sectionHead('Steckbrief', '', '', 'sp-steck')}<dl class="card list facts">${p.facts.map(([k, v]) => html`<div class="rl"><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>` : ''}
     ${p.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Profil auf kadettensh.ch', end: icon('ext'), link: p.url})}</div></section>` : ''}`;

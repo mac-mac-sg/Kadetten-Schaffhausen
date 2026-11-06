@@ -37,6 +37,7 @@ function vorschau({game, data, load, api, now}) {
   const table = standings(data.tables?.[game.league === 'EHL' ? 'EHL' : 'QHL']);
   const own = table.find(r => r.team === OWN_TEAM), opp = table.find(r => sameTeam(r.team, opponentOf(game)));
   const oppForm = opponentForm(load, api, data, game);
+  const formLeague = ['QHL', 'EHL'].includes(game.league) ? game.league : undefined;
   const preview = ['QHL', 'EHL'].includes(game.league) && !hasScore(game) ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
   const duels = game.league === 'QHL' ? load('duel:' + game.id, () => api.headToHead(game.home, game.away), 900000) : null;
   const programme = !hasScore(game) && isOwn(game.home) ? load('programme:' + game.id, () => api.programme(game.id), 900000) : null;
@@ -46,10 +47,12 @@ function vorschau({game, data, load, api, now}) {
   return html`
     <section class="sec" aria-labelledby="g-lage">${sectionHead('Ausgangslage', '', '', 'g-lage')}
       <div class="card list">
-        ${listRow({title: 'Kadetten', sub: own ? `${own.rank}. · ${own.points} Punkte` : game.league, end: formRow(form(data.games, OWN_TEAM, 5, game.league === 'EHL' ? 'EHL' : undefined)), lead: crest(OWN_TEAM, 'xs')})}
+        ${listRow({title: 'Kadetten', sub: own ? `${own.rank}. · ${own.points} Punkte` : game.league, end: formRow(form(data.games, OWN_TEAM, 5, formLeague)), lead: crest(OWN_TEAM, 'xs')})}
         ${listRow({title: shortTeam(opponentOf(game)), sub: opp ? `${opp.rank}. · ${opp.points} Punkte` : game.league, end: oppForm === undefined ? html`<span class="muted">…</span>` : formRow(oppForm || []), lead: crest(opponentOf(game), 'xs')})}
       </div>
+      <p class="fine pad-top">Form, neuestes zuerst. Kadetten: bis zu 5 letzte ${formLeague || 'Pflicht- und Test'}-Spiele. Gegner: bis zu 5 verfügbare ${game.league === 'EHL' ? 'EHL' : 'SHV'}-Resultate${game.league === 'EHL' ? '' : ' (Wettbewerbe gemischt)' }.</p>
     </section>
+    ${tipFor(game, now)}
     ${p?.paragraphs?.length ? html`<section class="sec" aria-labelledby="g-vor">${sectionHead(p.generator === 'daten' ? 'Vorschau' : 'Vorschau', '', '', 'g-vor')}
       <article class="card prose">${p.headline ? html`<h3 class="h3">${p.headline}</h3>` : ''}${p.paragraphs.map(t => html`<p>${t}</p>`)}
         <p class="fine">${p.generator === 'daten' ? 'Aus bestätigten Spiel- und Tabellendaten zusammengestellt.' : 'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert. Keine Ergebnisprognose.'}</p></article></section>` : ''}
@@ -97,10 +100,10 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   const started = kickoff(game) !== null && kickoff(game) <= now;
   const tabs = GAME_TABS.map(([id, label]) => [id, label, href.spiel(game.id, id), id === 'live' && phase === 'live' ? html`<i class="dot"></i>` : '']);
   const content = tab === 'live' ? liveTab({game, phase, data, state, now, ui}) : tab === 'bericht' ? bericht({game, phase, data, load, api, ui}) : vorschau({game, data, load, api, now, ui});
-  return html`${backBar('Zurück', href.jetzt(), share)}<h1 class="sr">${title}</h1>
+  return html`${backBar('Zurück', ui.backTarget || href.jetzt(), share, true)}<h1 class="sr">${title}</h1>
     ${segment(tabs, tab, 'Spielseite')}
     <section class="sec">${hero}</section>
-    ${tab === 'vorschau' || (tab === 'bericht' && phase === 'bericht') ? tipFor(game, now) : ''}
+    ${tab === 'bericht' && phase === 'bericht' ? tipFor(game, now) : ''}
     ${content}
     ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein')}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
 }

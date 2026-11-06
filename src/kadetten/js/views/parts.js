@@ -19,7 +19,7 @@ function logoFor(team) {
 }
 
 export const topBar = title => html`<header class="top"><h1 class="h1">${title}</h1><a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('ich')}</a></header>`;
-export const backBar = (label, target, action = '') => html`<header class="top"><a class="back" href="${target}">${icon('back')}${label}</a>${action}</header>`;
+export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="top"><a class="back" href="${target}"${returnToOrigin ? html` data-route-back` : ''}>${icon('back')}${label}</a>${action}</header>`;
 
 export function nav(active) {
   return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.id)}<span>${a.label}</span></a>`)}</nav>`;

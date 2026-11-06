@@ -48,7 +48,7 @@ export function scenario(games, tables, now) {
   if (!own || own.points === null) return null;
   const after = own.points + 2;
   const ahead = rows.filter(r => r.team !== OWN_TEAM && r.points !== null && r.points >= after);
-  return {game: next, points: after, rankAtLeast: ahead.length + 1, leaderNow: rows[0]};
+  return {game: next, points: after, rankAtLeast: ahead.length + 1, tied: rows.some(r => r.team !== OWN_TEAM && r.points === after), leaderNow: rows[0]};
 }
 
 /** Letztes Duell dieser Saison mit dem nächsten Gegner. */
@@ -73,7 +73,7 @@ export function moments({data, now, squad, history, favourite}) {
   const s = streak(data.games, now);
   if (s) out.push({id: 'streak', tag: 'Serie', title: s.kind === 'wins' ? `${s.count} Siege in Folge` : `${s.count} Spiele ungeschlagen`, text: s.kind === 'wins' ? 'So lange haben die Kadetten in dieser Saison nicht mehr verloren.' : 'Kein Spiel mehr verloren seit dem letzten Rückschlag.'});
   const sc = scenario(data.games, data.tables, now);
-  if (sc) out.push({id: 'scenario', tag: 'Mit einem Sieg', title: `${sc.points} Punkte`, text: sc.rankAtLeast === 1 ? `Gegen ${shortTeam(sc.game.home === OWN_TEAM ? sc.game.away : sc.game.home)} wären die Kadetten danach mindestens vorläufig Leader.` : `Danach mindestens auf Platz ${sc.rankAtLeast}, unabhängig von den anderen Spielen.`, link: sc.game.id});
+  if (sc) out.push({id: 'scenario', tag: 'Mit einem Sieg', title: `${sc.points} Punkte`, text: sc.tied ? 'Bei Punktgleichheit entscheidet die Rangfolge des Wettbewerbs. Andere Spiele können den Tabellenstand ändern.' : sc.rankAtLeast === 1 ? `Gegen ${shortTeam(sc.game.home === OWN_TEAM ? sc.game.away : sc.game.home)} wären die Kadetten beim aktuellen Tabellenstand Leader. Andere Spiele können das ändern.` : `Beim aktuellen Tabellenstand danach auf Platz ${sc.rankAtLeast}. Andere Spiele und die Rangfolge bei Punktgleichheit können das ändern.`, link: sc.game.id});
   const fav = favourite ? (data.playerSeason?.players?.[favourite]) : null;
   const ms = playerMilestones(data.playerSeason, squad);
   const favMs = ms.find(m => m.number === favourite);

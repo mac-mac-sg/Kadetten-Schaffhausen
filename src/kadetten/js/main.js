@@ -3,13 +3,13 @@ import {API_ORIGIN} from './config.js';
 import {createApi} from './api.js';
 import {createStore} from './store.js';
 import {startLive} from './live.js';
-import {parseRoute} from './router.js';
+import {parseRoute, createNavigation} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
 import {toggleFavourite, toggleMyGame, changeTip, myGames, tips} from './personal.js';
 import {resultImage, seasonCard, shareImage} from './share-image.js';
 import {seasonSummary} from './moments.js';
-import {outcome, shortTeam} from './logic.js';
+import {outcome, shortTeam, dataFreshness} from './logic.js';
 import {withFinished} from './match.js';
 import {crestSrc, RESULT_TEXT} from './views/parts.js';
 import {shareText} from './views/jetzt.js';
@@ -18,7 +18,7 @@ import {createVotes} from './fan-vote.js';
 import {favourite} from './personal.js';
 import {buildCalendar} from './calendar.js';
 import {RULES} from './rules.js';
-import {nav, setLogos} from './views/parts.js';
+import {nav, setLogos, notice} from './views/parts.js';
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
 import {renderSaison} from './views/saison.js';
@@ -34,6 +34,21 @@ const app = document.getElementById('app');
 const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false, votes: createVotes({origin: API_ORIGIN}), voteBusy: false, voteMessage: '', calendarUrl: '', pushFavourite: false};
 let installPrompt = null, lastView = '', scheduled = false;
 const celebrated = new Map();
+const navigation = createNavigation();
+let navigationPending = true;
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+function enterRoute() {
+  const previous = navigation.current;
+  const known = history.state?.kadettenEntry;
+  const entry = navigation.enter(location.hash || '#/', known, window.scrollY);
+  if (!entry.restore) {
+    navigation.setDepth((previous?.depth ?? -1) + 1);
+    history.replaceState({...history.state, kadettenEntry: entry.id}, '');
+  }
+  ui.backTarget = navigation.backTarget();
+  navigationPending = true;
+}
+enterRoute();
 
 const VIEWS = {
   jetzt: renderJetzt, news: renderNews, artikel: renderArtikel, spiel: renderSpiel,
@@ -49,7 +64,7 @@ function render() {
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
-  app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
+  app.innerHTML = String(html`<main id="main" tabindex="-1">${store.state.data && dataFreshness(store.state.data, Date.now()).stale ? html`<section class="sec">${notice(dataFreshness(store.state.data, Date.now()).label + '. ' + dataFreshness(store.state.data, Date.now()).message)}</section>` : ''}${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -64,9 +79,23 @@ function render() {
   }
   const key = route.view + ':' + (route.id || '') + ':' + (route.tab || '');
   if (key !== lastView) {
-    if (lastView) { window.scrollTo(0, 0); document.getElementById('main')?.focus({preventScroll: true}); }
+    if (lastView) document.getElementById('main')?.focus({preventScroll: true});
     lastView = key;
   } else if (focusKey) app.querySelector(focusKey)?.focus({preventScroll: true});
+  const entry = navigation.current;
+  if (navigationPending) {
+    window.scrollTo(0, entry?.restore ? entry.scroll : 0);
+    navigationPending = false;
+  }
+  // Wait for the asynchronously loaded games before the initial jump. Never repeat on timer renders.
+  if (entry?.autoNext && store.state.data) {
+    entry.autoNext = false;
+    const next = app.querySelector('[data-next-game]');
+    if (next) {
+      next.scrollIntoView({block: 'center', behavior: 'instant'});
+      next.focus({preventScroll: true});
+    }
+  }
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
 function focusSelector(el) {
@@ -163,11 +192,16 @@ function downloadCalendar() {
 }
 
 app.addEventListener('click', event => {
+  const back = event.target.closest('[data-route-back]');
+  const distance = navigation.backDistance();
+  if (back && distance > 0 && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+    event.preventDefault(); history.go(-distance); return;
+  }
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
   if (t.dataset.rule) { openRule(t.dataset.rule, t); return; }
   if (t.dataset.themeChoice) { applyTheme(t.dataset.themeChoice); render(); }
-  else if (t.dataset.ui) { const [k, v] = t.dataset.ui.split(':'); ui[k] = v; render(); }
+  else if (t.dataset.ui) { const [k, v] = t.dataset.ui.split(':'); ui[k] = v; if (k === 'comp' && navigation.current) navigation.current.autoNext = true; render(); }
   else if (t.dataset.favourite) {
     const next = toggleFavourite(Number(t.dataset.favourite));
     announce(next ? 'Als Lieblingsspieler gemerkt.' : 'Lieblingsspieler entfernt.');
@@ -191,7 +225,7 @@ app.addEventListener('change', event => {
 });
 addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; ui.canInstall = true; schedule(); });
 
-addEventListener('hashchange', render);
+addEventListener('hashchange', () => { enterRoute(); render(); });
 store.subscribe(schedule);
 render();
 store.refresh().then(() => startLive({store}));
