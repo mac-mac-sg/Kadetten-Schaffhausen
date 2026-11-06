@@ -55,7 +55,7 @@ function render() {
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
     const key = hero.dataset.celebrate;
     if (!celebrated.has(key)) celebrated.set(key, performance.now());
-    if (performance.now() - celebrated.get(key) > 2500 || matchMedia('(prefers-reduced-motion: reduce)').matches) { hero.classList.remove('celebrate'); hero.querySelector('.spark')?.remove(); }
+    if (performance.now() - celebrated.get(key) > 2500 || matchMedia('(prefers-reduced-motion: reduce)').matches) { hero.classList.remove('celebrate'); }
   }
   // Berechnete Breiten und Anteile per CSSOM setzen: Die CSP erlaubt keine style-Attribute.
   for (const el of app.querySelectorAll('[data-style]')) for (const decl of el.dataset.style.split(';')) {
@@ -97,7 +97,7 @@ async function castVote(player) {
   const id = parseRoute(location.hash).id;
   if (!id || ui.voteBusy) return;
   Object.assign(ui, {voteBusy: true, voteMessage: 'Stimme wird gespeichert …'}); render();
-  try { await ui.votes.vote(id, player); ui.voteMessage = 'Danke für deine Stimme!'; }
+  try { await ui.votes.vote(id, player); ui.voteMessage = 'Deine Stimme ist gezählt.'; }
   catch (error) { ui.voteMessage = error.message; }
   ui.voteBusy = false; store.invalidate('votes:' + id); render();
 }

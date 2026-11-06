@@ -69,7 +69,7 @@ export function renderSpieler({route, state, load, api, now}) {
   const ehl = state.data?.ehlPlayerSeason?.players?.[p.number];
   const keeper = p.position === 'Tor';
   const isFav = favourite() === p.number;
-  const star = html`<button class="icb${isFav ? ' on' : ''}" type="button" data-favourite="${p.number}" aria-pressed="${String(isFav)}" aria-label="${isFav ? 'Nicht mehr Lieblingsspieler' : 'Als Lieblingsspieler merken'}">${icon('star', 20)}</button>`;
+  const star = html`<button class="icb${isFav ? ' on' : ''}" type="button" data-favourite="${p.number}" aria-pressed="${String(isFav)}" aria-label="${isFav ? 'Nicht mehr Lieblingsspieler' : 'Als Lieblingsspieler merken'}">${icon('star')}</button>`;
   const form = state.data ? recentForm({games: state.data.games, number: p.number, data: state.data, load, api, now}) : {rows: []};
   const known = season && Number.isInteger(season.fieldGoals) && Number.isInteger(season.sevenMeterGoals) && season.goals > 0;
   return html`${backBar('Team', href.team(), star)}
@@ -86,5 +86,5 @@ export function renderSpieler({route, state, load, api, now}) {
     ${formSection({form, keeper, now})}
     ${ehl ? html`<section class="sec" aria-labelledby="sp-ehl">${sectionHead('European League', '', '', 'sp-ehl')}${stats([[ehl.goals, 'Tore'], [ehl.twoMinutes, 'Zeitstrafen'], [ehl.yellowCards, 'Verwarnungen']])}<p class="fine pad-top">Quelle: EHF. Würfe und Einsätze liefert die EHF für diese Saison nicht verlässlich.</p></section>` : ''}
     ${p.facts.length ? html`<section class="sec" aria-labelledby="sp-steck">${sectionHead('Steckbrief', '', '', 'sp-steck')}<dl class="card list facts">${p.facts.map(([k, v]) => html`<div class="rl"><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>` : ''}
-    ${p.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Profil auf kadettensh.ch', end: icon('ext', 18), link: p.url})}</div></section>` : ''}`;
+    ${p.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Profil auf kadettensh.ch', end: icon('ext'), link: p.url})}</div></section>` : ''}`;
 }

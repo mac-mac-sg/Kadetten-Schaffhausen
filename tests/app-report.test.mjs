@@ -94,5 +94,5 @@ test('Push-Adressen des Datendienstes führen auf die Spielseite', () => {
 test('Keine style-Attribute im Markup: die CSP der App erlaubt sie nicht', () => {
   const files = dir => readdirSync(dir).flatMap(n => { const p = join(dir, n); return statSync(p).isDirectory() ? files(p) : [p]; });
   for (const f of files('src/kadetten/js').filter(f => f.endsWith('.js'))) assert.doesNotMatch(readFileSync(f, 'utf8'), /\sstyle="/, f);
-  assert.doesNotMatch(readFileSync('src/kadetten/index.html', 'utf8'), /<body[^>]*>[\s\S]*\sstyle="(?![^"]*padding:16px)/, 'nur der noscript-Hinweis');
+  assert.doesNotMatch(readFileSync('src/kadetten/index.html', 'utf8'), /\sstyle="/);
 });

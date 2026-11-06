@@ -19,7 +19,7 @@ function logoFor(team) {
 }
 
 export const topBar = title => html`<header class="top"><h1 class="h1">${title}</h1><a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('ich')}</a></header>`;
-export const backBar = (label, target, action = '') => html`<header class="top"><a class="back" href="${target}">${icon('back', 20)}${label}</a>${action}</header>`;
+export const backBar = (label, target, action = '') => html`<header class="top"><a class="back" href="${target}">${icon('back')}${label}</a>${action}</header>`;
 
 export function nav(active) {
   return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.id)}<span>${a.label}</span></a>`)}</nav>`;
@@ -44,19 +44,19 @@ export const formBadge = (result, small = true) => result ? formRow([result], sm
 export function heroCard({meta, pill, live = false, home, away, middle, foot = '', actions = '', link, label, celebrate = false}) {
   const body = html`<div class="meta"><span>${meta}</span>${pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : ''}</div>
     <div class="vs"><span class="team">${crest(home)}${shortTeam(home)}</span>${middle}<span class="team">${crest(away)}${shortTeam(away)}</span></div>${foot}`;
-  return html`<div class="hero${celebrate ? ' celebrate' : ''}"${celebrate ? html` data-celebrate="${home + ':' + away + ':' + (meta || '')}"` : ''}>${celebrate ? html`<span class="spark" aria-hidden="true">${Array.from({length: 14}, () => html`<i></i>`)}</span>` : ''}${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
+  return html`<div class="hero${celebrate ? ' celebrate' : ''}"${celebrate ? html` data-celebrate="${home + ':' + away + ':' + (meta || '')}"` : ''}>${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
 }
 
 export const kickoffTime = (time, label = 'Anpfiff') => html`<span class="kick num">${time || '–'}<small>${label}</small></span>`;
 export const scoreLine = (score, label) => html`<span class="score num"${label ? html` aria-label="${label}"` : ''}>${Array.isArray(score) ? `${score[0]}:${score[1]}` : '–:–'}</span>`;
 export const notice = (text, name = 'offline') => html`<p class="note" role="status">${icon(name, 18)}<span>${text}</span></p>`;
-export const loading = text => html`<p class="note loading" role="status">${icon('jetzt', 18)}<span>${text || 'Wird geladen …'}</span></p>`;
+export const loading = text => html`<p class="note loading" role="status">${icon('jetzt')}<span>${text || 'Wird geladen …'}</span></p>`;
 
 export function stats(items) {
   return html`<div class="card stats">${items.map(([value, label]) => html`<span class="stat"><span class="v num">${value ?? '–'}</span><span class="k">${label}</span></span>`)}</div>`;
 }
 
-export function listRow({title, sub, end = icon('go', 18), lead = '', link, cls = ''}) {
+export function listRow({title, sub, end = icon('go'), lead = '', link, cls = ''}) {
   const inner = html`${lead}<span class="grow"><span class="t">${title}</span>${sub ? html`<span class="s">${sub}</span>` : ''}</span>${end}`;
   return link ? html`<a class="rl ${cls}" href="${link}">${inner}</a>` : html`<div class="rl ${cls}">${inner}</div>`;
 }
@@ -70,7 +70,7 @@ export function gameRow(game, now, {showDate = true, cls = ''} = {}) {
   const sub = [showDate ? dayLabel(game, now) : '', game.league, place, hasScore(game) ? '' : game.time].filter(Boolean).join(' · ');
   const end = hasScore(game)
     ? html`<span class="res num">${game.score[0]}:${game.score[1]}${own ? formBadge(outcome(game)) : ''}</span>`
-    : icon('go', 18);
+    : icon('go');
   return listRow({title, sub, end, lead: crest(opponent || game.home, 'xs'), link: game.id ? href.spiel(game.id) : '', cls});
 }
 

@@ -117,7 +117,7 @@ Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rech
 
 ## Gestaltung
 
-Richtung «Abend» (dunkel mit Hallenfoto, schmale grosse Zahlen, runde und warme Formen), Hell- und Dunkelmodus. Farben, Schrift, Abstände und Bausteine: [Designsystem](kadetten-app-design.md).
+Richtung «Abend» (Spielkarte mit Hallenfoto, schmale Anzeigetafel-Ziffern, ruhige neutrale Flächen; am 6.11.2026 nach dem Skill unslop überarbeitet), Hell- und Dunkelmodus. Farben, Schrift, Abstände und Bausteine: [Designsystem](kadetten-app-design.md).
 
 - Kadetten-Orange (`#ff790e`) als Fläche mit fast schwarzer Schrift; als Text auf Hell `#b23c08`, auf Dunkel `#ff9a45`.
 - Ergebnisse nie nur über Farbe: Formkurve als S/U/N mit Buchstabe, Form und Farbe.

@@ -86,7 +86,7 @@ function scorerTable(season, label) {
   const hasGames = players.some(p => Number.isInteger(p.games)), hasSeven = players.some(p => Number.isInteger(p.sevenMeterGoals));
   return html`<div class="card list"><table class="tbl-real">
     <thead><tr><th scope="col">Spieler</th>${hasGames ? html`<th scope="col" class="n">Sp</th>` : ''}<th scope="col" class="n">Tore</th>${hasSeven ? html`<th scope="col" class="n">7-m</th>` : ''}<th scope="col" class="n">2′</th></tr></thead>
-    <tbody>${players.map((p, i) => html`<tr${p.nr === fav ? html` class="fav-row"` : i === 0 ? html` class="me"` : ''}><td><a class="plink" href="${href.spieler(p.nr)}">${p.nr === fav ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 14)}</span>` : ''}<span class="num muted">${p.nr}</span> ${p.info.name}</a></td>${hasGames ? html`<td class="n num">${p.games ?? '–'}</td>` : ''}<td class="n num strong">${p.goals}</td>${hasSeven ? html`<td class="n num">${p.sevenMeterGoals ?? '–'}</td>` : ''}<td class="n num">${p.twoMinutes ?? '–'}</td></tr>`)}</tbody>
+    <tbody>${players.map((p, i) => html`<tr${p.nr === fav ? html` class="fav-row"` : i === 0 ? html` class="me"` : ''}><td><a class="plink" href="${href.spieler(p.nr)}">${p.nr === fav ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}<span class="num muted">${p.nr}</span> ${p.info.name}</a></td>${hasGames ? html`<td class="n num">${p.games ?? '–'}</td>` : ''}<td class="n num strong">${p.goals}</td>${hasSeven ? html`<td class="n num">${p.sevenMeterGoals ?? '–'}</td>` : ''}<td class="n num">${p.twoMinutes ?? '–'}</td></tr>`)}</tbody>
   </table></div><p class="fine pad-top">${players.reduce((n, p) => n + p.goals, 0)} Tore · ${label}</p>`;
 }
 

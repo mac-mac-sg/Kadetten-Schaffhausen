@@ -120,7 +120,7 @@ export async function favouriteGoals({kv,env,deps,now,id,fixture,live,subscriber
    if(await kv.get(sentKey))return;
    const name=String(player.name).split(/\s+/).filter(w=>w!==w.toUpperCase()).join(' ')+' '+String(player.name).split(/\s+/).filter(w=>w===w.toUpperCase()).map(w=>w[0]+w.slice(1).toLowerCase()).join(' ');
    try{
-    const result=await (deps.send||sendPush)(env,device.subscription,{title:'Tor von '+name.trim()+'!',body:plain(live.home)+' '+e.score.join(' : ')+' '+plain(live.away),tag:'fav-'+id+'-'+e.id,url:url.href});
+    const result=await (deps.send||sendPush)(env,device.subscription,{title:'Tor von '+name.trim(),body:plain(live.home)+' '+e.score.join(' : ')+' '+plain(live.away),tag:'fav-'+id+'-'+e.id,url:url.href});
     if(result.ok)await kv.put(sentKey,'1',{expirationTtl:2*86400});
     else if([404,410].includes(result.status))await kv.delete(device.key);
    }catch{/* Nächster Durchlauf versucht es innerhalb der fünf Minuten erneut. */}

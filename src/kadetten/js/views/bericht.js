@@ -11,6 +11,12 @@ import {sectionHead, notice, loading, listRow, storyRow, playerByNumber} from '.
 export const ruleButton = id => html`<button type="button" class="rule" data-rule="${id}" aria-label="Erklärung anzeigen">?</button>`;
 const minute = sec => `${Math.floor(sec / 60) + 1}.`;
 
+/** Vergleichszeile: Orange zeigt immer den Anteil der Kadetten, von ihrer Seite aus. */
+function cmpRow(c, ownHome) {
+  const own = ownHome ? c.share : 1 - c.share;
+  return html`<div class="cmp num"><b${ownHome ? html` class="own"` : ''}>${c.homeText}</b><span class="bar"><span>${c.label}${c.rule ? ruleButton(c.rule) : ''}</span><i aria-hidden="true"${ownHome ? '' : html` class="right"`}><b data-style="${'width:' + Math.round(own * 100) + '%'}"></b></i></span><b${ownHome ? '' : html` class="own"`}>${c.awayText}</b></div>`;
+}
+
 /** Torverlauf als Linie der Tordifferenz aus Sicht der Kadetten, mit Halbzeitmarke. */
 export function scoreChart(goals, ownHome, {timeouts = [], suspensions = []} = {}) {
   if (!goals.length) return '';
@@ -66,7 +72,7 @@ function playerTable(team, data, favNumber) {
   const v = x => x ?? '–';
   return html`<div class="tbl-scroll" role="region" aria-label="${'Spielerwerte ' + shortTeam(team.name)}" tabindex="0"><table class="tbl-real pstats">
       <thead><tr><th scope="col">Spieler</th><th scope="col" class="n">Tore/W</th><th scope="col" class="n">Quote</th><th scope="col" class="n">7-m</th><th scope="col" class="n">2′</th><th scope="col" class="n">G</th></tr></thead>
-      <tbody>${field.map(p => html`<tr${favIds.includes(p.id) ? html` class="fav-row"` : ''}><th scope="row">${favIds.includes(p.id) ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 14)}</span>` : ''}${name(p)}</th><td class="n num strong">${v(p.goals)}/${v(p.shots)}</td><td class="n num">${fmtPct(pct(p.goals, p.shots))}</td><td class="n num">${p.sevenShots ? `${v(p.seven)}/${p.sevenShots}` : '–'}</td><td class="n num">${v(p.twoMinutes)}</td><td class="n num">${v(p.warnings)}</td></tr>`)}</tbody>
+      <tbody>${field.map(p => html`<tr${favIds.includes(p.id) ? html` class="fav-row"` : ''}><th scope="row">${favIds.includes(p.id) ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}${name(p)}</th><td class="n num strong">${v(p.goals)}/${v(p.shots)}</td><td class="n num">${fmtPct(pct(p.goals, p.shots))}</td><td class="n num">${p.sevenShots ? `${v(p.seven)}/${p.sevenShots}` : '–'}</td><td class="n num">${v(p.twoMinutes)}</td><td class="n num">${v(p.warnings)}</td></tr>`)}</tbody>
     </table></div>
     ${keepers.length ? html`<h3 class="h4">Torhüter</h3><div class="card-in list">${keepers.map(p => listRow({title: name(p), sub: p.keeperShots ? `${fmtPct(pct(p.saves, p.keeperShots))} Fangquote` : '', end: html`<span class="res num">${v(p.saves)}<small> / ${v(p.keeperShots)}</small></span>`, cls: 'compact'}))}</div>` : ''}`;
 }
@@ -104,7 +110,7 @@ export function voteSection({vote, mine, now, busy, message}) {
     <div class="card list vote">${sorted.map(c => {
       const share = total ? Math.round((counts[c.id] || 0) / total * 100) : 0;
       if (showResults) return html`<div class="rl compact${mine === c.id ? ' mine' : ''}"><span class="grow"><span class="t">${displayName(c.name)}${mine === c.id ? html` <span class="tag">Deine Stimme</span>` : ''}</span><span class="vbar" aria-hidden="true"><b data-style="${'width:' + share + '%'}"></b></span></span><span class="res num">${share}<small> %</small></span></div>`;
-      return html`<button type="button" class="rl compact" data-vote="${c.id}"${busy ? html` disabled` : ''}><span class="grow"><span class="t">${displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}</span>${icon('star', 18)}</button>`;
+      return html`<button type="button" class="rl compact" data-vote="${c.id}"${busy ? html` disabled` : ''}><span class="grow"><span class="t">${displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}</span>${icon('star')}</button>`;
     })}</div>
     <p class="fine pad-top" role="status">${message || (showResults ? `${total} ${total === 1 ? 'Stimme' : 'Stimmen'}${v.open ? ` · Wahl offen bis ${closes}` : ' · Wahl beendet'}` : `Tippe auf deinen Spieler des Matchs. Eine Stimme pro Gerät, offen bis ${closes}.`)} Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins.</p>
   </section>`;
@@ -146,7 +152,7 @@ export function renderBericht({game, data, entry, ui, normalized, voting = ''}) 
     </section>` : ''}
     ${rows.length ? html`<section class="sec" aria-labelledby="g-cmp">${sectionHead('Teamvergleich', '', '', 'g-cmp')}<div class="card list">
       <div class="cmp head"><span>${shortTeam(game.home)}</span><span></span><span>${shortTeam(game.away)}</span></div>
-      ${rows.map(c => html`<div class="cmp num"><b>${c.homeText}</b><span class="bar"><span>${c.label}${c.rule ? ruleButton(c.rule) : ''}</span><i aria-hidden="true"><b data-style="${'width:' + Math.round(c.share * 100) + '%'}"></b></i></span><b>${c.awayText}</b></div>`)}
+      ${rows.map(c => cmpRow(c, ownHome))}
     </div></section>` : ''}
     ${report ? html`<section class="sec" aria-labelledby="g-spieler">${sectionHead('Spielerwerte', '', '', 'g-spieler')}
       <div class="seg flush" role="group" aria-label="Mannschaft">${[['own', 'Kadetten'], ['opp', shortTeam(ownHome ? game.away : game.home)]].map(([id, label]) => html`<button type="button" data-ui="${'reportTeam:' + id}" aria-pressed="${String((ui.reportTeam || 'own') === id)}"${(ui.reportTeam || 'own') === id ? html` class="on"` : ''}>${label}</button>`)}</div>
@@ -154,7 +160,7 @@ export function renderBericht({game, data, entry, ui, normalized, voting = ''}) 
       <p class="fine pad-top">Tore/W = Tore/Würfe · 2′ = Zeitstrafen ${ruleButton('2min')} · G = Verwarnungen ${ruleButton('gelb')}${report.spectators ? ` · ${report.spectators.toLocaleString('de-CH')} Zuschauer` : ''}${report.referees?.length ? ` · Schiedsrichter: ${report.referees.join(', ')}` : ''} · Quelle: ${report.source === 'EHF' ? 'EHF' : 'Schweizerischer Handball-Verband'}</p>
     </section>` : ''}
     ${report?.shotStats ? shotAnalysis(report.shotStats, report) : ''}
-    ${game.league === 'QHL' ? html`<section class="sec"><div class="card list">${listRow({title: 'Tabelle danach', sub: 'QHL', link: href.saison('tabellen'), lead: html`<span class="lead">${icon('saison', 20)}</span>`})}</div></section>` : ''}
+    ${game.league === 'QHL' ? html`<section class="sec"><div class="card list">${listRow({title: 'Tabelle danach', sub: 'QHL', link: href.saison('tabellen'), lead: html`<span class="lead">${icon('saison')}</span>`})}</div></section>` : ''}
     ${articles}`;
 }
 
@@ -184,7 +190,7 @@ export function renderLiveStats({match, data, ui}) {
   return html`
     ${rows.length > 1 ? html`<section class="sec" aria-labelledby="l-cmp">${sectionHead('Teamwerte live', '', '', 'l-cmp')}<div class="card list">
       <div class="cmp head"><span>${shortTeam(match.home)}</span><span></span><span>${shortTeam(match.away)}</span></div>
-      ${rows.map(c => html`<div class="cmp num"><b>${c.homeText}</b><span class="bar"><span>${c.label}${c.rule ? ruleButton(c.rule) : ''}</span><i aria-hidden="true"><b data-style="${'width:' + Math.round(c.share * 100) + '%'}"></b></i></span><b>${c.awayText}</b></div>`)}
+      ${rows.map(c => cmpRow(c, ownHome))}
     </div></section>` : ''}
     <section class="sec" aria-labelledby="l-sp">${sectionHead('Spielerwerte live', '', '', 'l-sp')}
       <div class="seg flush" role="group" aria-label="Mannschaft">${[['own', 'Kadetten'], ['opp', shortTeam(ownHome ? match.away : match.home)]].map(([id, label]) => html`<button type="button" data-ui="${'reportTeam:' + id}" aria-pressed="${String((ui.reportTeam || 'own') === id)}"${(ui.reportTeam || 'own') === id ? html` class="on"` : ''}>${label}</button>`)}</div>

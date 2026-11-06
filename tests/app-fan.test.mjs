@@ -81,7 +81,7 @@ test('Push: Tore des Lieblingsspielers einmal pro Tor und Gerät, nur frisch ges
   const goal = (id, score, home, away) => ({id, score, action: 'Tor', homePlayer: home, awayPlayer: away});
   const base = {kv: store, env: {}, deps, id: 'm1', fixture: {id: '508393'}, subscribers: [fan, other]};
   await favouriteGoals({...base, now: 1000, live: live([goal(1, [1, 0], 'RIKHARDSSON Odinn', null), goal(2, [2, 0], 'PERIĆ Josip', null), goal(3, [2, 1], null, 'PERIĆ Josip')])});
-  assert.equal(sends.length, 1); assert.equal(sends[0].title, 'Tor von Josip Perić!'); assert.match(sends[0].body, /2 : 0/); assert.match(sends[0].url, /#\/spiel\/508393\/live$/);
+  assert.equal(sends.length, 1); assert.equal(sends[0].title, 'Tor von Josip Perić'); assert.match(sends[0].body, /2 : 0/); assert.match(sends[0].url, /#\/spiel\/508393\/live$/);
   await favouriteGoals({...base, now: 61000, live: live([goal(2, [2, 0], 'PERIĆ Josip', null), goal(4, [3, 1], 'PERIĆ Josip', null)])});
   assert.equal(sends.length, 2, 'bereits gemeldetes Tor nicht wiederholt');
   await favouriteGoals({...base, now: 61000 + 6 * 60000, live: live([goal(5, [4, 1], 'PERIĆ Josip', null)])});

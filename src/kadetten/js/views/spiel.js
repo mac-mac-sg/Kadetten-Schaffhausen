@@ -55,12 +55,12 @@ function vorschau({game, data, load, api, now}) {
         <p class="fine">${p.generator === 'daten' ? 'Aus bestätigten Spiel- und Tabellendaten zusammengestellt.' : 'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert. Keine Ergebnisprognose.'}</p></article></section>` : ''}
     ${duels?.value?.games?.length ? html`<section class="sec" aria-labelledby="g-duel">${sectionHead('Direkte Duelle', '', '', 'g-duel')}<div class="card list">${duels.value.games.slice(0, 3).map(d => listRow({title: `${shortTeam(d.home)} – ${shortTeam(d.away)}`, sub: d.date.split('-').reverse().join('.'), end: html`<span class="res num">${d.score[0]}:${d.score[1]}${formBadge(outcomeByName(d, OWN_TEAM))}</span>`}))}</div></section>` : ''}
     ${ownLast.length ? html`<section class="sec" aria-labelledby="g-last">${sectionHead('Letzte Spiele der Kadetten', '', '', 'g-last')}<div class="card list">${ownLast.map(g => gameRow(g, now))}</div></section>` : ''}
-    ${pdf ? html`<section class="sec"><div class="card list">${listRow({title: 'Matchprogramm', sub: 'PDF', end: icon('ext', 18), lead: html`<span class="lead">${icon('doc', 20)}</span>`, link: pdf})}</div></section>` : ''}`;
+    ${pdf ? html`<section class="sec"><div class="card list">${listRow({title: 'Matchprogramm', sub: 'PDF', end: icon('ext'), lead: html`<span class="lead">${icon('doc')}</span>`, link: pdf})}</div></section>` : ''}`;
 }
 
 function liveTab({game, phase, data, state, now, ui}) {
   if (phase === 'vorschau') return html`<section class="sec">${notice('Der Live-Stand erscheint ab Anpfiff und wird alle 30 Sekunden aktualisiert. Einzelne Tore werden live nicht angezeigt.', 'jetzt')}</section>`;
-  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id, 'bericht')}">${icon('doc', 20)}Zum Spielbericht</a></section>`;
+  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Zum Spielbericht</a></section>`;
   const table = liveTable(data.tables?.QHL, {...state.live.match, league: state.live.match.league || game.league});
   return html`
     ${table ? html`<section class="sec" aria-labelledby="g-lt">${sectionHead('Live-Tabelle', 'Ganze Tabelle', href.saison('tabellen'), 'g-lt')}<div class="card list"><div class="tbl">${table.slice(0, 5).map(r => html`<div class="tr${sameTeam(r.team, OWN_TEAM) ? ' me' : ''}"><span class="p num">${r.rank}</span><span class="tn">${shortTeam(r.team)}</span><span class="sp num">${r.played}</span><span></span><span class="pt num">${r.points}</span></div>`)}</div></div></section>` : ''}
@@ -91,7 +91,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   game = withFinished(game, live, now);
   const phase = gamePhase(game, live, now), tab = route.tab || phase;
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
-  const share = hasScore(game) ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share', 20)}</button>` : '';
+  const share = hasScore(game) ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share')}</button>` : '';
   const hero = phase === 'live' ? liveHero(live.match, game, state, now, false) : phase === 'bericht' ? resultHero(game, now, {link: false, celebrate: outcome(game) === 'S'}) : previewHero(game, now, {link: false});
   const visited = myGames().includes(String(game.id));
   const started = kickoff(game) !== null && kickoff(game) <= now;
@@ -102,5 +102,5 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     <section class="sec">${hero}</section>
     ${tab === 'vorschau' || (tab === 'bericht' && phase === 'bericht') ? tipFor(game, now) : ''}
     ${content}
-    ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein', 20)}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
+    ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein')}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
 }

@@ -88,7 +88,7 @@ function liveTableTeaser(data, match) {
   const next = table[own.rank] || null, prev = table[own.rank - 2] || null;
   const text = own.rank === 1 && next ? `${own.points} Punkte, ${own.points - next.points} vor ${next.team.replace(/^HC |^BSV |^RTV 1879 /, '')}` : prev ? `${own.points} Punkte, ${prev.points - own.points} hinter Platz ${own.rank - 1}` : `${own.points} Punkte`;
   return html`<section class="sec" aria-labelledby="j-live-tab">${sectionHead('Live-Tabelle', 'Ganze Tabelle', href.saison('tabellen'), 'j-live-tab')}
-    <a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Bei diesem Stand ${own.rank === 1 ? 'Leader' : 'auf Platz ' + own.rank}</span><span class="s">${text}</span></span>${icon('go', 18)}</a></section>`;
+    <a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Bei diesem Stand ${own.rank === 1 ? 'Leader' : 'auf Platz ' + own.rank}</span><span class="s">${text}</span></span>${icon('go')}</a></section>`;
 }
 
 export function renderJetzt({state, now, load, api, ui}) {
@@ -108,7 +108,7 @@ export function renderJetzt({state, now, load, api, ui}) {
   }
 
   if (phase === 'spieltag') {
-    const actions = html`<div class="acts single"><a class="btn" href="${href.ich()}">${icon('bell', 20)}Push zum Anpfiff</a></div>`;
+    const actions = html`<div class="acts single"><a class="btn" href="${href.ich()}">${icon('bell')}Push zum Anpfiff</a></div>`;
     const rows = standings(data.tables?.QHL), own = rows.find(r => r.team === OWN_TEAM), opp = rows.find(r => sameTeam(r.team, game.home === OWN_TEAM ? game.away : game.home));
     const preview = game.league === 'QHL' ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
     return html`${topBar('Jetzt')}
@@ -125,13 +125,13 @@ export function renderJetzt({state, now, load, api, ui}) {
     const result = withFinished(findGame(data.games, game, now) || game, live, now);
     const shown = hasScore(result) ? result : game;
     const next = nextGame(data.games, now);
-    const actions = html`<div class="acts"><a class="btn pri" href="${href.spiel(shown.id, 'bericht')}">${icon('doc', 20)}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share', 20)}Teilen</button></div>`;
+    const actions = html`<div class="acts"><a class="btn pri" href="${href.spiel(shown.id, 'bericht')}">${icon('doc')}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share')}Teilen</button></div>`;
     const table = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
     return html`${topBar('Jetzt')}
       <section class="sec" aria-labelledby="j-end"><h2 class="sr" id="j-end">Endresultat</h2>${resultHero(shown, now, {actions, celebrate: outcome(shown) === 'S'})}</section>
-      ${ui?.votes && !myVotes()[shown.id] && load('votes:' + shown.id, () => ui.votes.status(shown.id), 60000).value?.open ? html`<section class="sec"><a class="card rowcard vote-teaser" href="${href.spiel(shown.id, 'bericht')}"><span class="lead">${icon('star', 20)}</span><span class="grow"><span class="t">Wähle den Spieler des Matchs</span><span class="s">Inoffizielle Fan-Wahl, offen bis morgen Abend</span></span>${icon('go', 18)}</a></section>` : ''}
+      ${ui?.votes && !myVotes()[shown.id] && load('votes:' + shown.id, () => ui.votes.status(shown.id), 60000).value?.open ? html`<section class="sec"><a class="card rowcard vote-teaser" href="${href.spiel(shown.id, 'bericht')}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">Wähle den Spieler des Matchs</span><span class="s">Inoffizielle Fan-Wahl, offen bis morgen Abend</span></span>${icon('go')}</a></section>` : ''}
       ${tipFor(shown, now)}
-      ${table && shown.league === 'QHL' ? html`<section class="sec" aria-labelledby="j-nach">${sectionHead('Tabelle danach', '', '', 'j-nach')}<a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${table.rank}.</span><span class="grow"><span class="t">QHL · ${table.points} Punkte</span><span class="s">nach ${table.played} Spielen</span></span>${icon('go', 18)}</a></section>` : ''}
+      ${table && shown.league === 'QHL' ? html`<section class="sec" aria-labelledby="j-nach">${sectionHead('Tabelle danach', '', '', 'j-nach')}<a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${table.rank}.</span><span class="grow"><span class="t">QHL · ${table.points} Punkte</span><span class="s">nach ${table.played} Spielen</span></span>${icon('go')}</a></section>` : ''}
       ${next && next.id !== shown.id ? html`<section class="sec" aria-labelledby="j-next">${sectionHead('Nächstes Spiel', '', '', 'j-next')}<div class="card list">${gameRow(next, now)}</div></section>` : ''}
       ${momentsFor(data, now)}
       ${newsBlock(data, 2)}${offline}`;
@@ -150,5 +150,5 @@ export function renderNews({state}) {
   const stories = state.data?.stories || [];
   return html`${backBar('Jetzt', href.jetzt())}<h1 class="h1 pad">News</h1>
     <section class="sec">${stories.length ? html`<div class="card list">${stories.slice(0, 40).map(storyRow)}</div>` : state.data ? notice('Noch keine News vorhanden.', 'doc') : loading()}</section>
-    <section class="sec">${listRow({title: 'Alle Vereinsnews auf kadettensh.ch', end: icon('ext', 18), link: 'https://kadettensh.ch/news/'})}</section>`;
+    <section class="sec">${listRow({title: 'Alle Vereinsnews auf kadettensh.ch', end: icon('ext'), link: 'https://kadettensh.ch/news/'})}</section>`;
 }
