@@ -10,7 +10,7 @@ import {loadReportFor} from './bericht.js';
 import {topBar, sectionHead, notice, loading, gameRow, segment, crest, playerByNumber} from './parts.js';
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-const TABS = [['spielplan', 'Spielplan', href.saison('spielplan')], ['tabellen', 'Tabellen', href.saison('tabellen')], ['statistik', 'Statistik', href.saison('statistik')]];
+const TABS = [['tabellen', 'Tabelle', '#/statistik'], ['statistik', 'Spielerwerte', '#/statistik/spieler']];
 
 function chips(name, options, current, label) {
   return html`<div class="chips" role="group" aria-label="${label}">${options.map(([value, text]) => html`<button type="button" class="chip${value === current ? ' on' : ''}" data-ui="${name}:${value}" aria-pressed="${String(value === current)}">${text}</button>`)}</div>`;
@@ -104,6 +104,6 @@ export function renderSaison(ctx) {
   const {route, state} = ctx;
   const body = !state.data ? html`<section class="sec">${state.dataError ? notice('Der Datenstand konnte nicht geladen werden.') : loading()}</section>`
     : route.view === 'tabellen' ? tabellen(ctx) : route.view === 'statistik' ? statistik(ctx) : spielplan(ctx);
-  return html`${topBar('Saison')}${segment(TABS, route.view, 'Saison')}${body}`;
+  return html`${topBar(route.view === 'spielplan' ? 'Spiele' : 'Statistik')}${route.view === 'spielplan' ? '' : segment(TABS, route.view, 'Statistik')}${body}`;
 }
 

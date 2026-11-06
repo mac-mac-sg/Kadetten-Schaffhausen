@@ -22,7 +22,7 @@ export const topBar = title => html`<header class="top"><h1 class="h1">${title}<
 export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="top"><a class="back" href="${target}"${returnToOrigin ? html` data-route-back` : ''}>${icon('back')}${label}</a>${action}</header>`;
 
 export function nav(active) {
-  return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.id)}<span>${a.label}</span></a>`)}</nav>`;
+  return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}" aria-label="${a.label}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.id)}<span>${a.label}</span></a>`)}</nav>`;
 }
 
 export function crest(team, size = '') {

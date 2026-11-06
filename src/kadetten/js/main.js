@@ -31,7 +31,7 @@ const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
 const store = createStore({api});
 const app = document.getElementById('app');
-const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false, votes: createVotes({origin: API_ORIGIN}), voteBusy: false, voteMessage: '', calendarUrl: '', pushFavourite: false};
+const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false, votes: createVotes({origin: API_ORIGIN}), voteBusy: false, voteMessage: '', voteSelections: {}, voteGame: '', calendarUrl: '', pushFavourite: false};
 let installPrompt = null, lastView = '', scheduled = false;
 const celebrated = new Map();
 const navigation = createNavigation();
@@ -61,10 +61,16 @@ function render() {
   const route = parseRoute(location.hash);
   setLogos(store.state.data?.clubLogos);
   // Geöffnete Aufklapper und die Fokusposition bleiben beim Neuzeichnen erhalten.
+  const anchor = [...app.querySelectorAll('[data-event-id]')].find(el => el.getBoundingClientRect().top >= 0);
+  const anchorId = anchor?.dataset.eventId, anchorTop = anchor?.getBoundingClientRect().top;
+  const preserveTicker = window.scrollY > 250 && !navigationPending;
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
-  app.innerHTML = String(html`<main id="main" tabindex="-1">${store.state.data && dataFreshness(store.state.data, Date.now()).stale ? html`<section class="sec">${notice(dataFreshness(store.state.data, Date.now()).label + '. ' + dataFreshness(store.state.data, Date.now()).message)}</section>` : ''}${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
+  const fresh = dataFreshness(store.state.data, Date.now());
+  const relevant = route.view === 'spieler' || route.view === 'statistik' ? ['Spielerwerte'] : route.view === 'tabellen' ? ['Tabellen'] : route.view === 'spielplan' ? ['Spielplan'] : [];
+  const delayed = fresh.sources.filter(source => relevant.includes(source.name) && source.stale);
+  app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}${delayed.length ? html`<section class="sec">${notice(delayed.map(source => source.name + ': ' + source.label).join(' · ') + '. Angezeigt wird der letzte verfügbare Stand.')}</section>` : ''}</main>${route.area ? nav(route.area) : ''}`);
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -82,6 +88,7 @@ function render() {
     if (lastView) document.getElementById('main')?.focus({preventScroll: true});
     lastView = key;
   } else if (focusKey) app.querySelector(focusKey)?.focus({preventScroll: true});
+  if (preserveTicker && anchorId) { const nextAnchor = [...app.querySelectorAll('[data-event-id]')].find(el => el.dataset.eventId === anchorId); if (nextAnchor) window.scrollBy(0, nextAnchor.getBoundingClientRect().top - anchorTop); }
   const entry = navigation.current;
   if (navigationPending) {
     window.scrollTo(0, entry?.restore ? entry.scroll : 0);
@@ -99,7 +106,7 @@ function render() {
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
 function focusSelector(el) {
-  for (const attr of ['data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
+  for (const attr of ['data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
 }
 const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(render); } };
@@ -125,7 +132,7 @@ async function pushAction(action) {
 async function castVote(player) {
   const id = parseRoute(location.hash).id;
   if (!id || ui.voteBusy) return;
-  Object.assign(ui, {voteBusy: true, voteMessage: 'Stimme wird gespeichert …'}); render();
+  Object.assign(ui, {voteGame: String(id), voteBusy: true, voteMessage: 'Stimme wird gespeichert …'}); render();
   try { await ui.votes.vote(id, player); ui.voteMessage = 'Deine Stimme ist gezählt.'; }
   catch (error) { ui.voteMessage = error.message; }
   ui.voteBusy = false; store.invalidate('votes:' + id); render();
@@ -210,7 +217,8 @@ app.addEventListener('click', event => {
     if (device?.active && device.types?.includes('favourite')) { const shv = favouriteShv(); push.update(shv ? device.types : device.types.filter(x => x !== 'favourite'), shv).catch(() => {}); }
     render();
   }
-  else if (t.dataset.vote) castVote(t.dataset.vote);
+  else if (t.dataset.voteSelect) { const id = parseRoute(location.hash).id; ui.voteSelections[id] = t.dataset.voteSelect; ui.voteMessage = ''; render(); }
+  else if (t.hasAttribute('data-vote-confirm')) { const id = parseRoute(location.hash).id; if (ui.voteSelections[id]) castVote(ui.voteSelections[id]); }
   else if (t.dataset.myGame) { toggleMyGame(t.dataset.myGame); render(); }
   else if (t.dataset.share) share(t.dataset.share);
   else if (t.dataset.tip) { const [id, team, delta] = t.dataset.tip.split(':'); changeTip(id, Number(team), Number(delta)); render(); }

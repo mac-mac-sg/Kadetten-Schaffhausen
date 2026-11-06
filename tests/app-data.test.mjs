@@ -71,13 +71,13 @@ test('Ausgabe wird maskiert, verschachtelte Vorlagen bleiben erhalten', () => {
   assert.equal(escapeHtml('"a"&\''), '&quot;a&quot;&amp;&#39;');
 });
 
-test('Routen: vier Bereiche, Spielseite, Ich, Unbekanntes führt zu Jetzt', () => {
+test('Routen: fünf Bereiche, Spielseite, Ich, Unbekanntes führt zu Jetzt', () => {
   assert.deepEqual(parseRoute(''), {area: 'jetzt', view: 'jetzt'});
-  assert.deepEqual(parseRoute('#/saison/tabellen'), {area: 'saison', view: 'tabellen'});
+  assert.deepEqual(parseRoute('#/saison/tabellen'), {area: 'statistik', view: 'tabellen'});
   assert.deepEqual(parseRoute('#/saison/quatsch'), {area: 'saison', view: 'spielplan'});
   assert.deepEqual(parseRoute('#/team/perić'), {area: 'team', view: 'team'});
   assert.deepEqual(parseRoute('#/team/peric-10'), {area: 'team', view: 'spieler', id: 'peric-10'});
-  assert.deepEqual(parseRoute('#/spiel/508338'), {area: 'jetzt', view: 'spiel', id: '508338'});
+  assert.deepEqual(parseRoute('#/spiel/508338'), {area: 'saison', view: 'spiel', id: '508338'});
   assert.deepEqual(parseRoute('#/ich'), {area: null, view: 'ich'});
   assert.deepEqual(parseRoute('#home'), {area: 'jetzt', view: 'jetzt'});
   assert.equal(href.saison('spielplan'), '#/saison');

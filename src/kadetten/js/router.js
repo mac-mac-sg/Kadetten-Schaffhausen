@@ -1,14 +1,15 @@
 // Hash-Routen: statisches Hosting unter /v2/ braucht keine Server-Weiterleitungen.
 
 export const AREAS = [
-  {id: 'jetzt', label: 'Jetzt', href: '#/'},
-  {id: 'saison', label: 'Saison', href: '#/saison'},
+  {id: 'jetzt', label: 'Start', href: '#/'},
+  {id: 'saison', label: 'Spiele', href: '#/saison'},
+  {id: 'statistik', label: 'Statistik', href: '#/statistik'},
   {id: 'team', label: 'Team', href: '#/team'},
   {id: 'verein', label: 'Verein', href: '#/verein'}
 ];
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
-export const GAME_TABS = ['vorschau', 'live', 'bericht'];
+export const GAME_TABS = ['vorschau', 'live', 'bericht', 'wahl'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
 export function parseRoute(hash = '') {
@@ -17,13 +18,14 @@ export function parseRoute(hash = '') {
   const safeId = v => /^[A-Za-z0-9_-]{1,80}$/.test(v || '') ? v : null;
   switch (first) {
     case undefined: return {area: 'jetzt', view: 'jetzt'};
-    case 'saison': return {area: 'saison', view: SAISON_TABS.includes(second) ? second : 'spielplan'};
+    case 'saison': return {area: ['tabellen', 'statistik'].includes(second) ? 'statistik' : 'saison', view: SAISON_TABS.includes(second) ? second : 'spielplan'};
+    case 'statistik': return {area: 'statistik', view: second === 'spieler' ? 'statistik' : 'tabellen'};
     case 'team': return safeId(second) ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
     case 'verein': return {area: 'verein', view: 'verein'};
     case 'ich': return {area: null, view: 'ich'};
-    case 'spiel': return safeId(second) ? {area: 'jetzt', view: 'spiel', id: second, ...(GAME_TABS.includes(parts[2]) ? {tab: parts[2]} : {})} : {area: 'jetzt', view: 'jetzt'};
+    case 'spiel': return safeId(second) ? {area: 'saison', view: 'spiel', id: second, ...(GAME_TABS.includes(parts[2]) ? {tab: parts[2]} : {})} : {area: 'jetzt', view: 'jetzt'};
     // Adressen aus Push-Mitteilungen des Datendienstes (#match/<id>/…).
-    case 'match': return safeId(second) ? {area: 'jetzt', view: 'spiel', id: second} : {area: 'jetzt', view: 'jetzt'};
+    case 'match': return safeId(second) ? {area: 'saison', view: 'spiel', id: second} : {area: 'jetzt', view: 'jetzt'};
     case 'news': return safeId(second) ? {area: 'jetzt', view: 'artikel', id: second} : {area: 'jetzt', view: 'news'};
     default: return {area: 'jetzt', view: 'jetzt'};
   }

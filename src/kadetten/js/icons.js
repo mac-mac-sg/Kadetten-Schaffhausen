@@ -2,7 +2,8 @@
 import {raw} from './text.js';
 
 const PATHS = {
-  jetzt: '<path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8.5"/>',
+  statistik: '<path d="M4 20h16M6 16v-4M12 16V4M18 16V8"/>',
+  jetzt: '<path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/>',
   saison: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   team: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M16 14.2c2.4.1 4 1.7 4.5 4.3"/>',
   verein: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/>',

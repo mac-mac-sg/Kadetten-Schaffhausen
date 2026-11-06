@@ -2,6 +2,17 @@
 
 Stand: 6. November 2026. Richtung abgenommen am 5. November: «B (Nacht) kombiniert mit der Leichtigkeit von C (Kadettenorange)». Am 6. November nach dem Skill [unslop](https://github.com/heydamir/unslop) von Damir Sokolovsky (@heydamir, CC BY 4.0) überarbeitet: neutrale Flächen, kleinere Radien, ruhigere Schrift (Entscheid des Eigentümers). Gilt für die neue App unter `/v2/`; V1 bleibt unverändert. Aufbau der Seiten: [Spezifikation](kadetten-app.md#seitenaufbau).
 
+## Gewählte Weiterentwicklung am 6. November 2026
+
+Die drei Entwürfe werden zu einer gemeinsamen Oberfläche kombiniert: Start aus V3 «Arena Glas», Ticker aus V2 «Klarer Begleiter», Spielerwahl aus V1 «Orange Magazin». Gemeinsame Navigation, Typografie und Farben verbinden die Bereiche. Bewusst eingesetztes Glas bleibt in der Hallen-Spielkarte und der Navigation erhalten.
+
+- Fünf Hauptbereiche: Start, Spiele, Statistik, Team, Verein. Einstellungen und persönliche Funktionen über das Profil. Nur der aktive Navigationspunkt trägt eine sichtbare Beschriftung; alle Links haben zugängliche Namen.
+- Start: Hallenfoto mit flacher Spielkarte, ein grosser redaktioneller Artikel, zwei kleine Meldungen, kompakte Saisonzeile und letztes Resultat. Fehlende Artikelbilder erhalten keine erfundenen Ersatzfotos.
+- Spiel: Übersicht, Ticker, Statistik; die bestehenden URLs bleiben gültig. Der Ticker zeigt ausschliesslich gelieferte SHV-Ereignisse, neueste zuerst, mit Minute, Aktion, Spieler und Spielstand. Ohne Ereignisquelle erscheint ein verständlicher Hinweis. Statistik bleibt getrennt erreichbar.
+- Spielerwahl: eigener Bildschirm mit Portraits, Auswahlzustand und anschliessender Bestätigung. Ergebnisse erst nach Wahlende. Die bestehende serverseitige Wahl nach Spielende bleibt bestehen; eine Freigabe während Heimspielen erfordert eine separate Backend-Erweiterung.
+- Warme helle Flächen (`#faf8f4`, `#fffefa`, `#f1efea`), dunkle Flächen (`#151615`, `#1e201e`, `#292b28`), sonst die bestehenden Kontrastfarben. Überschriften Inter, Spielstand weiterhin Barlow Condensed. Die Werte in der folgenden älteren Token-Tabelle werden für die drei Flächentokens durch `companion.css` ersetzt.
+- Quellenhinweise betreffen die jeweilige Datenansicht. Verzögerte Spielerwerte überlagern die Startseite nicht.
+
 ## Richtung
 
 - **Produkt:** Inoffizielle Fan-App für Kadetten-Fans: nächstes Spiel, Live-Stand, Spielbericht, Tabelle, Team und Verein.

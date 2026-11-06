@@ -229,3 +229,7 @@ Anreise- und Hallenführer, ÖV-Abfahrten, Tor-für-Tor-Ticker, Lärmmesser, Fan
 - Torhüterprofile zeigen zuerst Paraden und Fangquote aus den letzten verfügbaren QHL-Berichten, einschliesslich der Abdeckung (z. B. zwei von fünf Berichten). Fehlende Werte werden nicht geschätzt. Tore entfallen als führende QHL-Kennzahl für Torhüter.
 - Die Kadetten-Form in QHL-/EHL-Vorschauen wird auf diesen Wettbewerb begrenzt. Die separat gelieferte Gegnerform nennt ihren Datenumfang ausdrücklich. Tabellenszenarien gelten nur beim aktuellen Tabellenstand; Punktgleichheit wird nicht als gesicherter Rang ausgegeben.
 - «Jetzt» zeigt höchstens zwei Momente. Auf der Vorschauseite steht der persönliche Tipp nach der Ausgangslage.
+
+## Navigation ab 6. November 2026
+
+Die Hauptnavigation umfasst Start (`#/`), Spiele (`#/saison`), Statistik (`#/statistik`, Spielerwerte `#/statistik/spieler`), Team und Verein. Die bisherigen Saison-Unteradressen bleiben als kompatible Routen bestehen. Die Spielansicht trennt Übersicht, Ticker und Statistik; `#/spiel/:id/wahl` öffnet die Fan-Wahl mit Auswahl und expliziter Bestätigung. Das backendseitige Wahlfenster bleibt nach Spielende. Der SHV-Ereignisticker verwendet ausschliesslich die gelieferten `details.events`; bei fehlender Quelle, insbesondere EHF, wird kein Ereignisverlauf erfunden.
