@@ -33,6 +33,7 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
     live: () => get('/api/live', {fresh: true}),
     report: gameId => get('/api/reports/' + id(gameId)),
     ehfReport: gameId => get('/api/ehf-reports/' + id(gameId)),
+    matchReport: gameId => get('/api/match-reports/' + id(gameId)),
     headToHead: (home, away) => get('/api/head-to-head?home=' + id(home) + '&away=' + id(away)),
     recentGames: team => get('/api/recent-games?team=' + id(team)),
     preview: gameId => get('/api/previews/kadetten/' + id(gameId)),

@@ -34,7 +34,7 @@ Fotos, Spielerbilder und Wappen liegen als WebP vor. Namen aus den Daten (`.jpg`
 
 server/worker.mjs ist ein Worker mit fetch(request, env). server/update.mjs verarbeitet WordPress, Spielplan und Tabelle; server/shv.mjs validiert SHV-Spielerwerte; server/live.mjs liefert bestätigte Live-Werte, jüngste Ergebnisse und direkte Duelle. scripts/build.mjs bündelt Module mit esbuild und versioniert die App-Hülle deterministisch.
 
-GET /api/data liefert den aktuellen Snapshot; GET /api/articles/:id?v=:sha liefert separat den Volltext. GET /api/access liefert die Update-Berechtigung. POST /api/refresh ist ausschliesslich für den Eigentümer und die autorisierte Automation.
+GET /api/data liefert den aktuellen Snapshot. Für die Kadetten Companion App liefert server/app-fan.mjs unter /api/app/ das Kalender-Abo (GET /api/app/calendar.ics) und die Fan-Wahl «Spieler des Matchs» (GET/POST /api/app/votes/:id, Speicher Workers KV unter app/votes/…, eine Stimme pro Gerät, begrenzt pro Anschluss, nur von der App-Herkunft); der Push-Monitor meldet zusätzlich Tore des Lieblingsspielers (Gerätetyp «favourite»). GET /api/articles/:id?v=:sha liefert separat den Volltext. GET /api/access liefert die Update-Berechtigung. POST /api/refresh ist ausschliesslich für den Eigentümer und die autorisierte Automation.
 
 ## Speicher und Identität
 

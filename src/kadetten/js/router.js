@@ -22,6 +22,8 @@ export function parseRoute(hash = '') {
     case 'verein': return {area: 'verein', view: 'verein'};
     case 'ich': return {area: null, view: 'ich'};
     case 'spiel': return safeId(second) ? {area: 'jetzt', view: 'spiel', id: second, ...(GAME_TABS.includes(parts[2]) ? {tab: parts[2]} : {})} : {area: 'jetzt', view: 'jetzt'};
+    // Adressen aus Push-Mitteilungen des Datendienstes (#match/<id>/…).
+    case 'match': return safeId(second) ? {area: 'jetzt', view: 'spiel', id: second} : {area: 'jetzt', view: 'jetzt'};
     case 'news': return safeId(second) ? {area: 'jetzt', view: 'artikel', id: second} : {area: 'jetzt', view: 'news'};
     default: return {area: 'jetzt', view: 'jetzt'};
   }

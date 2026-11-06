@@ -4,30 +4,17 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
 import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
-import {findGame, gamePhase, withFinished, liveTable, reportFromEhf, reportMatches, scorers, teamComparison, displayName, storiesForGame, sameTeam, isOwn} from '../match.js';
+import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
+import {normalizeReport, fitsGame} from '../report.js';
+import {renderBericht, renderLiveStats, loadReportFor, voteSection} from './bericht.js';
+import {myVotes} from '../fan-vote.js';
 import {myGames} from '../personal.js';
-import {backBar, sectionHead, formRow, formBadge, notice, loading, listRow, gameRow, storyRow, segment, crest} from './parts.js';
-import {liveHero, resultHero, previewHero, shareText} from './jetzt.js';
+import {backBar, sectionHead, formRow, formBadge, notice, loading, listRow, gameRow, segment, crest} from './parts.js';
+import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 
 const GAME_TABS = [['vorschau', 'Vorschau'], ['live', 'Live'], ['bericht', 'Bericht']];
 
 function opponentOf(game) { return isOwn(game.home) ? game.away : game.home; }
-
-async function loadReport(api, game) {
-  if (game.league === 'EHL') {
-    const {report} = await api.ehfReport(game.id);
-    return reportFromEhf(report);
-  }
-  try {
-    const {report} = await api.report(game.id);
-    if (reportMatches(report, game)) return report;
-  } catch {}
-  // Mitgelieferte, geprüfte Berichte als Rückfall.
-  const local = await fetch('data/game-reports.json').then(r => r.ok ? r.json() : null).catch(() => null);
-  const stored = local?.reports && Object.values(local.reports).find(r => String(r.gameId) === String(game.id));
-  if (reportMatches(stored, game)) return stored;
-  throw Error('Kein Bericht');
-}
 
 function opponentForm(load, api, data, game) {
   const team = opponentOf(game);
@@ -68,50 +55,34 @@ function vorschau({game, data, load, api, now}) {
         <p class="fine">${p.generator === 'daten' ? 'Aus bestätigten Spiel- und Tabellendaten zusammengestellt.' : 'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert. Keine Ergebnisprognose.'}</p></article></section>` : ''}
     ${duels?.value?.games?.length ? html`<section class="sec" aria-labelledby="g-duel">${sectionHead('Direkte Duelle', '', '', 'g-duel')}<div class="card list">${duels.value.games.slice(0, 3).map(d => listRow({title: `${shortTeam(d.home)} – ${shortTeam(d.away)}`, sub: d.date.split('-').reverse().join('.'), end: html`<span class="res num">${d.score[0]}:${d.score[1]}${formBadge(outcomeByName(d, OWN_TEAM))}</span>`}))}</div></section>` : ''}
     ${ownLast.length ? html`<section class="sec" aria-labelledby="g-last">${sectionHead('Letzte Spiele der Kadetten', '', '', 'g-last')}<div class="card list">${ownLast.map(g => gameRow(g, now))}</div></section>` : ''}
-    ${pdf ? html`<section class="sec"><div class="card list">${listRow({title: 'Matchprogramm', sub: 'PDF', end: icon('ext', 18), lead: html`<span class="lead">${icon('doc', 20)}</span>`, link: pdf})}</div></section>` : ''}`;
+    ${pdf ? html`<section class="sec"><div class="card list">${listRow({title: 'Matchprogramm', sub: 'PDF', end: icon('ext'), lead: html`<span class="lead">${icon('doc')}</span>`, link: pdf})}</div></section>` : ''}`;
 }
 
-function liveTab({game, phase, data, state, now}) {
+function liveTab({game, phase, data, state, now, ui}) {
   if (phase === 'vorschau') return html`<section class="sec">${notice('Der Live-Stand erscheint ab Anpfiff und wird alle 30 Sekunden aktualisiert. Einzelne Tore werden live nicht angezeigt.', 'jetzt')}</section>`;
-  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id, 'bericht')}">${icon('doc', 20)}Zum Spielbericht</a></section>`;
+  if (phase === 'bericht') return html`<section class="sec">${notice('Das Spiel ist beendet.', 'doc')}</section><section class="sec"><a class="btn" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Zum Spielbericht</a></section>`;
   const table = liveTable(data.tables?.QHL, {...state.live.match, league: state.live.match.league || game.league});
   return html`
     ${table ? html`<section class="sec" aria-labelledby="g-lt">${sectionHead('Live-Tabelle', 'Ganze Tabelle', href.saison('tabellen'), 'g-lt')}<div class="card list"><div class="tbl">${table.slice(0, 5).map(r => html`<div class="tr${sameTeam(r.team, OWN_TEAM) ? ' me' : ''}"><span class="p num">${r.rank}</span><span class="tn">${shortTeam(r.team)}</span><span class="sp num">${r.played}</span><span></span><span class="pt num">${r.points}</span></div>`)}</div></div></section>` : ''}
     ${state.liveError ? html`<section class="sec">${notice('Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.')}</section>` : ''}
-    <section class="sec">${notice('Torschützen und Spielerwerte folgen im Spielbericht nach Abpfiff. Der Stand wird alle 30 Sekunden aktualisiert.', 'bell')}</section>`;
+    ${renderLiveStats({match: state.live.match, data, ui})}`;
 }
 
-function playerLink(data, p) {
-  const entry = Object.entries(data.playerSeason?.players || {}).find(([, v]) => v.shvPlayerId === p.id);
-  return entry ? href.spieler(entry[0]) : '';
+function bericht({game, phase, data, load, api, ui}) {
+  if (phase !== 'bericht') return html`<section class="sec">${notice('Der Spielbericht mit Matchbericht, Spielverlauf, Teamvergleich und Spielerwerten erscheint nach Abpfiff.', 'doc')}</section>`;
+  const supported = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '');
+  const entry = supported ? loadReportFor(load, api, game) : null;
+  let normalized = null;
+  if (entry?.status === 'ready') {
+    const candidate = game.league === 'EHL' ? normalizeReport(null, entry.value.archive) : normalizeReport(entry.value.shv, null);
+    normalized = fitsGame(candidate, game) ? candidate : null;
+  }
+  const vote = ui.votes ? load('votes:' + game.id, () => ui.votes.status(game.id), 60000) : null;
+  const voting = vote ? voteSection({vote, mine: myVotes()[game.id] || null, now: Date.now(), busy: ui.voteBusy, message: ui.voteMessage}) : '';
+  return renderBericht({game, data, entry, ui, normalized, voting});
 }
 
-function bericht({game, phase, data, load, api}) {
-  if (phase !== 'bericht') return html`<section class="sec">${notice('Der Spielbericht mit Torschützen, Paraden und Teamvergleich erscheint nach Abpfiff.', 'doc')}</section>`;
-  const report = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '') ? load('report:' + game.id + ':' + game.score.join('-'), () => loadReport(api, game), 900000) : null;
-  const stories = storiesForGame(data.stories, game);
-  const articles = stories.length ? html`<section class="sec" aria-labelledby="g-art">${sectionHead('Artikel zum Spiel', '', '', 'g-art')}<div class="card list">${stories.slice(0, 3).map(storyRow)}</div></section>` : '';
-  if (!report || report.status === 'error') return html`<section class="sec">${notice('Für dieses Spiel liegt noch kein bestätigter Spielbericht vor.', 'doc')}</section>${articles}`;
-  if (report.status === 'loading') return html`<section class="sec">${loading('Spielbericht wird geladen …')}</section>${articles}`;
-  const r = report.value, ownIndex = isOwn(r.teams[0].name) ? 0 : 1, own = r.teams[ownIndex], other = r.teams[1 - ownIndex];
-  const comparison = teamComparison(r);
-  const scorerRow = (p, link) => listRow({title: displayName(p.name), sub: Number.isInteger(p.seven) && p.seven > 0 ? `davon ${p.seven}${Number.isInteger(p.sevenShots) ? ' von ' + p.sevenShots : ''} 7-m` : '', end: html`<span class="res num">${p.goals}</span>`, link, cls: 'compact'});
-  const keepers = own.players.filter(p => p.keeper && Number.isInteger(p.saves) && p.saves > 0);
-  return html`
-    <section class="sec" aria-labelledby="g-tore">${sectionHead('Torschützen Kadetten', '', '', 'g-tore')}
-      <div class="card list">${scorers(own).map(p => scorerRow(p, data.playerSeason ? playerLink(data, p) : ''))}
-        ${keepers.map(p => listRow({title: displayName(p.name), sub: 'Paraden', end: html`<span class="res num">${p.saves}</span>`, link: playerLink(data, p), cls: 'compact'}))}</div>
-      <details class="card more-card" id="g-gegner"><summary>Torschützen ${shortTeam(other.name)}</summary><div class="list">${scorers(other).map(p => scorerRow(p, ''))}</div></details>
-    </section>
-    ${comparison.length ? html`<section class="sec" aria-labelledby="g-cmp">${sectionHead('Teamvergleich', '', '', 'g-cmp')}<div class="card list">
-      <div class="cmp head"><span>${shortTeam(r.teams[0].name)}</span><span></span><span>${shortTeam(r.teams[1].name)}</span></div>
-      ${comparison.map(c => html`<div class="cmp num"><b>${c.homeText}</b><span class="bar"><span>${c.label}</span><i aria-hidden="true"><b style="${'width:' + Math.round(c.share * 100) + '%'}"></b></i></span><b>${c.awayText}</b></div>`)}
-      </div>${Number.isInteger(r.spectators) ? html`<p class="fine pad-top">${r.spectators.toLocaleString('de-CH')} Zuschauerinnen und Zuschauer${r.source === 'EHF' ? ' · Quelle EHF, ohne Gewähr' : ''}</p>` : ''}</section>` : ''}
-    ${game.league === 'QHL' ? html`<section class="sec"><div class="card list">${listRow({title: 'Tabelle danach', sub: 'QHL', link: href.saison('tabellen'), lead: html`<span class="lead">${icon('saison', 20)}</span>`})}</div></section>` : ''}
-    ${articles}`;
-}
-
-export function renderSpiel({route, state, now, load, api}) {
+export function renderSpiel({route, state, now, load, api, ui}) {
   const {data, live} = state;
   if (!data) return html`${backBar('Jetzt', href.jetzt())}<h1 class="h1 pad">Spiel</h1><section class="sec">${loading()}</section>`;
   let game = data.games.find(g => String(g.id) === route.id);
@@ -120,15 +91,16 @@ export function renderSpiel({route, state, now, load, api}) {
   game = withFinished(game, live, now);
   const phase = gamePhase(game, live, now), tab = route.tab || phase;
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
-  const share = hasScore(game) ? html`<button class="icb" type="button" data-share="${shareText(game)}" aria-label="Resultat teilen">${icon('share', 20)}</button>` : '';
-  const hero = phase === 'live' ? liveHero(live.match, game, state, now, false) : phase === 'bericht' ? resultHero(game, now, {link: false}) : previewHero(game, now, {link: false});
+  const share = hasScore(game) ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share')}</button>` : '';
+  const hero = phase === 'live' ? liveHero(live.match, game, state, now, false) : phase === 'bericht' ? resultHero(game, now, {link: false, celebrate: outcome(game) === 'S'}) : previewHero(game, now, {link: false});
   const visited = myGames().includes(String(game.id));
   const started = kickoff(game) !== null && kickoff(game) <= now;
   const tabs = GAME_TABS.map(([id, label]) => [id, label, href.spiel(game.id, id), id === 'live' && phase === 'live' ? html`<i class="dot"></i>` : '']);
-  const content = tab === 'live' ? liveTab({game, phase, data, state, now}) : tab === 'bericht' ? bericht({game, phase, data, load, api}) : vorschau({game, data, load, api, now});
+  const content = tab === 'live' ? liveTab({game, phase, data, state, now, ui}) : tab === 'bericht' ? bericht({game, phase, data, load, api, ui}) : vorschau({game, data, load, api, now, ui});
   return html`${backBar('Zurück', href.jetzt(), share)}<h1 class="sr">${title}</h1>
     ${segment(tabs, tab, 'Spielseite')}
     <section class="sec">${hero}</section>
+    ${tab === 'vorschau' || (tab === 'bericht' && phase === 'bericht') ? tipFor(game, now) : ''}
     ${content}
-    ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein', 20)}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
+    ${started && isOwn(game.home) ? html`<section class="sec"><button class="btn wide${visited ? ' on' : ''}" type="button" data-my-game="${game.id}" aria-pressed="${String(visited)}">${icon('verein')}${visited ? 'Ich war in der Halle' : 'Ich war in der Halle?'}</button></section>` : ''}`;
 }

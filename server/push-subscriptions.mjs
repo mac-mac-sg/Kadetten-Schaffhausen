@@ -1,7 +1,7 @@
 import {sendPush, unbase64} from './web-push.mjs';
 export const PUSH_ORIGIN='https://mac-mac-sg.github.io';
 export const PUSH_PREFIX='push/v2/devices/';
-export const PUSH_TYPES=['reminder','start','half','final'];
+export const PUSH_TYPES=['reminder','start','half','final','favourite'];
 export const PUSH_CLUBS=['kadetten','fcsg','otmar'];
 export const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');
 const reply=(data,status=200)=>new Response(status===204?null:JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':PUSH_ORIGIN,'Access-Control-Allow-Methods':'GET, PUT, DELETE, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Vary':'Origin'}});
@@ -43,13 +43,16 @@ async function handlePush(request, env, url) {
  }
  if(request.method!=='PUT'||url.pathname!=='/api/push/device')return reply({error:'Method not allowed'},405);
  if(!Array.isArray(input.clubs)||!input.clubs.length||input.clubs.some(c=>!PUSH_CLUBS.includes(c))||!Array.isArray(input.types)||input.types.some(t=>!PUSH_TYPES.includes(t)))return reply({error:'Invalid preferences'},400);
+ // Lieblingsspieler (nur Kadetten-App): SHV-Spieler-ID für Tor-Mitteilungen; ohne gültige ID kein Typ «favourite».
+ const favourite=Number.isInteger(input.favourite?.shv)&&input.favourite.shv>0&&input.favourite.shv<1e9?{shv:input.favourite.shv}:null;
+ if(input.types.includes('favourite')&&!favourite)return reply({error:'Invalid preferences'},400);
  if(!previous) {
   // Bounded per-IP enrolment; no subscription lists, arbitrary messages or snapshot writes are exposed.
   const rateKey='push/v2/enrol/'+await digest(request.headers.get('CF-Connecting-IP')||'unknown');
   if(await env.DATA.get(rateKey))return reply({error:'Bitte eine Minute bis zur erneuten Aktivierung warten.'},429);
   await env.DATA.put(rateKey,'1',{expirationTtl:60});
  }
- await env.DATA.put(key,JSON.stringify({owner,subscription:{endpoint:input.subscription.endpoint,keys:input.subscription.keys},clubs:[...new Set(input.clubs)],types:[...new Set(input.types)],createdAt:previous?.createdAt||Date.now(),updatedAt:Date.now()}),{expirationTtl:180*86400});
+ await env.DATA.put(key,JSON.stringify({owner,subscription:{endpoint:input.subscription.endpoint,keys:input.subscription.keys},clubs:[...new Set(input.clubs)],types:[...new Set(input.types)],...(favourite?{favourite}:{}),createdAt:previous?.createdAt||Date.now(),updatedAt:Date.now()}),{expirationTtl:180*86400});
  return reply({ok:true});
 }
 

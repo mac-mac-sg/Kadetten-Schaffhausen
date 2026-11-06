@@ -21,5 +21,5 @@ export function renderArtikel({route, state, load, api}) {
       <h1 class="h1 article-title">${story.title}</h1>
       <div class="prose">${full?.status === 'ready' ? raw(full.value) : full?.status === 'loading' ? html`<p>${story.text}</p>${loading('Ganzer Artikel wird geladen …')}` : html`<p>${story.text}</p>`}</div>
     </article>
-    ${story.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Artikel auf kadettensh.ch', end: icon('ext', 18), link: story.url})}</div></section>` : ''}`;
+    ${story.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Artikel auf kadettensh.ch', end: icon('ext'), link: story.url})}</div></section>` : ''}`;
 }

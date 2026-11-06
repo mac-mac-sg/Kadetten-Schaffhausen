@@ -14,7 +14,7 @@ Die V2 unter `/v2/` wird als eigenständige Kadetten Companion App neu aufgebaut
 | Neuaufbau | Die Kadetten-App wird komplett neu gestaltet und neu aufgebaut. Die bisherige V2 dient nur als Fundus (Datenlogik, Prüfwissen); sie gibt Struktur und Gestaltung nicht vor. |
 | Ort | Die neue App ersetzt die bisherige V2 direkt unter `/v2/`. Installations-ID, Scope und `v2:`-Speicherschlüssel bleiben, damit installierte Apps weiterlaufen. |
 | Technik | Ohne Framework: ES-Module, CSS mit Layern und Tokens, esbuild. Eigene Codebasis ohne gemeinsame Client-Dateien mit V1; die V1-Ausgabe bleibt nachweisbar bytegleich. |
-| Datendienst | Die App liest den bestehenden Datendienst `kadetten-api`. Neue Funktionen erhalten nur zusätzliche Endpunkte unter eigenem Präfix; bestehende Routen bleiben unverändert. |
+| Datendienst | Die App liest den bestehenden Datendienst `kadetten-api`. Neue Funktionen erhalten nur zusätzliche Endpunkte unter eigenem Präfix (`/api/app/`, server/app-fan.mjs); bestehende Routen bleiben unverändert. |
 | Charakter | Inoffizielle Fan-App. Kein Auftreten als offizielles Club-Angebot, Videos nur verlinken (Rechte bei SHV/RED), keine Werbung und kein Drittanbieter-Tracking. |
 
 ## Fragen der Fans
@@ -112,12 +112,12 @@ Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rech
 ## Einschränkungen
 
 - **Keine Angaben zu Anreise, Türöffnung oder Abreise.**
-- **Live nur auf Ebene Spielstand.** Der Liveticker wird alle 30 Sekunden abgerufen; in dieser Zeit fallen im Handball oft mehrere Tore. Einzelne Tore, Torschützen und Tor-für-Tor-Abläufe werden live deshalb nicht dargestellt. Torschützen und Spielerwerte erscheinen erst im bestätigten Spielbericht.
+- **Live ohne Ereignisliste.** Der Live-Stand wird alle 30 Sekunden abgerufen. Angezeigt werden Spielstand, Phase, Halbzeit sowie laufend aktualisierte Team- und Spielerwerte (Entscheid 5.11.2026). Eine laufende Ereignisliste (Tor für Tor) gibt es bewusst nicht, obwohl der SHV sie liefern würde. Massgebend bleibt der bestätigte Spielbericht nach Abpfiff.
 - Der letzte gültige Stand bleibt bei Ausfällen sichtbar; Live-Antworten werden nie aus dem Cache gezeigt.
 
 ## Gestaltung
 
-Richtung «Abend» (dunkel mit Hallenfoto, schmale grosse Zahlen, runde und warme Formen), Hell- und Dunkelmodus. Farben, Schrift, Abstände und Bausteine: [Designsystem](kadetten-app-design.md).
+Richtung «Abend» (Spielkarte mit Hallenfoto, schmale Anzeigetafel-Ziffern, ruhige neutrale Flächen; am 6.11.2026 nach dem Skill unslop überarbeitet), Hell- und Dunkelmodus. Farben, Schrift, Abstände und Bausteine: [Designsystem](kadetten-app-design.md).
 
 - Kadetten-Orange (`#ff790e`) als Fläche mit fast schwarzer Schrift; als Text auf Hell `#b23c08`, auf Dunkel `#ff9a45`.
 - Ergebnisse nie nur über Farbe: Formkurve als S/U/N mit Buchstabe, Form und Farbe.
@@ -194,24 +194,23 @@ Prüfung: `tests/app-match.test.mjs` (Zuordnung Live/Endstand, Live-Tabelle, Ber
 
 Ideen für nach dem Grundumfang (Schritte 1–6). Noch nicht entschieden und nicht eingeplant.
 
-### Fan-Wahl «Spieler des Matchs»
+### Umgesetzt nach dem Start (5.11.2026)
 
-Fans wählen nach dem Spiel den besten Kadetten-Spieler.
+Ausbau nach dem Vergleich mit den Ansprüchen des Eigentümers, Best Practices und der bisherigen V2:
 
-| Punkt | Vorschlag |
-|---|---|
-| Ort | Spielseite · Bericht und «Jetzt» · Nachspiel |
-| Auswahl | Kadetten-Spieler mit Einsatz laut bestätigtem Spielbericht, mit Toren und Paraden als Entscheidungshilfe |
-| Zeitfenster | ab bestätigtem Endresultat bis etwa 24 Stunden danach |
-| Ergebnis | Sieger und Anteile erst nach Abschluss der Wahl; auf dem Spielerprofil «Spieler des Matchs» pro Saison |
-| Stimmen | eine Stimme pro Gerät und Spiel, ohne Konto |
+| Punkt | Umsetzung | Daten |
+|---|---|---|
+| Spielbericht | Matchbericht als Text (KI oder aus Daten, gekennzeichnet), Spielverlauf als Grafik mit grösster Führung, bestem Lauf, Führungswechseln, Auszeiten und Zeitstrafen, Torfolge (aufklappbar), Teamvergleich mit Halbzeiten, Wurfquote, Paraden mit Fangquote, 7-m, Zeitstrafen, Verwarnungen, technischen Fehlern, Spielerwerte beider Teams (Tore/Würfe, Quote, 7-m, 2′, Verwarnungen), Torhüter mit Fangquote, Zuschauer, Schiedsrichter; EHL zusätzlich «Woher die Würfe kamen» (Wurfergebnisse und Zonen) | `/api/reports`, `/api/match-reports`, `/api/ehf-reports` |
+| Live | Teamwerte und Spielerwerte live (alle 30 s), «Kadetten-Werfer live» auf «Jetzt»; keine Ereignisliste | `/api/live` (`match.details`) |
+| Spieler und Statistik | Profil mit Feld-/7-m-Toren, Strafen, Abschluss bzw. Fangquote der letzten fünf QHL-Spiele, EHL-Werten; Statistik mit Torschützen QHL und EHL und Torhüterliste aus den Spielberichten | `playerSeason`, `ehlPlayerSeason`, Spielberichte |
+| Überraschen und involvieren | «Momente» (Serie, Szenario «Mit einem Sieg», Meilenstein, Lieblingsspieler, letztes Duell, höchster Saisonsieg, Geschichte des Tages), Tippspiel ohne Einsatz (lokal, Punkte 3/2/1), Teilen-Bild für Resultate, «Deine Saison» mit Teilen-Bild, Lieblingsspieler in Tabellen hervorgehoben, Siegmoment (abschaltbar über «Bewegung reduzieren»), Regel-Erklärungen («?») | vorhandene Daten, lokal |
+| Fan-Wahl «Spieler des Matchs» | Kandidaten aus dem gesicherten Spielbericht, offen von 90 Minuten nach Anpfiff bis 26 Stunden nach Anpfiff, eine Stimme pro Gerät (zufälliger Schlüssel, gehasht gespeichert), höchstens 6 Stimmen pro Anschluss und Spiel, Ergebnis nach der eigenen Stimme oder nach Schluss, als inoffiziell gekennzeichnet | `GET/POST /api/app/votes/:id` (KV `app/votes/…`) |
+| Kalender-Abo | abonnierbarer Kalender (`webcal://…/api/app/calendar.ics`), aktualisiert sich selbst; die einmalige Kalenderdatei bleibt | `GET /api/app/calendar.ics` |
+| Push Lieblingsspieler | Mitteilung bei jedem Tor des Lieblingsspielers in QHL-Spielen, aus der SHV-Ereignisliste, je Tor und Gerät einmal, nur frisch gesehene Tore | `/api/push/device` mit `favourite.shv`, server/push-monitor.mjs |
 
-Zu klären vor der Umsetzung:
-- **Schreibzugriff:** Bisher schreibt die Öffentlichkeit nie in den Datendienst (AGENTS.md). Die Wahl bräuchte erstmals einen öffentlichen, schreibenden Endpunkt unter eigenem Präfix (z. B. `POST /api/votes/…`) mit eigenem Speicher. Das ist ein Entscheid des Eigentümers.
-- **Missbrauch:** Ohne Konto lässt sich Mehrfachabstimmen nur erschweren, nicht verhindern (Gerätekennung, Ratenbegrenzung, allenfalls Cloudflare Turnstile). Das Ergebnis ist deshalb ein Stimmungsbild, keine offizielle Auszeichnung.
-- **Datenschutz:** keine Personendaten speichern; die Gerätekennung bleibt zufällig und lokal, Stimmen nur gezählt.
-- **Abgrenzung:** «Öffentliche Ranglisten» sind bewusst nicht vorgesehen; eine Wahl pro Spiel ohne Nutzerranglisten widerspricht dem nicht.
-- **Charakter:** Inoffizielle Fan-Wahl, klar als solche bezeichnet; kein Bezug zu einer allfälligen offiziellen Auszeichnung des Clubs.
+Die Endpunkte unter `/api/app/` und die Tor-Mitteilungen wirken erst nach der Bereitstellung des Datendienstes (Workflow «Cloudflare-Datendienst bereitstellen», läuft bei Änderungen unter `server/` auf `main` automatisch). Bis dahin blendet die App Kalender-Abo, Tor-Mitteilungen und Fan-Wahl aus.
+
+Noch offen: Tippspiel mit Vergleich unter Fans (bräuchte einen weiteren Schreibweg), «An diesem Tag» mit Tagesdaten (die Geschichte enthält nur Jahre), Ticket-Link und Sender (Angaben vom Club).
 
 ## Bewusst nicht vorgesehen
 

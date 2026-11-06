@@ -13,6 +13,7 @@ import {kvStore} from './kv-store.mjs';
 import {dispatchUpdate} from './scheduler.mjs';
 import {pushRoute} from './push-subscriptions.mjs';
 import {monitorPush} from './push-monitor.mjs';
+import {appRoute} from './app-fan.mjs';
 
 const json = (x, status = 200) =>
   new Response(JSON.stringify(x), {status, headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}});
@@ -223,6 +224,7 @@ async function otmarData(request,env,u) {
 }
 const routes = [
   [isUnder('/api/push/'),pushRoute],
+  [isUnder('/api/app/'),appRoute],
   [isUnder('/api/otmar/'),otmarData],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],

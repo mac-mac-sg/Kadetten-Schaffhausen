@@ -7,7 +7,7 @@ import {cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFil
 import {join, relative} from 'node:path';
 
 export const API_ORIGIN_PAGES = 'https://kadetten-api.mac-mac-sg.workers.dev';
-const FONTS = [['inter', [400, 500, 600, 700]], ['barlow-condensed', [600, 700, 800]]];
+const FONTS = [['inter', [400, 500, 600]], ['barlow-condensed', [600]]];
 
 export async function buildApp({outDir = 'dist/app', target = process.env.KADETTEN_TARGET} = {}) {
   const src = 'src/kadetten';

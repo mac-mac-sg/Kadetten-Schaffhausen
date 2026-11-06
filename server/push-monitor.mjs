@@ -91,6 +91,39 @@ export async function monitorPush(env,now=Date.now(),deps={}) {
      }catch{/* Retry only within the event's five-minute freshness window. */}
     }));
    }
+   if(club==='kadetten')await favouriteGoals({kv,env,deps,now,id,fixture,live,subscribers});
   }
  })();
+}
+
+// Tor des Lieblingsspielers (Kadetten-App): nur aus der SHV-Ereignisliste des laufenden Spiels, nur für Tore,
+// die höchstens fünf Minuten zuvor erstmals gesehen wurden. Jedes Tor wird pro Gerät höchstens einmal gemeldet.
+export async function favouriteGoals({kv,env,deps,now,id,fixture,live,subscribers}){
+ const fans=subscribers.filter(d=>d.types.includes('favourite')&&Number.isInteger(d.favourite?.shv));
+ const events=live?.details?.events,players=live?.details?.players;
+ if(!fans.length||!Array.isArray(events)||!Array.isArray(players)||live.status==='finished')return;
+ const own=n=>String(n||'').replace(/^TSV /,'')==='Kadetten Schaffhausen';
+ if(!own(live.home)&&!own(live.away))return;
+ const ownHome=own(live.home),seenKey='push/v2/favseen/'+id,seen=await kv.get(seenKey,'json')||{};
+ let changed=false;
+ const goals=events.filter(e=>Array.isArray(e.score)&&/tor/i.test(e.action||'')&&(ownHome?e.homePlayer:e.awayPlayer));
+ for(const e of goals)if(!seen[e.id]){seen[e.id]=now;changed=true}
+ if(changed)await kv.put(seenKey,JSON.stringify(seen),{expirationTtl:2*86400});
+ const url=new URL('https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/');url.hash='#/spiel/'+encodeURIComponent(fixture.id)+'/live';
+ for(const e of goals){
+  if(now-seen[e.id]>5*60000)continue;
+  const scorer=ownHome?e.homePlayer:e.awayPlayer;
+  await Promise.all(fans.map(async device=>{
+   const player=players.find(p=>p.id===device.favourite.shv);
+   if(!player||player.name!==scorer||device.createdAt>seen[e.id])return;
+   const sentKey='push/v2/sent/'+id+'/fav-'+e.id+'/'+device.key.slice(PUSH_PREFIX.length);
+   if(await kv.get(sentKey))return;
+   const name=String(player.name).split(/\s+/).filter(w=>w!==w.toUpperCase()).join(' ')+' '+String(player.name).split(/\s+/).filter(w=>w===w.toUpperCase()).map(w=>w[0]+w.slice(1).toLowerCase()).join(' ');
+   try{
+    const result=await (deps.send||sendPush)(env,device.subscription,{title:'Tor von '+name.trim(),body:plain(live.home)+' '+e.score.join(' : ')+' '+plain(live.away),tag:'fav-'+id+'-'+e.id,url:url.href});
+    if(result.ok)await kv.put(sentKey,'1',{expirationTtl:2*86400});
+    else if([404,410].includes(result.status))await kv.delete(device.key);
+   }catch{/* Nächster Durchlauf versucht es innerhalb der fünf Minuten erneut. */}
+  }));
+ }
 }

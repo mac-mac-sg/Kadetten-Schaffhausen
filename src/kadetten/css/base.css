@@ -12,3 +12,4 @@ main { display: block; max-width: 560px; margin: 0 auto; padding: env(safe-area-
 .num { font-variant-numeric: tabular-nums; }
 .muted { color: var(--c-text-muted); }
 main:focus, main:focus-visible { outline: none; }
+.noscript { padding: var(--s-4); }

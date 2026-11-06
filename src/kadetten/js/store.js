@@ -33,6 +33,8 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
         .finally(() => { entry.pending = false; entry.at = now(); emit(); });
       return entry;
     },
+    /** Zwischengespeicherten Zusatzwert verwerfen (z. B. nach einer eigenen Stimme). */
+    invalidate(key) { extras.delete(key); },
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     async refresh() {
       try {
