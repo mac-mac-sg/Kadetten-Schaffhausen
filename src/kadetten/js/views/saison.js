@@ -7,14 +7,10 @@ import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor} from './bericht.js';
-import {topBar, sectionHead, notice, loading, gameRow, segment, crest, playerByNumber} from './parts.js';
+import {topBar, chips, sectionHead, notice, loading, gameRow, segment, crest, playerByNumber} from './parts.js';
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const TABS = [['tabellen', 'Tabelle', '#/statistik'], ['statistik', 'Spielerwerte', '#/statistik/spieler']];
-
-function chips(name, options, current, label) {
-  return html`<div class="chips" role="group" aria-label="${label}">${options.map(([value, text]) => html`<button type="button" class="chip${value === current ? ' on' : ''}" data-ui="${name}:${value}" aria-pressed="${String(value === current)}">${text}</button>`)}</div>`;
-}
 
 const competitionOf = g => /cup/i.test(g.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(g.league) ? g.league : 'Test';
 

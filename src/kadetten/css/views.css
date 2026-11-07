@@ -44,7 +44,7 @@
 
 /* Filter: schräge Chips */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--s-3) var(--s-5) 0; }
-.chip { min-height: 40px; padding: 0 var(--s-4); display: flex; align-items: center; font: 500 var(--fs-small)/1 var(--f-text); color: var(--c-text); }
+.chip { min-height: 40px; padding: 0 14px; display: flex; align-items: center; font: 500 var(--fs-small)/1 var(--f-text); color: var(--c-text); }
 .chip.on { --fill: var(--c-accent); color: var(--c-on-accent); font-weight: 600; }
 
 /* Tabellen */
@@ -299,3 +299,20 @@
 .vote-confirm .btn { min-height: 52px; font-size: var(--fs-lead); }
 .vote-context { color: var(--c-text-muted); }
 @media (max-width: 370px) { .vote-player { gap: var(--s-3); } .vote-player > img { width: 68px; height: 88px; } .band-t { font-size: 68px; } .band-home .band-t { font-size: 80px; } }
+
+/* Kader: Filter und Raster wie in den Skizzen; Verein: Zahlen, Wurzeln, Hallenfoto, Verweise */
+.stats.big { padding: 0; }
+.stats.big .stat { padding: 0 var(--s-4); }
+.stats.big .stat:first-child { padding-left: 0; }
+.stats.big .v { font-size: 68px; line-height: .85; color: var(--c-accent-text); }
+.stats.big .k { margin-top: var(--s-2); }
+.roots { position: relative; display: flex; align-items: center; gap: var(--s-4); padding: var(--s-4) var(--s-4) var(--s-4) var(--s-5); overflow: hidden; }
+.roots .yr { flex: none; font: italic 600 64px/.85 var(--f-display); color: var(--c-accent-text); }
+.roots p { font: 400 var(--fs-small)/1.45 var(--f-text); color: var(--c-text-muted); }
+.club-photo { height: 100px; overflow: hidden; border-radius: var(--r-card) var(--r-card) 0 0; clip-path: polygon(0 0, 100% 0, 100% 84%, 0 100%); background: var(--c-surface-2); }
+.club-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.plain-list > .rl { min-height: 64px; padding: 0 var(--s-1); }
+.plain-list > .rl:last-child { border-bottom: 0; }
+.plain-list > .rl:first-child { border-top: 0; border-bottom: 1px solid var(--c-line); }
+.mk { flex: none; width: 7px; height: 22px; background: var(--c-accent); transform: skewX(var(--skew)); }
+.more-card summary .num { margin-left: auto; margin-right: var(--s-3); }

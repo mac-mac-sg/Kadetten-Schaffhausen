@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
-import {topBar, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
+import {topBar, chips, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
@@ -19,13 +19,16 @@ function card(p, fav) {
     <span class="pb"><span class="no num" aria-hidden="true">${p.number}</span><span class="nm"><small>${parts.slice(0, -1).join(' ')}</small>${parts.slice(-1)[0]}<small><span class="sr">Nummer ${p.number}, </span>${POSITION(p.position)}</small></span></span></a>`;
 }
 
-export function renderTeam() {
+const FILTERS = [['Alle', 'Alle', () => true], ...GROUPS.map(([label, test]) => [label, label, test])];
+
+export function renderTeam({ui = {}} = {}) {
   const fav = favourite();
+  const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
+  const test = FILTERS.find(f => f[0] === current)[2];
+  const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
   return html`${topBar('Kader', 'Saison 2026/27')}
-    ${GROUPS.map(([label, test], i) => {
-      const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
-      return list.length ? html`<section class="sec" aria-labelledby="${'team-' + i}">${sectionHead(label, '', '', 'team-' + i)}<div class="pgrid">${list.map(p => card(p, fav))}</div></section>` : '';
-    })}
+    ${chips('pos', FILTERS.map(([id, label]) => [id, label]), current, 'Position')}
+    <section class="sec" aria-label="Spieler"><div class="pgrid">${list.map(p => card(p, fav))}</div></section>
     <section class="sec"><p class="note">Kader 2026/27. Spielerfotos: kadettensh.ch.</p></section>`;
 }
 

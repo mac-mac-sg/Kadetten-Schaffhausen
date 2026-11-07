@@ -118,3 +118,8 @@ export function tipCard({game, tip, points, locked}) {
     <div class="card tip">${side(0, game.home)}${side(1, game.away)}
       <p class="fine">${locked ? (tip ? 'Tipp abgegeben. ' : 'Kein Tipp abgegeben. ') : 'Ohne Einsatz, nur für dich. Gespeichert auf diesem Gerät, bis zum Anpfiff änderbar. '}3 Punkte exakt, 2 für die richtige Differenz, 1 für die Tendenz.</p>${pts}</div></section>`;
 }
+
+/** Filter-Chips (schräg). data-ui="<name>:<wert>" wird in main.js in den UI-Zustand übernommen. */
+export function chips(name, options, current, label) {
+  return html`<div class="chips" role="group" aria-label="${label}">${options.map(([value, text]) => html`<button type="button" class="chip${value === current ? ' on' : ''}" data-ui="${name}:${value}" aria-pressed="${String(value === current)}">${text}</button>`)}</div>`;
+}
