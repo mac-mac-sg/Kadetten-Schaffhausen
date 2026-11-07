@@ -1,5 +1,7 @@
 # V2: Matchday-Layout mit vier Companion-Funktionen
 
+**Abgelöst am 7. November 2026:** Auf ausdrücklichen Wunsch des Eigentümers ersetzt die neue Kadetten App in der [Designsprache «Schnitt»](kadetten-app-design.md) dieses Layout. Der Matchday-Quellstand unter `src/kadetten/matchday/` ist entfernt (er bleibt in der Git-Historie, letzter Stand: Commit `e866fa1`). Die Companion-Funktionen (Tipp, Spieler des Matchs, «Ich war in der Halle», Artikel zum Spiel) sind Teil der neuen App. Die Spielseite nach Screenshot-Referenz (PR #320) ist in der neuen Spielseite aufgegangen; `js/match-center.js` und `css/match-center.css` entfallen. Das folgende Dokument beschreibt den früheren Stand.
+
 Entscheid des Eigentümers vom 6. November 2026: Das Layout von Matchday wird 1:1 übernommen. Der zuvor gewählte Mix aus drei Designrichtungen wird ersetzt.
 
 ## Oberfläche und Trennung

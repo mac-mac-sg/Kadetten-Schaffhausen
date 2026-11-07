@@ -1,4 +1,4 @@
-// Gemeinsame Bausteine des Designsystems «Abend» (docs/kadetten-app-design.md).
+// Gemeinsame Bausteine des Designsystems «Schnitt» (docs/kadetten-app-design.md).
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {AREAS, href} from '../router.js';
@@ -18,11 +18,21 @@ function logoFor(team) {
   return file ? `assets/clubs/club-${file}.webp` : null;
 }
 
-export const topBar = title => html`<header class="top"><h1 class="h1">${title}</h1><a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('ich')}</a></header>`;
-export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="top"><a class="back" href="${target}"${returnToOrigin ? html` data-route-back` : ''}>${icon('back')}${label}</a>${action}</header>`;
+const settingsLink = html`<a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('settings', 22)}</a>`;
+const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="26" height="38"></a>`;
+
+/** Kopfband einer Hauptseite: Kicker, Titel, Zugang zu Verein und «Ich». */
+export const topBar = (title, kicker = 'Saison 2026/27') => html`<header class="band"><div class="band-acts">${clubLink}${settingsLink}</div><p class="band-k">${kicker}</p><h1 class="band-t">${title}</h1></header>`;
+/** Kopfband der Titelseite: grosser Schriftzug, Wappen links, «Ich» rechts. */
+export const homeBand = () => html`<header class="band band-home"><a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="64"></a><div class="band-acts">${settingsLink}</div><h1 class="band-t">Kadetten</h1><p class="band-s">Schaffhausen</p><p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p></header>`;
+/** Schmales Kopfband mit Zurück-Knopf und optionaler Aktion (Unterseiten). */
+export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="band band-slim"><div class="band-bar">${backLink(label, target, returnToOrigin)}${action}</div></header>`;
+/** Kopfband der Spielseite: Zurück, Teilen und die Spielkarte im Band. */
+export const matchBand = (back, action, body) => html`<header class="band band-slim band-match"><div class="band-bar">${back}${action}</div>${body}</header>`;
+export const backLink = (label, target, returnToOrigin = false) => html`<a class="back" href="${target}"${returnToOrigin ? html` data-route-back` : ''}>${icon('back')}${label}</a>`;
 
 export function nav(active) {
-  return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}" aria-label="${a.label}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.id)}<span>${a.label}</span></a>`)}</nav>`;
+  return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}" aria-label="${a.label}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.icon || a.id)}<span>${a.label}</span></a>`)}</nav>`;
 }
 
 export function crest(team, size = '') {

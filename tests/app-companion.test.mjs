@@ -13,22 +13,31 @@ const game={id:'next',home:'Kadetten Schaffhausen',away:'HSC Suhr Aarau',date:'2
 const data={games:[game],tables:{QHL:[[game.home,12,400,300,21]]},stories:[{id:'1',title:'Aktuelle Geschichte',image:'https://example.org/photo.webp',date:'06.11.2026'},{id:'2',title:'Zweite Geschichte',date:'05.11.2026'}],playerSeason:{players:{6:{shvPlayerId:99}}}};
 const ctx={state:{data},now,load:()=>({status:'loading'}),api:{},ui:{}};
 
-test('Arena-Start führt nach dem kompakten Spielhinweis zu echten News, keine erfundenen Meldungen',()=>{
+test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte News, keine erfundenen Meldungen',()=>{
   const d=doc(renderJetzt(ctx));
   assert.equal(d.querySelectorAll('h1').length,1);
-  assert.equal(d.querySelector('.arena-strip').getAttribute('href'),'#/spiel/next');
+  assert.equal(d.querySelector('h1').textContent,'Kadetten');
+  assert.ok(d.querySelector('.band.band-home'),'Kopfband mit Schnittkante');
+  assert.equal(d.querySelector('.band-crest').getAttribute('href'),'#/verein','Wappen führt zum Verein');
+  assert.equal(d.querySelector('.band-acts a').getAttribute('href'),'#/ich');
+  assert.match(d.querySelector('.band-tag').textContent,/Tradition seit 1791/,'1791 ist die Gründung des Kadettencorps, nicht des Handballteams');
+  assert.doesNotMatch(d.body.textContent,/Handball seit 1791/);
+  assert.equal(d.querySelector('.match-score .hero-link').getAttribute('href'),'#/spiel/next','Nächstes Spiel als Karte');
   assert.match(d.querySelector('.lead-story').textContent,/Aktuelle Geschichte/);
   assert.equal(d.querySelector('.lead-story img').getAttribute('src'),'https://example.org/photo.webp');
   assert.ok(!d.querySelector('.moments'));
   const empty=doc(renderJetzt({...ctx,state:{data:{...data,stories:[]}}}));
   assert.ok(!empty.querySelector('.lead-story'),'ohne News keine erfundene Bildgeschichte');
 });
-test('Fünf Hauptziele sind direkt erreichbar und auch ohne sichtbare Beschriftung benannt',()=>{
-  assert.deepEqual(AREAS.map(a=>a.label),['Start','Spiele','Statistik','Team','Verein']);
+test('Vier Tabs: News, Spiele, Tabelle, Kader; Verein über das Wappen, Persönliches über «Ich»',()=>{
+  assert.deepEqual(AREAS.map(a=>a.label),['News','Spiele','Tabelle','Kader']);
   const d=doc(nav('statistik'));
-  assert.equal(d.querySelectorAll('a[aria-label]').length,5);
+  assert.equal(d.querySelectorAll('a[aria-label]').length,4);
   assert.equal(d.querySelector('[aria-current="page"]').getAttribute('href'),'#/statistik');
+  assert.equal(d.querySelectorAll('a svg').length,4,'jeder Tab hat ein Symbol und eine sichtbare Beschriftung');
+  assert.equal(d.querySelectorAll('a span').length,4);
   assert.equal(parseRoute('#/statistik').view,'tabellen');
+  assert.equal(parseRoute('#/verein').view,'verein');
   assert.equal(parseRoute('#/spiel/next/wahl').tab,'wahl');
 });
 test('Ticker nutzt nur bestätigte, gültige Ereignisse, sortiert und entfernt Duplikate',()=>{

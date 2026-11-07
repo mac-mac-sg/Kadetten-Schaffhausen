@@ -4,7 +4,7 @@ import {TROPHIES, HISTORY} from '../../data/club.js';
 import {topBar, sectionHead, stats} from './parts.js';
 
 export function renderVerein() {
-  return html`${topBar('Verein')}
+  return html`${topBar('Verein', 'Kadetten Schaffhausen')}
     <section class="sec first"><div class="big-hero club"><img src="assets/squad.webp" alt="" width="800" height="450" decoding="async"><div class="bh-text"><h2 class="h1 xl">Kadetten Schaffhausen</h2><p>Handball aus Schaffhausen · Team 2026/27</p></div></div></section>
     <section class="sec" aria-labelledby="v-titel">${sectionHead('Titel', '', '', 'v-titel')}
       ${stats(TROPHIES.map(t => [t.years.length, t.short]))}

@@ -1,52 +1,63 @@
-/* Farben: neutrale Graphit-Flächen (Unslop-Durchgang 6.11.2026). Wärme und Orange liegen im Inhalt:
-   Hallenfoto der Spielkarte, Spielverlauf, Siege und Hauptaktion. Hell ist die Grundlage, Dunkel folgt dem
-   System oder der Wahl unter «Ich». */
+/* Designsprache «Schnitt» (docs/kadetten-app-design.md).
+   Farben: Kadettenorange aus dem Wappen, Tinte, warmes Papier (hell) oder Graphit (dunkel).
+   Merkmale: Wappen-Anschnitt, Schnitt (8°, wie die «1791»-Platte), Streifen (Trikot), Rückennummer (kursive Ziffern).
+   Hell ist die Grundlage, Dunkel folgt dem System oder der Wahl unter «Ich». */
 :root {
   color-scheme: light;
-  --c-bg: #fafafa;
+  --c-bg: #f6f3ee;
   --c-surface: #ffffff;
-  --c-surface-2: #f4f4f5;
-  --c-text: #171717;
+  --c-surface-2: #ece8e1;
+  --c-text: #141415;
   --c-text-muted: #525252;
-  --c-line: #17171714;
-  --c-accent: #ff790e;
-  --c-on-accent: #171717;
+  --c-line: #14141414;
+  --c-accent: #ff5d00;
+  --c-on-accent: #141415;
   --c-accent-text: #b23c08;
-  --c-highlight: #fff3e9;
-  --c-win: #ff790e;
-  --c-on-win: #171717;
-  --c-loss: #171717;
+  --c-highlight: #ff5d001a;
+  --c-win: #ff5d00;
+  --c-on-win: #141415;
+  --c-loss: #141415;
   --c-on-loss: #ffffff;
   --c-live: #dc2626;
-  --c-nav-bg: #ffffffef;
-  --c-seg-on: #171717;
-  --c-on-seg-on: #ffffff;
-  --c-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-
-  /* Spielkarte: in beiden Modi dunkel mit Hallenfoto */
-  --c-hero-text: #f5f5f5;
-  --c-hero-muted: #d4d4d8;
-  --c-hero-glass: #ffffff1a;
-  --c-hero-glass-line: #ffffff26;
+  --c-nav-bg: #ffffff;
+  --c-ink: #141415;
+  --c-seg-on: #ff5d00;
+  --c-on-seg-on: #141415;
+  --c-chip: #e4dfd6;
 
   --f-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --f-text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Schriftskala: 12 · 13 · 15 · 17 · 20 · 28 · 34 · 56 · 88 */
-  --fs-meta: 12px; --fs-small: 13px; --fs-body: 15px; --fs-lead: 17px; --fs-h2: 20px; --fs-figure: 28px; --fs-h1: 34px; --fs-kick: 56px; --fs-score: 88px;
+  /* Schriftskala: 12 · 13 · 15 · 17 · 20 · 24 · 28 · 34 · 56 · 88 */
+  --fs-meta: 12px; --fs-small: 13px; --fs-body: 15px; --fs-lead: 17px; --fs-h2: 22px; --fs-figure: 28px; --fs-h1: 34px; --fs-kick: 56px; --fs-score: 88px;
+
+  /* Schnitt: eine Neigung für Kanten, Knöpfe, Chips, Marker und kursive Ziffern */
+  --skew: -8deg;
+  --unskew: 8deg;
+  --slope: 0.1405; /* tan(8°): Höhe des Schnitts je Breite */
+  --page-w: min(100vw, 560px);
+  --cut: calc(var(--page-w) * var(--slope));
+  /* Trikotstreifen: harte Kanten, nie als Fläche */
+  --stripes: repeating-linear-gradient(120deg, var(--c-ink) 0 6px, transparent 6px 15px);
 
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
-  --r-tag: 6px; --r-ctl: 10px; --r-tile: 8px; --r-card: 16px; --r-hero: 20px;
+  --r-card: 12px; --r-tile: 8px; --r-ctl: 0px; --r-hero: 12px;
   --tap: 44px;
-  --nav-h: 76px;
+  --nav-h: 84px;
   --ease: cubic-bezier(.22, 1, .36, 1);
   --t-fast: 150ms; --t-base: 300ms;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) { color-scheme: dark; --c-bg: #141415; --c-surface: #19191b; --c-surface-2: #232325; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14; --c-accent-text: #ff9a45; --c-highlight: #ff790e1a; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #0f0f10ec; --c-seg-on: #ededed; --c-on-seg-on: #141415; --c-shadow: none; }
+  :root:not([data-theme='light']) {
+    color-scheme: dark; --c-bg: #141415; --c-surface: #1c1c1e; --c-surface-2: #262628; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14;
+    --c-accent-text: #ff8a4d; --c-highlight: #ff5d001f; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #1c1c1e; --c-chip: #262628;
+  }
 }
-:root[data-theme='dark'] { color-scheme: dark; --c-bg: #141415; --c-surface: #19191b; --c-surface-2: #232325; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14; --c-accent-text: #ff9a45; --c-highlight: #ff790e1a; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #0f0f10ec; --c-seg-on: #ededed; --c-on-seg-on: #141415; --c-shadow: none; }
+:root[data-theme='dark'] {
+  color-scheme: dark; --c-bg: #141415; --c-surface: #1c1c1e; --c-surface-2: #262628; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14;
+  --c-accent-text: #ff8a4d; --c-highlight: #ff5d001f; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #1c1c1e; --c-chip: #262628;
+}
 
 @media (prefers-reduced-motion: reduce) {
   :root { --t-fast: 0ms; --t-base: 0ms; }

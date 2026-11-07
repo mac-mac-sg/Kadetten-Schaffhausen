@@ -13,14 +13,15 @@ const GROUPS = [['Tor', p => p.position === 'Tor'], ['Rückraum', p => /^Rückra
 const POSITION = pos => pos.replace(/^Rückraum mitte$/i, 'Rückraum Mitte').replace(/^Rückraum links$/i, 'Rückraum links');
 
 function card(p, fav) {
+  const parts = p.name.split(' ');
   return html`<a class="pc" href="${href.spieler(p.number)}">
-    <span class="ph"><img src="${playerPhoto(p.number)}" alt="" loading="lazy" decoding="async" width="160" height="200">${fav === p.number ? html`<span class="fav" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}</span>
-    <span class="nm">${p.name.split(' ').slice(-1)[0]}<small>${p.name.split(' ').slice(0, -1).join(' ')} · <span class="num">#${p.number}</span></small></span></a>`;
+    <span class="ph"><img src="${playerPhoto(p.number)}" alt="" loading="lazy" decoding="async" width="300" height="200">${fav === p.number ? html`<span class="fav" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}</span>
+    <span class="pb"><span class="no num" aria-hidden="true">${p.number}</span><span class="nm"><small>${parts.slice(0, -1).join(' ')}</small>${parts.slice(-1)[0]}<small><span class="sr">Nummer ${p.number}, </span>${POSITION(p.position)}</small></span></span></a>`;
 }
 
 export function renderTeam() {
   const fav = favourite();
-  return html`${topBar('Team')}
+  return html`${topBar('Kader', 'Saison 2026/27')}
     ${GROUPS.map(([label, test], i) => {
       const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
       return list.length ? html`<section class="sec" aria-labelledby="${'team-' + i}">${sectionHead(label, '', '', 'team-' + i)}<div class="pgrid">${list.map(p => card(p, fav))}</div></section>` : '';
@@ -64,7 +65,7 @@ function formSection({form, keeper, now}) {
 
 export function renderSpieler({route, state, load, api, now}) {
   const p = SQUAD.find(x => String(x.number) === route.id);
-  if (!p) return html`${backBar('Team', href.team())}<h1 class="h1 pad">Spieler</h1><section class="sec">${notice('Diesen Spieler gibt es im aktuellen Kader nicht.', 'team')}</section>`;
+  if (!p) return html`${backBar('Kader', href.team())}<h1 class="h1 pad">Spieler</h1><section class="sec">${notice('Diesen Spieler gibt es im aktuellen Kader nicht.', 'team')}</section>`;
   const season = state.data?.playerSeason?.players?.[p.number];
   const ehl = state.data?.ehlPlayerSeason?.players?.[p.number];
   const keeper = p.position === 'Tor';
@@ -72,8 +73,8 @@ export function renderSpieler({route, state, load, api, now}) {
   const star = html`<button class="icb${isFav ? ' on' : ''}" type="button" data-favourite="${p.number}" aria-pressed="${String(isFav)}" aria-label="${isFav ? 'Nicht mehr Lieblingsspieler' : 'Als Lieblingsspieler merken'}">${icon('star')}</button>`;
   const form = state.data ? recentForm({games: state.data.games, number: p.number, data: state.data, load, api, now}) : {rows: []};
   const known = season && Number.isInteger(season.fieldGoals) && Number.isInteger(season.sevenMeterGoals) && season.goals > 0;
-  return html`${backBar('Team', href.team(), star)}
-    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="pill num">#${p.number}</span><div class="bh-text"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)}</p></div></div></section>
+  return html`${backBar('Kader', href.team(), star)}
+    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span><div class="bh-text"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)}</p></div></div></section>
     ${keeper ? formSection({form, keeper, now}) : ''}
     <section class="sec" aria-labelledby="sp-saison">${sectionHead('Saison 2026/27 · QHL', '', '', 'sp-saison')}
       ${season ? stats(keeper ? [[season.games, 'Spiele']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}

@@ -1,106 +1,95 @@
-# Kadetten Companion App – Designsystem «Abend»
+# Kadetten App – Designsprache «Schnitt»
 
-**Aktuell ab 6. November 2026:** Auf ausdrücklichen Wunsch ersetzt das [Matchday-Layout mit vier Companion-Funktionen](v2-matchday-layout.md) die bisherige Oberfläche. Die folgenden älteren Design- und Seitenbeschreibungen dokumentieren den vorherigen Stand.
+Stand: 7. November 2026. Gilt für die neue Kadetten App unter `/v2/` (`src/kadetten/`). Entscheid des Eigentümers: Die App ist reine Kadetten-App (keine Vereinsauswahl), hat vier Tabs und eine eigene, wiedererkennbare Designsprache, die aus Wappen und Trikot kommt. Sie ersetzt sowohl die frühere «Abend»-Oberfläche als auch das [Matchday-Layout](v2-matchday-layout.md). Aufbau der Seiten und Daten: [Spezifikation](kadetten-app.md).
 
-Stand: 6. November 2026. Richtung abgenommen am 5. November: «B (Nacht) kombiniert mit der Leichtigkeit von C (Kadettenorange)». Am 6. November nach dem Skill [unslop](https://github.com/heydamir/unslop) von Damir Sokolovsky (@heydamir, CC BY 4.0) überarbeitet: neutrale Flächen, kleinere Radien, ruhigere Schrift (Entscheid des Eigentümers). Gilt für die neue App unter `/v2/`; V1 bleibt unverändert. Aufbau der Seiten: [Spezifikation](kadetten-app.md#seitenaufbau).
+## Idee
 
-## Gewählte Weiterentwicklung am 6. November 2026
+Vier Merkmale, die nur die Kadetten haben und in jedem Tab wiederkehren:
 
-Die drei Entwürfe werden zu einer gemeinsamen Oberfläche kombiniert: Start aus V3 «Arena Glas», Ticker aus V2 «Klarer Begleiter», Spielerwahl aus V1 «Orange Magazin». Gemeinsame Navigation, Typografie und Farben verbinden die Bereiche. Bewusst eingesetztes Glas bleibt in der Hallen-Spielkarte und der Navigation erhalten.
+| Merkmal | Herkunft | Einsatz |
+|---|---|---|
+| **Wappen-Anschnitt** | das grosse K im Wappen | als Tonwert (Wappen mit 20 % Deckkraft, Sterne und Rahmenlinie ausserhalb des Ausschnitts) im Kopfband jeder Seite |
+| **Schnitt, 8°** | die schräge «1791»-Platte im Wappen | Unterkante der Kopfbänder und Bilder, Knöpfe, Chips, Etiketten, Formkürzel, Tab-Marker, Abschnittsmarker, kursive Ziffern |
+| **Streifen** | die schwarzen Diagonalstreifen auf dem Trikot | schmales Band an der Schnittkante der Kopfbänder, Rand der eigenen Zeile (nächstes Spiel, Kadetten in der Tabelle), Live-Kante der Spielkarte; nie als Fläche |
+| **Rückennummer** | die Nummern auf dem Trikot | Zahlen sind Grafik: Anpfiffzeit, Spielstand, Rang, Punkte, Resultate, Minuten im Ticker, Spielernummern. Barlow Condensed kursiv |
 
-- Fünf Hauptbereiche: Start, Spiele, Statistik, Team, Verein. Einstellungen und persönliche Funktionen über das Profil. Nur der aktive Navigationspunkt trägt eine sichtbare Beschriftung; alle Links haben zugängliche Namen.
-- Start: Hallenfoto mit flacher Spielkarte, ein grosser redaktioneller Artikel, zwei kleine Meldungen, kompakte Saisonzeile und letztes Resultat. Fehlende Artikelbilder erhalten keine erfundenen Ersatzfotos.
-- Spiel: Übersicht, Ticker, Statistik; die bestehenden URLs bleiben gültig. Der Ticker zeigt ausschliesslich gelieferte SHV-Ereignisse, neueste zuerst, mit Minute, Aktion, Spieler und Spielstand. Ohne Ereignisquelle erscheint ein verständlicher Hinweis. Statistik bleibt getrennt erreichbar.
-- Spielerwahl: eigener Bildschirm mit Portraits, Auswahlzustand und anschliessender Bestätigung. Ergebnisse erst nach Wahlende. Die bestehende serverseitige Wahl nach Spielende bleibt bestehen; eine Freigabe während Heimspielen erfordert eine separate Backend-Erweiterung.
-- Warme helle Flächen (`#faf8f4`, `#fffefa`, `#f1efea`), dunkle Flächen (`#151615`, `#1e201e`, `#292b28`), sonst die bestehenden Kontrastfarben. Überschriften Inter, Spielstand weiterhin Barlow Condensed. Die Werte in der folgenden älteren Token-Tabelle werden für die drei Flächentokens durch `companion.css` ersetzt.
-- Quellenhinweise betreffen die jeweilige Datenansicht. Verzögerte Spielerwerte überlagern die Startseite nicht.
-
-## Richtung
-
-- **Produkt:** Inoffizielle Fan-App für Kadetten-Fans: nächstes Spiel, Live-Stand, Spielbericht, Tabelle, Team und Verein.
-- **Charakter:** abendlich, handfest, stolz.
-- **Welt:** die BBC Arena an einem Spielabend: Hallenlicht, Parkett, orange Trikots, Anzeigetafel.
-- **Momente:** die Spielkarte mit Hallenfoto und Spielstand; die Spielverlauf-Grafik im Bericht. Nur dort sind Orange und Kontrast satt; alles andere bleibt ruhig.
-- **Erkennungszeichen:** schmale Anzeigetafel-Ziffern (Barlow Condensed 600) für Spielstände, Zeiten und Kennzahlen.
-
-## Regeln
-
-- Flächen, Linien und Text sind neutral (Graphit). Wärme kommt aus dem Hallenfoto, aus Orange und aus den Spielerfotos.
-- Orange `#ff790e` markiert: Hauptaktion, Auswahl, Siege (Form «S»), den Kadetten-Anteil in Vergleichen und Grafiken, Lieblingsspieler. Nie als Fliesstext auf Hell; dort `accent-text`.
-- Kein Leuchten, keine farbigen Schatten, keine Farbschleier, keine Verläufe zwischen Farbtönen. Tiefe im Dunkelmodus nur über Flächenstufen und Haarlinien.
-- Normale Schreibweise, keine Versalien mit Sperrung. Keine Ausrufezeichen.
-- Bewegung nur mit Bedeutung: Farb- und Flächenwechsel 150 ms, Druck 0,98, eine Kurve `cubic-bezier(.22, 1, .36, 1)`. Siegmoment: die Kante der Spielkarte leuchtet einmal kurz orange; aus bei «Bewegung reduzieren».
+«1791» bezeichnet die Gründung des Kadettencorps, nicht der Handballmannschaft (siehe [Vereinsseite](club-history.md)). Der Titelzusatz heisst deshalb «Tradition seit 1791».
 
 ## Farben
 
-Tokens als CSS-Variablen `--c-*`, Modus über `data-theme` an der Wurzel; Standard folgt dem System.
+Tokens als CSS-Variablen `--c-*` in `src/kadetten/css/tokens.css`; Modus über `data-theme` an der Wurzel, Standard folgt dem System. Hell ist die Grundlage.
 
-| Token | Dunkel | Hell | Verwendung |
+| Token | Hell | Dunkel | Verwendung |
 |---|---|---|---|
-| `bg` | `#141415` | `#fafafa` | Seitenhintergrund |
-| `surface` | `#19191b` | `#ffffff` | Karten |
-| `surface-2` | `#232325` | `#f4f4f5` | erhöhte Fläche: Umschalter-Grund, Symbolfelder, aktiver Navigationspunkt |
-| `text` | `#ededed` | `#171717` | Text |
-| `text-muted` | `#a1a1a6` | `#525252` | Metadaten, Beschriftungen, Symbole |
-| `line` | Text 8 % | Text 8 % | Haarlinien |
-| `accent` | `#ff790e` | `#ff790e` | siehe Regeln |
-| `on-accent` | `#171717` | `#171717` | Schrift auf Orange |
-| `accent-text` | `#ff9a45` | `#b23c08` | Orange als Schrift |
-| `highlight` | Orange 10 % | `#fff3e9` | Kadetten-Zeile, nächstes Spiel, eigene Stimme |
-| `win` / `on-win` | `#ff790e` / `#171717` | `#ff790e` / `#171717` | Form «S» |
-| `loss` / `on-loss` | `#3a3a3d` / `#ededed` | `#171717` / `#ffffff` | Form «N» |
-| `live` | `#e5484d` | `#dc2626` | Live-Punkt |
-| `seg-on` / `on-seg-on` | `#ededed` / `#141415` | `#171717` / `#ffffff` | aktiver Umschalter und Filter |
+| `bg` | `#f6f3ee` (Papier) | `#141415` | Seitenhintergrund |
+| `surface` | `#ffffff` | `#1c1c1e` | Karten, Navigation |
+| `surface-2` | `#ece8e1` | `#262628` | Symbolfelder, ruhige Etiketten |
+| `chip` | `#e4dfd6` | `#262628` | Fläche inaktiver Chips, Segmente, Tipp-Knöpfe |
+| `text` / `text-muted` | `#141415` / `#525252` | `#ededed` / `#a1a1a6` | Text |
+| `accent` | `#ff5d00` | `#ff5d00` | Kadettenorange, **aus dem Wappen gemessen**; Flächen, Auswahl, Siege, Hauptaktion |
+| `on-accent` / `ink` | `#141415` | `#141415` | Tinte auf Orange (Kopfband, Knöpfe) |
+| `accent-text` | `#b23c08` | `#ff8a4d` | Orange als Schrift |
+| `highlight` | Orange 10 % | Orange 12 % | Kadetten-Zeile, nächstes Spiel, eigene Stimme |
+| `loss` | `#141415` | `#3a3a3d` | Form «N» |
+| `live` | `#dc2626` | `#e5484d` | Live-Punkt |
 
-Spielkarte (beide Modi): Text `#f5f5f5`, Metadaten `#d4d4d8`, Glasknopf `#ffffff1a` mit Rand `#ffffff26`, neutraler Verlauf 45 % → 80 % → 95 % über dem Foto, Haarlinie innen.
-
-Geprüfte Kontraste (WCAG, berechnet): Text 15,7:1 (dunkel) und 17,2:1 (hell); `text-muted` 6,8:1 (dunkel) und 7,8:1 (hell auf `surface`); `accent-text` 8,3:1 (dunkel) und 5,9:1 (hell), 5,4:1 auf `highlight`; Schrift auf Orange 6,8:1. Form «U» ist ein Ring mit Buchstabe; S/U/N sind immer zusätzlich als Buchstabe lesbar.
+Orange ist bewusst `#ff5d00` und nicht mehr das frühere `#ff790e`: Nur so verschmilzt das K des Wappens nahtlos mit dem Kopfband. Kontraste (WCAG, berechnet und in `tests/app-design.test.mjs` geprüft): Text mindestens 7:1; Nebentext und Orange als Schrift mindestens 4,5:1 auf `bg` und `surface`; Tinte auf Orange 5,9:1. Ergebnisse nie nur über Farbe: Form als S/U/N-Kürzel mit Buchstabe.
 
 ## Schrift
 
-Skala (CSS `--fs-*`): 12 · 13 · 15 · 17 · 20 · 28 · 34 · 56 · 88. Gewichte 400, 500, 600 (Inter 400/500/600, Barlow Condensed 600). Hierarchie über Grösse und Farbe.
+Inter 400/500/600 für Text, Barlow Condensed 600 normal und **kursiv** für Titel und Ziffern. Beide werden mit der App ausgeliefert (SIL OFL, `fonts/`), nichts von Drittservern.
 
-| Rolle | Schrift | Grösse/Zeilenhöhe · Gewicht |
-|---|---|---|
-| Spielstand | Barlow Condensed | 72–88/0.9 · 600 |
-| Anpfiffzeit | Barlow Condensed | 56/0.9 · 600 |
-| Seitentitel | Barlow Condensed | 34/1.05 · 600 |
-| Kennzahl | Barlow Condensed | 28/1.05 · 600 |
-| Abschnittstitel | Barlow Condensed | 20/1.2 · 600 |
-| Untertitel | Inter | 17/1.25 · 600 |
-| Text, Zeilentitel, Knopf | Inter | 15 · 400/500 |
-| Metadaten, Nebentext | Inter | 13 · 400 |
-| Beschriftungen, Tabellenköpfe, Navigation | Inter | 12 · 400/500 |
+| Rolle | Schrift |
+|---|---|
+| Wortmarke Titelseite | Barlow Condensed kursiv 96/0.85, «Schaffhausen» 30 |
+| Kopfband-Titel (Spiele, Tabelle, Kader, Verein, News) | Barlow Condensed kursiv 80/0.9 |
+| Anpfiffzeit, Spielstand | Barlow Condensed kursiv 56–96/0.85 |
+| Abschnittstitel, Seitentitel Unterseiten | Barlow Condensed kursiv 22–34 |
+| Rang, Punkte, Resultate, Minuten | Barlow Condensed kursiv 22–28 |
+| Text, Zeilentitel, Knöpfe | Inter 15 · 400/500/600 |
+| Metadaten, Beschriftungen, Navigation | Inter 12–13 |
 
-Alle Zahlen mit Tabellenziffern. Schriften werden mit der App ausgeliefert (kein Laden von Drittservern).
-
-## Abstände, Radien, Grössen
-
-- 4-px-Raster: 4 · 8 · 12 · 16 · 20 · 24 · 32. Seitenrand 16, Abstand zwischen Abschnitten 24, Kartenpolster 16, Spielkarte 20.
-- Radien: Tag und Pille 6 · Kachel und Umschalter-Feld 8 · Knopf und Chip 10 · Umschalter-Rahmen 12 · Karte 16 · Spielkarte und grosse Bilder 20. Vollrund nur für Wappen, Form-Punkte und Schalter.
-- Symbole: eine Grösse (18 px), Strich 1,5, in der Farbe des Nebentexts.
-- Antippziele mindestens 44 px, Knöpfe 48 px, Navigationspunkte 52 px.
+Alle Zahlen mit Tabellenziffern.
 
 ## Bausteine
 
 | Baustein | Beschreibung |
 |---|---|
-| Spielkarte | Foto mit neutralem Verlauf und Haarlinie; Meta-Zeile mit Pille (Countdown, Live mit Punkt, Resultat); Wappen, Anpfiffzeit oder Spielstand; optional Halbzeit/«Stand vor x s» und zwei Knöpfe |
-| Knopf | 48 px, Radius 10; primär Orange, sekundär `surface-2` mit Haarlinie, in der Spielkarte Glas |
-| Pille | 28 px, Radius 6, Orange; ruhig in `surface-2` |
-| Chip | 40 px, Radius 10, Filter (Wettbewerb); aktiv invertiert |
-| Umschalter | Segment in `surface-2`, aktiv `seg-on`; Spielseite, Saison, Team, Darstellung |
-| Abschnittstitel | Barlow Condensed 20 px · 600, rechts optional orange Link («Alle») |
-| Karte / Liste | `surface`, Radius 16, Haarlinie; Listenzeilen ≥ 56 px mit optionalem Symbolfeld, Titel, Untertitel, Pfeil |
-| Kennzahlen | 2–3 Spalten mit Trennlinie, Zahl gross, Beschriftung klein |
-| Form | Kreise 24 px (20 px in Tabellen) mit S/U/N |
-| Tabelle | Rang, Team, Spiele, Bilanz, Tordifferenz, Punkte; Kadetten hinterlegt; Köpfe in normaler Schreibweise |
-| Spielzeile | Datum (Tag gross, Wochentag klein), Wappen, Gegner, Ort/Wettbewerb, Resultat mit Form; nächstes Spiel hinterlegt |
-| Teamvergleich | Werte links/rechts, Kadetten-Wert in `accent-text`; dünner Balken, Orange zeigt immer den Kadetten-Anteil von ihrer Seite aus |
-| Spielerkarte | Spielerfoto, Nachname, Vorname und Rückennummer, Radius 12 |
-| Schalter | 48 × 28 px, an = Orange |
-| Navigation | vier Bereiche mit Symbol; aktiv als Flächenstufe mit orangem Symbol |
+| Kopfband `.band` | Orange Fläche, Unterkante um 8° geschnitten (`--cut` = Breite × tan 8°, gilt für jede Breite), Wappen-Anschnitt, Streifenband. Varianten: Titelseite (`band-home`, mit Wappen links, «Ich» rechts, Wortmarke), Hauptseite (Kicker, Titel, Knöpfe Verein und «Ich»), schmal (`band-slim`, Zurück und Aktion), Spielseite (`band-match`, Spielstand im Band) |
+| Knopf, Chip, Segment, Etikett, Formkürzel | Parallelogramm: Fläche steht in `::before` schräg, Text bleibt aufrecht. Primär Orange mit Tinte, sonst Chip-Fläche. Knöpfe mindestens 48 px, Chips 40 px, Segmente 44 px |
+| Abschnittstitel `.h2` | kursiv, mit schrägem orangem Marker |
+| Navigation | vier Tabs: News, Spiele, Tabelle, Kader, alle mit Symbol und Beschriftung; aktiv in `accent-text` mit schrägem Balken am oberen Rand |
+| Spielkarte `.hero` | Karte mit Meta-Zeile (Etikett «in 6 Tagen», Live, Resultat), Wappen, grosse kursive Zeit oder Stand. Im Kopfband der Spielseite ohne eigene Fläche |
+| Nächstes Spiel, Kadetten in der Tabelle | Streifenrand links (`next-wrap`, `tr.me`) auf `highlight` |
+| Bilder | untere Kante um 8° geschnitten (Aufmacher, Vorschaubilder, Porträts, Spielerseite) |
+| Spielerkarte | Porträt (schwarzer Grund der Fotos), geschnittene Unterkante, grosse kursive Nummer in `accent-text`, Name, Position |
+| Zeitleiste im Ticker | Minute kursiv, schräger Marker, Stand rechts |
+| Schalter | 48 × 28 px, eckig, an = Orange |
+
+## Regeln
+
+- Flächen sind ruhig und neutral (Papier, Graphit). Orange gehört dem Kopfband, der Auswahl, den Siegen, der Hauptaktion und dem Kadetten-Anteil in Grafiken.
+- Kein Leuchten, keine farbigen Schatten, keine Verläufe zwischen Farbtönen. Neutrale Verläufe nur zur Lesbarkeit von Text auf Fotos.
+- Der Schnitt ist **eine** Neigung (8°). Keine weiteren Winkel, keine Rundungen an Knöpfen und Chips.
+- Streifen nur als Band oder Rand, höchstens 30 px breit.
+- Normale Schreibweise, keine Versalien mit Sperrung, keine Ausrufezeichen.
+- Bewegung nur mit Bedeutung: Farb- und Flächenwechsel 150 ms, Druck 0,98, eine Kurve `cubic-bezier(.22, 1, .36, 1)`. Siegmoment: die Spielkarte leuchtet einmal kurz orange auf; aus bei «Bewegung reduzieren».
+- Antippziele mindestens 44 px. Die Seiten erzeugen keine `style`-Attribute (Content-Security-Policy `style-src 'self'`); berechnete Breiten laufen über `data-style` und das CSSOM.
+
+## Seiten
+
+| Seite | Aufbau |
+|---|---|
+| Titelseite (Tab News) | Kopfband mit Wortmarke, Wappen (→ Verein), «Ich»; nächstes Spiel als Karte mit Countdown-Etikett; je nach Spieltag Live-Stand, Ausgangslage, Tipp oder Endresultat; Aufmacher und Kurzmeldungen; Saisonzeile; letztes Resultat |
+| News | Kopfband, Meldungsliste mit geschnittenen Vorschaubildern |
+| Spiele | Kopfband, Wettbewerbs-Chips, Spiele nach Monat, nächstes Spiel mit Streifenrand |
+| Spielseite | Kopfband mit Zurück, Teilen und Spielstand; Segmente Übersicht, Ticker, Statistik |
+| Tabelle | Kopfband, Segmente Tabelle und Spielerwerte, Chips QHL und European League, Kadetten mit Streifenrand |
+| Kader | Kopfband, Spielerkarten nach Position (zwei Spalten) |
+| Spieler | schmales Band, Porträt mit grosser Nummer, Saisonwerte, Form, Steckbrief |
+| Verein | Kopfband, Titel als grosse Zahlen, Geschichte, Heimhalle |
+| Ich | schmales Band, Benachrichtigungen, Persönliches, Regeln, Darstellung |
 
 ## Quelle
 
-Entwürfe im privaten Design-Canvas «Kadetten Companion App – Designrichtungen», Seiten «Abend · alle Seiten» und «Abend · Designsystem» (Stand vor dem Unslop-Durchgang; massgebend ist dieses Dokument und `src/kadetten/css`).
+Entwürfe im privaten Design-Canvas «Kadetten App – Titelbereich» (Runde 2, Stand 7. November 2026: Übersichtsblatt «Designsprache Schnitt», Titelseite hell und dunkel, Spiele, Tabelle, Kader, Spiel-Detail, News, Verein). Massgebend sind dieses Dokument und `src/kadetten/css`.
