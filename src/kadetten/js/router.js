@@ -1,11 +1,10 @@
 // Hash-Routen: statisches Hosting unter /v2/ braucht keine Server-Weiterleitungen.
 
 export const AREAS = [
-  {id: 'jetzt', label: 'Start', href: '#/'},
-  {id: 'saison', label: 'Spiele', href: '#/saison'},
-  {id: 'statistik', label: 'Statistik', href: '#/statistik'},
-  {id: 'team', label: 'Team', href: '#/team'},
-  {id: 'verein', label: 'Verein', href: '#/verein'}
+  {id: 'jetzt', label: 'News', href: '#/', icon: 'news'},
+  {id: 'saison', label: 'Spiele', href: '#/saison', icon: 'saison'},
+  {id: 'statistik', label: 'Tabelle', href: '#/statistik', icon: 'statistik'},
+  {id: 'team', label: 'Kader', href: '#/team', icon: 'team'}
 ];
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];

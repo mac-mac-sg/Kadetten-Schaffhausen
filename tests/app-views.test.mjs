@@ -49,7 +49,7 @@ for (const [name, moment] of Object.entries(MOMENTS)) {
 }
 
 test('Jetzt zeigt je Zustand das Passende', () => {
-  assert.match(render('#/', MOMENTS.alltag), /arena-strip[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat/);
+  assert.match(render('#/', MOMENTS.alltag), /band-home[\s\S]*Nächstes Spiel[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat/);
   assert.match(render('#/', MOMENTS.spieltag), /noch 3:45 h[\s\S]*Push zum Anpfiff[\s\S]*Ausgangslage/);
   const live = render('#/', MOMENTS.live);
   assert.match(live, /24:21[\s\S]*Halbzeit 13:11[\s\S]*Stand vor 5 s[\s\S]*Live-Tabelle[\s\S]*Bei diesem Stand Leader/);

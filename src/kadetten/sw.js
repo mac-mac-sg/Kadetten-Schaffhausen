@@ -14,11 +14,6 @@ const OLD_V2 = key => (key.startsWith('kadetten-offline-') || key.startsWith('ka
 const CACHEABLE_API = /^\/api\/(data|reports\/|ehf-reports\/|head-to-head|recent-games|previews\/|programmes\/[^/]+$|articles\/)/;
 const NEVER_CACHE = /^\/api\/(live|push\/|access|refresh)/;
 
-// Matchday zeigt einen verfügbaren Hüllenwechsel in den Einstellungen an.
-self.addEventListener('message', event => {
-  if (event.data?.type === 'GET_APP_VERSION') event.source?.postMessage({type: 'APP_VERSION', version: VERSION});
-});
-
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(SHELL_CACHE);
