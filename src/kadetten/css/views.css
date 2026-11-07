@@ -249,7 +249,8 @@
 .band .hero { background: none; border: 0; padding: 0; color: var(--c-ink); }
 .band .hero .meta, .band .hero .fresh, .band .hero .kick small { color: var(--c-ink); }
 .band .hero .pill { --fill: var(--c-ink); color: #fafafa; }
-.band .hero .crest:not(.logo) { background: var(--c-ink); color: #fafafa; }
+.band .hero .crest:not(.logo):not(.own) { background: var(--c-ink); color: #fafafa; }
+.band .hero .crest.own { width: 38px; height: 44px; }
 .band .hero .team { font-size: var(--fs-small); font-weight: 600; }
 .band .hero .score { font-size: clamp(64px, 19vw, 92px); }
 .band .hero .vs { margin-top: var(--s-3); }
@@ -259,6 +260,7 @@
 /* Titelseite und Meldungen */
 .sec.after-band { margin-top: var(--s-3); }
 .match-score .hero { padding: var(--s-4) var(--s-5) var(--s-5); }
+.band .hero .meta { flex-direction: column; justify-content: center; gap: var(--s-2); text-align: center; }
 .match-score .crest { width: 44px; height: 44px; }
 .match-score .team { font-size: var(--fs-small); }
 .editorial { margin-top: var(--s-6); }
@@ -266,7 +268,7 @@
 .lead-story > img { width: 100%; aspect-ratio: 1.35; height: auto; object-fit: cover; }
 .lead-copy { display: block; padding: var(--s-5) var(--s-5) calc(var(--cut) * .4 + var(--s-3)); }
 .lead-story:has(> img) .lead-copy { position: absolute; inset: auto 0 0; padding-top: 64px; background: linear-gradient(transparent, #000000d9); color: #f5f5f5; }
-.lead-copy h3 { font: italic 600 clamp(30px, 8.6vw, 40px)/1 var(--f-display); text-wrap: pretty; }
+.lead-copy h2, .lead-copy h3 { font: italic 600 clamp(30px, 8.6vw, 40px)/1 var(--f-display); text-wrap: pretty; }
 .story-date { display: block; font-size: var(--fs-meta); margin-bottom: 6px; }
 .news-heading { margin-top: var(--s-6); }
 .news-rows .rl { padding: var(--s-3) 0; min-height: 92px; }
@@ -316,3 +318,25 @@
 .plain-list > .rl:first-child { border-top: 0; border-bottom: 1px solid var(--c-line); }
 .mk { flex: none; width: 7px; height: 22px; background: var(--c-accent); transform: skewX(var(--skew)); }
 .more-card summary .num { margin-left: auto; margin-right: var(--s-3); }
+
+/* Datumsblock in Spielzeilen, Spielerkopf, Filter unter Umschaltern, Tabellenbreiten */
+.dt { flex: none; width: 44px; display: grid; justify-items: center; gap: 2px; }
+.dt b { font: italic 600 32px/.9 var(--f-display); }
+.dt small { font: 400 var(--fs-meta)/1 var(--f-text); color: var(--c-text-muted); }
+.next-wrap .dt b { color: var(--c-accent-text); }
+.thumb-empty img { width: 30px; height: auto; }
+.pl-head { margin-top: var(--s-4); }
+.pl-head .h1 { font-size: 40px; line-height: 1; }
+.pl-head p { margin-top: var(--s-1); font: 400 var(--fs-body)/1.3 var(--f-text); color: var(--c-text-muted); }
+.seg ~ .chips .chip.on, .seg + .chips .chip.on { --fill: var(--c-text); color: var(--c-bg); }
+.tbl-real td { padding: 0 2px; }
+.tbl-real .n { width: 38px; }
+.tbl-real .p { width: 30px; }
+.card.list:has(> .tbl-real) { padding: 0 var(--s-3); }
+.card.list:has(> .tbl-real) .tbl-real tr.me td:first-child { box-shadow: -12px 0 0 var(--c-highlight); }
+.card.list:has(> .tbl-real) .tbl-real tr.me td:first-child::before { left: -12px; }
+.card.list:has(> .tbl-real) .tbl-real tr.me td:last-child { box-shadow: 12px 0 0 var(--c-highlight); }
+.plain-list > .rl:last-child { border-bottom: 0; }
+.plain-list.news-rows > .rl { padding: var(--s-3) var(--s-1); }
+.plain-list.news-rows .thumb { width: 104px; height: 72px; }
+.next-wrap:focus { outline: none; }

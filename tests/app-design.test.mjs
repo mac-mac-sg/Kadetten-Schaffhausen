@@ -5,7 +5,7 @@ import {existsSync, readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {parseRoute} from '../src/kadetten/js/router.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
-import {setLogos, nav} from '../src/kadetten/js/views/parts.js';
+import {setLogos, nav, venueShort, LOGO} from '../src/kadetten/js/views/parts.js';
 import {renderJetzt, renderNews} from '../src/kadetten/js/views/jetzt.js';
 import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {renderSaison} from '../src/kadetten/js/views/saison.js';
@@ -153,4 +153,52 @@ test('Verein nach Skizze: Titelzahlen, 1791-Karte, Hallenfoto und zwei Verweise;
   assert.equal(titles.querySelectorAll('h1').length, 1);
   assert.equal(parseRoute('#/verein/titel').tab, 'titel');
   assert.equal(parseRoute('#/verein/unbekannt').tab, undefined);
+});
+
+test('Spiele: Datumsblock statt Gegnerwappen, wie in der Skizze; nächstes Spiel mit Streifenrand', () => {
+  const d = render('#/saison');
+  const row = d.querySelector('.card.list a.rl');
+  assert.match(row.querySelector('.dt b').textContent, /^\d{1,2}$/, 'Tag als grosse Ziffer');
+  assert.match(row.querySelector('.dt small').textContent, /^(Jan\.|Feb\.|März|Apr\.|Mai|Juni|Juli|Aug\.|Sept\.|Okt\.|Nov\.|Dez\.)$/);
+  assert.ok(!row.querySelector('.crest'), 'kein Wappen in der Zeile');
+  assert.doesNotMatch(row.querySelector('.s').textContent, /\d{2}\.\d{2}\./, 'Datum steht nur im Block');
+  assert.equal(d.querySelectorAll('.next-wrap').length, 1);
+});
+
+test('News: Aufmacher und schlichte Zeilen; Tabelle behält den Titel «Tabelle» auch bei den Spielerwerten', () => {
+  const d = render('#/news');
+  assert.ok(d.querySelector('.lead-story h2'), 'Aufmacher');
+  assert.ok(d.querySelectorAll('.plain-list.news-rows a.rl').length > 3);
+  assert.equal(d.querySelectorAll('h1').length, 1);
+  for (const hash of ['#/statistik', '#/statistik/spieler']) assert.equal(render(hash).querySelector('.band-t').textContent, 'Tabelle', hash);
+  assert.ok(render('#/statistik/spieler').querySelector('.seg ~ .chips'), 'Auswahl unter dem Umschalter');
+});
+
+test('Spielerseite: Name und Position unter dem Porträt statt über dem Trikot', () => {
+  const d = render('#/team/10');
+  assert.equal(d.querySelector('.big-hero h1'), null);
+  assert.match(d.querySelector('.pl-head h1').textContent, /Perić/);
+  assert.match(d.querySelector('.pl-head p').textContent, /Rückraum/);
+  assert.equal(d.querySelector('.big-hero .no').textContent, '10');
+});
+
+test('Unterseiten mit Titel im Kopfband: Ich, Geschichte, Trophäenschrank', () => {
+  for (const [hash, title, back] of [['#/ich', 'Ich', '#/'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
+    const d = render(hash);
+    assert.equal(d.querySelector('header.band-sub .band-t').textContent, title, hash);
+    assert.equal(d.querySelector('header.band-sub a.back').getAttribute('href'), back, hash);
+    assert.equal(d.querySelectorAll('h1').length, 1, hash);
+  }
+});
+
+test('Wappen: eigener Zuschnitt ohne Sterne und Rahmen; Spielort kurz', () => {
+  assert.equal(LOGO, 'assets/kadetten-wappen.png');
+  assert.ok(existsSync('src/kadetten/assets/kadetten-wappen.png'));
+  assert.match(read('src/kadetten/css/components.css'), /url\('assets\/kadetten-wappen\.png'\)/);
+  assert.equal(venueShort('Schaffhausen BBC Arena A, Schaffhausen'), 'BBC Arena');
+  assert.equal(venueShort('Sportska Dvorana Ljubuski, Ljubuski'), 'Sportska Dvorana Ljubuski');
+  assert.equal(venueShort(undefined), '');
+  const home = render('#/');
+  assert.match(home.querySelector('.match-score .meta').textContent, /BBC Arena/);
+  assert.doesNotMatch(home.querySelector('.match-score .meta').textContent, /Schaffhausen BBC/);
 });

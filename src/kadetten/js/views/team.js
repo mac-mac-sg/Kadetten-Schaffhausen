@@ -77,7 +77,8 @@ export function renderSpieler({route, state, load, api, now}) {
   const form = state.data ? recentForm({games: state.data.games, number: p.number, data: state.data, load, api, now}) : {rows: []};
   const known = season && Number.isInteger(season.fieldGoals) && Number.isInteger(season.sevenMeterGoals) && season.goals > 0;
   return html`${backBar('Kader', href.team(), star)}
-    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span><div class="bh-text"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)}</p></div></div></section>
+    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span></div>
+      <div class="pl-head"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)} · <span class="num">#${p.number}</span></p></div></section>
     ${keeper ? formSection({form, keeper, now}) : ''}
     <section class="sec" aria-labelledby="sp-saison">${sectionHead('Saison 2026/27 · QHL', '', '', 'sp-saison')}
       ${season ? stats(keeper ? [[season.games, 'Spiele']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}

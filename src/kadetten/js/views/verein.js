@@ -4,13 +4,13 @@ import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {TROPHIES, HISTORY} from '../../data/club.js';
-import {topBar, backBar, sectionHead, listRow} from './parts.js';
+import {topBar, backLink, subBand, sectionHead, listRow} from './parts.js';
 
 const ROOTS = HISTORY.find(h => h.year === '1791');
 const mark = html`<span class="mk" aria-hidden="true"></span>`;
 
 function geschichte() {
-  return html`${backBar('Verein', href.verein())}<h1 class="h1 pad">Geschichte</h1>
+  return html`${subBand(backLink('Verein', href.verein()), 'Geschichte', 'Kadetten Schaffhausen')}
     <section class="sec" aria-label="Zeitreise">
       <ol class="timeline">${HISTORY.map(h => html`<li class="card tl">
         ${/^https:\/\//.test(h.image) || h.image.startsWith('assets/') ? html`<figure><img src="${h.image}" alt="" loading="lazy" decoding="async"${h.image.endsWith('.png') ? html` class="contain"` : ''}><figcaption>${h.caption}</figcaption></figure>` : ''}
@@ -23,7 +23,7 @@ function geschichte() {
 }
 
 function titel() {
-  return html`${backBar('Verein', href.verein())}<h1 class="h1 pad">Trophäenschrank</h1>
+  return html`${subBand(backLink('Verein', href.verein()), 'Trophäenschrank', 'Kadetten Schaffhausen')}
     <section class="sec" aria-label="Titel">
       ${TROPHIES.map(t => html`<details class="card more-card" id="${'v-' + t.id}"><summary>${t.title}<span class="num muted">${t.years.length}</span></summary><p class="years num">${t.years.join(' · ')}</p></details>`)}
       <p class="fine pad-top">Quelle: offizielles Matchprogramm 2026/27 der ersten Männermannschaft.</p>

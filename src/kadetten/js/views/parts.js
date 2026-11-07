@@ -5,7 +5,10 @@ import {AREAS, href} from '../router.js';
 import {OWN_TEAM, initials, shortTeam, outcome, dayLabel, hasScore} from '../logic.js';
 import {SQUAD} from '../../data/squad.js';
 
-export const LOGO = 'assets/kadetten-logo.png';
+// Nur der Schild (orange Fläche mit K), ohne Sterne und Rahmenlinie: assets/kadetten-wappen.png
+export const LOGO = 'assets/kadetten-wappen.png';
+export const venueShort = venue => /BBC Arena/i.test(venue || '') ? 'BBC Arena' : String(venue || '').split(',')[0].trim();
+const MONTH_SHORT = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
 const FORM_LABEL = {S: 'Sieg', U: 'Unentschieden', N: 'Niederlage'};
 export const RESULT_TEXT = {S: 'S · Sieg', U: 'U · Unentschieden', N: 'N · Niederlage'};
 
@@ -19,24 +22,27 @@ function logoFor(team) {
 }
 
 const settingsLink = html`<a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('settings', 22)}</a>`;
-const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="26" height="38"></a>`;
+const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="28" height="32"></a>`;
 
 /** Kopfband einer Hauptseite: Kicker, Titel, Zugang zu Verein und «Ich». */
 export const topBar = (title, kicker = 'Saison 2026/27') => html`<header class="band"><div class="band-acts">${clubLink}${settingsLink}</div><p class="band-k">${kicker}</p><h1 class="band-t">${title}</h1></header>`;
 /** Kopfband der Titelseite: grosser Schriftzug, Wappen links, «Ich» rechts. */
-export const homeBand = () => html`<header class="band band-home"><a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="64"></a><div class="band-acts">${settingsLink}</div><h1 class="band-t">Kadetten</h1><p class="band-s">Schaffhausen</p><p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p></header>`;
+export const homeBand = () => html`<header class="band band-home"><a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="51"></a><div class="band-acts">${settingsLink}</div><h1 class="band-t">Kadetten</h1><p class="band-s">Schaffhausen</p><p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p></header>`;
 /** Schmales Kopfband mit Zurück-Knopf und optionaler Aktion (Unterseiten). */
 export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="band band-slim"><div class="band-bar">${backLink(label, target, returnToOrigin)}${action}</div></header>`;
 /** Kopfband der Spielseite: Zurück, Teilen und die Spielkarte im Band. */
 export const matchBand = (back, action, body) => html`<header class="band band-slim band-match"><div class="band-bar">${back}${action}</div>${body}</header>`;
 export const backLink = (label, target, returnToOrigin = false) => html`<a class="back" href="${target}"${returnToOrigin ? html` data-route-back` : ''}>${icon('back')}${label}</a>`;
 
+/** Kopfband einer Unterseite mit Titel: Zurück oben, Kicker und Titel wie bei den Hauptseiten. */
+export const subBand = (back, title, kicker = '', action = '') => html`<header class="band band-sub"><div class="band-bar">${back}${action}</div>${kicker ? html`<p class="band-k">${kicker}</p>` : ''}<h1 class="band-t sm">${title}</h1></header>`;
+
 export function nav(active) {
   return html`<nav class="nav" aria-label="Hauptnavigation">${AREAS.map(a => html`<a href="${a.href}" aria-label="${a.label}"${a.id === active ? html` class="on" aria-current="page"` : ''}>${icon(a.icon || a.id)}<span>${a.label}</span></a>`)}</nav>`;
 }
 
 export function crest(team, size = '') {
-  if (team === OWN_TEAM) return html`<span class="crest ${size}"><img src="${LOGO}" alt="" width="40" height="40"></span>`;
+  if (team === OWN_TEAM) return html`<span class="crest own ${size}"><img src="${LOGO}" alt="" width="40" height="47"></span>`;
   const logo = logoFor(team);
   return logo ? html`<span class="crest logo ${size}"><img src="${logo}" alt="" width="40" height="40" loading="lazy"></span>` : html`<span class="crest ${size}" aria-hidden="true">${initials(team)}</span>`;
 }
@@ -71,17 +77,24 @@ export function listRow({title, sub, end = icon('go'), lead = '', link, cls = ''
   return link ? html`<a class="rl ${cls}" href="${link}">${inner}</a>` : html`<div class="rl ${cls}">${inner}</div>`;
 }
 
-/** Spielzeile für Listen (Spielplan, letzte Spiele). */
+/** Datumsblock wie eine Rückennummer: Tag gross und kursiv, Monat klein. */
+export function dateBlock(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || '');
+  return m ? html`<span class="dt" aria-hidden="true"><b class="num">${Number(m[3])}</b><small>${MONTH_SHORT[Number(m[2]) - 1]}</small></span>` : '';
+}
+
+/** Spielzeile für Listen (Spielplan, letzte Spiele): Datumsblock, Gegner, Ort und Wettbewerb, Resultat mit Form. */
 export function gameRow(game, now, {showDate = true, cls = ''} = {}) {
   const own = game.home === OWN_TEAM || game.away === OWN_TEAM;
   const opponent = game.home === OWN_TEAM ? game.away : game.away === OWN_TEAM ? game.home : null;
   const title = own ? shortTeam(opponent) : `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
   const place = own ? (game.home === OWN_TEAM ? 'Heim' : 'auswärts') : '';
-  const sub = [showDate ? dayLabel(game, now) : '', game.league, place, hasScore(game) ? '' : game.time].filter(Boolean).join(' · ');
+  const block = showDate ? dateBlock(game.date) : '';
+  const sub = [block ? '' : (showDate ? dayLabel(game, now) : ''), game.league, place, hasScore(game) ? '' : game.time].filter(Boolean).join(' · ');
   const end = hasScore(game)
     ? html`<span class="res num">${game.score[0]}:${game.score[1]}${own ? formBadge(outcome(game)) : ''}</span>`
     : icon('go');
-  return listRow({title, sub, end, lead: crest(opponent || game.home, 'xs'), link: game.id ? href.spiel(game.id) : '', cls});
+  return listRow({title, sub, end, lead: block || crest(opponent || game.home, 'xs'), link: game.id ? href.spiel(game.id) : '', cls});
 }
 
 export function playerByNumber(number) { return SQUAD.find(p => p.number === Number(number)) || null; }
@@ -93,7 +106,7 @@ export function storyRow(story) {
   const image = storyImage(story);
   return listRow({
     title: story.title, sub: story.date, end: '', link: href.artikel(story.id),
-    lead: image ? html`<img class="thumb" src="${image}" alt="" loading="lazy" decoding="async" width="72" height="56">` : html`<span class="thumb thumb-empty" aria-hidden="true"><img src="${LOGO}" alt="" width="28" height="28"></span>`
+    lead: image ? html`<img class="thumb" src="${image}" alt="" loading="lazy" decoding="async" width="72" height="56">` : html`<span class="thumb thumb-empty" aria-hidden="true"><img src="${LOGO}" alt="" width="30" height="35"></span>`
   });
 }
 

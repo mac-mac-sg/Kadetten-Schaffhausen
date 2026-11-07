@@ -8,7 +8,7 @@ import {favourite, myGames, tips} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
 import {RULES} from '../rules.js';
 import {seasonSummary} from '../moments.js';
-import {backBar, sectionHead, listRow, playerByNumber} from './parts.js';
+import {backLink, subBand, sectionHead, listRow, playerByNumber} from './parts.js';
 
 function seasonBlock(state, now) {
   if (!state.data) return '';
@@ -32,7 +32,7 @@ export function renderIch({theme, state, ui, now}) {
   const visited = myGames(), games = ownGames(state.data?.games).filter(g => visited.includes(String(g.id)));
   const freshness = dataFreshness(state.data, now);
   const blocked = supported && globalThis.Notification?.permission === 'denied';
-  return html`${backBar('Zurück', href.jetzt())}<h1 class="h1 pad">Ich</h1>
+  return html`${subBand(backLink('Zurück', href.jetzt()), 'Ich', 'Einstellungen')}
     <section class="sec" id="push" aria-labelledby="i-push">${sectionHead('Benachrichtigungen', '', '', 'i-push')}
       <div class="card list">
         ${PUSH_TYPES.filter(([id]) => id !== 'favourite' || (fav && favShv && ui.pushFavourite)).map(([id, label]) => html`<label class="rl switch"><span class="grow"><span class="t">${label}</span></span><input type="checkbox" role="switch" data-push-type="${id}"${types.includes(id) ? html` checked` : ''}${!supported || ui.pushBusy ? html` disabled` : ''}><span class="tg" aria-hidden="true"></span></label>`)}

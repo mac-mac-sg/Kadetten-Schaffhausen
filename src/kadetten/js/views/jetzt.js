@@ -8,9 +8,9 @@ import {liveReport} from './bericht.js';
 import {tipPoints} from '../moments.js';
 import {tips, favourite} from '../personal.js';
 import {myVotes} from '../fan-vote.js';
-import {homeBand, topBar, sectionHead, heroCard, kickoffTime, scoreLine, formRow, notice, loading, stats, listRow, gameRow, storyRow, storyImage, LOGO, RESULT_TEXT, tipCard} from './parts.js';
+import {homeBand, topBar, venueShort, sectionHead, heroCard, kickoffTime, scoreLine, formRow, notice, loading, stats, listRow, gameRow, storyRow, storyImage, LOGO, RESULT_TEXT, tipCard} from './parts.js';
 
-const venueName = game => (game?.venue || '').split(',')[0].trim();
+const venueName = game => venueShort(game?.venue);
 const metaLine = (game, now) => [dayLabel(game, now) || 'Heute', game.league, venueName(game)].filter(Boolean).join(' · ');
 export const shareText = game => hasScore(game) ? `${shortTeam(game.home)} – ${shortTeam(game.away)} ${game.score[0]}:${game.score[1]}${Array.isArray(game.half) && game.half.every(Number.isInteger) ? ` (${game.half[0]}:${game.half[1]})` : ''} · ${game.league}` : '';
 const ago = (at, now) => `Stand vor ${Math.max(0, Math.round((now - at) / 1000))} s`;
@@ -138,14 +138,16 @@ export function renderJetzt({state, now, load, api, ui}) {
   return html`${homeBand()}
     ${game ? html`<section class="sec match-score after-band" aria-labelledby="j-next"><h2 class="sr" id="j-next">Nächstes Spiel</h2>${previewHero(game, now)}</section>` : ''}
     ${newsBlock(data, 3)}
-    ${own ? html`<section class="sec season-line" aria-label="Unsere Saison"><strong>Unsere Saison</strong><span>${own.rank}. Platz · ${own.points ?? '–'} Punkte</span><a class="more" href="#/statistik">Statistik ${icon('go')}</a></section>` : ''}
+    ${own ? html`<section class="sec" aria-labelledby="j-saison">${sectionHead('Unsere Saison', '', '', 'j-saison')}<a class="card rowcard" href="#/statistik"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">QHL · ${own.points ?? '–'} Punkte</span><span class="s">${own.played ?? '–'} Spiele</span></span>${icon('go')}</a></section>` : ''}
     ${last ? html`<section class="sec" aria-labelledby="j-last">${sectionHead('Letztes Resultat', '', '', 'j-last')}<div class="card list">${gameRow(last, now)}</div></section>` : ''}
     ${offline}`;
 }
 
 export function renderNews({state}) {
-  const stories = state.data?.stories || [];
+  const stories = (state.data?.stories || []).slice(0, 40);
+  const [lead, ...rest] = stories, image = lead && storyImage(lead);
   return html`${topBar('News', 'Aus dem Verein')}
-    <section class="sec after-band">${stories.length ? html`<div class="card list">${stories.slice(0, 40).map(storyRow)}</div>` : state.data ? notice('Noch keine News vorhanden.', 'doc') : loading()}</section>
+    ${lead ? html`<section class="sec after-band" aria-label="Aufmacher"><a class="lead-story${image ? '' : ' no-photo'}" href="${href.artikel(lead.id)}">${image ? html`<img src="${image}" alt="" width="800" height="520" decoding="async" fetchpriority="high">` : ''}<span class="lead-copy"><span class="story-date">${lead.date}</span><h2>${lead.title}</h2></span></a></section>` : ''}
+    <section class="sec${lead ? '' : ' after-band'}">${stories.length ? html`<div class="plain-list news-rows">${rest.map(storyRow)}</div>` : state.data ? notice('Noch keine News vorhanden.', 'doc') : loading()}</section>
     <section class="sec">${listRow({title: 'Alle Vereinsnews auf kadettensh.ch', end: icon('ext'), link: 'https://kadettensh.ch/news/'})}</section>`;
 }

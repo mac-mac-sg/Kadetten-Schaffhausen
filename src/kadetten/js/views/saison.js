@@ -100,6 +100,6 @@ export function renderSaison(ctx) {
   const {route, state} = ctx;
   const body = !state.data ? html`<section class="sec">${state.dataError ? notice('Der Datenstand konnte nicht geladen werden.') : loading()}</section>`
     : route.view === 'tabellen' ? tabellen(ctx) : route.view === 'statistik' ? statistik(ctx) : spielplan(ctx);
-  return html`${topBar(route.view === 'spielplan' ? 'Spiele' : route.view === 'tabellen' ? 'Tabelle' : 'Statistik')}${route.view === 'spielplan' ? '' : segment(TABS, route.view, 'Statistik')}${body}`;
+  return html`${topBar(route.view === 'spielplan' ? 'Spiele' : 'Tabelle')}${route.view === 'spielplan' ? '' : segment(TABS, route.view, 'Statistik')}${body}`;
 }
 
