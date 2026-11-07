@@ -1,6 +1,6 @@
 # Kadetten App – Designsprache «Schnitt»
 
-Stand: 7. November 2026. Gilt für die neue Kadetten App unter `/v2/` (`src/kadetten/`). Entscheid des Eigentümers: Die App ist reine Kadetten-App (keine Vereinsauswahl), hat vier Tabs und eine eigene, wiedererkennbare Designsprache, die aus Wappen und Trikot kommt. Sie ersetzt sowohl die frühere «Abend»-Oberfläche als auch das [Matchday-Layout](v2-matchday-layout.md). Aufbau der Seiten und Daten: [Spezifikation](kadetten-app.md).
+Stand: 7. November 2026. Gilt für die neue Kadetten App unter `/v2/` (`src/kadetten/`). Entscheid des Eigentümers: Die App ist reine Kadetten-App (keine Vereinsauswahl), hat vier Tabs und eine eigene, wiedererkennbare Designsprache, die aus Wappen und Trikot kommt. Sie ersetzt sowohl die frühere «Abend»-Oberfläche als auch das [Matchday-Layout](v2-matchday-layout.md). Aufbau der Seiten und Daten: [Spezifikation](kadetten-app.md). Einseitige Kurzfassung für Folgearbeiten: [Brand-Kit](kadetten-brand-kit.md).
 
 ## Idee
 
@@ -62,7 +62,11 @@ Alle Zahlen mit Tabellenziffern.
 | Spielkarte `.hero` | Karte mit Meta-Zeile (Etikett «in 6 Tagen», Live, Resultat), Wappen, grosse kursive Zeit oder Stand. Im Kopfband der Spielseite ohne eigene Fläche |
 | Nächstes Spiel, Kadetten in der Tabelle | Streifenrand links (`next-wrap`, `tr.me`) auf `highlight` |
 | Bilder | untere Kante um 8° geschnitten (Aufmacher, Vorschaubilder, Porträts, Spielerseite) |
+| Wappen | Eigener Zuschnitt `assets/kadetten-wappen.png` (nur der Schild, ohne Sterne und Rahmenlinie); Sterne nur im vollen Wappen der Geschichte. Eigenes Wappen in Spielkarten ohne Kreis |
+| Datumsblock | Tag als grosse kursive Ziffer, Monat klein; ersetzt in Spielzeilen das Gegnerwappen |
+| Umschalter und Filter | Umschalter (Segmente) sind orange. Steht darunter ein Filter (Chips), ist dessen Auswahl neutral (Tinte bzw. Papier), damit nie zwei orange Auswahlen konkurrieren |
 | Spielerkarte | Porträt (schwarzer Grund der Fotos), geschnittene Unterkante, grosse kursive Nummer in `accent-text`, Name, Position |
+| Spielverlauf (Statistik) | Wie in Matchday je Team eine Kurve der erzielten Tore über die Spielzeit (Kadetten orange und kräftig, Gegner neutral und gestrichelt, damit nie nur die Farbe unterscheidet), Halbzeitmarke, Endpunkte. Legende mit Toren und der Tordifferenz als schräges Etikett; darunter die Tordifferenz als Verlauf. Die Kurve läuft nur bis ans Spielende, wenn die Torfolge vollständig ist |
 | Zeitleiste im Ticker | Minute kursiv, schräger Marker, Stand rechts |
 | Schalter | 48 × 28 px, eckig, an = Orange |
 
@@ -84,11 +88,12 @@ Alle Zahlen mit Tabellenziffern.
 | News | Kopfband, Meldungsliste mit geschnittenen Vorschaubildern |
 | Spiele | Kopfband, Wettbewerbs-Chips, Spiele nach Monat, nächstes Spiel mit Streifenrand |
 | Spielseite | Kopfband mit Zurück, Teilen und Spielstand; Segmente Übersicht, Ticker, Statistik |
-| Tabelle | Kopfband, Segmente Tabelle und Spielerwerte, Chips QHL und European League, Kadetten mit Streifenrand |
-| Kader | Kopfband, Spielerkarten nach Position (zwei Spalten) |
-| Spieler | schmales Band, Porträt mit grosser Nummer, Saisonwerte, Form, Steckbrief |
-| Verein | Kopfband, Titel als grosse Zahlen, Geschichte, Heimhalle |
-| Ich | schmales Band, Benachrichtigungen, Persönliches, Regeln, Darstellung |
+| Tabelle | Kopfband (Titel bleibt «Tabelle» auch bei den Spielerwerten), Segmente Tabelle und Spielerwerte, Chips QHL und European League, Kadetten mit Streifenrand |
+| Kader | Kopfband, Positions-Chips (Alle, Tor, Rückraum, Flügel, Kreis), ein Raster mit zwei Spalten nach Rückennummer |
+| Spieler | schmales Band, Porträt mit grosser Nummer, Name und Position darunter (nie über dem Trikot), Saisonwerte, Form, Steckbrief |
+| Verein | Kopfband, Titel als grosse Zahlen (ohne Karte), «1791»-Karte mit Streifenrand, Hallenfoto mit Schnitt, zwei Verweise: Geschichte (`#/verein/geschichte`, Zeitreise und Heimhalle) und Trophäenschrank (`#/verein/titel`, Titel und Jahre) |
+| Ich, Geschichte, Trophäenschrank, Spielerwahl | Kopfband mit Zurück und Titel (`band-sub`) |
+| Alle Unterseiten | Zurück als Pille im Band; Streifenband liegt unter den Knöpfen, nie dahinter |
 
 ## Quelle
 

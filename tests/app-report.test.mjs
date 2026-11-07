@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, statSync} from 'node:fs';
 import {join} from 'node:path';
 import {goalTimeline, flow, incidents, normalizeReport, fitsGame, comparisonRows, reportText, playerInReport, pct} from '../src/kadetten/js/report.js';
-import {liveReport, scoreChart} from '../src/kadetten/js/views/bericht.js';
+import {liveReport, scoreChart, curveChart} from '../src/kadetten/js/views/bericht.js';
 import {streak, biggestWin, playerMilestones, scenario, lastDuel, historyOfDay, moments, tipPoints, seasonSummary} from '../src/kadetten/js/moments.js';
 import {changeTip, tips} from '../src/kadetten/js/personal.js';
 import {deviceToken, myVotes} from '../src/kadetten/js/fan-vote.js';
@@ -95,4 +95,29 @@ test('Keine style-Attribute im Markup: die CSP der App erlaubt sie nicht', () =>
   const files = dir => readdirSync(dir).flatMap(n => { const p = join(dir, n); return statSync(p).isDirectory() ? files(p) : [p]; });
   for (const f of files('src/kadetten/js').filter(f => f.endsWith('.js'))) assert.doesNotMatch(readFileSync(f, 'utf8'), /\sstyle="/, f);
   assert.doesNotMatch(readFileSync('src/kadetten/index.html', 'utf8'), /\sstyle="/);
+});
+
+test('Spielverlauf wie in Matchday: je Team eine Kurve, Tordifferenz, Halbzeitmarke, ohne erfundene Werte', () => {
+  const goals = [{sec: 120, score: [1, 0], home: true}, {sec: 400, score: [1, 1], home: false}, {sec: 900, score: [2, 1], home: true}, {sec: 2500, score: [2, 2], home: false}, {sec: 3000, score: [3, 2], home: true}];
+  const svg = String(curveChart(goals, true, {ownName: 'Kadetten', oppName: 'Suhr <Aarau>'}));
+  assert.equal((svg.match(/class="cv-line (own|opp)"/g) || []).length, 2, 'eine Kurve je Team');
+  assert.match(svg, /Kadetten 3 Tore, Suhr &lt;Aarau&gt; 2 Tore, Tordifferenz \+1/);
+  assert.doesNotMatch(svg, /<Aarau>/, 'Namen maskiert');
+  assert.match(svg, /30′ · Pause/); assert.match(svg, /class="cv-dot own"/);
+  for (const d of svg.matchAll(/class="cv-line (?:own|opp)" d="([^"]+)"/g)) assert.doesNotMatch(d[1], /NaN|undefined/);
+  // Auswärtsspiel: die orange Kurve gehört weiterhin den Kadetten (zweite Zahl im Stand)
+  const away = String(curveChart(goals.map(g => ({...g, score: [g.score[1], g.score[0]]})), false, {oppName: 'X'}));
+  assert.match(away, /Kadetten 3 Tore, X 2 Tore/);
+  assert.equal(curveChart([], true), '');
+  const own = /class="cv-line own" d="M([\d.]+) ([\d.]+)/.exec(svg);
+  assert.equal(own[2], '176', 'beide Kurven beginnen bei 0 Toren');
+});
+
+test('Spielverlauf: Endstand aus dem Spiel; unvollständige Torfolge endet beim letzten bekannten Tor', () => {
+  const goals = [{sec: 300, score: [1, 0], home: true}, {sec: 1500, score: [4, 3], home: true}];
+  const full = String(curveChart(goals, true, {final: [4, 3]}));
+  const partial = String(curveChart(goals, true, {final: [20, 18]}));
+  assert.match(full, /cx="384"/, 'vollständig: Endpunkt rechts');
+  assert.doesNotMatch(partial, /cx="384"/, 'unvollständig: nicht bis zum Spielende gezeichnet');
+  assert.match(partial, /Kadetten 20 Tore, Gegner 18 Tore, Tordifferenz \+2/, 'Legende zeigt den bestätigten Endstand');
 });

@@ -8,6 +8,7 @@ export const AREAS = [
 ];
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
+const VEREIN_TABS = ['geschichte', 'titel'];
 export const GAME_TABS = ['vorschau', 'live', 'bericht', 'wahl'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
@@ -20,7 +21,7 @@ export function parseRoute(hash = '') {
     case 'saison': return {area: ['tabellen', 'statistik'].includes(second) ? 'statistik' : 'saison', view: SAISON_TABS.includes(second) ? second : 'spielplan'};
     case 'statistik': return {area: 'statistik', view: second === 'spieler' ? 'statistik' : 'tabellen'};
     case 'team': return safeId(second) ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
-    case 'verein': return {area: 'verein', view: 'verein'};
+    case 'verein': return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich': return {area: null, view: 'ich'};
     case 'spiel': return safeId(second) ? {area: 'saison', view: 'spiel', id: second, ...(GAME_TABS.includes(parts[2]) ? {tab: parts[2]} : {})} : {area: 'jetzt', view: 'jetzt'};
     // Adressen aus Push-Mitteilungen des Datendienstes (#match/<id>/…).
@@ -35,7 +36,7 @@ export const href = {
   saison: tab => '#/saison' + (tab && tab !== 'spielplan' ? '/' + tab : ''),
   team: () => '#/team',
   spieler: id => '#/team/' + encodeURIComponent(id),
-  verein: () => '#/verein',
+  verein: tab => '#/verein' + (tab ? '/' + tab : ''),
   ich: () => '#/ich',
   spiel: (id, tab) => '#/spiel/' + encodeURIComponent(id) + (tab ? '/' + tab : ''),
   news: () => '#/news',

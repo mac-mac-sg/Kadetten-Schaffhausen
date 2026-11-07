@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
-import {topBar, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
+import {topBar, chips, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
@@ -19,13 +19,16 @@ function card(p, fav) {
     <span class="pb"><span class="no num" aria-hidden="true">${p.number}</span><span class="nm"><small>${parts.slice(0, -1).join(' ')}</small>${parts.slice(-1)[0]}<small><span class="sr">Nummer ${p.number}, </span>${POSITION(p.position)}</small></span></span></a>`;
 }
 
-export function renderTeam() {
+const FILTERS = [['Alle', 'Alle', () => true], ...GROUPS.map(([label, test]) => [label, label, test])];
+
+export function renderTeam({ui = {}} = {}) {
   const fav = favourite();
+  const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
+  const test = FILTERS.find(f => f[0] === current)[2];
+  const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
   return html`${topBar('Kader', 'Saison 2026/27')}
-    ${GROUPS.map(([label, test], i) => {
-      const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
-      return list.length ? html`<section class="sec" aria-labelledby="${'team-' + i}">${sectionHead(label, '', '', 'team-' + i)}<div class="pgrid">${list.map(p => card(p, fav))}</div></section>` : '';
-    })}
+    ${chips('pos', FILTERS.map(([id, label]) => [id, label]), current, 'Position')}
+    <section class="sec" aria-label="Spieler"><div class="pgrid">${list.map(p => card(p, fav))}</div></section>
     <section class="sec"><p class="note">Kader 2026/27. Spielerfotos: kadettensh.ch.</p></section>`;
 }
 
@@ -74,7 +77,8 @@ export function renderSpieler({route, state, load, api, now}) {
   const form = state.data ? recentForm({games: state.data.games, number: p.number, data: state.data, load, api, now}) : {rows: []};
   const known = season && Number.isInteger(season.fieldGoals) && Number.isInteger(season.sevenMeterGoals) && season.goals > 0;
   return html`${backBar('Kader', href.team(), star)}
-    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span><div class="bh-text"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)}</p></div></div></section>
+    <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span></div>
+      <div class="pl-head"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)} · <span class="num">#${p.number}</span></p></div></section>
     ${keeper ? formSection({form, keeper, now}) : ''}
     <section class="sec" aria-labelledby="sp-saison">${sectionHead('Saison 2026/27 · QHL', '', '', 'sp-saison')}
       ${season ? stats(keeper ? [[season.games, 'Spiele']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}

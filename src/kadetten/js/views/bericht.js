@@ -1,5 +1,5 @@
 // Spielbericht: Matchbericht als Text, Spielverlauf, Teamvergleich, Spielerwerte, Wurfanalyse (EHL).
-import {html, raw} from '../text.js';
+import {html, raw, escapeHtml} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {shortTeam} from '../logic.js';
@@ -15,6 +15,61 @@ const minute = sec => `${Math.floor(sec / 60) + 1}.`;
 function cmpRow(c, ownHome) {
   const own = ownHome ? c.share : 1 - c.share;
   return html`<div class="cmp num"><b${ownHome ? html` class="own"` : ''}>${c.homeText}</b><span class="bar"><span>${c.label}${c.rule ? ruleButton(c.rule) : ''}</span><i aria-hidden="true"${ownHome ? '' : html` class="right"`}><b data-style="${'width:' + Math.round(own * 100) + '%'}"></b></i></span><b${ownHome ? '' : html` class="own"`}>${c.awayText}</b></div>`;
+}
+
+/** Gleichmässige Kurve durch die Punkte (monotone kubische Interpolation: steigt nie zurück, kein Überschwingen). */
+function monotonePath(points) {
+  const f = v => +v.toFixed(2);
+  const pts = points.filter((p, i) => i === points.length - 1 || p[0] !== points[i + 1][0]);
+  const n = pts.length;
+  if (n < 2) return '';
+  const dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], q = a * a + b * b;
+    if (q > 9) { const k = 3 / Math.sqrt(q); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; }
+  }
+  let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 0; i < n - 1; i++) { const h = dx[i] / 3; d += ` C${f(pts[i][0] + h)} ${f(pts[i][1] + t[i] * h)} ${f(pts[i + 1][0] - h)} ${f(pts[i + 1][1] - t[i + 1] * h)} ${f(pts[i + 1][0])} ${f(pts[i + 1][1])}`; }
+  return d;
+}
+
+/** Spielverlauf wie in Matchday: je Team eine Kurve der erzielten Tore über die Spielzeit, Halbzeitmarke, Endpunkte.
+ * Kadetten: orange und kräftig; Gegner: neutral und gestrichelt (nie nur über Farbe unterscheidbar). */
+export function curveChart(goals, ownHome, {ownName = 'Kadetten', oppName = 'Gegner', final = null} = {}) {
+  if (!goals.length) return '';
+  const left = 34, right = 384, top = 20, bottom = 176;
+  const last = goals.at(-1).score;
+  // Endstand aus dem Spiel; die Kurve läuft nur bis ans Ende, wenn die Torfolge vollständig ist (sonst bis zum letzten bekannten Tor).
+  const total = Array.isArray(final) && final.length === 2 && final.every(Number.isInteger) && final[0] + final[1] >= last[0] + last[1] ? final : last;
+  const complete = total[0] === last[0] && total[1] === last[1];
+  const maximum = Math.max(10, Math.ceil(Math.max(...total) / 10) * 10);
+  const end = Math.max(3600, goals.at(-1).sec);
+  const x = sec => +(left + sec / end * (right - left)).toFixed(2), y = v => +(bottom - v / maximum * (bottom - top)).toFixed(2);
+  const ownIdx = ownHome ? 0 : 1;
+  const endX = complete ? right : x(goals.at(-1).sec);
+  const curve = side => {
+    const pts = [[left, bottom]];
+    let prev = 0;
+    for (const g of goals) if (g.score[side] !== prev) { prev = g.score[side]; pts.push([x(g.sec), y(prev)]); }
+    pts.push([endX, y(last[side])]);
+    return monotonePath(pts);
+  };
+  const [own, opp] = [curve(ownIdx), curve(1 - ownIdx)];
+  const ticks = [0, 600, 1200, 1800, 2400, 3000, 3600].filter(sec => sec <= end);
+  const diff = total[ownIdx] - total[1 - ownIdx];
+  const label = `Spielverlauf: ${ownName} ${total[ownIdx]} Tore, ${oppName} ${total[1 - ownIdx]} Tore, Tordifferenz ${diff > 0 ? '+' : ''}${diff}. Torfolge über die Spielzeit, Halbzeit nach 30 Minuten.`;
+  return raw(`<svg class="curve" viewBox="0 0 400 206" role="img" aria-label="${escapeHtml(label)}">
+    ${[0, maximum / 2, maximum].map(v => `<path class="cv-grid" d="M${left} ${y(v)}H${right}"/><text x="${left - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join('')}
+    <path class="cv-half" d="M${x(1800)} ${top}V${bottom}"/>
+    <path class="cv-area" d="${opp} V${bottom} H${left}Z"/><path class="cv-area own" d="${own} V${bottom} H${left}Z"/>
+    <path class="cv-line opp" d="${opp}"/><path class="cv-line own" d="${own}"/>
+    <circle class="cv-dot opp" cx="${endX}" cy="${y(last[1 - ownIdx])}" r="4"/><circle class="cv-dot own" cx="${endX}" cy="${y(last[ownIdx])}" r="5"/>
+    ${ticks.map(sec => `<text x="${x(sec)}" y="200" text-anchor="${sec === 0 ? 'start' : sec === 3600 ? 'end' : 'middle'}">${sec === 1800 ? '30′ · Pause' : sec / 60 + '′'}</text>`).join('')}
+  </svg>`);
 }
 
 /** Torverlauf als Linie der Tordifferenz aus Sicht der Kadetten, mit Halbzeitmarke. */
@@ -124,6 +179,18 @@ export function voteSection({vote, mine, now, busy, message, selected, data}) {
   </section>`;
 }
 
+/** Kopf des Spielverlaufs: beide Teams mit Toren, dazwischen die Tordifferenz aus Sicht der Kadetten, darunter die beiden Kurven. */
+function verlauf(goals, ownHome, game) {
+  const final = Array.isArray(game.score) && game.score.length === 2 ? game.score : goals.at(-1).score, ownIdx = ownHome ? 0 : 1;
+  const [own, opp] = [final[ownIdx], final[1 - ownIdx]], diff = own - opp;
+  const oppName = shortTeam(ownHome ? game.away : game.home);
+  return html`<div class="cv-legend">
+    <span class="cv-team own"><i aria-hidden="true"></i><span>Kadetten</span><b class="num">${own}</b></span>
+    <span class="cv-diff num" role="img" aria-label="${'Tordifferenz ' + (diff > 0 ? '+' : '') + diff}">${diff > 0 ? '+' : diff < 0 ? '−' : ''}${Math.abs(diff)}</span>
+    <span class="cv-team opp"><i aria-hidden="true"></i><span>${oppName}</span><b class="num">${opp}</b></span></div>
+    ${curveChart(goals, ownHome, {ownName: 'Kadetten', oppName, final})}`;
+}
+
 /** Inhalt des Berichts-Tabs. entry: Ergebnis von loadReportFor. */
 export function renderBericht({game, data, entry, ui, normalized, voting = ''}) {
   const stories = storiesForGame(data.stories, game);
@@ -147,7 +214,9 @@ export function renderBericht({game, data, entry, ui, normalized, voting = ''}) 
       <article class="card prose">${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
       <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p></article></section>` : ''}
     ${goals.length ? html`<section class="sec" aria-labelledby="g-verlauf">${sectionHead('Spielverlauf', '', '', 'g-verlauf')}
-      <div class="card"><div class="chart-wrap">${scoreChart(goals, ownHome, inc)}<div class="chart-axis"><span>1′</span><span>Halbzeit</span><span>60′</span></div></div>
+      <div class="card">${verlauf(goals, ownHome, game)}
+        <h3 class="h4">Tordifferenz${ruleButton('tordifferenz')}</h3>
+        <div class="chart-wrap">${scoreChart(goals, ownHome, inc)}<div class="chart-axis"><span>1′</span><span>Halbzeit</span><span>60′</span></div></div>
         <div class="facts3">
           <span><b class="num">${f.biggest[ownSide] > 0 ? '+' + f.biggest[ownSide] : '–'}</b><small>grösste Führung</small></span>
           <span><b class="num">${f.run.len}:0</b><small>bester Lauf ${sideText(f.run.side)}</small></span>
