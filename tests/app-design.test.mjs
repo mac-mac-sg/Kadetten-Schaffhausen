@@ -18,10 +18,10 @@ const tokens = read('src/kadetten/css/tokens.css');
 const data = decodeDeep(JSON.parse(read('server/seed.json')));
 const now = Date.parse('2026-11-05T10:00:00Z');
 const VIEWS = {jetzt: renderJetzt, news: renderNews, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch};
-function render(hash, ui = {}) {
+function render(hash, ui = {}, load = () => ({status: 'loading'})) {
   setLogos(data.clubLogos);
   const route = parseRoute(hash);
-  const ctx = {route, state: {data, live: null}, now, load: () => ({status: 'loading'}), api: {}, ui: {comp: 'Alle', table: 'QHL', ...ui}, theme: 'system'};
+  const ctx = {route, state: {data, live: null}, now, load, api: {}, ui: {comp: 'Alle', table: 'QHL', ...ui}, theme: 'system'};
   return parseHTML('<html><body>' + String(VIEWS[route.view](ctx)) + '</body></html>').document;
 }
 
@@ -201,4 +201,15 @@ test('Wappen: eigener Zuschnitt ohne Sterne und Rahmen; Spielort kurz', () => {
   const home = render('#/');
   assert.match(home.querySelector('.match-score .meta').textContent, /BBC Arena/);
   assert.doesNotMatch(home.querySelector('.match-score .meta').textContent, /Schaffhausen BBC/);
+});
+
+test('Statistik: Spielverlauf mit zwei Kurven, Legende mit Toren und Tordifferenz', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const d = render('#/spiel/508338/bericht', {}, () => ({status: 'ready', value: {shv, archive: {goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '12:00', s: [1, 1], h: true, n: 'B'}, {t: '25:00', s: [5, 9], h: false, n: 'A'}, {t: '40:00', s: [11, 18], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]}}}));
+  const section = d.querySelector('[aria-labelledby="g-verlauf"]');
+  assert.ok(section, 'Spielverlauf');
+  assert.equal(section.querySelectorAll('svg.curve .cv-line').length, 2);
+  assert.deepEqual([...section.querySelectorAll('.cv-team b')].map(b => b.textContent), ['28', '20']);
+  assert.match(section.querySelector('.cv-diff').textContent, /\+8/);
+  assert.ok(section.querySelector('.card > .h4'), 'Tordifferenz als zweite Grafik');
 });

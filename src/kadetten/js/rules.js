@@ -9,5 +9,6 @@ export const RULES = {
   tf: ['Technischer Fehler', 'Ballverlust ohne Wurf, etwa durch Fehlpass, Schrittfehler, Doppeldribbling, Fuss oder Stürmerfoul.'],
   passiv: ['Passives Spiel', 'Spielt eine Mannschaft zu lange ohne erkennbaren Torabschluss, zeigt das Schiedsrichtergespann das Vorwarnzeichen. Danach bleiben höchstens vier Pässe bis zum Wurf.'],
   auszeit: ['Auszeit (Team-Time-out)', 'Jede Mannschaft darf pro Spiel drei Auszeiten von einer Minute nehmen, höchstens zwei pro Halbzeit und keine in den letzten fünf Minuten nach der zweiten.'],
+  tordifferenz: ['Tordifferenz', 'Erzielte Tore minus kassierte Tore, hier aus Sicht der Kadetten: Plus heisst Führung, Minus Rückstand. Die Linie zeigt den Unterschied im Spielstand während des Spiels, die Null-Linie den Gleichstand.'],
   punkte: ['Punkte in der Tabelle', 'In der QHL gibt ein Sieg zwei Punkte, ein Unentschieden einen Punkt. Bei Punktgleichheit entscheidet zuerst die Tordifferenz.']
 };

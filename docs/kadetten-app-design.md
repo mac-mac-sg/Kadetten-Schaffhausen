@@ -1,6 +1,6 @@
 # Kadetten App – Designsprache «Schnitt»
 
-Stand: 7. November 2026. Gilt für die neue Kadetten App unter `/v2/` (`src/kadetten/`). Entscheid des Eigentümers: Die App ist reine Kadetten-App (keine Vereinsauswahl), hat vier Tabs und eine eigene, wiedererkennbare Designsprache, die aus Wappen und Trikot kommt. Sie ersetzt sowohl die frühere «Abend»-Oberfläche als auch das [Matchday-Layout](v2-matchday-layout.md). Aufbau der Seiten und Daten: [Spezifikation](kadetten-app.md).
+Stand: 7. November 2026. Gilt für die neue Kadetten App unter `/v2/` (`src/kadetten/`). Entscheid des Eigentümers: Die App ist reine Kadetten-App (keine Vereinsauswahl), hat vier Tabs und eine eigene, wiedererkennbare Designsprache, die aus Wappen und Trikot kommt. Sie ersetzt sowohl die frühere «Abend»-Oberfläche als auch das [Matchday-Layout](v2-matchday-layout.md). Aufbau der Seiten und Daten: [Spezifikation](kadetten-app.md). Einseitige Kurzfassung für Folgearbeiten: [Brand-Kit](kadetten-brand-kit.md).
 
 ## Idee
 
@@ -66,6 +66,7 @@ Alle Zahlen mit Tabellenziffern.
 | Datumsblock | Tag als grosse kursive Ziffer, Monat klein; ersetzt in Spielzeilen das Gegnerwappen |
 | Umschalter und Filter | Umschalter (Segmente) sind orange. Steht darunter ein Filter (Chips), ist dessen Auswahl neutral (Tinte bzw. Papier), damit nie zwei orange Auswahlen konkurrieren |
 | Spielerkarte | Porträt (schwarzer Grund der Fotos), geschnittene Unterkante, grosse kursive Nummer in `accent-text`, Name, Position |
+| Spielverlauf (Statistik) | Wie in Matchday je Team eine Kurve der erzielten Tore über die Spielzeit (Kadetten orange und kräftig, Gegner neutral und gestrichelt, damit nie nur die Farbe unterscheidet), Halbzeitmarke, Endpunkte. Legende mit Toren und der Tordifferenz als schräges Etikett; darunter die Tordifferenz als Verlauf. Die Kurve läuft nur bis ans Spielende, wenn die Torfolge vollständig ist |
 | Zeitleiste im Ticker | Minute kursiv, schräger Marker, Stand rechts |
 | Schalter | 48 × 28 px, eckig, an = Orange |
 
