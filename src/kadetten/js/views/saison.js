@@ -31,6 +31,13 @@ function spielplan({state, now, ui}) {
     ${list.length ? '' : html`<section class="sec">${notice('Keine Spiele in diesem Wettbewerb.', 'cal')}</section>`}`;
 }
 
+// Siege, Unentschieden, Niederlagen als farbiger Balken unter dem Teamnamen.
+function recordBar(rec) {
+  if (!Array.isArray(rec) || rec.length !== 3 || rec.some(n => !Number.isFinite(n)) || !rec.some(n => n > 0)) return '';
+  const [w, d, l] = rec;
+  return html`<span class="wld" role="img" aria-label="${`${w} Siege, ${d} Unentschieden, ${l} Niederlagen`}"><i class="w" data-style="${'flex:' + w}"></i><i class="d" data-style="${'flex:' + d}"></i><i class="l" data-style="${'flex:' + l}"></i></span>`;
+}
+
 function tabellen({state, ui}) {
   const available = ['QHL', 'EHL'].filter(k => Array.isArray(state.data.tables?.[k]) && state.data.tables[k].length);
   const current = available.includes(ui.table) ? ui.table : available[0];
@@ -39,10 +46,10 @@ function tabellen({state, ui}) {
   return html`${available.length > 1 ? chips('table', available.map(k => [k, k === 'EHL' ? 'European League' : 'QHL']), current, 'Tabelle') : ''}
     <section class="sec" aria-labelledby="t-head"><h2 class="sr" id="t-head">Tabelle ${current}</h2>
       <div class="card list"><table class="tbl-real">
-        <thead><tr><th scope="col" class="p">#</th><th scope="col">Team</th><th scope="col" class="n">Sp</th>${current === 'QHL' ? html`<th scope="col" class="n wide-only">S-U-N</th>` : ''}<th scope="col" class="n">Diff</th><th scope="col" class="n">Pkt</th></tr></thead>
+        <thead><tr><th scope="col" class="p">#</th><th scope="col">Team</th><th scope="col" class="n">Sp</th><th scope="col" class="n">Diff</th><th scope="col" class="n">Pkt</th></tr></thead>
         <tbody>${rows.map(r => {
           const rec = records[r.team], diff = r.goalsFor !== null && r.goalsAgainst !== null ? r.goalsFor - r.goalsAgainst : null;
-          return html`<tr${r.team === OWN_TEAM ? html` class="me" aria-current="true"` : ''}><td class="p num">${r.rank}</td><td><span class="tteam">${crest(r.team, 'xs')}${shortTeam(r.team)}</span></td><td class="n num">${r.played ?? '–'}</td>${current === 'QHL' ? html`<td class="n num wide-only">${Array.isArray(rec) ? rec.join('-') : '–'}</td>` : ''}<td class="n num">${diff === null ? '–' : (diff > 0 ? '+' : '') + diff}</td><td class="n num strong">${r.points ?? '–'}</td></tr>`;
+          return html`<tr${r.team === OWN_TEAM ? html` class="me" aria-current="true"` : ''}><td class="p num">${r.rank}</td><td><span class="tteam">${crest(r.team, 'xs')}${shortTeam(r.team)}</span>${recordBar(rec)}</td><td class="n num">${r.played ?? '–'}</td><td class="n num">${diff === null ? '–' : (diff > 0 ? '+' : '') + diff}</td><td class="n num strong">${r.points ?? '–'}</td></tr>`;
         })}</tbody></table></div>
     </section>
     <section class="sec"><p class="note">${current === 'QHL' ? 'Sieg 2 Punkte, Unentschieden 1 Punkt. Während eines Kadetten-Spiels zeigt «Jetzt» die Live-Tabelle.' : 'Gruppenphase der EHF European League.'}</p></section>`;

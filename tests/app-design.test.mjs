@@ -457,3 +457,12 @@ test('Teamvergleich: Zeilen nur mit Werten beider Teams, keine erfundenen Disqua
   assert.ok(rows.includes('Würfe'));
   assert.ok(!rows.includes('Fehlwürfe') && !rows.includes('Disqualifikationen'), 'Quelle meldet sie nicht: keine Zeile');
 });
+
+test('Tabelle: Bilanz als farbiger Balken statt Spalte S-U-N', () => {
+  const t = render('#/statistik');
+  assert.doesNotMatch(t.body.textContent, /S-U-N/);
+  const bars = [...t.querySelectorAll('.wld')];
+  assert.ok(bars.length > 0, 'Balken vorhanden');
+  assert.match(bars[0].getAttribute('aria-label'), /^\d+ Siege, \d+ Unentschieden, \d+ Niederlagen$/);
+  assert.equal(bars[0].querySelectorAll('i').length, 3);
+});
