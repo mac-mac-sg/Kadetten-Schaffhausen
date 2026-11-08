@@ -9,7 +9,7 @@ export const AREAS = [
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
 const VEREIN_TABS = ['geschichte', 'titel'];
-export const GAME_TABS = ['vorschau', 'live', 'bericht', 'wahl'];
+export const GAME_TABS = ['vorschau', 'live', 'bericht', 'rueckblick', 'wahl'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
 export function parseRoute(hash = '') {

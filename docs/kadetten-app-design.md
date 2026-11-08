@@ -88,7 +88,7 @@ Alle Zahlen mit Tabellenziffern.
 | Titelseite (Tab News) | Kopfband mit Wortmarke, Wappen (→ Verein), «Ich»; nächstes Spiel als Karte mit Countdown-Etikett; je nach Spieltag Live-Stand, Ausgangslage, Tipp oder Endresultat; Aufmacher und Kurzmeldungen; Saisonzeile; letztes Resultat |
 | News | Kopfband, Meldungsliste mit geschnittenen Vorschaubildern |
 | Spiele | Kopfband, Wettbewerbs-Chips, Spiele nach Monat, nächstes Spiel mit Streifenrand |
-| Spielseite | Kopfband mit Zurück, Teilen und Spielstand; Segmente Übersicht, Ticker, Statistik |
+| Spielseite | Kopfband mit Zurück, Teilen und Spielstand; Segmente Übersicht, Ticker, Statistik. **Abgeschlossene QHL-Spiele haben nur zwei Reiter:** «Statistik» (Spielverlauf, Teamvergleich, Spielerwerte, Wurfanalyse, Fan-Wahl, Artikel, Tipp-Auswertung, «Ich war in der Halle») und «Rückblick» (ausschliesslich der erzeugte Bericht). Alte Adressen zu Übersicht und Ticker führen zur Statistik; Reiter-Adressen `…/bericht` und `…/rueckblick` |
 | Tabelle | Kopfband (Titel bleibt «Tabelle» auch bei den Spielerwerten), Segmente Tabelle und Spielerwerte, Spielerwerte mit Würfen und Quote (Tore/Würfe) aus den Spielberichten, Chips QHL und European League, Kadetten mit Streifenrand |
 | Kader | Kopfband, Positions-Chips (Alle, Tor, Rückraum, Flügel, Kreis), ein Raster mit zwei Spalten nach Rückennummer |
 | Spieler | schmales Band, Porträt mit grosser Nummer, Name und Position darunter (nie über dem Trikot), Saisonwerte, Form, Steckbrief |

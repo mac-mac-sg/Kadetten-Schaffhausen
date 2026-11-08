@@ -328,3 +328,44 @@ test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne B
   const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
   assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');
 });
+
+// ---- Abgeschlossene QHL-Spiele: nur «Statistik» und «Rückblick» ----
+test('Abgeschlossenes QHL-Spiel: genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const archive = {report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']}, generator: 'daten', goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]};
+  const ready = () => ({status: 'ready', value: {shv, archive}});
+  const tabsOf = d => [...d.querySelectorAll('nav.seg a')].map(a => [a.textContent.trim(), a.getAttribute('href'), a.hasAttribute('aria-current')]);
+
+  const stat = render('#/spiel/508338/bericht', {}, ready);
+  assert.deepEqual(tabsOf(stat).map(t => t[0]), ['Statistik', 'Rückblick'], 'kein Ticker, keine Übersicht');
+  assert.deepEqual(tabsOf(stat)[0].slice(1), ['#/spiel/508338/bericht', true]);
+  assert.equal(tabsOf(stat)[1][1], '#/spiel/508338/rueckblick');
+  assert.ok(stat.querySelector('[aria-labelledby="g-verlauf"]') && stat.querySelector('[aria-labelledby="g-cmp"]') && stat.querySelector('[aria-labelledby="g-spieler"]'), 'Spielverlauf, Teamvergleich, Spielerwerte');
+  assert.equal(stat.querySelector('[aria-labelledby="g-text"]'), null, 'der Text gehört in den Rückblick');
+  assert.doesNotMatch(stat.body.textContent, /Die Kadetten gewinnen 28:20/);
+
+  const back = render('#/spiel/508338/rueckblick', {}, ready);
+  assert.deepEqual(tabsOf(back).map(t => [t[0], t[2]]), [['Statistik', false], ['Rückblick', true]]);
+  assert.match(back.querySelector('.prose h3').textContent, /Kadetten schlagen Suhr Aarau/);
+  assert.equal(back.querySelectorAll('.prose p').length, 3, 'zwei Absätze und der Quellenhinweis');
+  assert.match(back.body.textContent, /Aus den bestätigten Spieldaten zusammengestellt/);
+  for (const sel of ['[aria-labelledby="g-verlauf"]', '[aria-labelledby="g-cmp"]', '[aria-labelledby="g-spieler"]', '[data-my-game]', '.vote-teaser', '[aria-labelledby="g-art"]', '.chart', '.curve']) assert.equal(back.querySelector(sel), null, 'Rückblick enthält nichts ausser dem Text: ' + sel);
+
+  for (const hash of ['#/spiel/508338', '#/spiel/508338/live', '#/spiel/508338/vorschau']) {
+    const d = render(hash, {}, ready);
+    assert.deepEqual(tabsOf(d).filter(t => t[2]).map(t => t[0]), ['Statistik'], hash + ' führt zur Statistik');
+  }
+  const noText = render('#/spiel/508338/rueckblick', {}, () => ({status: 'ready', value: {shv, archive: {goals: archive.goals}}}));
+  assert.match(noText.body.textContent, /keinen Rückblick/);
+  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'loading'})).body.textContent, /Rückblick wird geladen/);
+  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'error'})).body.textContent, /Rückblick erscheint/);
+  assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick');
+});
+
+test('Bevorstehende QHL-Spiele und andere Wettbewerbe behalten ihre Reiter', () => {
+  const next = render('#/spiel/508393');
+  assert.deepEqual([...next.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik']);
+  const ehl = data.games.find(g => g.league === 'EHL' && Array.isArray(g.score));
+  assert.ok(ehl, 'Beispielspiel der European League im Datenbestand');
+  assert.deepEqual([...render('#/spiel/' + ehl.id).querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik'], 'EHL unverändert');
+});

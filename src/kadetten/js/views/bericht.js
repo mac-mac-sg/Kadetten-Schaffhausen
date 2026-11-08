@@ -198,7 +198,24 @@ function verlauf(goals, ownHome, game) {
 }
 
 /** Inhalt des Berichts-Tabs. entry: Ergebnis von loadReportFor. */
-export function renderBericht({game, data, entry, ui, normalized, voting = ''}) {
+const textSection = text => html`<section class="sec" aria-labelledby="g-text">${sectionHead('Matchbericht', '', '', 'g-text')}
+      <article class="card prose">${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
+      <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p></article></section>`;
+
+/** Rückblick: nur der erzeugte Bericht, sonst nichts. Alle Zahlen stehen unter «Statistik». */
+function rueckblick(entry) {
+  if (!entry || entry.status === 'error') return html`<section class="sec">${notice('Der Rückblick erscheint, sobald der bestätigte Spielbericht vorliegt. Das ist in der Regel kurz nach Spielende.', 'doc')}</section>`;
+  if (entry.status === 'loading') return html`<section class="sec">${loading('Rückblick wird geladen …')}</section>`;
+  const text = reportText(entry.value.archive);
+  if (!text) return html`<section class="sec">${notice('Für dieses Spiel gibt es keinen Rückblick. Spielverlauf, Teamvergleich und Spielerwerte stehen unter «Statistik».', 'doc')}</section>`;
+  return html`<section class="sec after-band" aria-labelledby="g-text"><h2 class="sr" id="g-text">Rückblick</h2>
+    <article class="card prose">${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
+    <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p></article></section>`;
+}
+
+/** Inhalt des Berichts. part: 'alles' (bisher), 'statistik' (alles ausser dem Text) oder 'rueckblick' (nur der erzeugte Text). */
+export function renderBericht({game, data, entry, ui, normalized, voting = '', part = 'alles'}) {
+  if (part === 'rueckblick') return rueckblick(entry);
   const stories = storiesForGame(data.stories, game);
   const articles = stories.length ? html`<section class="sec" aria-labelledby="g-art">${sectionHead('Artikel zum Spiel', '', '', 'g-art')}<div class="card list">${stories.slice(0, 3).map(storyRow)}</div></section>` : '';
   if (!entry || entry.status === 'error') return html`${voting}<section class="sec">${notice('Für dieses Spiel liegt noch kein bestätigter Spielbericht vor. Er erscheint in der Regel kurz nach Spielende.', 'doc')}</section>${articles}`;
@@ -216,9 +233,7 @@ export function renderBericht({game, data, entry, ui, normalized, voting = ''}) 
   const sideText = side => side === ownSide ? 'Kadetten' : shortTeam(ownHome ? game.away : game.home);
   return html`
     ${voting}
-    ${text ? html`<section class="sec" aria-labelledby="g-text">${sectionHead('Matchbericht', '', '', 'g-text')}
-      <article class="card prose">${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
-      <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p></article></section>` : ''}
+    ${text && part === 'alles' ? textSection(text) : ''}
     ${goals.length ? html`<section class="sec" aria-labelledby="g-verlauf">${sectionHead('Spielverlauf', '', '', 'g-verlauf')}
       <div class="card">${verlauf(goals, ownHome, game)}
         <h3 class="h4">Tordifferenz${ruleButton('tordifferenz')}</h3>
