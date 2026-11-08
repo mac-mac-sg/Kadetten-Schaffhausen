@@ -59,7 +59,9 @@ test('Jetzt zeigt je Zustand das Passende', () => {
 });
 
 test('Spielseite wechselt Vorschau → Live → Bericht', () => {
-  assert.match(render('#/spiel/508393', MOMENTS.alltag), /aria-current="page">Übersicht/);
+  const before = render('#/spiel/508393', MOMENTS.alltag);
+  assert.doesNotMatch(before, /aria-label="Spielseite"/, 'vor Anpfiff keine Reiterleiste');
+  assert.match(before, /Ausgangslage/);
   assert.match(render('#/spiel/508393', MOMENTS.live), /aria-current="page"><i class="dot"><\/i>Ticker/);
   const done = render('#/spiel/508393', MOMENTS.nachspiel);
   assert.match(done, /aria-current="page">Statistik/);
