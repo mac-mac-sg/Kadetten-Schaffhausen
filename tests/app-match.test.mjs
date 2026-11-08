@@ -93,3 +93,11 @@ test('Artikel-HTML wird bereinigt', () => {
   assert.match(out, /böse/);
   assert.match(out, /Rest/);
 });
+
+test('Artikel: Spielpaarung wird zur Karte mit Logos und Resultat, anderer Inhalt bleibt', () => {
+  const {DOMParser, document} = parseHTML('<html><body></body></html>');
+  const out = sanitizeArticle('<div><div><img src="https://kadettensh.ch/a.png" alt="A"><div>34</div><div><div>VS.</div><div>(12:24)</div></div><div>45</div><img src="https://kadettensh.ch/b.png" alt="B"></div></div><p>Bericht bleibt.</p><div><img src="https://kadettensh.ch/c.png"><p>Weitere Infos</p><img src="https://kadettensh.ch/d.png"></div>', {parser: DOMParser, doc: document});
+  assert.match(out, /<div class="fixture"><img [^>]*alt="A"[^>]*><div class="fixture-score"><strong>34 : 45<\/strong><small>Halbzeit 12:24<\/small><\/div><img [^>]*alt="B"[^>]*><\/div>/);
+  assert.match(out, /Bericht bleibt/);
+  assert.equal((out.match(/class="fixture"/g) || []).length, 1, 'zwei Bilder mit Text sind keine Paarung');
+});

@@ -8,6 +8,17 @@ function httpsUrl(value, base) {
   try { const url = new URL(value, base); return url.protocol === 'https:' ? url.href : null; } catch { return null; }
 }
 
+// Spielpaarung aus dem Seitenbaukasten: zwei Logos mit «34 VS. (12:24) 45» dazwischen.
+// Nur eindeutige Paare werden zur Karte; alles andere bleibt Artikeltext.
+const FIXTURE = /^(\d{1,3})\s*(?:VS\.?|:|[-–])\s*(?:\(\s*(\d{1,3})\s*:\s*(\d{1,3})\s*\)\s*)?(\d{1,3})$/i;
+function fixtureOf(el, base) {
+  const images = el.querySelectorAll('img');
+  if (images.length !== 2) return null;
+  const m = el.textContent.replace(/\s+/g, ' ').trim().match(FIXTURE);
+  const srcs = [...images].map(img => httpsUrl(img.getAttribute('src'), base));
+  return m && srcs.every(Boolean) ? {home: m[1], away: m[4], half: m[2] ? `${m[2]}:${m[3]}` : '', srcs, alts: [...images].map(img => img.getAttribute('alt') || '')} : null;
+}
+
 /** Gibt bereinigtes HTML zurück. doc: ein Document zum Erzeugen von Knoten (Browser: document). */
 export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = globalThis.document, base = 'https://kadettensh.ch/'} = {}) {
   const source = new parser().parseFromString(`<!doctype html><html><head></head><body>${String(html || '')}</body></html>`, 'text/html');
@@ -19,6 +30,20 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
       const tag = child.tagName.toUpperCase();
       if (DROP.has(tag)) continue;
       const name = RENAME[tag] || tag;
+      if (tag === 'DIV' || tag === 'P' || tag === 'SECTION') {
+        const fx = fixtureOf(child, base);
+        if (fx) {
+          const box = doc.createElement('div');
+          box.setAttribute('class', 'fixture');
+          const logo = (src, alt) => { const i = doc.createElement('img'); i.setAttribute('src', src); i.setAttribute('alt', alt); i.setAttribute('loading', 'lazy'); i.setAttribute('decoding', 'async'); return i; };
+          const mid = doc.createElement('div'); mid.setAttribute('class', 'fixture-score');
+          const strong = doc.createElement('strong'); strong.textContent = `${fx.home} : ${fx.away}`; mid.appendChild(strong);
+          if (fx.half) { const small = doc.createElement('small'); small.textContent = `Halbzeit ${fx.half}`; mid.appendChild(small); }
+          box.appendChild(logo(fx.srcs[0], fx.alts[0])); box.appendChild(mid); box.appendChild(logo(fx.srcs[1], fx.alts[1]));
+          target.appendChild(box);
+          continue;
+        }
+      }
       if (!ALLOWED.has(name)) { copy(child, target); continue; }
       const el = doc.createElement(name.toLowerCase());
       if (name === 'A') {
