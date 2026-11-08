@@ -66,8 +66,6 @@
 .tbl-real tr.me td:last-child { box-shadow: 16px 0 0 var(--c-highlight); }
 .tteam { display: flex; align-items: center; gap: var(--s-2); min-width: 0; overflow-wrap: anywhere; }
 .plink { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 44px; }
-.wide-only { display: none; }
-@media (min-width: 400px) { .wide-only { display: table-cell; } }
 .tbl-scroll { overflow-x: auto; }
 .tbl-real.pstats tbody th { padding: 0 var(--s-2) 0 0; min-width: 120px; height: 44px; border-top: 1px solid var(--c-line); font: 400 var(--fs-body)/1.25 var(--f-text); color: var(--c-text); text-align: left; }
 .tbl-real.pstats tbody th a { text-decoration: underline; text-decoration-color: var(--c-line); text-underline-offset: 3px; }
@@ -405,3 +403,12 @@
 .keeper-zones .fine { margin: 0 0 var(--s-2); }
 .tbl-real .zn { text-align: left; font-weight: 400; }
 .card > .cmp.head + .cmp { border-top: 0; }
+
+/* Tabelle: Bilanz als Balken (Sieg / Unentschieden / Niederlage) unter dem Teamnamen */
+.tbl-real td:has(> .wld) { height: 56px; }
+.tbl-real td:has(> .wld) > .tteam { margin-bottom: 6px; }
+.wld { display: flex; gap: 2px; height: 6px; max-width: 160px; }
+.wld i { display: block; min-width: 0; height: 100%; transform: skewX(var(--skew)); }
+.wld .w { background: var(--c-win); }
+.wld .d { background: var(--c-text-muted); opacity: .45; }
+.wld .l { background: var(--c-loss); }
