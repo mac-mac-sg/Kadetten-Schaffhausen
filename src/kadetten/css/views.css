@@ -404,14 +404,14 @@
 .tbl-real .zn { text-align: left; font-weight: 400; }
 .card > .cmp.head + .cmp { border-top: 0; }
 
-/* Tabelle: Bilanz als Balken (Sieg / Unentschieden / Niederlage) unter dem Teamnamen */
-.tbl-real td:has(> .wld) { height: 56px; }
-.tbl-real td:has(> .wld) > .tteam { margin-bottom: 6px; }
-.wld { display: flex; gap: 2px; height: 6px; max-width: 160px; }
-.wld i { display: block; min-width: 0; height: 100%; transform: skewX(var(--skew)); }
+/* Tabelle: Bilanz als schmaler Balken (Sieg / Unentschieden / Niederlage) unter dem Teamnamen */
+.tbl-real td:has(> .wld) { height: 50px; }
+.tbl-real td:has(> .wld) > .tteam { margin-bottom: 5px; }
+.wld { display: flex; gap: 1px; height: 3px; width: 112px; max-width: 100%; border-radius: 2px; overflow: hidden; }
+.wld i { display: block; min-width: 0; height: 100%; }
 .wld .w { background: var(--c-win); }
-.wld .d { background: var(--c-text-muted); opacity: .45; }
-.wld .l { background: var(--c-loss); }
+.wld .d { background: var(--c-text-muted); opacity: .5; }
+.wld .l { background: var(--c-text-muted); opacity: .2; }
 
 /* Artikel: Spielpaarung als Karte (Logos begrenzt, Resultat als Rückennummer) */
 .prose .fixture { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-3); margin: var(--s-4) 0; padding: var(--s-4) var(--s-3); background: var(--c-surface); border-radius: var(--r-tile); position: relative; overflow: hidden; }
