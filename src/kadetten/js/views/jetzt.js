@@ -6,7 +6,7 @@ import {jetztState, countdown, dayLabel, kickoff, form, standings, OWN_TEAM, out
 import {findGame, liveTable, sameTeam, withFinished, isOwn, displayName} from '../match.js';
 import {liveReport} from './bericht.js';
 import {tipPoints} from '../moments.js';
-import {tips, favourite} from '../personal.js';
+import {tips, favourite, pickFor} from '../personal.js';
 import {myVotes} from '../fan-vote.js';
 import {homeBand, topBar, venueShort, sectionHead, heroCard, kickoffTime, scoreLine, formRow, notice, loading, stats, listRow, gameRow, storyRow, storyImage, LOGO, RESULT_TEXT, tipCard} from './parts.js';
 
@@ -126,7 +126,7 @@ export function renderJetzt({state, now, load, api, ui}) {
     const table = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
     return html`${homeBand()}
       <section class="sec match-score" aria-labelledby="j-end"><h2 class="sr" id="j-end">Endresultat</h2>${resultHero(shown, now, {actions, celebrate: outcome(shown) === 'S'})}</section>
-      ${ui?.votes && !myVotes()[shown.id] && load('votes:' + shown.id, () => ui.votes.status(shown.id), 60000).value?.open ? html`<section class="sec"><a class="card rowcard vote-teaser" href="${href.spiel(shown.id, 'wahl')}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">Wähle den Spieler des Matchs</span><span class="s">Inoffizielle Fan-Wahl, offen bis morgen Abend</span></span>${icon('go')}</a></section>` : ''}
+      ${ui?.votes && !myVotes()[shown.id] && load('votes:' + shown.id, () => ui.votes.status(shown.id), 60000).value?.open ? html`<section class="sec"><a class="card rowcard vote-teaser" href="${href.spiel(shown.id, 'wahl')}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">Wähle den Spieler des Matchs</span><span class="s">${pickFor(shown.id) ? 'Dein Favorit ist vorgewählt · ' : ''}Inoffizielle Fan-Wahl, offen bis morgen Abend</span></span>${icon('go')}</a></section>` : ''}
       ${tipFor(shown, now)}
       ${table && shown.league === 'QHL' ? html`<section class="sec" aria-labelledby="j-nach">${sectionHead('Tabelle danach', '', '', 'j-nach')}<a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${table.rank}.</span><span class="grow"><span class="t">QHL · ${table.points} Punkte</span><span class="s">nach ${table.played} Spielen</span></span>${icon('go')}</a></section>` : ''}
       ${next && next.id !== shown.id ? html`<section class="sec" aria-labelledby="j-next">${sectionHead('Nächstes Spiel', '', '', 'j-next')}<div class="card list">${gameRow(next, now)}</div></section>` : ''}

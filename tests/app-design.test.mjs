@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {existsSync, readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {parseRoute} from '../src/kadetten/js/router.js';
+import {competitionOf} from '../src/kadetten/js/logic.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
 import {setLogos, nav, venueShort, LOGO} from '../src/kadetten/js/views/parts.js';
 import {renderJetzt, renderNews} from '../src/kadetten/js/views/jetzt.js';
@@ -212,4 +213,243 @@ test('Statistik: Spielverlauf mit zwei Kurven, Legende mit Toren und Tordifferen
   assert.deepEqual([...section.querySelectorAll('.cv-team b')].map(b => b.textContent), ['28', '20']);
   assert.match(section.querySelector('.cv-diff').textContent, /\+8/);
   assert.ok(section.querySelector('.card > .h4'), 'Tordifferenz als zweite Grafik');
+});
+
+// ---- Spielerwahl, Variante C, Stufe 1 ----
+import {suggestions, livePicks, numberFor, surname} from '../src/kadetten/js/wahl.js';
+import {picks, pickFor, togglePick, PICKS_KEY} from '../src/kadetten/js/personal.js';
+import {voteSection, pickSection} from '../src/kadetten/js/views/bericht.js';
+const mem = () => { const m = new Map(); return {getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k)}; };
+const cands = [{id: '1', name: 'LIOI Alessio', goals: 2, saves: null}, {id: '2', name: 'PERIC Josip', goals: 7, saves: null}, {id: '3', name: 'SERAVALLI Mathieu', goals: null, saves: 11}, {id: '4', name: 'KUETTEL Dimitrij', goals: 4, saves: null}, {id: '5', name: 'MEIER Max', goals: 0, saves: null}];
+const dom2 = v => parseHTML('<html><body>' + String(v) + '</body></html>').document;
+
+test('Vorschläge nach Spieldaten: meiste Tore, zweitmeiste Tore, meiste Paraden; Rest nach Beitrag', () => {
+  const {picked, rest} = suggestions(cands);
+  assert.deepEqual(picked.map(p => [p.candidate.id, p.reason]), [['2', 'Meiste Tore'], ['4', 'Zweitmeiste Tore'], ['3', 'Meiste Paraden']]);
+  assert.deepEqual(rest.map(c => c.id), ['1', '5'], 'übrige nach Tore und Paraden, dann Name');
+  assert.equal(suggestions([{id: '1', name: 'A', goals: 3}, {id: '2', name: 'B', goals: 3}]).picked[1].reason, 'Gleich viele Tore');
+  assert.deepEqual(suggestions(null), {picked: [], rest: []});
+  assert.deepEqual(suggestions([{id: '9', name: 'X', goals: 0}]).picked, [], 'ohne gemeldete Werte keine Begründung erfunden');
+  assert.deepEqual(livePicks([{id: 1, name: 'A', goals: 1}, {id: 2, name: 'B', goals: 5}, {id: 3, name: 'C', goals: 0}, {id: 4, name: 'D', goals: 3}, {id: 5, name: 'E', goals: 2}]).map(p => p.id), [2, 4, 5]);
+  assert.equal(numberFor({playerSeason: {players: {10: {shvPlayerId: 7}}}}, '7'), 10);
+  assert.equal(numberFor({}, '7'), null);
+  assert.equal(surname('Josip Perić'), 'Perić');
+});
+
+test('Favorit merken: nur lokal, je Spiel, nochmals tippen entfernt, ungültige Werte werden ignoriert', () => {
+  const s = mem();
+  assert.equal(pickFor('508393', s), null);
+  assert.deepEqual(togglePick('508393', {id: 2, name: 'PERIC Josip'}, s), {id: '2', name: 'PERIC Josip'});
+  assert.deepEqual(pickFor('508393', s), {id: '2', name: 'PERIC Josip'});
+  assert.deepEqual(togglePick('508393', {id: 4, name: 'KUETTEL Dimitrij'}, s), {id: '4', name: 'KUETTEL Dimitrij'}, 'anderer Spieler ersetzt');
+  assert.equal(togglePick('508393', {id: 4, name: 'KUETTEL Dimitrij'}, s), null, 'gleicher Spieler entfernt');
+  assert.equal(s.getItem(PICKS_KEY), null, 'leer: Schlüssel entfernt');
+  assert.equal(togglePick('../x', {id: 1, name: 'A'}, s), null);
+  assert.equal(togglePick('1', {id: '<b>', name: 'A'}, s), null);
+  s.setItem(PICKS_KEY, '{"1":{"id":"5","name":"X"},"2":{"id":"<","name":"Y"},"3":7}');
+  assert.deepEqual(Object.keys(picks(s)), ['1']);
+  s.setItem(PICKS_KEY, 'kaputt');
+  assert.deepEqual(picks(s), {});
+});
+
+test('Wahlliste: Vorschläge mit Begründung, weitere Spieler eingeklappt, Favorit vorgewählt, Bestätigung nennt den Namen', () => {
+  const vote = {status: 'ready', value: {open: true, total: 0, counts: {}, closesAt: Date.parse('2026-11-09T20:45:00Z'), candidates: cands}};
+  const data = {playerSeason: {players: {10: {shvPlayerId: 2}}}};
+  const d = dom2(voteSection({vote, now: Date.parse('2026-11-08T21:00:00Z'), data, selected: '2', pickId: '2'}));
+  const rows = [...d.querySelectorAll('.vote-rows > button.vote-player')];
+  assert.deepEqual(rows.map(r => r.getAttribute('data-vote-select')), ['2', '4', '3']);
+  assert.deepEqual(rows.map(r => r.querySelector('.why')?.textContent), ['Meiste Tore', 'Zweitmeiste Tore', 'Meiste Paraden']);
+  assert.equal(rows[0].getAttribute('aria-pressed'), 'true');
+  assert.match(rows[0].textContent, /Dein Favorit/); assert.match(rows[0].querySelector('.pk').textContent, /Gewählt/);
+  assert.match(rows[1].querySelector('.pk').textContent, /Wählen/);
+  assert.equal(d.querySelectorAll('details.vote-rest .vote-player').length, 2);
+  assert.ok(!d.querySelector('details.vote-rest').hasAttribute('open'));
+  const confirm = d.querySelector('[data-vote-confirm]');
+  assert.ok(!confirm.hasAttribute('disabled')); assert.match(confirm.textContent, /Stimme für Peric abgeben/);
+  assert.ok(dom2(voteSection({vote, now: 0, data})).querySelector('[data-vote-confirm]').hasAttribute('disabled'), 'ohne Auswahl gesperrt');
+  assert.match(dom2(voteSection({vote, now: 0, data})).body.textContent, /Inoffizielle Fan-Wahl, keine Auszeichnung/);
+  const noData = dom2(voteSection({vote: {...vote, value: {...vote.value, candidates: [{id: '9', name: 'X Y'}]}}, now: 0}));
+  assert.ok(noData.querySelector('details.vote-rest').hasAttribute('open'), 'ohne Vorschläge sind alle Spieler sichtbar');
+});
+
+test('Live-Spiel: «Dein Favorit?» mit Chips der besten Torschützen, Alle-Schalter, Favorit bleibt sichtbar', () => {
+  const players = [{id: 2, home: true, name: 'PERIC Josip', goals: 7}, {id: 4, home: true, name: 'KUETTEL Dimitrij', goals: 4}, {id: 1, home: true, name: 'LIOI Alessio', goals: 2}, {id: 8, home: true, name: 'MEIER Max', goals: 1}, {id: 20, home: false, name: 'GEGNER Gerd', goals: 9}];
+  const match = {id: 'x', home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau', score: [24, 21], league: 'QHL', details: {ok: true, players}};
+  const game = {id: 'x', home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau', league: 'QHL'};
+  const data = {playerSeason: {players: {10: {shvPlayerId: 2}}}};
+  const d = dom2(pickSection({match, game, data, ui: {}}));
+  const chips = [...d.querySelectorAll('.pick-chips [data-pick]')];
+  assert.deepEqual(chips.map(c => c.getAttribute('data-pick')), ['2', '4', '1'], 'drei beste eigene Torschützen, nie der Gegner');
+  assert.equal(chips[0].querySelector('b').textContent, '10');
+  assert.ok(d.querySelector('[data-ui="pickAll:1"]'), 'Alle einblenden');
+  assert.match(d.body.textContent, /Die Wahl öffnet nach dem Abpfiff/);
+  assert.equal(d.querySelectorAll('[data-vote-confirm],[data-vote]').length, 0, 'live wird nichts abgestimmt');
+  const all = dom2(pickSection({match, game, data, ui: {pickAll: '1'}}));
+  assert.equal(all.querySelectorAll('[data-pick]').length, 4);
+  assert.ok(all.querySelector('[data-ui="pickAll:0"]'));
+  assert.equal(dom2(pickSection({match: {...match, details: null}, game, data, ui: {}})).querySelectorAll('[data-pick]').length, 0);
+  assert.equal(pickSection({match, game: {id: 'y', home: 'A', away: 'B'}, data, ui: {}}), '', 'nur Spiele der Kadetten');
+  const mem2 = mem();
+  assert.equal(togglePick('x', {id: 8, name: 'MEIER Max'}, mem2).id, '8');
+});
+
+// ---- Schusseffizienz in der Saison-Torschützenliste ----
+import {shotTotals, renderSaison as renderStat} from '../src/kadetten/js/views/saison.js';
+import {normalizeReport, comparisonRows} from '../src/kadetten/js/report.js';
+
+test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur wo beide Werte gemeldet sind', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const report = normalizeReport(shv, null);
+  // KÜTTEL 2/4, MAROS 4/8 aus dem Bericht; ein zweiter Bericht addiert sich; ein Torhüter und unbekannte IDs zählen nicht.
+  const totals = shotTotals([report, report], {9: 261608, 20: 271116, 99: 1, 1: 999});
+  assert.deepEqual(totals[9], {goals: 4, shots: 8, games: 2});
+  assert.deepEqual(totals[20], {goals: 8, shots: 16, games: 2});
+  assert.equal(totals[99], undefined); assert.equal(totals[1], undefined);
+  const broken = {teams: [{players: [{id: 5, keeper: false, goals: 3, shots: null}, {id: 6, keeper: false, goals: 5, shots: 2}, {id: 7, keeper: true, goals: 0, shots: 0}]}]};
+  assert.deepEqual(shotTotals([broken], {1: 5, 2: 6, 3: 7}), {}, 'fehlende oder unmögliche Würfe werden nicht gezählt');
+  assert.deepEqual(shotTotals([], {1: 5}), {});
+});
+
+test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne Berichte «–», nichts geschätzt', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const season = {season: '2026/27', players: {9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0}, 20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1}, 21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}}};
+  const ctxFor = load => ({route: {view: 'statistik'}, state: {data: {...data, playerSeason: season}, live: null}, now, load, api: {}, ui: {stat: 'qhl'}});
+  const ready = dom2(renderStat(ctxFor(() => ({status: 'ready', value: {shv, archive: null}}))));
+  const head = [...ready.querySelectorAll('.tbl-real thead th')].map(th => th.textContent);
+  assert.deepEqual(head.slice(0, 5), ['Spieler', 'Sp', 'Tore', 'Würfe', 'Quote']);
+  const rows = [...ready.querySelectorAll('.tbl-real tbody tr')];
+  const cellsOf = nr => [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td => td.textContent.trim());
+  assert.deepEqual(cellsOf(20).slice(2, 5), ['20', '8', '50 %'], 'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20');
+  assert.deepEqual(cellsOf(21).slice(3, 5), ['–', '–'], 'kein Bericht: nichts geschätzt');
+  assert.match(ready.body.textContent, /aus 1 von \d+ QHL-Spielberichten/);
+  assert.match(ready.body.textContent, /Quote \(Tore\/Würfe\)/);
+  const loading = dom2(renderStat(ctxFor(() => ({status: 'loading'}))));
+  assert.match(loading.body.textContent, /werden noch geladen/);
+  assert.ok([...loading.querySelectorAll('.tbl-real tbody td.muted')].some(td => td.textContent === '…'));
+  const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
+  assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');
+});
+
+// ---- Abgeschlossene QHL-Spiele: nur «Statistik» und «Rückblick» ----
+test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const archive = {report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']}, generator: 'daten', goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]};
+  const ready = () => ({status: 'ready', value: {shv, archive}});
+  const tabsOf = d => [...d.querySelectorAll('nav.seg a')].map(a => [a.textContent.trim(), a.getAttribute('href'), a.hasAttribute('aria-current')]);
+
+  const stat = render('#/spiel/508338/bericht', {}, ready);
+  assert.deepEqual(tabsOf(stat).map(t => t[0]), ['Statistik', 'Rückblick'], 'kein Ticker, keine Übersicht');
+  assert.deepEqual(tabsOf(stat)[0].slice(1), ['#/spiel/508338/bericht', true]);
+  assert.equal(tabsOf(stat)[1][1], '#/spiel/508338/rueckblick');
+  assert.ok(stat.querySelector('[aria-labelledby="g-verlauf"]') && stat.querySelector('[aria-labelledby="g-cmp"]') && stat.querySelector('[aria-labelledby="g-spieler"]'), 'Spielverlauf, Teamvergleich, Spielerwerte');
+  assert.equal(stat.querySelector('[aria-labelledby="g-text"]'), null, 'der Text gehört in den Rückblick');
+  assert.doesNotMatch(stat.body.textContent, /Die Kadetten gewinnen 28:20/);
+
+  const back = render('#/spiel/508338/rueckblick', {}, ready);
+  assert.deepEqual(tabsOf(back).map(t => [t[0], t[2]]), [['Statistik', false], ['Rückblick', true]]);
+  assert.match(back.querySelector('.prose h3').textContent, /Kadetten schlagen Suhr Aarau/);
+  assert.equal(back.querySelectorAll('.prose p').length, 3, 'zwei Absätze und der Quellenhinweis');
+  assert.match(back.body.textContent, /Aus den bestätigten Spieldaten zusammengestellt/);
+  for (const sel of ['[aria-labelledby="g-verlauf"]', '[aria-labelledby="g-cmp"]', '[aria-labelledby="g-spieler"]', '[data-my-game]', '.vote-teaser', '[aria-labelledby="g-art"]', '.chart', '.curve']) assert.equal(back.querySelector(sel), null, 'Rückblick enthält nichts ausser dem Text: ' + sel);
+
+  for (const hash of ['#/spiel/508338', '#/spiel/508338/live', '#/spiel/508338/vorschau']) {
+    const d = render(hash, {}, ready);
+    assert.deepEqual(tabsOf(d).filter(t => t[2]).map(t => t[0]), ['Statistik'], hash + ' führt zur Statistik');
+  }
+  const noText = render('#/spiel/508338/rueckblick', {}, () => ({status: 'ready', value: {shv, archive: {goals: archive.goals}}}));
+  assert.match(noText.body.textContent, /keinen Rückblick/);
+  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'loading'})).body.textContent, /Rückblick wird geladen/);
+  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'error'})).body.textContent, /Rückblick erscheint/);
+  assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick');
+});
+
+test('Bevorstehende Spiele behalten Übersicht, Ticker und Statistik', () => {
+  const next = render('#/spiel/508393');
+  assert.deepEqual([...next.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik']);
+});
+
+test('Cup, Testspiele und European League: dieselben zwei Reiter wie bei der QHL', () => {
+  const find = c => data.games.find(g => competitionOf(g) === c && Array.isArray(g.score));
+  const [test, cup, ehl] = ['Test', 'Cup', 'EHL'].map(find);
+  assert.ok(test && cup && ehl, 'Beispielspiele der drei Wettbewerbe im Datenbestand');
+  const tabs = d => [...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim());
+  const text = {report: {headline: 'Test gewonnen', paragraphs: ['Ein deutlicher Sieg im Cup.']}, goals: []};
+
+  const t = render('#/spiel/' + test.id);
+  assert.deepEqual(tabs(t), ['Statistik', 'Rückblick'], 'Testspiel');
+  assert.match(t.body.textContent, /liefert die Quelle keine Spielwerte/, 'ehrlicher Hinweis statt Wartemeldung');
+  assert.match(render('#/spiel/' + test.id + '/rueckblick').body.textContent, /keinen Spielbericht, deshalb gibt es keinen Rückblick/);
+  assert.deepEqual(tabs(render('#/spiel/' + test.id + '/live')), ['Statistik', 'Rückblick']);
+
+  const c = render('#/spiel/' + cup.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: text}}));
+  assert.deepEqual(tabs(c), ['Statistik', 'Rückblick'], 'Cup');
+  assert.match(c.querySelector('.prose').textContent, /Test gewonnen/);
+
+  assert.deepEqual(tabs(render('#/spiel/' + ehl.id)), ['Statistik', 'Rückblick'], 'EHL: ebenfalls zwei Reiter');
+});
+
+// ---- European League: alle Statistiken der Matchday-App ----
+const ehlGame = data.games.find(g => g.league === 'EHL' && Array.isArray(g.score));
+const ehlCounts = (shots, goals, saved, post, missed, blocked) => ({shots, goals, saved, post, missed, blocked});
+const ehlArchive = () => {
+  const [hs, as] = ehlGame.score;
+  const zone = (z, shots, goals) => ({zone: z, shots, goals, saved: shots - goals, post: 0, missed: 0, blocked: 0});
+  return {
+    home: ehlGame.home, away: ehlGame.away, score: ehlGame.score, half: [Math.floor(hs / 2), Math.floor(as / 2)],
+    report: {headline: 'Klarer Sieg in der European League', paragraphs: ['Ein deutlicher Heimsieg.'], generator: 'daten'},
+    goals: [{t: '10:00', s: [1, 0], h: true, n: 'Josip Perić'}, {t: '59:00', s: ehlGame.score, h: true, n: 'Odinn Rikhardsson'}],
+    teamStats: {
+      home: {goals: hs, shots: 60, misses: 14, efficiency: 65, sevenGoals: 3, sevenShots: 4, twoMinutes: 2, warnings: 1, disqualifications: 1, technicalFaults: 9},
+      guest: {goals: as, shots: 58, misses: 17, efficiency: 55, sevenGoals: 2, sevenShots: 3, twoMinutes: 4, warnings: 2, disqualifications: 0, technicalFaults: 12}
+    },
+    players: [
+      {id: 11, number: 10, home: true, name: 'PERIC Josip', goals: 9, shots: 11, seven: 2, sevenShots: 2, twoMinutes: 0, yellow: 1, red: 1},
+      {id: 12, number: 6, home: true, name: 'RIKHARDSSON Odinn', goals: 6, shots: 8, seven: 1, sevenShots: 2, twoMinutes: 1, yellow: 0, red: 0},
+      {id: 13, number: 1, home: true, name: 'BERGMANN Leon', goalkeeper: true, saves: 12, savesFaced: 30},
+      {id: 22, number: 12, home: false, name: 'TORWART Tom', goalkeeper: true, saves: 9, savesFaced: 28},
+      {id: 21, number: 7, home: false, name: 'GEGNER Gerd', goals: 8, shots: 12, seven: 1, sevenShots: 1, twoMinutes: 2, yellow: 0, red: 0}
+    ],
+    shotStats: {
+      home: {...ehlCounts(60, hs, 14, 3, 14, 5), zones: [zone('LLD', 10, 5), zone('PTY', 4, 3), zone('XYZ', 2, 1)], halves: [{half: 'H1', shots: 30, goals: 18}, {half: 'H2', shots: 30, goals: hs - 18}],
+        keepers: [{id: 13, name: 'BERGMANN Leon', shots: 30, saves: 12, sevenShots: 3, sevenSaves: 1, zones: [{zone: 'LLD', shots: 10, saved: 5}, {zone: 'PTY', shots: 3, saved: 1}]}]},
+      away: {...ehlCounts(58, as, 12, 4, 17, 3), zones: [zone('CLD', 8, 4)], halves: null, keepers: []}
+    }
+  };
+};
+
+test('European League: Statistik mit allen Werten der Matchday-App', () => {
+  assert.ok(ehlGame, 'Beispielspiel der European League im Datenbestand');
+  const d = render('#/spiel/' + ehlGame.id, {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
+  assert.deepEqual([...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Statistik', 'Rückblick']);
+  // Teamvergleich: Würfe, Fehlwürfe, Disqualifikationen kommen neben den bisherigen Zeilen dazu.
+  const labels = [...d.querySelectorAll('[aria-labelledby="g-cmp"] .cmp .bar > span')].map(n => n.textContent.replace('?', '').trim());
+  for (const l of ['Tore', 'Würfe', 'Fehlwürfe', 'Wurfquote', 'Paraden', '7-m', 'Zeitstrafen', 'Verwarnungen', 'Disqualifikationen', 'Technische Fehler']) assert.ok(labels.includes(l), 'Teamvergleich: ' + l + ' in ' + labels.join(', '));
+  assert.ok(labels.indexOf('Würfe') < labels.indexOf('Fehlwürfe') && labels.indexOf('Fehlwürfe') < labels.indexOf('Wurfquote'));
+  // Spieler: Rückennummer, Disqualifikationen, Toptorschützen
+  const players = d.querySelector('[aria-labelledby="g-spieler"]');
+  assert.deepEqual([...players.querySelectorAll('thead th')].map(th => th.textContent), ['Spieler', 'Tore/W', 'Quote', '7-m', '2′', 'G', 'R']);
+  assert.match(players.querySelector('tbody tr th').textContent, /^10\s/, 'Rückennummer vor dem Namen');
+  assert.deepEqual([...players.querySelectorAll('.scorers li')].map(li => li.textContent.replace(/\s+/g, ' ').trim().slice(0, 1)), ['9', '6']);
+  // Wurfanalyse: wie die Würfe endeten, Zonen inkl. weitere, Halbzeitquoten, Paraden nach Zone
+  const wurf = d.querySelector('[aria-labelledby="g-wurf"]');
+  assert.ok(wurf);
+  assert.deepEqual([...wurf.querySelectorAll('.cmp .bar > span')].map(n => n.textContent.trim()), ['Tore', 'Vom Torhüter gehalten', 'Pfosten / Latte', 'Daneben', 'Geblockt']);
+  assert.match(wurf.textContent, /Weitere Wurfzone/);
+  assert.deepEqual([...wurf.querySelectorAll('.halves > div span')].map(n => n.textContent), ['1. Halbzeit', '2. Halbzeit'], 'Quote je Halbzeit nur dort, wo die Quelle sie liefert');
+  assert.equal(wurf.querySelectorAll('.halves').length, 1);
+  const keeper = wurf.querySelector('details.keeper-zones');
+  assert.ok(keeper); assert.match(keeper.textContent, /Paraden nach Wurfzone/); assert.match(keeper.textContent, /Siebenmeter gehalten: 1 \/ 3/);
+  assert.equal(keeper.querySelectorAll('tbody tr').length, 2);
+  assert.match(keeper.textContent, /Links · Distanz/);
+  // Rückblick enthält nur den Text
+  const back = render('#/spiel/' + ehlGame.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
+  assert.match(back.querySelector('.prose').textContent, /Klarer Sieg in der European League/);
+  assert.equal(back.querySelector('[aria-labelledby="g-wurf"]'), null);
+});
+
+test('Teamvergleich: Zeilen nur mit Werten beider Teams, keine erfundenen Disqualifikationen bei QHL', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const rows = comparisonRows(normalizeReport(shv, null)).map(r => r.label);
+  assert.ok(rows.includes('Würfe'));
+  assert.ok(!rows.includes('Fehlwürfe') && !rows.includes('Disqualifikationen'), 'Quelle meldet sie nicht: keine Zeile');
 });

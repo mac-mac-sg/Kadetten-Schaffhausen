@@ -1,7 +1,7 @@
 // «Saison»: Spielplan & Resultate, Tabellen, Statistik.
 import {html} from '../text.js';
 import {href} from '../router.js';
-import {OWN_TEAM, ownGames, kickoff, hasScore, shortTeam, standings, nextGame, zurichParts} from '../logic.js';
+import {OWN_TEAM, ownGames, kickoff, hasScore, shortTeam, standings, nextGame, zurichParts, competitionOf} from '../logic.js';
 import {icon} from '../icons.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
@@ -12,7 +12,6 @@ import {topBar, chips, sectionHead, notice, loading, gameRow, segment, crest, pl
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const TABS = [['tabellen', 'Tabelle', '#/statistik'], ['statistik', 'Spielerwerte', '#/statistik/spieler']];
 
-const competitionOf = g => /cup/i.test(g.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(g.league) ? g.league : 'Test';
 
 function spielplan({state, now, ui}) {
   const games = ownGames(state.data.games);
@@ -74,16 +73,46 @@ function keeperTable({state, load, api, now}) {
     <p class="fine pad-top">Summiert aus ${used} von ${games.length} QHL-Spielberichten${pending ? `, ${pending} werden noch geladen` : ''}. Quote = Paraden/Würfe aufs Tor.</p>`;
 }
 
-function scorerTable(season, label) {
+/** Würfe und Tore je Spieler aus den Spielberichten: nur Berichte, in denen beide Werte gemeldet sind.
+ * reports: normalisierte Berichte; ids: {Rückennummer: Quellen-ID}. Liefert {Rückennummer: {goals, shots, games}}. */
+export function shotTotals(reports, ids) {
+  const totals = {};
+  for (const report of reports) for (const [nr, id] of Object.entries(ids)) {
+    const p = playerInReport(report, [id]);
+    if (!p || p.keeper || !Number.isInteger(p.goals) || !Number.isInteger(p.shots) || p.shots < p.goals) continue;
+    const t = totals[nr] ||= {goals: 0, shots: 0, games: 0};
+    t.goals += p.goals; t.shots += p.shots; t.games++;
+  }
+  return totals;
+}
+
+/** Berichte aller bisherigen QHL-Spiele der Kadetten laden (je Spiel einmal, danach aus dem Zwischenspeicher). */
+function shotData({state, load, api, now}) {
+  const games = ownGames(state.data.games).filter(g => g.league === 'QHL' && hasScore(g) && kickoff(g) <= now);
+  const ids = Object.fromEntries(Object.entries(state.data.playerSeason?.players || {}).filter(([, p]) => p.shvPlayerId).map(([nr, p]) => [nr, p.shvPlayerId]));
+  const reports = [];
+  let pending = 0;
+  for (const game of games) {
+    const entry = loadReportFor(load, api, game);
+    if (entry.status === 'loading') { pending++; continue; }
+    const report = entry.status === 'ready' ? normalizeReport(entry.value.shv, null) : null;
+    if (report && fitsGame(report, game)) reports.push(report);
+  }
+  return {totals: shotTotals(reports, ids), used: reports.length, total: games.length, pending};
+}
+
+function scorerTable(season, label, shots = null) {
   const players = Object.entries(season?.players || {}).map(([nr, v]) => ({nr: Number(nr), ...v, info: playerByNumber(nr)})).filter(p => Number.isInteger(p.goals) && p.info);
   if (!players.length) return notice('Für diese Saison liegen noch keine Spielerwerte vor.', 'saison');
   players.sort((a, b) => b.goals - a.goals || (a.games ?? 0) - (b.games ?? 0));
   const fav = favourite();
   const hasGames = players.some(p => Number.isInteger(p.games)), hasSeven = players.some(p => Number.isInteger(p.sevenMeterGoals));
+  const showShots = Boolean(shots);
+  const cells = p => { const t = shots?.totals[p.nr]; return t ? html`<td class="n num">${t.shots}</td><td class="n num">${fmtPct(pct(t.goals, t.shots))}</td>` : html`<td class="n num muted">${shots?.pending ? '…' : '–'}</td><td class="n num muted">${shots?.pending ? '…' : '–'}</td>`; };
   return html`<div class="card list"><table class="tbl-real">
-    <thead><tr><th scope="col">Spieler</th>${hasGames ? html`<th scope="col" class="n">Sp</th>` : ''}<th scope="col" class="n">Tore</th>${hasSeven ? html`<th scope="col" class="n">7-m</th>` : ''}<th scope="col" class="n">2′</th></tr></thead>
-    <tbody>${players.map((p, i) => html`<tr${p.nr === fav ? html` class="fav-row"` : i === 0 ? html` class="me"` : ''}><td><a class="plink" href="${href.spieler(p.nr)}">${p.nr === fav ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}<span class="num muted">${p.nr}</span> ${p.info.name}</a></td>${hasGames ? html`<td class="n num">${p.games ?? '–'}</td>` : ''}<td class="n num strong">${p.goals}</td>${hasSeven ? html`<td class="n num">${p.sevenMeterGoals ?? '–'}</td>` : ''}<td class="n num">${p.twoMinutes ?? '–'}</td></tr>`)}</tbody>
-  </table></div><p class="fine pad-top">${players.reduce((n, p) => n + p.goals, 0)} Tore · ${label}</p>`;
+    <thead><tr><th scope="col">Spieler</th>${hasGames ? html`<th scope="col" class="n">Sp</th>` : ''}<th scope="col" class="n">Tore</th>${showShots ? html`<th scope="col" class="n">Würfe</th><th scope="col" class="n">Quote</th>` : ''}${hasSeven ? html`<th scope="col" class="n">7-m</th>` : ''}<th scope="col" class="n">2′</th></tr></thead>
+    <tbody>${players.map((p, i) => html`<tr${p.nr === fav ? html` class="fav-row"` : i === 0 ? html` class="me"` : ''}><td><a class="plink" href="${href.spieler(p.nr)}">${p.nr === fav ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}<span class="num muted">${p.nr}</span> ${p.info.name}</a></td>${hasGames ? html`<td class="n num">${p.games ?? '–'}</td>` : ''}<td class="n num strong">${p.goals}</td>${showShots ? cells(p) : ''}${hasSeven ? html`<td class="n num">${p.sevenMeterGoals ?? '–'}</td>` : ''}<td class="n num">${p.twoMinutes ?? '–'}</td></tr>`)}</tbody>
+  </table></div><p class="fine pad-top">${players.reduce((n, p) => n + p.goals, 0)} Tore · ${label}</p>${shots ? html`<p class="fine">Würfe und Quote (Tore/Würfe) aus ${shots.used} von ${shots.total} QHL-Spielberichten${shots.pending ? `, ${shots.pending} werden noch geladen` : ''}. Gezählt werden nur Spiele, in denen der Bericht beide Werte meldet; – = nicht gemeldet.</p>` : ''}`;
 }
 
 function statistik(ctx) {
@@ -92,7 +121,7 @@ function statistik(ctx) {
   const current = options.some(o => o[0] === ui.stat) ? ui.stat : 'qhl';
   const body = current === 'tor' ? keeperTable(ctx)
     : current === 'ehl' ? scorerTable(state.data.ehlPlayerSeason, 'European League · Quelle: EHF')
-    : scorerTable(state.data.playerSeason, `QHL ${state.data.playerSeason?.season || ''} · Quelle: Schweizerischer Handball-Verband`);
+    : scorerTable(state.data.playerSeason, `QHL ${state.data.playerSeason?.season || ''} · Quelle: Schweizerischer Handball-Verband`, state.data.playerSeason?.players ? shotData(ctx) : null);
   return html`${chips('stat', options, current, 'Statistik')}<section class="sec tight">${body}</section>`;
 }
 

@@ -61,7 +61,9 @@ test('Jetzt zeigt je Zustand das Passende', () => {
 test('Spielseite wechselt Vorschau → Live → Bericht', () => {
   assert.match(render('#/spiel/508393', MOMENTS.alltag), /aria-current="page">Übersicht/);
   assert.match(render('#/spiel/508393', MOMENTS.live), /aria-current="page"><i class="dot"><\/i>Ticker/);
-  assert.match(render('#/spiel/508393', MOMENTS.nachspiel), /aria-current="page">Übersicht/);
+  const done = render('#/spiel/508393', MOMENTS.nachspiel);
+  assert.match(done, /aria-current="page">Statistik/);
+  assert.doesNotMatch(done, />Ticker<|>Übersicht</, 'abgeschlossenes QHL-Spiel: nur Statistik und Rückblick');
   assert.match(render('#/spiel/508338', MOMENTS.alltag), /Spielbericht wird geladen/);
 });
 
