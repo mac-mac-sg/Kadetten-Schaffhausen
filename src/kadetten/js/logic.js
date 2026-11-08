@@ -155,3 +155,6 @@ export function dataFreshness(data, now = Date.now()) {
     sources
   };
 }
+
+/** Wettbewerb eines Spiels wie in den Filtern: QHL, EHL, Cup (inkl. Turniere mit «cup» im Namen) oder Test. */
+export const competitionOf = game => /cup/i.test(game?.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(game?.league) ? game.league : 'Test';

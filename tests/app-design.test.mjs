@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {existsSync, readFileSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {parseRoute} from '../src/kadetten/js/router.js';
+import {competitionOf} from '../src/kadetten/js/logic.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
 import {setLogos, nav, venueShort, LOGO} from '../src/kadetten/js/views/parts.js';
 import {renderJetzt, renderNews} from '../src/kadetten/js/views/jetzt.js';
@@ -330,7 +331,7 @@ test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne B
 });
 
 // ---- Abgeschlossene QHL-Spiele: nur «Statistik» und «Rückblick» ----
-test('Abgeschlossenes QHL-Spiel: genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
+test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
   const archive = {report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']}, generator: 'daten', goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]};
   const ready = () => ({status: 'ready', value: {shv, archive}});
@@ -368,4 +369,24 @@ test('Bevorstehende QHL-Spiele und andere Wettbewerbe behalten ihre Reiter', () 
   const ehl = data.games.find(g => g.league === 'EHL' && Array.isArray(g.score));
   assert.ok(ehl, 'Beispielspiel der European League im Datenbestand');
   assert.deepEqual([...render('#/spiel/' + ehl.id).querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik'], 'EHL unverändert');
+});
+
+test('Cup und Testspiele: dieselben zwei Reiter wie bei der QHL; die European League behält ihre drei', () => {
+  const find = c => data.games.find(g => competitionOf(g) === c && Array.isArray(g.score));
+  const [test, cup, ehl] = ['Test', 'Cup', 'EHL'].map(find);
+  assert.ok(test && cup && ehl, 'Beispielspiele der drei Wettbewerbe im Datenbestand');
+  const tabs = d => [...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim());
+  const text = {report: {headline: 'Test gewonnen', paragraphs: ['Ein deutlicher Sieg im Cup.']}, goals: []};
+
+  const t = render('#/spiel/' + test.id);
+  assert.deepEqual(tabs(t), ['Statistik', 'Rückblick'], 'Testspiel');
+  assert.match(t.body.textContent, /liefert die Quelle keine Spielwerte/, 'ehrlicher Hinweis statt Wartemeldung');
+  assert.match(render('#/spiel/' + test.id + '/rueckblick').body.textContent, /keinen Spielbericht, deshalb gibt es keinen Rückblick/);
+  assert.deepEqual(tabs(render('#/spiel/' + test.id + '/live')), ['Statistik', 'Rückblick']);
+
+  const c = render('#/spiel/' + cup.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: text}}));
+  assert.deepEqual(tabs(c), ['Statistik', 'Rückblick'], 'Cup');
+  assert.match(c.querySelector('.prose').textContent, /Test gewonnen/);
+
+  assert.deepEqual(tabs(render('#/spiel/' + ehl.id)), ['Übersicht', 'Ticker', 'Statistik'], 'EHL unverändert');
 });

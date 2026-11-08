@@ -1,7 +1,7 @@
 // «Saison»: Spielplan & Resultate, Tabellen, Statistik.
 import {html} from '../text.js';
 import {href} from '../router.js';
-import {OWN_TEAM, ownGames, kickoff, hasScore, shortTeam, standings, nextGame, zurichParts} from '../logic.js';
+import {OWN_TEAM, ownGames, kickoff, hasScore, shortTeam, standings, nextGame, zurichParts, competitionOf} from '../logic.js';
 import {icon} from '../icons.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
@@ -12,7 +12,6 @@ import {topBar, chips, sectionHead, notice, loading, gameRow, segment, crest, pl
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const TABS = [['tabellen', 'Tabelle', '#/statistik'], ['statistik', 'Spielerwerte', '#/statistik/spieler']];
 
-const competitionOf = g => /cup/i.test(g.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(g.league) ? g.league : 'Test';
 
 function spielplan({state, now, ui}) {
   const games = ownGames(state.data.games);
