@@ -387,3 +387,21 @@
 .pick-now { margin-top: var(--s-3); font: 400 var(--fs-small)/1.4 var(--f-text); color: var(--c-text-muted); }
 .pick-now b { color: var(--c-text); font-weight: 600; }
 .pick-empty { margin-top: var(--s-3); }
+
+/* EHL-Statistik wie in Matchday: Toptorschützen, Quote je Halbzeit, Paraden nach Wurfzone */
+.h4.first { margin-top: 0; }
+.scorers { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--s-2); }
+.scorers li { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-3); background: var(--c-surface-2); border-radius: var(--r-tile); min-width: 0; }
+.scorers b { flex: none; font: italic 600 28px/.9 var(--f-display); color: var(--c-accent-text); }
+.scorers span { font: 500 var(--fs-small)/1.2 var(--f-text); overflow-wrap: anywhere; }
+.halves { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-3); }
+.halves > div { display: grid; gap: 2px; padding: var(--s-2) var(--s-3); background: var(--c-surface-2); border-radius: var(--r-tile); }
+.halves span, .halves small { font: 400 var(--fs-meta)/1.3 var(--f-text); color: var(--c-text-muted); }
+.halves b { font: italic 600 26px/1 var(--f-display); }
+.keeper-zones { margin-top: var(--s-3); background: var(--c-surface-2); border: 0; }
+.keeper-zones summary b { margin-left: auto; margin-right: var(--s-3); font: italic 600 22px/1 var(--f-display); white-space: nowrap; }
+.keeper-zones summary small { display: block; }
+.keeper-zones summary { gap: var(--s-2); }
+.keeper-zones .fine { margin: 0 0 var(--s-2); }
+.tbl-real .zn { text-align: left; font-weight: 400; }
+.card > .cmp.head + .cmp { border-top: 0; }

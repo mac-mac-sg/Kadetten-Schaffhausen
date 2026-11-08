@@ -295,7 +295,7 @@ test('Live-Spiel: «Dein Favorit?» mit Chips der besten Torschützen, Alle-Scha
 
 // ---- Schusseffizienz in der Saison-Torschützenliste ----
 import {shotTotals, renderSaison as renderStat} from '../src/kadetten/js/views/saison.js';
-import {normalizeReport} from '../src/kadetten/js/report.js';
+import {normalizeReport, comparisonRows} from '../src/kadetten/js/report.js';
 
 test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur wo beide Werte gemeldet sind', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
@@ -363,15 +363,12 @@ test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statis
   assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick');
 });
 
-test('Bevorstehende QHL-Spiele und andere Wettbewerbe behalten ihre Reiter', () => {
+test('Bevorstehende Spiele behalten Übersicht, Ticker und Statistik', () => {
   const next = render('#/spiel/508393');
   assert.deepEqual([...next.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik']);
-  const ehl = data.games.find(g => g.league === 'EHL' && Array.isArray(g.score));
-  assert.ok(ehl, 'Beispielspiel der European League im Datenbestand');
-  assert.deepEqual([...render('#/spiel/' + ehl.id).querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik'], 'EHL unverändert');
 });
 
-test('Cup und Testspiele: dieselben zwei Reiter wie bei der QHL; die European League behält ihre drei', () => {
+test('Cup, Testspiele und European League: dieselben zwei Reiter wie bei der QHL', () => {
   const find = c => data.games.find(g => competitionOf(g) === c && Array.isArray(g.score));
   const [test, cup, ehl] = ['Test', 'Cup', 'EHL'].map(find);
   assert.ok(test && cup && ehl, 'Beispielspiele der drei Wettbewerbe im Datenbestand');
@@ -388,5 +385,71 @@ test('Cup und Testspiele: dieselben zwei Reiter wie bei der QHL; die European Le
   assert.deepEqual(tabs(c), ['Statistik', 'Rückblick'], 'Cup');
   assert.match(c.querySelector('.prose').textContent, /Test gewonnen/);
 
-  assert.deepEqual(tabs(render('#/spiel/' + ehl.id)), ['Übersicht', 'Ticker', 'Statistik'], 'EHL unverändert');
+  assert.deepEqual(tabs(render('#/spiel/' + ehl.id)), ['Statistik', 'Rückblick'], 'EHL: ebenfalls zwei Reiter');
+});
+
+// ---- European League: alle Statistiken der Matchday-App ----
+const ehlGame = data.games.find(g => g.league === 'EHL' && Array.isArray(g.score));
+const ehlCounts = (shots, goals, saved, post, missed, blocked) => ({shots, goals, saved, post, missed, blocked});
+const ehlArchive = () => {
+  const [hs, as] = ehlGame.score;
+  const zone = (z, shots, goals) => ({zone: z, shots, goals, saved: shots - goals, post: 0, missed: 0, blocked: 0});
+  return {
+    home: ehlGame.home, away: ehlGame.away, score: ehlGame.score, half: [Math.floor(hs / 2), Math.floor(as / 2)],
+    report: {headline: 'Klarer Sieg in der European League', paragraphs: ['Ein deutlicher Heimsieg.'], generator: 'daten'},
+    goals: [{t: '10:00', s: [1, 0], h: true, n: 'Josip Perić'}, {t: '59:00', s: ehlGame.score, h: true, n: 'Odinn Rikhardsson'}],
+    teamStats: {
+      home: {goals: hs, shots: 60, misses: 14, efficiency: 65, sevenGoals: 3, sevenShots: 4, twoMinutes: 2, warnings: 1, disqualifications: 1, technicalFaults: 9},
+      guest: {goals: as, shots: 58, misses: 17, efficiency: 55, sevenGoals: 2, sevenShots: 3, twoMinutes: 4, warnings: 2, disqualifications: 0, technicalFaults: 12}
+    },
+    players: [
+      {id: 11, number: 10, home: true, name: 'PERIC Josip', goals: 9, shots: 11, seven: 2, sevenShots: 2, twoMinutes: 0, yellow: 1, red: 1},
+      {id: 12, number: 6, home: true, name: 'RIKHARDSSON Odinn', goals: 6, shots: 8, seven: 1, sevenShots: 2, twoMinutes: 1, yellow: 0, red: 0},
+      {id: 13, number: 1, home: true, name: 'BERGMANN Leon', goalkeeper: true, saves: 12, savesFaced: 30},
+      {id: 22, number: 12, home: false, name: 'TORWART Tom', goalkeeper: true, saves: 9, savesFaced: 28},
+      {id: 21, number: 7, home: false, name: 'GEGNER Gerd', goals: 8, shots: 12, seven: 1, sevenShots: 1, twoMinutes: 2, yellow: 0, red: 0}
+    ],
+    shotStats: {
+      home: {...ehlCounts(60, hs, 14, 3, 14, 5), zones: [zone('LLD', 10, 5), zone('PTY', 4, 3), zone('XYZ', 2, 1)], halves: [{half: 'H1', shots: 30, goals: 18}, {half: 'H2', shots: 30, goals: hs - 18}],
+        keepers: [{id: 13, name: 'BERGMANN Leon', shots: 30, saves: 12, sevenShots: 3, sevenSaves: 1, zones: [{zone: 'LLD', shots: 10, saved: 5}, {zone: 'PTY', shots: 3, saved: 1}]}]},
+      away: {...ehlCounts(58, as, 12, 4, 17, 3), zones: [zone('CLD', 8, 4)], halves: null, keepers: []}
+    }
+  };
+};
+
+test('European League: Statistik mit allen Werten der Matchday-App', () => {
+  assert.ok(ehlGame, 'Beispielspiel der European League im Datenbestand');
+  const d = render('#/spiel/' + ehlGame.id, {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
+  assert.deepEqual([...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Statistik', 'Rückblick']);
+  // Teamvergleich: Würfe, Fehlwürfe, Disqualifikationen kommen neben den bisherigen Zeilen dazu.
+  const labels = [...d.querySelectorAll('[aria-labelledby="g-cmp"] .cmp .bar > span')].map(n => n.textContent.replace('?', '').trim());
+  for (const l of ['Tore', 'Würfe', 'Fehlwürfe', 'Wurfquote', 'Paraden', '7-m', 'Zeitstrafen', 'Verwarnungen', 'Disqualifikationen', 'Technische Fehler']) assert.ok(labels.includes(l), 'Teamvergleich: ' + l + ' in ' + labels.join(', '));
+  assert.ok(labels.indexOf('Würfe') < labels.indexOf('Fehlwürfe') && labels.indexOf('Fehlwürfe') < labels.indexOf('Wurfquote'));
+  // Spieler: Rückennummer, Disqualifikationen, Toptorschützen
+  const players = d.querySelector('[aria-labelledby="g-spieler"]');
+  assert.deepEqual([...players.querySelectorAll('thead th')].map(th => th.textContent), ['Spieler', 'Tore/W', 'Quote', '7-m', '2′', 'G', 'R']);
+  assert.match(players.querySelector('tbody tr th').textContent, /^10\s/, 'Rückennummer vor dem Namen');
+  assert.deepEqual([...players.querySelectorAll('.scorers li')].map(li => li.textContent.replace(/\s+/g, ' ').trim().slice(0, 1)), ['9', '6']);
+  // Wurfanalyse: wie die Würfe endeten, Zonen inkl. weitere, Halbzeitquoten, Paraden nach Zone
+  const wurf = d.querySelector('[aria-labelledby="g-wurf"]');
+  assert.ok(wurf);
+  assert.deepEqual([...wurf.querySelectorAll('.cmp .bar > span')].map(n => n.textContent.trim()), ['Tore', 'Vom Torhüter gehalten', 'Pfosten / Latte', 'Daneben', 'Geblockt']);
+  assert.match(wurf.textContent, /Weitere Wurfzone/);
+  assert.deepEqual([...wurf.querySelectorAll('.halves > div span')].map(n => n.textContent), ['1. Halbzeit', '2. Halbzeit'], 'Quote je Halbzeit nur dort, wo die Quelle sie liefert');
+  assert.equal(wurf.querySelectorAll('.halves').length, 1);
+  const keeper = wurf.querySelector('details.keeper-zones');
+  assert.ok(keeper); assert.match(keeper.textContent, /Paraden nach Wurfzone/); assert.match(keeper.textContent, /Siebenmeter gehalten: 1 \/ 3/);
+  assert.equal(keeper.querySelectorAll('tbody tr').length, 2);
+  assert.match(keeper.textContent, /Links · Distanz/);
+  // Rückblick enthält nur den Text
+  const back = render('#/spiel/' + ehlGame.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
+  assert.match(back.querySelector('.prose').textContent, /Klarer Sieg in der European League/);
+  assert.equal(back.querySelector('[aria-labelledby="g-wurf"]'), null);
+});
+
+test('Teamvergleich: Zeilen nur mit Werten beider Teams, keine erfundenen Disqualifikationen bei QHL', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const rows = comparisonRows(normalizeReport(shv, null)).map(r => r.label);
+  assert.ok(rows.includes('Würfe'));
+  assert.ok(!rows.includes('Fehlwürfe') && !rows.includes('Disqualifikationen'), 'Quelle meldet sie nicht: keine Zeile');
 });

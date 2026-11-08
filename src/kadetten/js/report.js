@@ -77,9 +77,9 @@ export function normalizeReport(shv, ehf) {
     return {
       score: shv.score, half: Array.isArray(shv.half) ? shv.half : [null, null], spectators: int(shv.spectators), referees: Array.isArray(shv.referees) ? shv.referees : [], source: 'SHV',
       teams: shv.teams.map(t => {
-        const players = (t.players || []).map(p => ({id: p.id, name: p.name, keeper: Boolean(p.keeper), goals: int(p.goals), shots: int(p.shots), seven: int(p.seven), sevenShots: int(p.sevenShots), twoMinutes: int(p.twoMinutes), warnings: int(p.warnings), redCards: int(p.redCards), saves: int(p.saves), keeperShots: int(p.keeperShots)}));
+        const players = (t.players || []).map(p => ({id: p.id, name: p.name, number: int(p.number), keeper: Boolean(p.keeper), goals: int(p.goals), shots: int(p.shots), seven: int(p.seven), sevenShots: int(p.sevenShots), twoMinutes: int(p.twoMinutes), warnings: int(p.warnings), redCards: int(p.redCards), saves: int(p.saves), keeperShots: int(p.keeperShots)}));
         return {name: t.name, players, shots: int(t.shots), saves: int(t.saves), savePercentage: Number.isFinite(t.savePercentage) ? t.savePercentage : null, throwPercentage: Number.isFinite(t.throwPercentage) ? t.throwPercentage : null,
-          seven: int(t.seven) ?? sum(players, 'seven'), sevenShots: int(t.sevenShots) ?? sum(players, 'sevenShots'), twoMinutes: int(t.twoMinutes) ?? sum(players, 'twoMinutes'), warnings: int(t.warnings) ?? sum(players, 'warnings'), turnovers: int(t.turnovers), timeouts: int(t.timeouts)};
+          seven: int(t.seven) ?? sum(players, 'seven'), sevenShots: int(t.sevenShots) ?? sum(players, 'sevenShots'), twoMinutes: int(t.twoMinutes) ?? sum(players, 'twoMinutes'), warnings: int(t.warnings) ?? sum(players, 'warnings'), turnovers: int(t.turnovers), timeouts: int(t.timeouts), misses: null, disqualifications: int(t.disqualifications)};
       })
     };
   }
@@ -89,9 +89,9 @@ export function normalizeReport(shv, ehf) {
       const own = ehf.players.filter(p => p.home === home && !(p.goalkeeper && p.savesFaced === 0));
       const keepers = own.filter(p => p.goalkeeper);
       const saves = keepers.length ? keepers.reduce((n, p) => n + (p.saves || 0), 0) : null, faced = keepers.reduce((n, p) => n + (p.savesFaced || 0), 0);
-      const players = own.map(p => ({id: p.id, name: p.name, keeper: Boolean(p.goalkeeper), goals: int(p.goals), shots: int(p.shots), seven: int(p.seven), sevenShots: int(p.sevenShots), twoMinutes: int(p.twoMinutes), warnings: int(p.yellow), redCards: int(p.red), saves: p.goalkeeper ? int(p.saves) : null, keeperShots: p.goalkeeper ? int(p.savesFaced) : null}));
+      const players = own.map(p => ({id: p.id, name: p.name, number: int(p.number), keeper: Boolean(p.goalkeeper), goals: int(p.goals), shots: int(p.shots), seven: int(p.seven), sevenShots: int(p.sevenShots), twoMinutes: int(p.twoMinutes), warnings: int(p.yellow), redCards: int(p.red), saves: p.goalkeeper ? int(p.saves) : null, keeperShots: p.goalkeeper ? int(p.savesFaced) : null}));
       return {name: home ? ehf.home : ehf.away, players, shots: int(ts.shots), saves, savePercentage: pct(saves, faced), throwPercentage: Number.isFinite(ts.efficiency) ? ts.efficiency : null,
-        seven: int(ts.sevenGoals), sevenShots: int(ts.sevenShots), twoMinutes: int(ts.twoMinutes), warnings: int(ts.warnings), turnovers: int(ts.technicalFaults), timeouts: null};
+        seven: int(ts.sevenGoals), sevenShots: int(ts.sevenShots), twoMinutes: int(ts.twoMinutes), warnings: int(ts.warnings), turnovers: int(ts.technicalFaults), timeouts: null, misses: int(ts.misses), disqualifications: int(ts.disqualifications)};
     };
     return {score: ehf.score, half: Array.isArray(ehf.half) ? ehf.half : [null, null], spectators: int(ehf.spectators), referees: [], source: 'EHF', teams: [team(true), team(false)], shotStats: ehf.shotStats || null};
   }
@@ -112,11 +112,14 @@ export function comparisonRows(report) {
     {label: 'Tore', home: report.score[0], away: report.score[1]},
     Array.isArray(report.half) && report.half.every(v => int(v) !== null) ? {label: '1. Halbzeit', home: report.half[0], away: report.half[1]} : null,
     Array.isArray(report.half) && report.half.every(v => int(v) !== null) ? {label: '2. Halbzeit', home: report.score[0] - report.half[0], away: report.score[1] - report.half[1]} : null,
+    {label: 'Würfe', home: h.shots, away: a.shots},
+    {label: 'Fehlwürfe', home: h.misses, away: a.misses, lower: true},
     {label: 'Wurfquote', home: quote(h, report.score[0]), away: quote(a, report.score[1]), homeText: h.shots !== null ? `${report.score[0]}/${h.shots} · ${fmtPct(quote(h, report.score[0]))}` : null, awayText: a.shots !== null ? `${report.score[1]}/${a.shots} · ${fmtPct(quote(a, report.score[1]))}` : null, rule: 'wurfquote'},
     {label: 'Paraden', home: h.saves, away: a.saves, homeText: h.saves !== null ? `${h.saves}${h.savePercentage !== null ? ' · ' + fmtPct(h.savePercentage) : ''}` : null, awayText: a.saves !== null ? `${a.saves}${a.savePercentage !== null ? ' · ' + fmtPct(a.savePercentage) : ''}` : null, rule: 'parade'},
     {label: '7-m', home: h.seven, away: a.seven, homeText: h.sevenShots !== null ? `${h.seven}/${h.sevenShots}` : null, awayText: a.sevenShots !== null ? `${a.seven}/${a.sevenShots}` : null, rule: '7m'},
     {label: 'Zeitstrafen', home: h.twoMinutes, away: a.twoMinutes, lower: true, rule: '2min'},
     {label: 'Verwarnungen', home: h.warnings, away: a.warnings, lower: true, rule: 'gelb'},
+    {label: 'Disqualifikationen', home: h.disqualifications, away: a.disqualifications, lower: true, rule: 'rot'},
     {label: 'Technische Fehler', home: h.turnovers, away: a.turnovers, lower: true, rule: 'tf'}
   ];
   return rows.filter(r => r && Number.isFinite(r.home) && Number.isFinite(r.away)).map(r => ({

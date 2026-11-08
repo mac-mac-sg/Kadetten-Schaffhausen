@@ -1,4 +1,4 @@
-// Spielbericht: Matchbericht als Text, Spielverlauf, Teamvergleich, Spielerwerte, Wurfanalyse (EHL).
+// Spielbericht: Matchbericht als Text, Spielverlauf, Teamvergleich, Spielerwerte, Wurfanalyse (EHL) mit allen Werten der Matchday-App.
 import {html, raw, escapeHtml} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -126,28 +126,45 @@ function playerTable(team, data, favNumber) {
   const field = team.players.filter(p => !p.keeper).sort((a, b) => (b.goals ?? -1) - (a.goals ?? -1) || String(a.name).localeCompare(String(b.name), 'de'));
   const keepers = team.players.filter(p => p.keeper && (p.saves !== null || p.keeperShots !== null));
   const v = x => x ?? '–';
-  return html`<div class="tbl-scroll" role="region" aria-label="${'Spielerwerte ' + shortTeam(team.name)}" tabindex="0"><table class="tbl-real pstats">
-      <thead><tr><th scope="col">Spieler</th><th scope="col" class="n">Tore/W</th><th scope="col" class="n">Quote</th><th scope="col" class="n">7-m</th><th scope="col" class="n">2′</th><th scope="col" class="n">G</th></tr></thead>
-      <tbody>${field.map(p => html`<tr${favIds.includes(p.id) ? html` class="fav-row"` : ''}><th scope="row">${favIds.includes(p.id) ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}${name(p)}</th><td class="n num strong">${v(p.goals)}/${v(p.shots)}</td><td class="n num">${fmtPct(pct(p.goals, p.shots))}</td><td class="n num">${p.sevenShots ? `${v(p.seven)}/${p.sevenShots}` : '–'}</td><td class="n num">${v(p.twoMinutes)}</td><td class="n num">${v(p.warnings)}</td></tr>`)}</tbody>
+  const scorers = field.filter(p => p.goals > 0).slice(0, 5);
+  const no = p => p.number !== null && p.number !== undefined ? html`<span class="num muted">${p.number}</span> ` : '';
+  return html`${scorers.length ? html`<h3 class="h4 first">Toptorschützen</h3><ul class="scorers" role="list">${scorers.map(p => html`<li><b class="num">${p.goals}</b><span>${displayName(p.name)}</span></li>`)}</ul>` : ''}<div class="tbl-scroll" role="region" aria-label="${'Spielerwerte ' + shortTeam(team.name)}" tabindex="0"><table class="tbl-real pstats">
+      <thead><tr><th scope="col">Spieler</th><th scope="col" class="n">Tore/W</th><th scope="col" class="n">Quote</th><th scope="col" class="n">7-m</th><th scope="col" class="n">2′</th><th scope="col" class="n">G</th><th scope="col" class="n">R</th></tr></thead>
+      <tbody>${field.map(p => html`<tr${favIds.includes(p.id) ? html` class="fav-row"` : ''}><th scope="row">${favIds.includes(p.id) ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}${no(p)}${name(p)}</th><td class="n num strong">${v(p.goals)}/${v(p.shots)}</td><td class="n num">${fmtPct(pct(p.goals, p.shots))}</td><td class="n num">${p.sevenShots ? `${v(p.seven)}/${p.sevenShots}` : '–'}</td><td class="n num">${v(p.twoMinutes)}</td><td class="n num">${v(p.warnings)}</td><td class="n num">${v(p.redCards)}</td></tr>`)}</tbody>
     </table></div>
-    ${keepers.length ? html`<h3 class="h4">Torhüter</h3><div class="card-in list">${keepers.map(p => listRow({title: name(p), sub: p.keeperShots ? `${fmtPct(pct(p.saves, p.keeperShots))} Fangquote` : '', end: html`<span class="res num">${v(p.saves)}<small> / ${v(p.keeperShots)}</small></span>`, cls: 'compact'}))}</div>` : ''}`;
+    ${keepers.length ? html`<h3 class="h4">Torhüter</h3><div class="card-in list">${keepers.map(p => listRow({title: html`${no(p)}${name(p)}`, sub: p.keeperShots ? `${fmtPct(pct(p.saves, p.keeperShots))} Fangquote` : '', end: html`<span class="res num">${v(p.saves)}<small> / ${v(p.keeperShots)}</small></span>`, cls: 'compact'}))}</div>` : ''}`;
 }
 
+const zoneName = code => ZONES.find(([c]) => c === code)?.[1] || 'Weitere Wurfzone';
+
+/** Wurfanalyse der EHF wie in Matchday: wie die Würfe endeten (beide Teams), woher sie kamen (Zonen, Quote je Halbzeit)
+ * und die Paraden der Torhüter nach Wurfzone. */
 function shotAnalysis(shotStats, report) {
   if (!shotStats?.home || !shotStats?.away) return '';
-  const own = isOwn(report.teams[0].name) ? 'home' : 'away';
-  const side = (key, label) => {
-    const s = shotStats[key];
-    const parts = [['goals', 'Tor', 'g'], ['saved', 'gehalten', 's'], ['post', 'Pfosten/Latte', 'p'], ['missed', 'daneben', 'm'], ['blocked', 'geblockt', 'b']].filter(([k]) => s[k] > 0);
-    const zones = ZONES.map(([code, name]) => [name, s.zones?.find(z => z.zone === code)]).filter(([, z]) => z?.shots);
-    return html`<div class="shots"><h3 class="h4">${label} · ${s.shots} Würfe</h3>
-      <div class="stack" role="img" aria-label="${parts.map(([k, l]) => `${s[k]} ${l}`).join(', ')}">${parts.map(([k, , c]) => html`<i class="${'st-' + c}" data-style="${'flex:' + s[k]}"></i>`)}</div>
-      <ul class="legend">${parts.map(([k, l, c]) => html`<li><i class="${'st-' + c}"></i>${l} <b class="num">${s[k]}</b></li>`)}</ul>
-      ${zones.length ? html`<div class="zones">${zones.map(([name, z]) => html`<div class="zone"><span>${name}</span><b class="num">${z.goals}<small>/${z.shots}</small></b><em class="num">${fmtPct(pct(z.goals, z.shots))}</em></div>`)}</div>` : ''}</div>`;
+  const ownHome = isOwn(report.teams[0].name), own = ownHome ? 'home' : 'away', opp = ownHome ? 'away' : 'home';
+  const [homeName, awayName] = report.teams.map(t => shortTeam(t.name));
+  const ended = [['Tore', 'goals'], ['Vom Torhüter gehalten', 'saved'], ['Pfosten / Latte', 'post'], ['Daneben', 'missed'], ['Geblockt', 'blocked']]
+    .filter(([, k]) => Number.isInteger(shotStats.home[k]) && Number.isInteger(shotStats.away[k]))
+    .map(([label, k]) => { const h = shotStats.home[k], a = shotStats.away[k]; return {label, homeText: String(h), awayText: String(a), share: h + a > 0 ? h / (h + a) : .5}; });
+  const team = (key, label) => {
+    const t = shotStats[key];
+    const zones = [...ZONES.map(([code, name]) => [name, t.zones?.find(z => z.zone === code)]), ...(t.zones || []).filter(z => !ZONES.some(([code]) => code === z.zone)).map(z => ['Weitere Wurfzone', z])].filter(([, z]) => z?.shots);
+    const halves = Array.isArray(t.halves) && t.halves.length === 2 ? t.halves : null;
+    const keepers = (t.keepers || []).filter(k => Array.isArray(k.zones) && k.shots);
+    return html`<div class="shots"><h3 class="h4">Woher die Würfe kamen · ${label} · ${t.shots} Würfe</h3>
+      ${zones.length ? html`<div class="zones">${zones.map(([name, z]) => html`<div class="zone"><span>${name}</span><b class="num">${z.goals}<small>/${z.shots}</small></b><em class="num">${fmtPct(pct(z.goals, z.shots))}</em></div>`)}</div>` : ''}
+      ${halves ? html`<div class="halves">${halves.map((h, i) => html`<div><span>${i + 1}. Halbzeit</span><b class="num">${fmtPct(pct(h.goals, h.shots))}</b><small class="num">${h.goals} Tore / ${h.shots} Würfe</small></div>`)}</div>` : ''}
+      ${keepers.map(k => html`<details class="card more-card keeper-zones"><summary><span>${displayName(k.name)}<small class="muted"> · Paraden nach Wurfzone</small></span><b class="num">${fmtPct(pct(k.saves, k.shots))}</b></summary>
+        <p class="fine">Siebenmeter gehalten: <b class="num">${k.sevenSaves ?? '–'} / ${k.sevenShots ?? '–'}</b></p>
+        <div class="tbl-scroll" role="region" aria-label="${'Paraden nach Wurfzone ' + displayName(k.name)}" tabindex="0"><table class="tbl-real"><thead><tr><th scope="col">Wurfzone</th><th scope="col" class="n">Paraden/Würfe</th><th scope="col" class="n">Quote</th></tr></thead>
+        <tbody>${k.zones.filter(z => z.shots).map(z => html`<tr><th scope="row" class="zn">${zoneName(z.zone)}</th><td class="n num">${z.saved ?? 0}/${z.shots}</td><td class="n num">${fmtPct(pct(z.saved ?? 0, z.shots))}</td></tr>`)}</tbody></table></div></details>`)}</div>`;
   };
-  return html`<section class="sec" aria-labelledby="g-wurf">${sectionHead('Woher die Würfe kamen', '', '', 'g-wurf')}
-    <div class="card">${side(own, 'Kadetten')}${side(own === 'home' ? 'away' : 'home', shortTeam(report.teams[own === 'home' ? 1 : 0].name))}</div>
-    <p class="fine pad-top">Quelle: EHF-Liveticker, ohne Gewähr.</p></section>`;
+  return html`<section class="sec" aria-labelledby="g-wurf">${sectionHead('Wurfanalyse', '', '', 'g-wurf')}
+    <div class="card">
+      ${ended.length ? html`<h3 class="h4 first">Wie die Würfe endeten</h3><div class="cmp head"><span>${homeName}</span><span></span><span>${awayName}</span></div>${ended.map(c => cmpRow(c, ownHome))}` : ''}
+      ${team(own, 'Kadetten')}${team(opp, shortTeam(report.teams[ownHome ? 1 : 0].name))}
+    </div>
+    <p class="fine pad-top">Quelle: EHF-Liveticker, ohne Gewähr. Wurfzonen und Quoten gemäss EHF.</p></section>`;
 }
 
 /** Fan-Wahl «Spieler des Matchs». vote: Ergebnis von load('votes:…'); mine: eigene Stimme (Spieler-ID) oder null. */
@@ -257,7 +274,7 @@ export function renderBericht({game, data, entry, ui, normalized, voting = '', p
     ${report ? html`<section class="sec" aria-labelledby="g-spieler">${sectionHead('Spielerwerte', '', '', 'g-spieler')}
       <div class="seg flush" role="group" aria-label="Mannschaft">${[['own', 'Kadetten'], ['opp', shortTeam(ownHome ? game.away : game.home)]].map(([id, label]) => html`<button type="button" data-ui="${'reportTeam:' + id}" aria-pressed="${String((ui.reportTeam || 'own') === id)}"${(ui.reportTeam || 'own') === id ? html` class="on"` : ''}>${label}</button>`)}</div>
       <div class="card pad-s">${playerTable(report.teams[teamIndex], data, favNumber)}</div>
-      <p class="fine pad-top">Tore/W = Tore/Würfe · 2′ = Zeitstrafen ${ruleButton('2min')} · G = Verwarnungen ${ruleButton('gelb')}${report.spectators ? ` · ${report.spectators.toLocaleString('de-CH')} Zuschauer` : ''}${report.referees?.length ? ` · Schiedsrichter: ${report.referees.join(', ')}` : ''} · Quelle: ${report.source === 'EHF' ? 'EHF' : 'Schweizerischer Handball-Verband'}</p>
+      <p class="fine pad-top">Tore/W = Tore/Würfe · 2′ = Zeitstrafen ${ruleButton('2min')} · G = Verwarnungen ${ruleButton('gelb')} · R = Disqualifikationen ${ruleButton('rot')}${report.spectators ? ` · ${report.spectators.toLocaleString('de-CH')} Zuschauer` : ''}${report.referees?.length ? ` · Schiedsrichter: ${report.referees.join(', ')}` : ''} · Quelle: ${report.source === 'EHF' ? 'EHF' : 'Schweizerischer Handball-Verband'}</p>
     </section>` : ''}
     ${report?.shotStats ? shotAnalysis(report.shotStats, report) : ''}
     ${game.league === 'QHL' ? html`<section class="sec"><div class="card list">${listRow({title: 'Tabelle danach', sub: 'QHL', link: href.saison('tabellen'), lead: html`<span class="lead">${icon('saison')}</span>`})}</div></section>` : ''}

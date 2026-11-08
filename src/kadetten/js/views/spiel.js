@@ -4,7 +4,7 @@ import {renderTicker} from '../ticker.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
-import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff, competitionOf} from '../logic.js';
+import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {normalizeReport, fitsGame} from '../report.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, pickSection} from './bericht.js';
@@ -14,8 +14,7 @@ import {backBar, backLink, subBand, matchBand, sectionHead, formRow, formBadge, 
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 
 const GAME_TABS = [['vorschau', 'Übersicht'], ['live', 'Ticker'], ['bericht', 'Statistik']];
-// Abgeschlossene Spiele in QHL, Cup und Test: nur «Statistik» (alle Zahlen) und «Rückblick» (nur der erzeugte Bericht), kein Ticker.
-// Die European League behält Übersicht, Ticker und Statistik.
+// Abgeschlossene Spiele (QHL, EHL, Cup, Test): nur «Statistik» (alle Zahlen) und «Rückblick» (nur der erzeugte Bericht), kein Ticker.
 const FINISHED_TABS = [['bericht', 'Statistik'], ['rueckblick', 'Rückblick']];
 
 function opponentOf(game) { return isOwn(game.home) ? game.away : game.home; }
@@ -94,7 +93,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   if (!game) return html`${backBar('News', href.jetzt())}<h1 class="h1 pad">Spiel</h1><section class="sec">${notice('Dieses Spiel ist im aktuellen Spielplan nicht vorhanden.', 'cal')}</section>`;
   game = withFinished(game, live, now);
   const phase = gamePhase(game, live, now);
-  const twoTabs = phase === 'bericht' && competitionOf(game) !== 'EHL';
+  const twoTabs = phase === 'bericht';
   let tab = route.tab || (phase === 'live' ? 'live' : 'vorschau');
   // Alte Adressen (Übersicht, Ticker) eines abgeschlossenen Spiels dieser Wettbewerbe führen zur Statistik.
   if (twoTabs && tab !== 'wahl' && !FINISHED_TABS.some(([id]) => id === tab)) tab = 'bericht';
