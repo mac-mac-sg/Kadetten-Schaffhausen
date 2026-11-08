@@ -363,9 +363,13 @@ test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statis
   assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick');
 });
 
-test('Bevorstehende Spiele behalten Übersicht, Ticker und Statistik', () => {
-  const next = render('#/spiel/508393');
-  assert.deepEqual([...next.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Übersicht', 'Ticker', 'Statistik']);
+test('Vor Anpfiff gibt es keine Reiterleiste, nur die Vorschau', () => {
+  for (const hash of ['#/spiel/508393', '#/spiel/508393/live', '#/spiel/508393/bericht']) {
+    const next = render(hash);
+    assert.equal(next.querySelectorAll('nav.seg a').length, 0, hash);
+    assert.match(next.body.textContent, /Ausgangslage/, hash);
+    assert.match(next.body.textContent, /ab Anpfiff/, hash);
+  }
 });
 
 test('Cup, Testspiele und European League: dieselben zwei Reiter wie bei der QHL', () => {
