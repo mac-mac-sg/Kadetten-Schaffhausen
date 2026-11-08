@@ -6,7 +6,7 @@ import {startLive} from './live.js';
 import {parseRoute, createNavigation} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
-import {toggleFavourite, toggleMyGame, changeTip, myGames, tips} from './personal.js';
+import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, togglePick} from './personal.js';
 import {resultImage, seasonCard, shareImage} from './share-image.js';
 import {seasonSummary} from './moments.js';
 import {outcome, shortTeam, dataFreshness} from './logic.js';
@@ -106,7 +106,7 @@ function render() {
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
 function focusSelector(el) {
-  for (const attr of ['data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
+  for (const attr of ['data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm', 'data-pick']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
 }
 const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(render); } };
@@ -217,6 +217,7 @@ app.addEventListener('click', event => {
     if (device?.active && device.types?.includes('favourite')) { const shv = favouriteShv(); push.update(shv ? device.types : device.types.filter(x => x !== 'favourite'), shv).catch(() => {}); }
     render();
   }
+  else if (t.dataset.pick) { const next = togglePick(parseRoute(location.hash).id, {id: t.dataset.pick, name: t.dataset.pickName}); announce(next ? 'Favorit gemerkt. Abstimmen kannst du nach dem Abpfiff.' : 'Favorit entfernt.'); render(); }
   else if (t.dataset.voteSelect) { const id = parseRoute(location.hash).id; ui.voteSelections[id] = t.dataset.voteSelect; ui.voteMessage = ''; render(); }
   else if (t.hasAttribute('data-vote-confirm')) { const id = parseRoute(location.hash).id; if (ui.voteSelections[id]) castVote(ui.voteSelections[id]); }
   else if (t.dataset.myGame) { toggleMyGame(t.dataset.myGame); render(); }

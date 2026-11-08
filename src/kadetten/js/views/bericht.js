@@ -5,7 +5,8 @@ import {href} from '../router.js';
 import {shortTeam} from '../logic.js';
 import {isOwn, displayName, storiesForGame} from '../match.js';
 import {reportText, goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
-import {favourite} from '../personal.js';
+import {favourite, pickFor} from '../personal.js';
+import {suggestions, livePicks, numberFor, surname} from '../wahl.js';
 import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
 
 export const ruleButton = id => html`<button type="button" class="rule" data-rule="${id}" aria-label="Erklärung anzeigen">?</button>`;
@@ -150,7 +151,7 @@ function shotAnalysis(shotStats, report) {
 }
 
 /** Fan-Wahl «Spieler des Matchs». vote: Ergebnis von load('votes:…'); mine: eigene Stimme (Spieler-ID) oder null. */
-export function voteSection({vote, mine, now, busy, message, selected, data}) {
+export function voteSection({vote, mine, now, busy, message, selected, data, pickId = null}) {
   const v = vote?.value;
   if (!v || !Array.isArray(v.candidates) || !v.candidates.length) {
     if (v && v.opensAt && now < v.opensAt) return html`<section class="sec" aria-labelledby="g-vote">${sectionHead('Spieler des Matchs', '', '', 'g-vote')}${notice('Die Fan-Wahl öffnet nach Spielende, sobald der Spielbericht vorliegt.', 'star')}</section>`;
@@ -161,20 +162,25 @@ export function voteSection({vote, mine, now, busy, message, selected, data}) {
   const sorted = [...v.candidates].sort((a, b) => showResults ? (counts[b.id] || 0) - (counts[a.id] || 0) : (b.goals ?? b.saves ?? 0) - (a.goals ?? a.saves ?? 0));
   const detail = c => [Number.isInteger(c.goals) && c.goals > 0 ? `${c.goals} ${c.goals === 1 ? 'Tor' : 'Tore'}` : '', Number.isInteger(c.saves) && c.saves > 0 ? `${c.saves} Paraden` : ''].filter(Boolean).join(' · ');
   const closes = v.closesAt ? new Date(v.closesAt).toLocaleString('de-CH', {timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit'}) : '';
-  const playerInfo = c => {
-    const nr = Object.entries(data?.playerSeason?.players || {}).find(([,p]) => String(p.shvPlayerId) === String(c.id))?.[0] || Object.entries(data?.ehlPlayerSeason?.players || {}).find(([,p]) => String(p.ehfPlayerId) === String(c.id))?.[0];
-    return nr ? playerByNumber(nr) : null;
+  const playerInfo = c => { const nr = numberFor(data, c.id); return nr === null ? null : playerByNumber(nr); };
+  // Wahlliste: Vorschläge nach Spieldaten mit Begründung, die übrigen Spieler eingeklappt. Der Favorit aus dem Live-Spiel ist vorgewählt.
+  const row = (c, reason) => {
+    const player = playerInfo(c), chosen = String(selected) === String(c.id), fav = pickId !== null && String(pickId) === String(c.id);
+    return html`<button type="button" class="vote-player${chosen ? ' selected stripe-edge' : ''}" data-vote-select="${c.id}" aria-pressed="${String(chosen)}"${busy ? html` disabled` : ''}>${player ? html`<span class="vp-img"><img src="${playerPhoto(player.number)}" alt="" width="124" height="112" loading="lazy"></span>` : html`<span class="vp-img" aria-hidden="true"><b>${surname(displayName(c.name)).slice(0, 2).toUpperCase()}</b></span>`}<span class="grow"><span class="t">${player ? html`<span class="num vp-no">${player.number}</span> ` : ''}${player?.name || displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}${reason || fav ? html`<span class="why-row">${reason ? html`<span class="why">${reason}</span>` : ''}${fav ? html`<span class="why fav">Dein Favorit</span>` : ''}</span>` : ''}</span><span class="pk${chosen ? ' on' : ''}" aria-hidden="true">${chosen ? 'Gewählt' : 'Wählen'}</span></button>`;
   };
+  const {picked, rest} = suggestions(v.candidates);
+  const chosenC = v.candidates.find(c => String(c.id) === String(selected)), chosenName = chosenC ? surname(displayName(chosenC.name)) : '';
+  const openList = html`<div class="vote-rows">
+    ${picked.length ? html`<h3 class="h4">Vorschläge nach Spieldaten</h3>${picked.map(p => row(p.candidate, p.reason))}` : ''}
+    ${rest.length ? html`<details class="more-card vote-rest" id="vote-rest"${picked.length ? '' : ' open'}><summary>${picked.length ? 'Alle weiteren Spieler' : 'Alle Spieler'}<span class="num muted">${rest.length}</span></summary><div class="vote-rest-rows">${rest.map(c => row(c, ''))}</div></details>` : ''}
+  </div>`;
   return html`<section class="sec vote-panel" aria-labelledby="g-vote">${sectionHead('Deine Stimme zählt', '', '', 'g-vote')}
     ${mine && v.open ? html`<p class="note" role="status">Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.</p>` : ''}
-    <div class="card list vote">${sorted.map(c => {
+    ${showResults ? html`<div class="card list vote">${sorted.map(c => {
       const share = total ? Math.round((counts[c.id] || 0) / total * 100) : 0;
-      if (showResults) return html`<div class="rl compact${mine === c.id ? ' mine' : ''}"><span class="grow"><span class="t">${displayName(c.name)}${mine === c.id ? html` <span class="tag">Deine Stimme</span>` : ''}</span><span class="vbar" aria-hidden="true"><b data-style="${'width:' + share + '%'}"></b></span></span><span class="res num">${share}<small> %</small></span></div>`;
-      if (mine) return '';
-      const player = playerInfo(c), chosen = String(selected) === String(c.id);
-      return html`<button type="button" class="vote-player${chosen ? ' selected' : ''}" data-vote-select="${c.id}" aria-pressed="${String(chosen)}"${busy ? html` disabled` : ''}>${player ? html`<img src="${playerPhoto(player.number)}" alt="" width="88" height="108" loading="lazy">` : html`<span class="vote-avatar" aria-hidden="true">${icon('team',32)}</span>`}<span class="grow"><span class="t">${player ? '#' + player.number + ' ' : ''}${player?.name || displayName(c.name)}</span>${detail(c) ? html`<span class="s">${detail(c)}</span>` : ''}</span><span class="vote-check" aria-hidden="true">${chosen ? '✓' : ''}</span></button>`;
-    })}</div>
-    ${v.open && !mine ? html`<div class="vote-confirm"><button class="btn pri wide" type="button" data-vote-confirm${!selected || !v.candidates.some(c => String(c.id) === String(selected)) || busy ? html` disabled` : ''}>${busy ? 'Wird gespeichert …' : 'Stimme abgeben'}</button></div>` : ''}
+      return html`<div class="rl compact${mine === c.id ? ' mine' : ''}"><span class="grow"><span class="t">${displayName(c.name)}${mine === c.id ? html` <span class="tag">Deine Stimme</span>` : ''}</span><span class="vbar" aria-hidden="true"><b data-style="${'width:' + share + '%'}"></b></span></span><span class="res num">${share}<small> %</small></span></div>`;
+    })}</div>` : mine ? '' : openList}
+    ${v.open && !mine ? html`<div class="vote-confirm"><button class="btn pri wide" type="button" data-vote-confirm${!selected || !v.candidates.some(c => String(c.id) === String(selected)) || busy ? html` disabled` : ''}>${busy ? 'Wird gespeichert …' : chosenName ? 'Stimme für ' + chosenName + ' abgeben' : 'Stimme abgeben'}</button></div>` : ''}
     <p class="fine pad-top" role="status">${message || (showResults ? `${total} ${total === 1 ? 'Stimme' : 'Stimmen'}${v.open ? ` · Wahl offen bis ${closes}` : ' · Wahl beendet'}` : mine ? 'Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.' : `Wähle deinen Spieler und bestätige die Stimme. Eine Stimme pro Gerät, offen bis ${closes}.`)} Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins.</p>
   </section>`;
 }
@@ -256,6 +262,30 @@ export function liveReport(match) {
   };
   if (!Array.isArray(match.score)) return null;
   return {score: match.score, half: Array.isArray(match.half) ? match.half : [null, null], teams: [team(true), team(false)], source: match.league === 'European League' ? 'EHF' : 'SHV', updatedAt: d.updatedAt || null, stale: d.ok === false};
+}
+
+/** Live-Spiel: «Dein Favorit?». Nur merken, nicht abstimmen: Die Wahl öffnet nach dem Abpfiff (Stufe 1, nur auf diesem Gerät). */
+export function pickSection({match, game, data, ui}) {
+  if (!game || !isOwn(game.home) && !isOwn(game.away)) return '';
+  const report = liveReport(match);
+  const own = report?.teams.find(t => isOwn(t.name));
+  const players = (own?.players || []).filter(p => p.id != null && p.name);
+  const mine = pickFor(game.id);
+  const all = ui?.pickAll === '1';
+  const shown = all ? [...players].sort((a, b) => (b.goals ?? 0) - (a.goals ?? 0) || String(a.name).localeCompare(String(b.name), 'de')) : livePicks(players);
+  // Ein gemerkter Favorit bleibt sichtbar, auch wenn er (noch) nicht zu den Torschützen gehört.
+  if (mine && !shown.some(p => String(p.id) === mine.id)) shown.unshift({id: mine.id, name: mine.name, goals: null});
+  const chip = p => {
+    const nr = numberFor(data, p.id), on = mine?.id === String(p.id);
+    return html`<button type="button" class="chip${on ? ' on' : ''}" data-pick="${p.id}" data-pick-name="${p.name}" aria-pressed="${String(on)}">${nr !== null ? html`<b class="num">${nr}</b>` : ''}${surname(displayName(p.name))}</button>`;
+  };
+  return html`<section class="sec pick" aria-labelledby="g-pick">${sectionHead('Dein Favorit?', '', '', 'g-pick')}
+    <div class="card">
+      <p class="fine">Merken statt abstimmen: Die Wahl öffnet nach dem Abpfiff. Dein Favorit bleibt auf diesem Gerät und wird dann vorgewählt.</p>
+      ${shown.length || players.length ? html`<div class="chips pick-chips" role="group" aria-label="Favorit für den Spieler des Matchs">${shown.map(chip)}${players.length > shown.length || all ? html`<button type="button" class="chip" data-ui="${'pickAll:' + (all ? '0' : '1')}" aria-pressed="${String(all)}">${all ? 'Weniger' : 'Alle'}</button>` : ''}</div>`
+        : html`<p class="note pick-empty" role="status">${icon('team', 18)}<span>Sobald die Quelle Spieler meldet, erscheinen hier Vorschläge.</span></p>`}
+      ${mine ? html`<p class="pick-now" role="status">Dein Favorit: <b>${displayName(mine.name)}</b></p>` : ''}
+    </div></section>`;
 }
 
 export function renderLiveStats({match, data, ui}) {

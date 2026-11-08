@@ -66,6 +66,7 @@ Alle Zahlen mit Tabellenziffern.
 | Datumsblock | Tag als grosse kursive Ziffer, Monat klein; ersetzt in Spielzeilen das Gegnerwappen |
 | Umschalter und Filter | Umschalter (Segmente) sind orange. Steht darunter ein Filter (Chips), ist dessen Auswahl neutral (Tinte bzw. Papier), damit nie zwei orange Auswahlen konkurrieren |
 | Spielerkarte | Porträt (schwarzer Grund der Fotos), geschnittene Unterkante, grosse kursive Nummer in `accent-text`, Name, Position |
+| Spielerwahl | Vorschläge nach Spieldaten als Zeilen (Porträt im Schnitt, Nummer, Begründung als schräges Etikett, schräger Wählen-Knopf, Streifenrand bei Auswahl); weitere Spieler eingeklappt; fester Bestätigungsknopf mit Namen. Live: Karte «Dein Favorit?» mit schrägen Chips. Details: [Spielerwahl](spielerwahl.md) |
 | Spielverlauf (Statistik) | Wie in Matchday je Team eine Kurve der erzielten Tore über die Spielzeit (Kadetten orange und kräftig, Gegner neutral und gestrichelt, damit nie nur die Farbe unterscheidet), Halbzeitmarke, Endpunkte. Legende mit Toren und der Tordifferenz als schräges Etikett; darunter die Tordifferenz als Verlauf. Die Kurve läuft nur bis ans Spielende, wenn die Torfolge vollständig ist |
 | Zeitleiste im Ticker | Minute kursiv, schräger Marker, Stand rechts |
 | Schalter | 48 × 28 px, eckig, an = Orange |

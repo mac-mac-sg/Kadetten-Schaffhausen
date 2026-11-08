@@ -37,3 +37,21 @@ export function changeTip(id, team, delta, s) {
   write(TIPS_KEY, all, s);
   return next;
 }
+
+/** Favorit «Spieler des Matchs» je Spiel (Stufe 1 der Spielerwahl): nur auf diesem Gerät, wird nie übertragen.
+ * Gespeichert wird die Quellen-ID des Spielers und sein Name; abgestimmt wird erst nach dem Abpfiff. */
+export const PICKS_KEY = 'v2:app-picks';
+export function picks(s) {
+  const v = read(PICKS_KEY, {}, s);
+  return v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).filter(([id, p]) => /^[A-Za-z0-9_-]{1,80}$/.test(id) && p && /^[A-Za-z0-9_-]{1,40}$/.test(String(p.id)) && typeof p.name === 'string').map(([id, p]) => [id, {id: String(p.id), name: p.name.slice(0, 80)}]).slice(-200)) : {};
+}
+export const pickFor = (gameId, s) => picks(s)[String(gameId)] || null;
+/** Setzt oder entfernt den Favoriten. Gleicher Spieler nochmals: entfernt. Liefert den neuen Favoriten oder null. */
+export function togglePick(gameId, player, s) {
+  const all = picks(s), key = String(gameId);
+  if (!/^[A-Za-z0-9_-]{1,80}$/.test(key) || !/^[A-Za-z0-9_-]{1,40}$/.test(String(player?.id))) return all[key] || null;
+  if (all[key]?.id === String(player.id)) delete all[key];
+  else all[key] = {id: String(player.id), name: String(player.name || '').slice(0, 80)};
+  write(PICKS_KEY, Object.keys(all).length ? all : null, s);
+  return all[key] || null;
+}
