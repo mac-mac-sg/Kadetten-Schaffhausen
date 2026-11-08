@@ -412,3 +412,11 @@
 .wld .w { background: var(--c-win); }
 .wld .d { background: var(--c-text-muted); opacity: .45; }
 .wld .l { background: var(--c-loss); }
+
+/* Artikel: Spielpaarung als Karte (Logos begrenzt, Resultat als Rückennummer) */
+.prose .fixture { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-3); margin: var(--s-4) 0; padding: var(--s-4) var(--s-3); background: var(--c-surface); border-radius: var(--r-tile); position: relative; overflow: hidden; }
+.prose .fixture::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 3px, var(--c-ink) 3px 6px); }
+.prose .fixture img { width: 64px; height: 64px; max-width: 100%; object-fit: contain; border-radius: 0; margin: 0 auto; }
+.prose .fixture-score { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.prose .fixture-score strong { font: italic 600 40px/1 var(--f-display); letter-spacing: 0.01em; white-space: nowrap; }
+.prose .fixture-score small { font: 400 var(--fs-meta)/1 var(--f-text); color: var(--c-text-muted); }
