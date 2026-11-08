@@ -89,7 +89,7 @@ Alle Zahlen mit Tabellenziffern.
 | News | Kopfband, Meldungsliste mit geschnittenen Vorschaubildern |
 | Spiele | Kopfband, Wettbewerbs-Chips, Spiele nach Monat, nächstes Spiel mit Streifenrand |
 | Spielseite | Kopfband mit Zurück, Teilen und Spielstand; Segmente Übersicht, Ticker, Statistik |
-| Tabelle | Kopfband (Titel bleibt «Tabelle» auch bei den Spielerwerten), Segmente Tabelle und Spielerwerte, Chips QHL und European League, Kadetten mit Streifenrand |
+| Tabelle | Kopfband (Titel bleibt «Tabelle» auch bei den Spielerwerten), Segmente Tabelle und Spielerwerte, Spielerwerte mit Würfen und Quote (Tore/Würfe) aus den Spielberichten, Chips QHL und European League, Kadetten mit Streifenrand |
 | Kader | Kopfband, Positions-Chips (Alle, Tor, Rückraum, Flügel, Kreis), ein Raster mit zwei Spalten nach Rückennummer |
 | Spieler | schmales Band, Porträt mit grosser Nummer, Name und Position darunter (nie über dem Trikot), Saisonwerte, Form, Steckbrief |
 | Verein | Kopfband, Titel als grosse Zahlen (ohne Karte), «1791»-Karte mit Streifenrand, Hallenfoto mit Schnitt, zwei Verweise: Geschichte (`#/verein/geschichte`, Zeitreise und Heimhalle) und Trophäenschrank (`#/verein/titel`, Titel und Jahre) |

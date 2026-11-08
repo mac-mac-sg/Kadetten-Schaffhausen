@@ -344,7 +344,7 @@
 .pl-head p { margin-top: var(--s-1); font: 400 var(--fs-body)/1.3 var(--f-text); color: var(--c-text-muted); }
 .seg ~ .chips .chip.on, .seg + .chips .chip.on { --fill: var(--c-text); color: var(--c-bg); }
 .tbl-real td { padding: 0 2px; }
-.tbl-real .n { width: 38px; }
+.tbl-real .n { width: 38px; white-space: nowrap; }
 .tbl-real .p { width: 30px; }
 .card.list:has(> .tbl-real) { padding: 0 var(--s-3); }
 .card.list:has(> .tbl-real) .tbl-real tr.me td:first-child { box-shadow: -12px 0 0 var(--c-highlight); }

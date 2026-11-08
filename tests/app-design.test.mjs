@@ -291,3 +291,40 @@ test('Live-Spiel: «Dein Favorit?» mit Chips der besten Torschützen, Alle-Scha
   const mem2 = mem();
   assert.equal(togglePick('x', {id: 8, name: 'MEIER Max'}, mem2).id, '8');
 });
+
+// ---- Schusseffizienz in der Saison-Torschützenliste ----
+import {shotTotals, renderSaison as renderStat} from '../src/kadetten/js/views/saison.js';
+import {normalizeReport} from '../src/kadetten/js/report.js';
+
+test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur wo beide Werte gemeldet sind', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const report = normalizeReport(shv, null);
+  // KÜTTEL 2/4, MAROS 4/8 aus dem Bericht; ein zweiter Bericht addiert sich; ein Torhüter und unbekannte IDs zählen nicht.
+  const totals = shotTotals([report, report], {9: 261608, 20: 271116, 99: 1, 1: 999});
+  assert.deepEqual(totals[9], {goals: 4, shots: 8, games: 2});
+  assert.deepEqual(totals[20], {goals: 8, shots: 16, games: 2});
+  assert.equal(totals[99], undefined); assert.equal(totals[1], undefined);
+  const broken = {teams: [{players: [{id: 5, keeper: false, goals: 3, shots: null}, {id: 6, keeper: false, goals: 5, shots: 2}, {id: 7, keeper: true, goals: 0, shots: 0}]}]};
+  assert.deepEqual(shotTotals([broken], {1: 5, 2: 6, 3: 7}), {}, 'fehlende oder unmögliche Würfe werden nicht gezählt');
+  assert.deepEqual(shotTotals([], {1: 5}), {});
+});
+
+test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne Berichte «–», nichts geschätzt', () => {
+  const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
+  const season = {season: '2026/27', players: {9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0}, 20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1}, 21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}}};
+  const ctxFor = load => ({route: {view: 'statistik'}, state: {data: {...data, playerSeason: season}, live: null}, now, load, api: {}, ui: {stat: 'qhl'}});
+  const ready = dom2(renderStat(ctxFor(() => ({status: 'ready', value: {shv, archive: null}}))));
+  const head = [...ready.querySelectorAll('.tbl-real thead th')].map(th => th.textContent);
+  assert.deepEqual(head.slice(0, 5), ['Spieler', 'Sp', 'Tore', 'Würfe', 'Quote']);
+  const rows = [...ready.querySelectorAll('.tbl-real tbody tr')];
+  const cellsOf = nr => [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td => td.textContent.trim());
+  assert.deepEqual(cellsOf(20).slice(2, 5), ['20', '8', '50 %'], 'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20');
+  assert.deepEqual(cellsOf(21).slice(3, 5), ['–', '–'], 'kein Bericht: nichts geschätzt');
+  assert.match(ready.body.textContent, /aus 1 von \d+ QHL-Spielberichten/);
+  assert.match(ready.body.textContent, /Quote \(Tore\/Würfe\)/);
+  const loading = dom2(renderStat(ctxFor(() => ({status: 'loading'}))));
+  assert.match(loading.body.textContent, /werden noch geladen/);
+  assert.ok([...loading.querySelectorAll('.tbl-real tbody td.muted')].some(td => td.textContent === '…'));
+  const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
+  assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');
+});
