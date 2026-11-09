@@ -61,13 +61,13 @@ test('Kontraste (WCAG AA): Text, Orange als Schrift und Schrift auf Orange in He
   assert.ok(contrast('#fafafa', light['c-ink']) >= 7, 'weisse Schrift auf Tinte (Etikett im Kopfband)');
 });
 
-test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein und «Ich»', () => {
+test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein, Wissen und «Ich»', () => {
   for (const hash of ['#/saison', '#/statistik', '#/statistik/spieler', '#/team', '#/verein', '#/news']) {
     const d = render(hash);
     assert.equal(d.querySelectorAll('h1').length, 1, hash);
     assert.ok(d.querySelector('header.band .band-t'), hash + ': Kopfband mit Titel');
     const links = [...d.querySelectorAll('.band-acts a')].map(a => a.getAttribute('href'));
-    assert.deepEqual(links, ['#/verein', '#/ich'], hash);
+    assert.deepEqual(links, ['#/verein', '#/wissen', '#/ich'], hash);
     for (const a of d.querySelectorAll('.band-acts a')) assert.ok(a.getAttribute('aria-label'), 'Symbolknopf braucht einen Namen');
   }
   assert.equal(render('#/saison').querySelector('.band-t').textContent, 'Spiele');

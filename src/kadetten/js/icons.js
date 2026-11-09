@@ -3,6 +3,7 @@ import {raw} from './text.js';
 
 const PATHS = {
   news: '<path d="M5 4h11a1 1 0 0 1 1 1v14H6a1 1 0 0 1-1-1z"/><path d="M17 8h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2"/><path d="M8 8h6M8 12h6M8 15h4"/>',
+  book: '<path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5V19c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5z"/><path d="M12 6v13.5"/>',
   settings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
   statistik: '<path d="M4 20h16M6 16v-4M12 16V4M18 16V8"/>',
   jetzt: '<path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/>',

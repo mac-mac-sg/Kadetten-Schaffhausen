@@ -8,6 +8,7 @@ import {topBar, chips, backBar, sectionHead, notice, loading, stats, listRow, pl
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
+import {positionArticle} from '../wissen/inhalt.js';
 
 const GROUPS = [['Tor', p => p.position === 'Tor'], ['Rückraum', p => /^Rückraum/.test(p.position)], ['Flügel', p => /^Flügel/.test(p.position)], ['Kreis', p => p.position === 'Kreis']];
 const POSITION = pos => pos.replace(/^Rückraum mitte$/i, 'Rückraum Mitte').replace(/^Rückraum links$/i, 'Rückraum links');
@@ -92,5 +93,6 @@ export function renderSpieler({route, state, load, api, now}) {
     ${!keeper ? formSection({form, keeper, now}) : ''}
     ${ehl ? html`<section class="sec" aria-labelledby="sp-ehl">${sectionHead('European League', '', '', 'sp-ehl')}${stats([[ehl.goals, 'Tore'], [ehl.twoMinutes, 'Zeitstrafen'], [ehl.yellowCards, 'Verwarnungen']])}<p class="fine pad-top">Quelle: EHF. Würfe und Einsätze liefert die EHF für diese Saison nicht verlässlich.</p></section>` : ''}
     ${p.facts.length ? html`<section class="sec" aria-labelledby="sp-steck">${sectionHead('Steckbrief', '', '', 'sp-steck')}<dl class="card list facts">${p.facts.map(([k, v]) => html`<div class="rl"><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>` : ''}
+    ${positionArticle(p.position) ? html`<section class="sec"><div class="card list">${listRow({title: `Position: ${POSITION(p.position)}`, sub: 'Was diese Position im Spiel macht', link: href.wissen('aufstellungen', positionArticle(p.position).id), lead: html`<span class="lead">${icon('book')}</span>`})}</div></section>` : ''}
     ${p.url ? html`<section class="sec"><div class="card list">${listRow({title: 'Profil auf kadettensh.ch', end: icon('ext'), link: p.url})}</div></section>` : ''}`;
 }
