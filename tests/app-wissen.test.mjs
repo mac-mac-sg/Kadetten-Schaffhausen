@@ -84,7 +84,7 @@ test('Übersicht: drei Kapitel als Reiter, Gruppen mit Verweisen, Buch-Symbol im
   assert.equal(d.querySelector('h1').textContent, 'Wissen');
   assert.deepEqual([...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Regeln', 'Aufstellungen', 'Spielzüge']);
   assert.equal(d.querySelector('nav.seg a[aria-current="page"]').textContent.trim(), 'Regeln');
-  assert.equal(d.querySelector('.band-acts a[href="#/wissen"]').getAttribute('aria-current'), 'page');
+  assert.ok(d.querySelector('.band-sub a.back[href="#/"]'), 'Zurück wie bei «Ich»');
   assert.ok(d.querySelectorAll('.plain-list a').length >= 20);
   assert.ok(d.querySelector('a[href="#/wissen/regeln/7m"]'));
   assert.ok(page('#/wissen/aufstellungen').querySelector('a[href="#/wissen/aufstellungen/abwehr-6-0"]'));
@@ -109,8 +109,9 @@ test('Spielzug: Schritt aus der Adresse setzt die Zeit, Marken und Zurück/Weite
   const ui = {};
   const d = page('#/wissen/spielzuege/kreuzen/2', ui);
   assert.match(d.querySelector('.wk-step').textContent, /Schritt 2 von 3/);
-  assert.equal(ui.anim.t, 2, 'Schritt 2 beginnt bei 2 Sekunden');
-  assert.equal(ui.anim.playing, false, 'läuft nicht von selbst');
+  assert.equal(d.querySelector('.wk-scrub').getAttribute('value'), '2000', 'Schritt 2 beginnt bei 2 Sekunden');
+  assert.equal(d.querySelector('[data-wk="play"]').getAttribute('aria-pressed'), 'false', 'läuft nicht von selbst');
+  assert.deepEqual(ui, {}, 'die Ansicht verändert den Zustand nicht');
   assert.equal(d.querySelector('.wk-marks a[aria-current="step"]').getAttribute('href'), '#/wissen/spielzuege/kreuzen/2');
   assert.deepEqual([...d.querySelectorAll('.wk-marks a')].map(a => a.getAttribute('href')), [1, 2, 3].map(n => '#/wissen/spielzuege/kreuzen/' + n));
   assert.equal([...d.querySelectorAll('.wk-ctl a')].map(a => a.getAttribute('href')).join(), '#/wissen/spielzuege/kreuzen/1,#/wissen/spielzuege/kreuzen/3');

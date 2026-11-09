@@ -34,7 +34,7 @@ const push = createPush({origin: API_ORIGIN});
 const store = createStore({api});
 const app = document.getElementById('app');
 const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canInstall: false, votes: createVotes({origin: API_ORIGIN}), voteBusy: false, voteMessage: '', voteSelections: {}, voteGame: '', calendarUrl: '', pushFavourite: false};
-let installPrompt = null, lastView = '', scheduled = false;
+let installPrompt = null, lastView = '', scheduled = false, focusChips = false;
 const celebrated = new Map();
 const navigation = createNavigation();
 const wissenSteuerung = createWissenSteuerung({ui, render});
@@ -51,7 +51,10 @@ function enterRoute() {
   ui.backTarget = navigation.backTarget();
   // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
   const was = previous ? parseRoute(previous.hash) : null, now = parseRoute(location.hash);
-  navigationPending = !(was && was.view === 'wissen' && now.view === 'wissen' && was.id && was.id === now.id && was.chapter === now.chapter && was.step !== now.step);
+  const inWissen = was && was.view === 'wissen' && now.view === 'wissen' && was.chapter === now.chapter;
+  navigationPending = !(inWissen && was.id && was.id === now.id && was.step !== now.step);
+  // Wer in Aufstellungen oder Spielzügen eine andere Formation wählt, sieht gleich das neue Feldbild (Seite beginnt bei den Wahlknöpfen).
+  focusChips = navigationPending && Boolean(inWissen) && now.chapter !== 'regeln';
 }
 enterRoute();
 
@@ -71,8 +74,10 @@ function render() {
   const preserveTicker = window.scrollY > 250 && !navigationPending;
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
+  wissenSteuerung.sync(route);
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
   app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
+  wissenSteuerung.paint();
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -93,8 +98,9 @@ function render() {
   if (preserveTicker && anchorId) { const nextAnchor = [...app.querySelectorAll('[data-event-id]')].find(el => el.dataset.eventId === anchorId); if (nextAnchor) window.scrollBy(0, nextAnchor.getBoundingClientRect().top - anchorTop); }
   const entry = navigation.current;
   if (navigationPending) {
-    window.scrollTo(0, entry?.restore ? entry.scroll : 0);
-    navigationPending = false;
+    const chips = focusChips && !entry?.restore ? app.querySelector('nav.chips') : null;
+    if (chips) chips.scrollIntoView({block: 'start', behavior: 'instant'}); else window.scrollTo(0, entry?.restore ? entry.scroll : 0);
+    navigationPending = false; focusChips = false;
   }
   // Wait for the asynchronously loaded games before the initial jump. Never repeat on timer renders.
   if (entry?.autoNext && store.state.data) {

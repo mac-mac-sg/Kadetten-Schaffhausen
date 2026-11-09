@@ -94,7 +94,7 @@ Alle Zahlen mit Tabellenziffern.
 | Kader | Kopfband, Positions-Chips (Alle, Tor, Rückraum, Flügel, Kreis), ein Raster mit zwei Spalten nach Rückennummer |
 | Spieler | schmales Band, Porträt mit grosser Nummer, Name und Position darunter (nie über dem Trikot), Saisonwerte, Form, Steckbrief |
 | Verein | Kopfband, Titel als grosse Zahlen (ohne Karte), «1791»-Karte mit Streifenrand, Hallenfoto mit Schnitt, zwei Verweise: Geschichte (`#/verein/geschichte`, Zeitreise und Heimhalle) und Trophäenschrank (`#/verein/titel`, Titel und Jahre) |
-| Wissen | Kopfband mit Buch-Symbol (neben Wappen und «Ich», auf der Seite hervorgehoben), drei Kapitel als Reiter (Regeln, Aufstellungen, Spielzüge), Gruppen mit Zeilen; Artikel mit Feldbild, Kurzfassung, «In der App» und «Dazu passt». Adressen `#/wissen[/kapitel[/artikel[/schritt]]]`, siehe `docs/wissensbereich.md` |
+| Wissen | schmales Kopfband mit Zurück und Titel (`band-sub`, wie «Ich»; das Buch-Symbol sitzt auf den Hauptseiten neben Wappen und «Ich»), drei Kapitel als Reiter (Regeln, Aufstellungen, Spielzüge), Gruppen mit Zeilen; Artikel mit Feldbild, Kurzfassung, «In der App» und «Dazu passt». Adressen `#/wissen[/kapitel[/artikel[/schritt]]]`, siehe `docs/wissensbereich.md` |
 | Ich, Geschichte, Trophäenschrank, Spielerwahl | Kopfband mit Zurück und Titel (`band-sub`) |
 | Alle Unterseiten | Zurück als Pille im Band; Streifenband liegt unter den Knöpfen, nie dahinter |
 

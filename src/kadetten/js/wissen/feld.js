@@ -61,20 +61,21 @@ export function stepPlayers(zug, index) {
 // ---- Wiedergabe: Figuren, Nachbilder, Ball, Hinweis und die geplanten Wege des Schritts werden pro Bild umgesetzt ----
 const pillWidth = text => num(14 + String(text).length * 4.9);
 const hintBox = h => {
-  const w = pillWidth(h.text);
-  return {w, x: num(clamp(h.x - w / 2, 3, 217 - w)), y: num(clamp(h.y - 28, 12, 134)), tx: num(clamp(h.x, w / 2 + 3, 217 - w / 2)), ring: num(11 + 3 * Math.abs(Math.sin(h.k * 9)))};
+  const w = pillWidth(h.text), x = num(clamp(h.x - w / 2, 3, 217 - w)), y = num(clamp(h.y - 28, 12, 134)), mx = num(x + w / 2), my = num(y + 7);
+  // Schräger Anschnitt wie überall in der App (8°), um die Mitte der Pille gekippt.
+  return {w, x, y, tx: num(clamp(h.x, w / 2 + 3, 217 - w / 2)), ring: num(11 + 3 * Math.abs(Math.sin(h.k * 9))), skew: `translate(${mx} ${my}) skewX(-8) translate(${-mx} ${-my})`};
 };
 
 /** Feldbild eines Spielzugs zur Zeit des Bildes f (aus frame()). Danach nur noch updateFeld(svg, f). */
 export function liveFeld({label, zug, f}) {
-  const hb = f.hint ? hintBox(f.hint) : {w: 40, x: 0, y: 0, tx: 20, ring: 11};
+  const hb = f.hint ? hintBox(f.hint) : {w: 40, x: 0, y: 0, tx: 20, ring: 11, skew: ''};
   return html`<figure class="fb live"><svg class="fb-live" viewBox="0 0 220 150" role="img" aria-label="${label}" focusable="false">
     ${court}
     ${zug.steps.map((s, i) => html`<g class="fb-plan${f.plan === i ? '' : ' fb-off'}" data-plan="${i}">${s.moves.map(m => html`<path class="fb-m fb-${m.k}" d="${arrowPath(m.from, m.to, {endGap: m.k === 'shot' ? 1 : 9})}"/>`)}</g>`)}
     ${f.players.flatMap(p => p.team === 'a' ? [0, 1].map(k => html`<ellipse class="fb-echo${p.echoes[k] ? '' : ' fb-off'}" data-e="${p.l}:${k}" cx="${p.echoes[k]?.x ?? 0}" cy="${p.echoes[k]?.y ?? 0}" rx="9.2" ry="5.8" opacity="${p.echoes[k]?.o ?? 0}" transform="rotate(${p.angle} ${p.echoes[k]?.x ?? 0} ${p.echoes[k]?.y ?? 0})"/>`) : [])}
     ${f.players.map(p => figure(p, p.angle))}
     <g class="fb-ballg"><ellipse class="fb-ballshadow" cx="${num(f.ball.x + 1)}" cy="${num(f.ball.y + 2)}" rx="3.4" ry="1.9"/><circle class="fb-ball" cx="${num(f.ball.x)}" cy="${num(f.ball.y - f.ball.lift * 8)}" r="${num(3.6 * (1 + f.ball.lift * 0.4))}"/></g>
-    <g class="fb-hint${f.hint ? '' : ' fb-off'}"><circle class="fb-ring" cx="${f.hint ? f.hint.x : 0}" cy="${f.hint ? f.hint.y : 0}" r="${hb.ring}"/><rect class="fb-pill" x="${hb.x}" y="${hb.y}" width="${hb.w}" height="14" rx="7"/><text class="fb-pilltext" x="${hb.tx}" y="${hb.y + 10}" text-anchor="middle">${f.hint ? f.hint.text : ''}</text></g>
+    <g class="fb-hint${f.hint ? '' : ' fb-off'}"><circle class="fb-ring" cx="${f.hint ? f.hint.x : 0}" cy="${f.hint ? f.hint.y : 0}" r="${hb.ring}"/><rect class="fb-pill" x="${hb.x}" y="${hb.y}" width="${hb.w}" height="14" transform="${hb.skew}"/><text class="fb-pilltext" x="${hb.tx}" y="${hb.y + 10}" text-anchor="middle">${f.hint ? f.hint.text : ''}</text></g>
   </svg></figure>`;
 }
 
@@ -104,7 +105,7 @@ export function updateFeld(svg, f) {
   if (f.hint && hint) {
     const hb = hintBox(f.hint), ring = hint.querySelector('.fb-ring'), pill = hint.querySelector('.fb-pill'), text = hint.querySelector('.fb-pilltext');
     ring.setAttribute('cx', f.hint.x); ring.setAttribute('cy', f.hint.y); ring.setAttribute('r', hb.ring);
-    pill.setAttribute('x', hb.x); pill.setAttribute('y', hb.y); pill.setAttribute('width', hb.w);
+    pill.setAttribute('x', hb.x); pill.setAttribute('y', hb.y); pill.setAttribute('width', hb.w); pill.setAttribute('transform', hb.skew);
     text.setAttribute('x', hb.tx); text.setAttribute('y', hb.y + 10); text.textContent = f.hint.text;
   }
 }

@@ -205,6 +205,12 @@ export const chipLabel = a => CHIPS[a.id] || a.title.replace(/^(Abwehr|Angriff) 
 export const article = id => ARTICLES.find(a => a.id === id) || null;
 export const inChapter = chapter => ARTICLES.filter(a => a.chapter === chapter);
 
+/** Spielzug und Schritt (ab 0) einer Wissens-Adresse; Unbekanntes führt zu «Kreuzen», Schritt 1. */
+export function spielzugOf(route) {
+  const zug = ARTICLES.find(a => a.chapter === 'spielzuege' && a.id === route.id) || article('kreuzen');
+  return {zug, index: route.step >= 1 && route.step <= zug.steps.length ? route.step - 1 : 0};
+}
+
 /** Wissens-Artikel zu einer Position der Kader-Daten («Rückraum mitte», «Flügel links», «Kreis», «Tor»). */
 export function positionArticle(position) {
   const slug = String(position || '').toLowerCase().replace(/ü/g, 'ue').replace(/\s+/g, '-');

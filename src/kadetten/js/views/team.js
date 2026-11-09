@@ -9,6 +9,7 @@ import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../log
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
 import {positionArticle} from '../wissen/inhalt.js';
+import {SEASON} from '../season.js';
 
 const GROUPS = [['Tor', p => p.position === 'Tor'], ['Rückraum', p => /^Rückraum/.test(p.position)], ['Flügel', p => /^Flügel/.test(p.position)], ['Kreis', p => p.position === 'Kreis']];
 const POSITION = pos => pos.replace(/^Rückraum mitte$/i, 'Rückraum Mitte').replace(/^Rückraum links$/i, 'Rückraum links');
@@ -27,10 +28,10 @@ export function renderTeam({ui = {}} = {}) {
   const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
   const test = FILTERS.find(f => f[0] === current)[2];
   const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
-  return html`${topBar('Kader', 'Saison 2026/27')}
+  return html`${topBar('Kader', `Saison ${SEASON}`)}
     ${chips('pos', FILTERS.map(([id, label]) => [id, label]), current, 'Position')}
     <section class="sec" aria-label="Spieler"><div class="pgrid">${list.map(p => card(p, fav))}</div></section>
-    <section class="sec"><p class="note">Kader 2026/27. Spielerfotos: kadettensh.ch.</p></section>`;
+    <section class="sec"><p class="note">Kader ${SEASON}. Spielerfotos: kadettensh.ch.</p></section>`;
 }
 
 /** Werte eines Spielers in den letzten QHL-Spielen aus den Spielberichten (fehlende Berichte zählen nicht). */
@@ -81,7 +82,7 @@ export function renderSpieler({route, state, load, api, now}) {
     <section class="sec first"><div class="big-hero player"><img src="${playerPhoto(p.number)}" alt="" width="400" height="500" decoding="async"><span class="no num" aria-hidden="true">${p.number}</span></div>
       <div class="pl-head"><h1 class="h1">${p.name}</h1><p>${POSITION(p.position)} · <span class="num">#${p.number}</span></p></div></section>
     ${keeper ? formSection({form, keeper, now}) : ''}
-    <section class="sec" aria-labelledby="sp-saison">${sectionHead('Saison 2026/27 · QHL', '', '', 'sp-saison')}
+    <section class="sec" aria-labelledby="sp-saison">${sectionHead(`Saison ${SEASON} · QHL`, '', '', 'sp-saison')}
       ${season ? stats(keeper ? [[season.games, 'Spiele']] : [[season.games, 'Spiele'], [season.goals, 'Tore'], [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']]) : notice('Noch keine Saisonwerte vorhanden.', 'saison')}
       ${known ? html`<div class="card pad-top-s"><div class="split" role="img" aria-label="${`${season.fieldGoals} Feldtore, ${season.sevenMeterGoals} 7-m-Tore`}"><i data-style="${'flex:' + season.fieldGoals}"></i><i data-style="${'flex:' + season.sevenMeterGoals}"></i></div><ul class="legend"><li><i class="st-g"></i>Feldtore <b class="num">${season.fieldGoals}</b></li><li><i class="st-s"></i>7-m-Tore <b class="num">${season.sevenMeterGoals}</b></li></ul></div>` : ''}
       ${season ? html`<div class="card list pad-top-s">

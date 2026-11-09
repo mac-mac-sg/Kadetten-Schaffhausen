@@ -123,4 +123,8 @@ export function advance(state, dt) {
   return t >= DURATION ? {...state, t: DURATION, playing: false} : {...state, t};
 }
 
+/** Zustand der Wiedergabe am Anfang eines Schritts: steht still, Tempo 1. */
+export const animKey = (zug, index) => `${zug.id}:${index}`;
+export const startState = (zug, index) => ({key: animKey(zug, index), id: zug.id, t: MARKS[index], playing: false, speed: 1});
+
 export const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;

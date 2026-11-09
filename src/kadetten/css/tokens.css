@@ -24,6 +24,15 @@
   --c-seg-on: #ff5d00;
   --c-on-seg-on: #141415;
   --c-chip: #e4dfd6;
+  /* Feste Töne, in Hell und Dunkel gleich: Fotos und Verläufe, Glas auf dem orangen Band, Schein hinter Blättern. */
+  --c-black: #000000;
+  --c-white: #ffffff;
+  --c-on-photo: #f5f5f5;
+  --c-on-ink: #fafafa;
+  --c-shade: #000000cc;
+  --c-shade-strong: #000000d9;
+  --c-ink-glass: #14141424;
+  --c-ink-glass-hover: #14141438;
 
   --f-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --f-text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
