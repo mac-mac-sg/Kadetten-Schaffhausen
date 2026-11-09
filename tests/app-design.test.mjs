@@ -310,7 +310,7 @@ test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur w
   assert.deepEqual(shotTotals([], {1: 5}), {});
 });
 
-test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne Berichte «–», nichts geschätzt', () => {
+test('Torschützenliste QHL: Spalten Würfe und Quote; ohne Berichte «–», nichts geschätzt', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
   const season = {season: '2026/27', players: {9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0}, 20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1}, 21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}}};
   const ctxFor = load => ({route: {view: 'statistik'}, state: {data: {...data, playerSeason: season}, live: null}, now, load, api: {}, ui: {stat: 'qhl'}});
@@ -321,10 +321,8 @@ test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne B
   const cellsOf = nr => [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td => td.textContent.trim());
   assert.deepEqual(cellsOf(20).slice(2, 5), ['20', '8', '50 %'], 'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20');
   assert.deepEqual(cellsOf(21).slice(3, 5), ['–', '–'], 'kein Bericht: nichts geschätzt');
-  assert.match(ready.body.textContent, /aus 1 von \d+ QHL-Spielberichten/);
-  assert.match(ready.body.textContent, /Quote \(Tore\/Würfe\)/);
+  assert.equal(ready.querySelector('.sec.tight p.fine'), null, 'keine Hinweise unter der Tabelle');
   const loading = dom2(renderStat(ctxFor(() => ({status: 'loading'}))));
-  assert.match(loading.body.textContent, /werden noch geladen/);
   assert.ok([...loading.querySelectorAll('.tbl-real tbody td.muted')].some(td => td.textContent === '…'));
   const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
   assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');

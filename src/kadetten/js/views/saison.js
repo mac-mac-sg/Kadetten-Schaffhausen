@@ -76,8 +76,7 @@ function keeperTable({state, load, api, now}) {
   if (!rows.length) return pending ? loading(`Spielberichte werden geladen (${games.length - pending} von ${games.length}) …`) : notice('Für die Torhüter liegen noch keine Werte aus Spielberichten vor.', 'team');
   return html`<div class="card list"><table class="tbl-real">
     <thead><tr><th scope="col">Torhüter</th><th scope="col" class="n">Sp</th><th scope="col" class="n">Paraden</th><th scope="col" class="n">Quote</th></tr></thead>
-    <tbody>${rows.map(r => html`<tr><td><a class="plink" href="${href.spieler(r.number)}"><span class="num muted">${r.number}</span> ${r.name}</a></td><td class="n num">${r.games}</td><td class="n num strong">${r.saves}<span class="muted">/${r.shots}</span></td><td class="n num">${fmtPct(pct(r.saves, r.shots))}</td></tr>`)}</tbody></table></div>
-    <p class="fine pad-top">Summiert aus ${used} von ${games.length} QHL-Spielberichten${pending ? `, ${pending} werden noch geladen` : ''}. Quote = Paraden/Würfe aufs Tor.</p>`;
+    <tbody>${rows.map(r => html`<tr><td><a class="plink" href="${href.spieler(r.number)}"><span class="num muted">${r.number}</span> ${r.name}</a></td><td class="n num">${r.games}</td><td class="n num strong">${r.saves}<span class="muted">/${r.shots}</span></td><td class="n num">${fmtPct(pct(r.saves, r.shots))}</td></tr>`)}</tbody></table></div>`;
 }
 
 /** Würfe und Tore je Spieler aus den Spielberichten: nur Berichte, in denen beide Werte gemeldet sind.
@@ -119,7 +118,7 @@ function scorerTable(season, label, shots = null) {
   return html`<div class="card list"><table class="tbl-real">
     <thead><tr><th scope="col">Spieler</th>${hasGames ? html`<th scope="col" class="n">Sp</th>` : ''}<th scope="col" class="n">Tore</th>${showShots ? html`<th scope="col" class="n">Würfe</th><th scope="col" class="n">Quote</th>` : ''}${hasSeven ? html`<th scope="col" class="n">7-m</th>` : ''}<th scope="col" class="n">2′</th></tr></thead>
     <tbody>${players.map((p, i) => html`<tr${p.nr === fav ? html` class="fav-row"` : i === 0 ? html` class="me"` : ''}><td><a class="plink" href="${href.spieler(p.nr)}">${p.nr === fav ? html`<span class="star" role="img" aria-label="Lieblingsspieler">${icon('star', 16)}</span>` : ''}<span class="num muted">${p.nr}</span> ${p.info.name}</a></td>${hasGames ? html`<td class="n num">${p.games ?? '–'}</td>` : ''}<td class="n num strong">${p.goals}</td>${showShots ? cells(p) : ''}${hasSeven ? html`<td class="n num">${p.sevenMeterGoals ?? '–'}</td>` : ''}<td class="n num">${p.twoMinutes ?? '–'}</td></tr>`)}</tbody>
-  </table></div><p class="fine pad-top">${players.reduce((n, p) => n + p.goals, 0)} Tore · ${label}</p>${shots ? html`<p class="fine">Würfe und Quote (Tore/Würfe) aus ${shots.used} von ${shots.total} QHL-Spielberichten${shots.pending ? `, ${shots.pending} werden noch geladen` : ''}. Gezählt werden nur Spiele, in denen der Bericht beide Werte meldet; – = nicht gemeldet.</p>` : ''}`;
+  </table></div>`;
 }
 
 function statistik(ctx) {
