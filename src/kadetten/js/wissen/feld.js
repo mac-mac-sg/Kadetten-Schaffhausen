@@ -21,9 +21,10 @@ const mark = m => {
 };
 
 /** players: [{l, x, y, team: 'a'|'d', ghost?, hl?}], marks: [{l, x, y}], moves: [{k: 'run'|'pass'|'shot', from, to}], ball: Beschriftung des Ballführenden. */
-export function feldbild({label, players = [], marks = [], moves = [], ball = null}) {
+export function feldbild({label, players = [], marks = [], moves = [], ball = null, mini = false}) {
   const holder = ball ? players.find(p => p.l === ball && p.team === 'a') : null;
-  return html`<figure class="fb"><svg viewBox="0 0 220 150" role="img" aria-label="${label}" focusable="false">
+  const attrs = mini ? html`aria-hidden="true"` : html`role="img" aria-label="${label}"`;
+  return html`<figure class="fb${mini ? ' mini' : ''}"><svg viewBox="0 0 220 150" ${attrs} focusable="false">
     <rect class="fb-goal" x="94" y="2" width="32" height="7"/>
     <line class="fb-line" x1="4" y1="10" x2="216" y2="10"/>
     <path class="fb-line fb-6m" d="M52 10A58 58 0 0 0 168 10"/>

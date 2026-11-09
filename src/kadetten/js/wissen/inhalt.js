@@ -16,7 +16,7 @@ const D60 = defense([-78, -50, -17, 17, 50, 78]);
 
 export const GROUPS = {
   regeln: [['spiel', 'Spiel'], ['strafen', 'Strafen'], ['statistik', 'Statistik-Begriffe']],
-  aufstellungen: [['positionen', 'Positionen'], ['abwehr', 'Abwehrformationen'], ['angriff', 'Angriffsformen']],
+  aufstellungen: [['abwehr', 'Abwehrformationen'], ['angriff', 'Angriffsformen'], ['positionen', 'Positionen']],
   spielzuege: [['grundzuege', 'Grundmuster']]
 };
 
@@ -105,6 +105,7 @@ const A = (id, title, short, body, extra) => ({id, chapter: 'aufstellungen', tit
 const POSITIONSARTIKEL = POSITIONEN.map(([id, title, hl, point, short, body]) => A(id, title, short, body, {group: 'positionen', field: {label: `Feldbild: Position «${title}» hervorgehoben`, players: id === 'pos-tor' ? [player('TW', point, 'a', {hl: true})] : attackers(hl)}, related: id === 'pos-kreis' ? ['sperre', 'einlaufen'] : ['kreuzen']}));
 
 const FORMATION = (id, group, title, short, field, idee, staerke, schwaeche, related = []) => A(id, title, short, [`Idee: ${idee}`, `Stärke: ${staerke}`, `Schwäche: ${schwaeche}`], {group, field, idee, staerke, schwaeche, related});
+const CHIPS = {'angriff-2-4': '2 Kreisläufer', 'angriff-7-6': '7 gegen 6', 'abwehr-mann': 'Mann'};
 const ABWEHR = [
   FORMATION('abwehr-6-0', 'abwehr', 'Abwehr 6-0', 'Alle sechs Verteidiger stehen in einer Reihe an der 6-Meter-Linie.', {label: 'Abwehr 6-0: sechs Verteidiger auf der 6-Meter-Linie', players: D60},
     'Alle sechs stehen in einer Reihe an der 6-Meter-Linie und schliessen den Weg zum Tor.', 'Sehr kompakt, wenig Raum für Durchbrüche und gut gegen den Kreisläufer.', 'Niemand attackiert weit vorne, deshalb sind Distanzwürfe aus dem Rückraum möglich.', ['abwehr-5-1']),
@@ -180,6 +181,8 @@ const SPIELZUEGE = [
 ];
 
 export const ARTICLES = [...REGELN, ...POSITIONSARTIKEL, ...ABWEHR, ...ANGRIFF, ...SPIELZUEGE];
+/** Kurze Beschriftung für den Wahlknopf: «6-0», «3-3», «Kreis» … */
+export const chipLabel = a => CHIPS[a.id] || a.title.replace(/^(Abwehr|Angriff) /, '');
 export const article = id => ARTICLES.find(a => a.id === id) || null;
 export const inChapter = chapter => ARTICLES.filter(a => a.chapter === chapter);
 

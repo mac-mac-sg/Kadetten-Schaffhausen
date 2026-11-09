@@ -2,7 +2,7 @@
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {CHAPTERS, GROUPS, ARTICLES, article} from '../wissen/inhalt.js';
+import {CHAPTERS, GROUPS, ARTICLES, article, chipLabel} from '../wissen/inhalt.js';
 import {feldbild, stepPlayers} from '../wissen/feld.js';
 import {topBar, subBand, backLink, sectionHead, listRow, segment} from './parts.js';
 
@@ -16,6 +16,26 @@ function overview(chapter) {
     ${segment(CHAPTERS.map(([id, label]) => [id, label, href.wissen(id)]), chapter, 'Kapitel')}
     ${GROUPS[chapter].map(([group, title]) => html`<section class="sec" aria-labelledby="${'w-' + group}">${sectionHead(title, '', '', 'w-' + group)}
       <div class="plain-list">${items.filter(a => a.group === group).map(a => listRow({title: a.title, sub: firstSentence(a.short), link: href.wissen(chapter, a.id)}))}</div></section>`)}`;
+}
+
+/** Aufstellungen: Art und Formation per Wahlknopf, Feldbild und Text an derselben Stelle, darunter alle im Vergleich. */
+function aufstellungen(route) {
+  const items = ARTICLES.filter(a => a.chapter === 'aufstellungen');
+  const selected = items.find(a => a.id === route.id) || items.find(a => a.id === 'abwehr-6-0');
+  const inGroup = items.filter(a => a.group === selected.group);
+  const link = a => href.wissen('aufstellungen', a.id);
+  const formation = Boolean(selected.idee);
+  return html`${topBar('Wissen', 'Handball kurz erklärt', 'wissen')}
+    ${segment(CHAPTERS.map(([id, label]) => [id, label, href.wissen(id)]), 'aufstellungen', 'Kapitel')}
+    <nav class="chips" aria-label="Art">${GROUPS.aufstellungen.map(([group, title]) => { const first = items.find(a => a.group === group); return html`<a class="chip${group === selected.group ? ' on' : ''}" href="${link(first)}"${group === selected.group ? html` aria-current="true"` : ''}>${title}</a>`; })}</nav>
+    <nav class="chips" aria-label="${GROUPS.aufstellungen.find(([g]) => g === selected.group)[1]}">${inGroup.map(a => html`<a class="chip${a.id === selected.id ? ' on' : ''}" href="${link(a)}"${a.id === selected.id ? html` aria-current="true"` : ''}>${chipLabel(a)}</a>`)}</nav>
+    <section class="sec wk-main" aria-labelledby="w-sel">${feldbild(selected.field)}
+      <h2 class="h2 wk-title" id="w-sel">${selected.title}</h2><p class="wk-lead">${selected.short}</p>
+      ${formation ? html`<div class="wk-three"><div class="card"><h3 class="h4 first">Idee</h3><p>${selected.idee}</p></div><div class="card"><h3 class="h4 first">Stärke</h3><p>${selected.staerke}</p></div><div class="card"><h3 class="h4 first">Schwäche</h3><p>${selected.schwaeche}</p></div></div>`
+        : html`<div class="prose">${selected.body.map(t => html`<p>${t}</p>`)}</div>`}</section>
+    <section class="sec" aria-labelledby="w-cmp">${sectionHead('Im Vergleich', '', '', 'w-cmp')}
+      <div class="wk-cmp">${inGroup.map(a => html`<a class="card wk-mini" href="${link(a)}"${a.id === selected.id ? html` aria-current="true"` : ''}>${feldbild({...a.field, mini: true})}<b class="wk-mt">${chipLabel(a)}</b>${formation ? html`<span class="wk-ms"><i>+</i> ${firstSentence(a.staerke)}</span><span class="wk-ms"><i>−</i> ${firstSentence(a.schwaeche)}</span>` : html`<span class="wk-ms">${firstSentence(a.short)}</span>`}</a>`)}</div></section>
+    ${related(selected)}`;
 }
 
 function related(a) {
@@ -58,6 +78,7 @@ function artikel(a, route, ui) {
 }
 
 export function renderWissen({route, ui}) {
+  if (route.chapter === 'aufstellungen') return aufstellungen(route);
   const a = route.id ? article(route.id) : null;
   if (a && a.chapter === route.chapter) return artikel(a, route, ui);
   return overview(route.chapter);
