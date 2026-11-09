@@ -6,7 +6,6 @@ import {THEMES} from '../theme.js';
 import {OWN_TEAM, ownGames, shortTeam, dataFreshness} from '../logic.js';
 import {favourite, myGames, tips} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
-import {RULES} from '../rules.js';
 import {seasonSummary} from '../moments.js';
 import {backLink, subBand, sectionHead, listRow, playerByNumber} from './parts.js';
 
@@ -52,9 +51,6 @@ export function renderIch({theme, state, ui, now}) {
       </div>
     </section>
     ${seasonBlock(state, now)}
-    <section class="sec" aria-labelledby="i-regeln">${sectionHead('Regeln kurz erklärt', '', '', 'i-regeln')}
-      <div class="card list">${Object.entries(RULES).map(([id, [title]]) => html`<button class="rl compact" type="button" data-rule="${id}"><span class="grow"><span class="t">${title}</span></span>${icon('go')}</button>`)}</div>
-    </section>
     <section class="sec" aria-labelledby="i-dar">${sectionHead('Darstellung', '', '', 'i-dar')}
       <div class="seg flush" role="radiogroup" aria-labelledby="i-dar">${THEMES.map(([id, label]) => html`<button type="button" role="radio" data-theme-choice="${id}" aria-checked="${String(id === theme)}"${id === theme ? html` class="on"` : ''}>${label}</button>`)}</div>
     </section>

@@ -3,7 +3,7 @@ import {API_ORIGIN} from './config.js';
 import {createApi} from './api.js';
 import {createStore} from './store.js';
 import {startLive} from './live.js';
-import {parseRoute, createNavigation} from './router.js';
+import {parseRoute, createNavigation, href} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
 import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, togglePick} from './personal.js';
@@ -26,6 +26,8 @@ import {renderTeam, renderSpieler} from './views/team.js';
 import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
+import {renderWissen} from './views/wissen.js';
+import {article} from './wissen/inhalt.js';
 
 const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
@@ -46,14 +48,16 @@ function enterRoute() {
     history.replaceState({...history.state, kadettenEntry: entry.id}, '');
   }
   ui.backTarget = navigation.backTarget();
-  navigationPending = true;
+  // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
+  const was = previous ? parseRoute(previous.hash) : null, now = parseRoute(location.hash);
+  navigationPending = !(was && was.view === 'wissen' && now.view === 'wissen' && was.id && was.id === now.id && was.chapter === now.chapter && was.step !== now.step);
 }
 enterRoute();
 
 const VIEWS = {
   jetzt: renderJetzt, news: renderNews, artikel: renderArtikel, spiel: renderSpiel,
   spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison,
-  team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch
+  team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch, wissen: renderWissen
 };
 
 function render() {
@@ -103,7 +107,7 @@ function render() {
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
 function focusSelector(el) {
-  for (const attr of ['data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm', 'data-pick']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
+  for (const attr of ['data-wissen-play', 'data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm', 'data-pick']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
 }
 const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(render); } };
@@ -164,6 +168,21 @@ async function shareSeason() {
   await shareImage(await seasonCard(summary), 'kadetten-meine-saison.png', 'Meine Kadetten-Saison');
 }
 
+let playTimer = null;
+function stopPlay() { clearInterval(playTimer); playTimer = null; ui.wissenPlay = null; }
+/** Spielzug automatisch Schritt für Schritt zeigen (Abspielen / Anhalten). */
+function playWissen(id) {
+  if (ui.wissenPlay === id) { stopPlay(); render(); return; }
+  stopPlay(); ui.wissenPlay = id;
+  if ((parseRoute(location.hash).step || 1) !== 1) location.hash = href.wissen('spielzuege', id, 1); else render();
+  playTimer = setInterval(() => {
+    const route = parseRoute(location.hash), zug = article(id);
+    if (route.view !== 'wissen' || route.id !== id || !zug) { stopPlay(); return; }
+    if ((route.step || 1) >= zug.steps.length) { stopPlay(); render(); return; }
+    location.hash = href.wissen('spielzuege', id, (route.step || 1) + 1);
+  }, 2400);
+}
+
 function announce(text) {
   let live = document.getElementById('announce');
   if (!live) { live = Object.assign(document.createElement('p'), {id: 'announce', className: 'sr'}); live.setAttribute('role', 'status'); document.body.append(live); }
@@ -182,7 +201,7 @@ function openRule(id, trigger) {
     document.body.append(dialog);
   }
   dialog._trigger = trigger;
-  dialog.innerHTML = String(html`<div class="sheet-body"><h2 class="h2" id="rule-title">${rule[0]}</h2><p>${rule[1]}</p><button type="button" class="btn" data-close autofocus>Schliessen</button></div>`);
+  dialog.innerHTML = String(html`<div class="sheet-body"><h2 class="h2" id="rule-title">${rule[0]}</h2><p>${rule[1]}</p><div class="acts"><a class="btn" href="${href.wissen('regeln', id)}" data-close>Mehr dazu</a><button type="button" class="btn pri" data-close autofocus>Schliessen</button></div></div>`);
   dialog.showModal();
 }
 
@@ -204,6 +223,7 @@ app.addEventListener('click', event => {
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
   if (t.dataset.rule) { openRule(t.dataset.rule, t); return; }
+  if (t.dataset.wissenPlay) { playWissen(t.dataset.wissenPlay); return; }
   if (t.dataset.themeChoice) { applyTheme(t.dataset.themeChoice); render(); }
   else if (t.dataset.ui) { const [k, v] = t.dataset.ui.split(':'); ui[k] = v; if (k === 'comp' && navigation.current) navigation.current.autoNext = true; render(); }
   else if (t.dataset.favourite) {

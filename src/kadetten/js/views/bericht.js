@@ -151,7 +151,7 @@ function shotAnalysis(shotStats, report) {
     const zones = [...ZONES.map(([code, name]) => [name, t.zones?.find(z => z.zone === code)]), ...(t.zones || []).filter(z => !ZONES.some(([code]) => code === z.zone)).map(z => ['Weitere Wurfzone', z])].filter(([, z]) => z?.shots);
     const halves = Array.isArray(t.halves) && t.halves.length === 2 ? t.halves : null;
     const keepers = (t.keepers || []).filter(k => Array.isArray(k.zones) && k.shots);
-    return html`<div class="shots"><h3 class="h4">Woher die Würfe kamen · ${label} · ${t.shots} Würfe</h3>
+    return html`<div class="shots"><h3 class="h4">Woher die Würfe kamen · ${label} · ${t.shots} Würfe${ruleButton('wurfzonen')}</h3>
       ${zones.length ? html`<div class="zones">${zones.map(([name, z]) => html`<div class="zone"><span>${name}</span><b class="num">${z.goals}<small>/${z.shots}</small></b><em class="num">${fmtPct(pct(z.goals, z.shots))}</em></div>`)}</div>` : ''}
       ${halves ? html`<div class="halves">${halves.map((h, i) => html`<div><span>${i + 1}. Halbzeit</span><b class="num">${fmtPct(pct(h.goals, h.shots))}</b><small class="num">${h.goals} Tore / ${h.shots} Würfe</small></div>`)}</div>` : ''}
       ${keepers.map(k => html`<details class="card more-card keeper-zones"><summary><span>${displayName(k.name)}<small class="muted"> · Paraden nach Wurfzone</small></span><b class="num">${fmtPct(pct(k.saves, k.shots))}</b></summary>

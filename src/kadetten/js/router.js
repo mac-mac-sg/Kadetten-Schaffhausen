@@ -9,6 +9,7 @@ export const AREAS = [
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
 const VEREIN_TABS = ['geschichte', 'titel'];
+export const WISSEN_CHAPTERS = ['regeln', 'aufstellungen', 'spielzuege'];
 export const GAME_TABS = ['vorschau', 'live', 'bericht', 'rueckblick', 'wahl'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
@@ -23,6 +24,7 @@ export function parseRoute(hash = '') {
     case 'team': return safeId(second) ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
     case 'verein': return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich': return {area: null, view: 'ich'};
+    case 'wissen': return {area: null, view: 'wissen', chapter: WISSEN_CHAPTERS.includes(second) ? second : 'regeln', ...(WISSEN_CHAPTERS.includes(second) && safeId(parts[2]) ? {id: parts[2]} : {}), ...(/^[1-9]$/.test(parts[3] || '') ? {step: Number(parts[3])} : {})};
     case 'spiel': return safeId(second) ? {area: 'saison', view: 'spiel', id: second, ...(GAME_TABS.includes(parts[2]) ? {tab: parts[2]} : {})} : {area: 'jetzt', view: 'jetzt'};
     // Adressen aus Push-Mitteilungen des Datendienstes (#match/<id>/…).
     case 'match': return safeId(second) ? {area: 'saison', view: 'spiel', id: second} : {area: 'jetzt', view: 'jetzt'};
@@ -38,6 +40,7 @@ export const href = {
   spieler: id => '#/team/' + encodeURIComponent(id),
   verein: tab => '#/verein' + (tab ? '/' + tab : ''),
   ich: () => '#/ich',
+  wissen: (chapter, id, step) => '#/wissen' + (chapter && (chapter !== 'regeln' || id) ? '/' + chapter : '') + (id ? '/' + encodeURIComponent(id) + (step ? '/' + step : '') : ''),
   spiel: (id, tab) => '#/spiel/' + encodeURIComponent(id) + (tab ? '/' + tab : ''),
   news: () => '#/news',
   artikel: id => '#/news/' + encodeURIComponent(id)
