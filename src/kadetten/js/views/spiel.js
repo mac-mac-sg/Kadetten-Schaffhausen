@@ -53,7 +53,7 @@ function vorschau({game, data, load, api, now}) {
         ${listRow({title: 'Kadetten', sub: own ? `${own.rank}. · ${own.points} Punkte` : game.league, end: formRow(form(data.games, OWN_TEAM, 5, formLeague)), lead: crest(OWN_TEAM, 'xs')})}
         ${listRow({title: shortTeam(opponentOf(game)), sub: opp ? `${opp.rank}. · ${opp.points} Punkte` : game.league, end: oppForm === undefined ? html`<span class="muted">…</span>` : formRow(oppForm || []), lead: crest(opponentOf(game), 'xs')})}
       </div>
-      <p class="fine pad-top">Form, neuestes zuerst. Kadetten: bis zu 5 letzte ${formLeague || 'Pflicht- und Test'}-Spiele. Gegner: bis zu 5 verfügbare ${game.league === 'EHL' ? 'EHL' : 'SHV'}-Resultate${game.league === 'EHL' ? '' : ' (Wettbewerbe gemischt)' }.</p>
+
     </section>
     ${tipFor(game, now)}
     ${p?.paragraphs?.length ? html`<section class="sec" aria-labelledby="g-vor">${sectionHead(p.generator === 'daten' ? 'Vorschau' : 'Vorschau', '', '', 'g-vor')}

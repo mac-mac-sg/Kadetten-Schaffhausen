@@ -6,7 +6,7 @@ import {parseHTML} from 'linkedom';
 import {parseRoute} from '../src/kadetten/js/router.js';
 import {competitionOf} from '../src/kadetten/js/logic.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
-import {setLogos, nav, venueShort, LOGO} from '../src/kadetten/js/views/parts.js';
+import {setLogos, nav, venueShort, LOGO, tipCard} from '../src/kadetten/js/views/parts.js';
 import {renderJetzt, renderNews} from '../src/kadetten/js/views/jetzt.js';
 import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {renderSaison} from '../src/kadetten/js/views/saison.js';
@@ -310,7 +310,7 @@ test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur w
   assert.deepEqual(shotTotals([], {1: 5}), {});
 });
 
-test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne Berichte «–», nichts geschätzt', () => {
+test('Torschützenliste QHL: Spalten Würfe und Quote; ohne Berichte «–», nichts geschätzt', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
   const season = {season: '2026/27', players: {9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0}, 20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1}, 21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}}};
   const ctxFor = load => ({route: {view: 'statistik'}, state: {data: {...data, playerSeason: season}, live: null}, now, load, api: {}, ui: {stat: 'qhl'}});
@@ -321,10 +321,8 @@ test('Torschützenliste QHL: Spalten Würfe und Quote mit Quellenhinweis; ohne B
   const cellsOf = nr => [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td => td.textContent.trim());
   assert.deepEqual(cellsOf(20).slice(2, 5), ['20', '8', '50 %'], 'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20');
   assert.deepEqual(cellsOf(21).slice(3, 5), ['–', '–'], 'kein Bericht: nichts geschätzt');
-  assert.match(ready.body.textContent, /aus 1 von \d+ QHL-Spielberichten/);
-  assert.match(ready.body.textContent, /Quote \(Tore\/Würfe\)/);
+  assert.equal(ready.querySelector('.sec.tight p.fine'), null, 'keine Hinweise unter der Tabelle');
   const loading = dom2(renderStat(ctxFor(() => ({status: 'loading'}))));
-  assert.match(loading.body.textContent, /werden noch geladen/);
   assert.ok([...loading.querySelectorAll('.tbl-real tbody td.muted')].some(td => td.textContent === '…'));
   const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
   assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');
@@ -465,4 +463,16 @@ test('Tabelle: Bilanz als farbiger Balken statt Spalte S-U-N', () => {
   assert.ok(bars.length > 0, 'Balken vorhanden');
   assert.match(bars[0].getAttribute('aria-label'), /^\d+ Siege, \d+ Unentschieden, \d+ Niederlagen$/);
   assert.equal(bars[0].querySelectorAll('i').length, 3);
+});
+
+test('Startseite: «Unsere Saison» schreibt den Platz aus', () => {
+  const t = render('#/').querySelector('a[href="#/statistik"].rowcard');
+  assert.match(t.getAttribute('aria-label'), /^\d+\. Platz in der QHL, \d+ Punkte, \d+ Spiele$/);
+  assert.match(t.textContent, /Platz in der QHL/);
+});
+
+test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
+  const card = tipCard({game: {id: 1, home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau'}, tip: null, points: null, locked: false});
+  assert.doesNotMatch(String(card), /Ohne Einsatz|richtige Differenz/);
+  assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben/);
 });

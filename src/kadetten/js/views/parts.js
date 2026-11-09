@@ -129,7 +129,7 @@ export function tipCard({game, tip, points, locked}) {
   const side = (i, name) => html`<div class="tip-side"><span>${shortTeam(name)}</span>${locked ? '' : html`<button type="button" class="tip-btn" data-tip="${game.id + ':' + i + ':-1'}" aria-label="${shortTeam(name) + ' ein Tor weniger'}">−</button>`}<b class="num" aria-live="polite">${value[i]}</b>${locked ? '' : html`<button type="button" class="tip-btn" data-tip="${game.id + ':' + i + ':1'}" aria-label="${shortTeam(name) + ' ein Tor mehr'}">+</button>`}</div>`;
   return html`<section class="sec" aria-labelledby="${'tip-' + game.id}"><div class="sh"><h2 class="h2" id="${'tip-' + game.id}">Dein Tipp</h2></div>
     <div class="card tip">${side(0, game.home)}${side(1, game.away)}
-      <p class="fine">${locked ? (tip ? 'Tipp abgegeben. ' : 'Kein Tipp abgegeben. ') : 'Ohne Einsatz, nur für dich. Gespeichert auf diesem Gerät, bis zum Anpfiff änderbar. '}3 Punkte exakt, 2 für die richtige Differenz, 1 für die Tendenz.</p>${pts}</div></section>`;
+      ${locked ? html`<p class="fine">${tip ? 'Tipp abgegeben.' : 'Kein Tipp abgegeben.'}</p>` : ''}${pts}</div></section>`;
 }
 
 /** Filter-Chips (schräg). data-ui="<name>:<wert>" wird in main.js in den UI-Zustand übernommen. */

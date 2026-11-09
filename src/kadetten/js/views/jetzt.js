@@ -138,7 +138,7 @@ export function renderJetzt({state, now, load, api, ui}) {
   return html`${homeBand()}
     ${game ? html`<section class="sec match-score after-band" aria-labelledby="j-next"><h2 class="sr" id="j-next">Nächstes Spiel</h2>${previewHero(game, now)}</section>` : ''}
     ${newsBlock(data, 3)}
-    ${own ? html`<section class="sec" aria-labelledby="j-saison">${sectionHead('Unsere Saison', '', '', 'j-saison')}<a class="card rowcard" href="#/statistik"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">QHL · ${own.points ?? '–'} Punkte</span><span class="s">${own.played ?? '–'} Spiele</span></span>${icon('go')}</a></section>` : ''}
+    ${own ? html`<section class="sec" aria-labelledby="j-saison">${sectionHead('Unsere Saison', '', '', 'j-saison')}<a class="card rowcard" href="#/statistik" aria-label="${`${own.rank}. Platz in der QHL, ${own.points ?? '–'} Punkte, ${own.played ?? '–'} Spiele`}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Platz in der QHL</span><span class="s">${own.points ?? '–'} Punkte · ${own.played ?? '–'} Spiele</span></span>${icon('go')}</a></section>` : ''}
     ${last ? html`<section class="sec" aria-labelledby="j-last">${sectionHead('Letztes Resultat', '', '', 'j-last')}<div class="card list">${gameRow(last, now)}</div></section>` : ''}
     ${offline}`;
 }
