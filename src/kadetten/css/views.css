@@ -425,12 +425,6 @@
 .wk-lead { margin: 0 0 var(--s-3); font: 500 var(--fs-lead)/1.45 var(--f-text); }
 .wk-three { display: grid; gap: var(--s-3); margin-top: var(--s-3); }
 .wk-three .card p { margin: 0; }
-.wk-steps { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; margin: var(--s-3) 6px 0; }
-.wk-nums { display: flex; gap: 6px; }
-.wk-nums .chip { min-width: 44px; min-height: 44px; justify-content: center; padding: 0 12px; }
-.wk-nums .chip b { margin: 0; font-size: 22px; }
-.wk-go { display: flex; gap: var(--s-2); }
-.wk-go .btn { min-width: 96px; }
 .wk-step { margin: var(--s-3) 6px 0; font: 400 var(--fs-body)/1.5 var(--f-text); }
 .wk-list { margin: 0; padding-left: 1.3em; display: grid; gap: var(--s-2); font: 400 var(--fs-body)/1.5 var(--f-text); }
 .fb { margin: 0; }
@@ -439,15 +433,27 @@
 .fb-goal { fill: none; stroke: currentColor; stroke-opacity: .75; stroke-width: 1.6; }
 .fb-9m { stroke-dasharray: 4 4; stroke-opacity: .3; }
 .fb-7m { stroke-opacity: .6; }
-.fb-p circle { stroke: var(--c-bg); stroke-width: 1; }
-.fb-p text { font: italic 600 10px/1 var(--f-display); text-anchor: middle; pointer-events: none; }
-.fb-a circle { fill: var(--c-accent); }
+.fb-stripe { fill: currentColor; fill-opacity: .035; }
+.fb-area { fill: var(--c-accent); fill-opacity: .13; }
+.fb-net { fill: none; stroke: currentColor; stroke-opacity: .25; stroke-width: .6; }
+.fb-p text { font: italic 600 8.5px/1 var(--f-display); text-anchor: middle; pointer-events: none; }
+.fb-shadow { fill: #000; fill-opacity: .28; }
+.fb-sh { stroke: var(--c-bg); stroke-opacity: .7; stroke-width: 1; }
+.fb-a .fb-sh { fill: var(--c-accent); }
+.fb-a .fb-nose { fill: var(--c-accent); }
 .fb-a text { fill: var(--c-on-accent); }
-.fb-d circle { fill: var(--c-loss); }
+.fb-d .fb-sh, .fb-d .fb-nose { fill: var(--c-loss); }
 .fb-d text { fill: var(--c-on-loss, #fff); }
-.fb-ghost circle { fill: none; stroke: var(--c-accent); stroke-opacity: .55; stroke-width: 1.4; stroke-dasharray: 3 2; }
+.fb-ghost .fb-sh { fill: none; stroke: var(--c-accent); stroke-opacity: .55; stroke-width: 1.4; stroke-dasharray: 3 2; }
+.fb-ghost .fb-nose, .fb-ghost .fb-shadow { display: none; }
 .fb-ghost text { fill: currentColor; fill-opacity: .6; }
-.fb-hl circle { stroke: var(--c-text); stroke-width: 2; }
+.fb-hl .fb-sh { stroke: var(--c-text); stroke-opacity: 1; stroke-width: 2; }
+.fb-echo { fill: var(--c-accent); }
+.fb-off { display: none; }
+.fb-ballshadow { fill: #000; fill-opacity: .3; }
+.fb-ring { fill: none; stroke: var(--c-accent-text); stroke-width: 1.6; }
+.fb-pill { fill: var(--c-text); }
+.fb-pilltext { fill: var(--c-bg); font: 600 8px/1 var(--f-text); }
 .fb-m { fill: none; stroke: var(--c-accent-text); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .fb-pass { stroke-dasharray: 4 3; stroke: var(--c-text); }
 .fb-shot { stroke-width: 2.6; }
@@ -467,6 +473,19 @@
 .wk-ms { font: 400 var(--fs-meta)/1.35 var(--f-text); color: var(--c-text-muted); overflow-wrap: anywhere; }
 .wk-ms i { font-style: normal; font-weight: 700; color: var(--c-accent-text); margin-right: 2px; }
 @media (min-width: 640px) { .wk-cmp { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.wk-main .wk-steps, .wk-main .wk-step { margin-left: 0; margin-right: 0; }
+.wk-main .wk-step { margin-left: 0; margin-right: 0; }
 .wk-main .acts { margin-left: 0; margin-right: 0; }
 .wk-main .wk-step { margin-top: var(--s-4); font-weight: 400; }
+
+/* Wissen · Spielzüge: Zeitleiste, Marken, Steuerung */
+.wk-timeline { margin-top: var(--s-3); display: grid; gap: var(--s-2); }
+.wk-marks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.wk-mk { min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px; font: 600 var(--fs-small)/1 var(--f-text); color: var(--c-text-muted); border-bottom: 3px solid var(--c-line); }
+.wk-mk b { font: italic 600 22px/1 var(--f-display); }
+.wk-mk.on { color: var(--c-text); border-bottom-color: var(--c-accent); }
+.wk-scrub { width: 100%; min-height: 44px; margin: 0; accent-color: var(--c-accent); background: none; }
+.wk-ctl { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: var(--s-2); }
+.wk-ctl.two { grid-template-columns: 1fr 1fr; }
+.wk-ctl .btn { width: 100%; margin: 0; padding: 0 var(--s-2); }
+.wk-time { margin-left: auto; color: var(--c-text-muted); font: 500 var(--fs-small)/1 var(--f-text); }
+.wk-tools { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }

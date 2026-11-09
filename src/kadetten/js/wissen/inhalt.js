@@ -127,8 +127,26 @@ const ANGRIFF = [
     'Der Angriff spielt dauerhaft in Überzahl. Das eigene Tor bleibt dafür leer.', 'Mehr Optionen und besser gegen eine geschlossene Abwehr.', 'Ein Ballverlust kann mit einem Wurf aufs leere Tor bestraft werden.', ['ueberzahl', 'torhueter'])
 ];
 
+// Bewegung der Abwehr und Hinweise je Spielzug (Zeiten in Sekunden, Orte im Feldbild). Die Verteidiger gleiten ausserdem
+// automatisch mit dem Ball zur Seite; hier stehen nur die Eigenbewegungen: label: [[Zeit, dx, dy], …].
+// Hinweise zeigen kurz, warum der Zug funktioniert. Die Verteidiger-Bewegungen sind Annahmen und gehören fachlich geprüft.
+const ANIM = {
+  kreuzen: {react: {3: [[0, 0, 0], [2.2, 0, 0], [3.6, -14, 2]], 2: [[0, 0, 0], [2.2, 0, 0], [3.6, -8, 0]]},
+    hints: [{t0: 2.2, t1: 3.9, text: 'Verteidiger übergeben', at: pol(64, -32)}, {t0: 4, t1: 5.8, text: 'Lücke', at: pol(64, 0)}]},
+  sperre: {react: {5: [[0, 0, 0], [2.4, -4, 0], [3.6, -8, 6]]},
+    hints: [{t0: 2.2, t1: 3.9, text: 'Sperre', at: pol(63, 36)}, {t0: 4, t1: 5.8, text: 'Freier Wurf', at: pol(80, 24)}]},
+  einlaufen: {hints: [{t0: 0.2, t1: 2, text: 'Kreisläufer startet', at: pol(62, -38)}, {t0: 2.2, t1: 3.9, text: 'Lücke', at: pol(64, 0)}]},
+  doppelpass: {react: {4: [[0, 0, 0], [1.6, 0, 0], [3, 6, 0]]},
+    hints: [{t0: 0.2, t1: 1.9, text: 'Pass auf den Kreis', at: pol(62, 0)}, {t0: 3.9, t1: 5.8, text: 'Lücke', at: pol(76, 16)}]},
+  ueberzahl: {react: {5: [[0, 0, 0], [2, 0, 0], [3.2, 10, 2]]},
+    hints: [{t0: 0.1, t1: 1.9, text: 'Hier fehlt einer', at: pol(64, 78)}, {t0: 4, t1: 5.8, text: 'Überzahl', at: POS.RA}]},
+  gegenstoss: {hints: [{t0: 0.1, t1: 2, text: 'Nur zwei Verteidiger', at: [110, 40]}]},
+  'freiwurf-zug': {react: {3: [[0, 0, 0], [1.8, 0, 0], [3.2, -6, -4]]},
+    hints: [{t0: 0.1, t1: 1.9, text: 'Mauer', at: pol(64, 0)}, {t0: 2.2, t1: 3.9, text: 'Schneller Pass', at: pol(60, 6)}]},
+  'siebenmeter-zug': {hints: [{t0: 0.1, t1: 1.9, text: 'Torhüter hinter der 4-m-Linie', at: [110, 26]}, {t0: 2, t1: 3.4, text: '3 Sekunden', at: [110, 80]}]}
+};
 const ZUG_GRUPPE = {kreuzen: 'rueckraum', doppelpass: 'rueckraum', sperre: 'kreis', einlaufen: 'kreis', ueberzahl: 'sonder', gegenstoss: 'sonder', 'freiwurf-zug': 'sonder', 'siebenmeter-zug': 'sonder'};
-const S = (id, title, short, idee, base, steps, defenders = D60, related = []) => ({id, chapter: 'spielzuege', group: ZUG_GRUPPE[id], title, short, idee, base, steps, defenders, body: steps.map((s, i) => `Schritt ${i + 1}: ${s.text}`), related});
+const S = (id, title, short, idee, base, steps, defenders = D60, related = []) => ({id, chapter: 'spielzuege', group: ZUG_GRUPPE[id], title, short, idee, base, steps, defenders, ...(ANIM[id] || {}), body: steps.map((s, i) => `Schritt ${i + 1}: ${s.text}`), related});
 const g = [110, 10];
 const SPIELZUEGE = [
   S('kreuzen', 'Kreuzen', 'Zwei Rückraumspieler tauschen im Laufen die Plätze und übergeben den Ball.', 'Beim Kreuzen müssen die Verteidiger ihre Gegenspieler übergeben. Dabei entsteht oft kurz eine Lücke.',
