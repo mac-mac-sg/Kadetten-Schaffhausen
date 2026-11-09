@@ -466,3 +466,9 @@ test('Tabelle: Bilanz als farbiger Balken statt Spalte S-U-N', () => {
   assert.match(bars[0].getAttribute('aria-label'), /^\d+ Siege, \d+ Unentschieden, \d+ Niederlagen$/);
   assert.equal(bars[0].querySelectorAll('i').length, 3);
 });
+
+test('Startseite: «Unsere Saison» schreibt den Platz aus', () => {
+  const t = render('#/').querySelector('a[href="#/statistik"].rowcard');
+  assert.match(t.getAttribute('aria-label'), /^\d+\. Platz in der QHL, \d+ Punkte, \d+ Spiele$/);
+  assert.match(t.textContent, /Platz in der QHL/);
+});
