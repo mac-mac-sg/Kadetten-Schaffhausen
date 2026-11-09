@@ -467,3 +467,6 @@
 .wk-ms { font: 400 var(--fs-meta)/1.35 var(--f-text); color: var(--c-text-muted); overflow-wrap: anywhere; }
 .wk-ms i { font-style: normal; font-weight: 700; color: var(--c-accent-text); margin-right: 2px; }
 @media (min-width: 640px) { .wk-cmp { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.wk-main .wk-steps, .wk-main .wk-step { margin-left: 0; margin-right: 0; }
+.wk-main .acts { margin-left: 0; margin-right: 0; }
+.wk-main .wk-step { margin-top: var(--s-4); font-weight: 400; }
