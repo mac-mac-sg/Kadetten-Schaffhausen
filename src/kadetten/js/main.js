@@ -9,7 +9,7 @@ import {html} from './text.js';
 import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, togglePick} from './personal.js';
 import {resultImage, seasonCard, shareImage} from './share-image.js';
 import {seasonSummary} from './moments.js';
-import {outcome, shortTeam, dataFreshness} from './logic.js';
+import {outcome, shortTeam} from './logic.js';
 import {withFinished} from './match.js';
 import {crestSrc, RESULT_TEXT} from './views/parts.js';
 import {shareText} from './views/jetzt.js';
@@ -18,7 +18,7 @@ import {createVotes} from './fan-vote.js';
 import {favourite} from './personal.js';
 import {buildCalendar} from './calendar.js';
 import {RULES} from './rules.js';
-import {nav, setLogos, notice} from './views/parts.js';
+import {nav, setLogos} from './views/parts.js';
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
 import {renderSaison} from './views/saison.js';
@@ -67,10 +67,7 @@ function render() {
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
-  const fresh = dataFreshness(store.state.data, Date.now());
-  const relevant = route.view === 'spieler' || route.view === 'statistik' ? ['Spielerwerte'] : route.view === 'tabellen' ? ['Tabellen'] : route.view === 'spielplan' ? ['Spielplan'] : [];
-  const delayed = fresh.sources.filter(source => relevant.includes(source.name) && source.stale);
-  app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}${delayed.length ? html`<section class="sec">${notice(delayed.map(source => source.name + ': ' + source.label).join(' · ') + '. Angezeigt wird der letzte verfügbare Stand.')}</section>` : ''}</main>${route.area ? nav(route.area) : ''}`);
+  app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
