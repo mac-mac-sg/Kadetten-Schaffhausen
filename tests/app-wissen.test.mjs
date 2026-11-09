@@ -105,21 +105,29 @@ test('Artikel: Regel mit Text und Verweisen, Formation mit Feldbild und drei Kar
   assert.equal(page('#/wissen/regeln/gibt-es-nicht').querySelector('h1').textContent, 'Wissen', 'unbekannt führt zur Übersicht');
 });
 
-test('Spielzug: Schritt aus der Adresse, Zurück/Weiter als Links, Textfassung aller Schritte', () => {
-  const d = page('#/wissen/spielzuege/kreuzen/2');
+test('Spielzug: Schritt aus der Adresse setzt die Zeit, Marken und Zurück/Weiter sind Links, Textfassung aller Schritte', () => {
+  const ui = {};
+  const d = page('#/wissen/spielzuege/kreuzen/2', ui);
   assert.match(d.querySelector('.wk-step').textContent, /Schritt 2 von 3/);
-  assert.equal(d.querySelector('.wk-nums a[aria-current="step"]').getAttribute('href'), '#/wissen/spielzuege/kreuzen/2');
-  assert.equal([...d.querySelectorAll('.wk-go a')].map(a => a.getAttribute('href')).join(), '#/wissen/spielzuege/kreuzen/1,#/wissen/spielzuege/kreuzen/3');
+  assert.equal(ui.anim.t, 2, 'Schritt 2 beginnt bei 2 Sekunden');
+  assert.equal(ui.anim.playing, false, 'läuft nicht von selbst');
+  assert.equal(d.querySelector('.wk-marks a[aria-current="step"]').getAttribute('href'), '#/wissen/spielzuege/kreuzen/2');
+  assert.deepEqual([...d.querySelectorAll('.wk-marks a')].map(a => a.getAttribute('href')), [1, 2, 3].map(n => '#/wissen/spielzuege/kreuzen/' + n));
+  assert.equal([...d.querySelectorAll('.wk-ctl a')].map(a => a.getAttribute('href')).join(), '#/wissen/spielzuege/kreuzen/1,#/wissen/spielzuege/kreuzen/3');
   assert.equal(d.querySelectorAll('.wk-list li').length, 3);
-  assert.ok(d.querySelector('figure.fb svg').getAttribute('aria-label').includes('Schritt 2 von 3'));
-  const first = page('#/wissen/spielzuege/kreuzen');
+  assert.ok(d.querySelector('figure.fb svg').getAttribute('aria-label').includes('3 Schritten'));
+  const first = page('#/wissen/spielzuege/kreuzen', {});
   assert.match(first.querySelector('.wk-step').textContent, /Schritt 1 von 3/);
-  assert.equal(first.querySelectorAll('.wk-go a').length, 1, 'am Anfang nur Weiter');
-  const last = page('#/wissen/spielzuege/kreuzen/3');
-  assert.equal([...last.querySelectorAll('.wk-go a')].map(a => a.textContent.trim()).join(), 'Zurück');
-  assert.match(page('#/wissen/spielzuege/kreuzen/9').querySelector('.wk-step').textContent, /Schritt 1 von 3/, 'ungültiger Schritt fällt auf 1');
-  assert.ok(d.querySelector('[data-wissen-play="kreuzen"]'), 'Abspielen');
-  assert.equal(page('#/wissen/spielzuege/kreuzen/2', {wissenPlay: 'kreuzen'}).querySelector('[data-wissen-play]').textContent, 'Anhalten');
+  assert.equal(first.querySelectorAll('.wk-ctl a').length, 1, 'am Anfang nur Weiter');
+  assert.equal([...page('#/wissen/spielzuege/kreuzen/3', {}).querySelectorAll('.wk-ctl a')].map(a => a.textContent.trim()).join(), 'Zurück');
+  assert.match(page('#/wissen/spielzuege/kreuzen/9', {}).querySelector('.wk-step').textContent, /Schritt 1 von 3/, 'ungültiger Schritt fällt auf 1');
+  const scrub = d.querySelector('.wk-scrub');
+  assert.equal(scrub.getAttribute('type'), 'range');
+  assert.equal(scrub.getAttribute('max'), '6000');
+  assert.match(scrub.getAttribute('aria-valuetext'), /Schritt 2 von 3, 0:02 von 0:06/);
+  assert.equal(d.querySelector('[data-wk="play"]').textContent, 'Abspielen');
+  assert.equal(page('#/wissen/spielzuege/kreuzen/2', {anim: {key: 'kreuzen:1', id: 'kreuzen', t: 3, playing: true, speed: 0.5}}).querySelector('[data-wk="play"]').textContent, 'Pause');
+  assert.equal(page('#/wissen/spielzuege/kreuzen/2', {anim: {key: 'kreuzen:1', id: 'kreuzen', t: 3, playing: false, speed: 0.5}}).querySelector('[data-wk="speed"]').textContent, '0,5×');
 });
 
 test('«Ich» ohne Regelliste; Startseite und Spielerprofil führen ins Wissen', () => {
@@ -142,7 +150,8 @@ test('Quellcode: Buch-Symbol, Wissen-Ansicht und Blatt «Mehr dazu» sind eingeb
   const main = readFileSync('src/kadetten/js/main.js', 'utf8');
   assert.match(main, /wissen: renderWissen/);
   assert.match(main, /Mehr dazu/);
-  assert.match(main, /data-wissen-play|wissenPlay/);
+  assert.match(main, /wissenSteuerung/);
+  assert.match(main, /\.wk-scrub/);
   const bericht = readFileSync('src/kadetten/js/views/bericht.js', 'utf8');
   assert.match(bericht, /ruleButton\('wurfzonen'\)/);
 });
@@ -175,7 +184,7 @@ test('Spielzüge: Art und Spielzug per Wahlknopf, Schritte am selben Ort, Vergle
   assert.equal(d.querySelector('.wk-main h2').textContent, 'Kreuzen', 'Standard: Kreuzen');
   assert.deepEqual([...d.querySelectorAll('nav.chips[aria-label="Art"] a')].map(a => a.textContent.trim()), ['Rückraum', 'Kreisläufer', 'Sonderlagen']);
   assert.deepEqual([...d.querySelectorAll('nav.chips[aria-label="Rückraum"] a')].map(a => a.textContent.trim()), ['Kreuzen', 'Doppelpass']);
-  const sonder = page('#/wissen/spielzuege/gegenstoss/2');
+  const sonder = page('#/wissen/spielzuege/gegenstoss/2', {});
   assert.equal(sonder.querySelector('nav.chips[aria-label="Art"] a[aria-current]').textContent.trim(), 'Sonderlagen');
   assert.deepEqual([...sonder.querySelectorAll('nav.chips[aria-label="Sonderlagen"] a')].map(a => a.textContent.trim()), ['Überzahl', 'Gegenstoss', 'Freiwurf', '7-m']);
   assert.match(sonder.querySelector('.wk-step').textContent, /Schritt 2 von 3/);

@@ -13,8 +13,11 @@ Stand: 9. November 2026. Gilt für die Kadetten App unter `/v2/`. Entscheid des 
 ## Technik
 
 - Alle Inhalte stehen in `src/kadetten/js/wissen/inhalt.js` (eine Quelle für Seiten, «?»-Blätter und Feldbilder). `rules.js` leitet die Blätter daraus ab.
-- Feldbilder (`wissen/feld.js`) sind SVG aus Datensätzen: Spielerpositionen je Schritt, Laufwege, Ballweg. Koordinaten in einem Rahmen von 220 × 150, Tor oben in der Mitte. Keine Bilder, keine `style`-Attribute, Farben über Klassen und Tokens (Angreifer Akzent, Verteidiger Graphit, jeweils mit Beschriftung).
-- Schritte sind Links (Zurück, Weiter, Nummern), die Seite behält beim Wechsel ihre Scrollposition. «Abspielen» wechselt alle 2,4 Sekunden den Schritt und fehlt bei «Bewegung reduzieren». Jeder Schritt hat eine Textfassung, das Bild hat eine Beschreibung für Screenreader.
+- Feldbilder (`wissen/feld.js`) sind SVG aus Datensätzen: Spielerpositionen je Schritt, Laufwege, Ballweg. Koordinaten in einem Rahmen von 220 × 150, Tor oben in der Mitte. Keine Bilder, keine `style`-Attribute, Farben über Klassen und Tokens (Angreifer Akzent, Verteidiger Graphit, jeweils mit Beschriftung). Spieler sind Figuren von oben (Schultern, Blickrichtung, Nummer, Schatten), der Boden hat feine Streifen, der Torraum ist getönt, das Tor hat ein Netz.
+- **Bewegung der Spielzüge** (`wissen/bewegung.js`, Draufsicht): Aus den drei Schritten der Daten wird eine Zeitleiste von 0 bis 6 Sekunden (Marken bei 0, 2 und 4 s). `frame(zug, t)` berechnet rein rechnerisch Orte (sanfte Bögen, Beschleunigung und Abbremsen), Blickrichtung, zwei Nachbilder, den Ball (in der Hand, im Bogen, im Tor; mehrere Pässe nacheinander) und einen Hinweis. Verteidiger gleiten mit dem Ball zur Seite, dazu kommen Eigenbewegungen je Spielzug (`react` in `inhalt.js`). Hinweise (`hints`) nennen kurz, warum der Zug funktioniert. Die Verteidiger-Bewegungen sind Annahmen und gehören fachlich geprüft.
+- **Wiedergabe** (`wissen/steuerung.js`): Regler, Abspielen/Pause, Tempo (1× oder 0,5×), Neu starten, Marken 1 bis 3 und Zurück/Weiter als Links. Der Zeitgeber läuft nur beim Abspielen, hält am Ende, bei versteckter Seite und ausserhalb des sichtbaren Bildes an. Die Funktion `updateFeld` setzt nur Attribute (`transform` usw.) im vorhandenen SVG. Bei «Bewegung reduzieren» entfallen Abspielen und Tempo, der Regler springt in Schritten von 2 Sekunden. Der Zustand (`ui.anim`) bleibt beim Neuzeichnen erhalten.
+- Schritte sind Links (Zurück, Weiter, Marken), die Seite behält beim Wechsel ihre Scrollposition und das Bild steht am Anfang des Schritts. Jeder Schritt hat eine Textfassung, das Bild hat eine Beschreibung für Screenreader, der Regler einen Textwert («Schritt 2 von 3, 0:02 von 0:06»).
+- Mehrgewicht der Bewegung: etwa 10 KB in `app.js` (158 auf 169 KB, minifiziert).
 - Alles liegt in der App: funktioniert offline, braucht keinen Datendienst, speichert nichts.
 
 ## Inhalte pflegen
@@ -27,3 +30,5 @@ Stand: 9. November 2026. Gilt für die Kadetten App unter `/v2/`. Entscheid des 
 
 - Die Texte sind in eigenen Worten nach den IHF-Spielregeln geschrieben, aber nicht von einer Schiedsrichter- oder Trainerperson geprüft. Vor allem Angriffsformen (Benennung), Verlängerungsregeln im Cup und Angaben zu Linkshändern auf den Positionen sollten gelesen werden.
 - Keine vereinsspezifischen Taktiken: Die Bilder zeigen Grundformen, nicht, was die Kadetten spielen.
+
+- Noch nicht umgesetzt (Stufen C und D des Animationskonzepts): Abwehrformationen mit Ball, Kurzschleifen in den Vergleichskarten, Regel-Animationen, Schrägansicht.

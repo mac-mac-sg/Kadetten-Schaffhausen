@@ -3,7 +3,8 @@ import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {CHAPTERS, GROUPS, ARTICLES, article, chipLabel} from '../wissen/inhalt.js';
-import {feldbild, stepPlayers} from '../wissen/feld.js';
+import {feldbild, liveFeld, stepPlayers} from '../wissen/feld.js';
+import {frame, MARKS, DURATION, STEP, clock} from '../wissen/bewegung.js';
 import {topBar, subBand, backLink, sectionHead, listRow, segment} from './parts.js';
 
 const firstSentence = text => String(text).split(/(?<=[.!?])\s/)[0];
@@ -58,21 +59,26 @@ function aufstellungen(route) {
   });
 }
 
-/** Spielzüge: Feldbild mit Schritten (Zurück, Weiter, Abspielen), Schritttext und Textfassung; im Vergleich der erste Schritt. */
+/** Spielzüge: laufendes Feldbild mit Zeitleiste (Marken 1 bis 3, Regler, Abspielen, Tempo), Schritttext und Textfassung; im Vergleich der erste Schritt. */
 function spielzuege(route, ui) {
   const items = ARTICLES.filter(a => a.chapter === 'spielzuege');
   const a = items.find(x => x.id === route.id) || items.find(x => x.id === 'kreuzen');
-  const total = a.steps.length, index = route.step >= 1 && route.step <= total ? route.step - 1 : 0, s = a.steps[index];
+  const total = a.steps.length, index = route.step >= 1 && route.step <= total ? route.step - 1 : 0;
+  const key = a.id + ':' + index;
+  // Zustand der Wiedergabe: beim Wechsel von Spielzug oder Schritt-Adresse steht das Bild am Anfang des Schritts und läuft nicht.
+  if (!ui.anim || ui.anim.key !== key) ui.anim = {key, id: a.id, t: MARKS[index], playing: false, speed: 1};
+  const st = ui.anim, f = frame(a, st.t), reduce = reduceMotion();
   const at = n => href.wissen('spielzuege', a.id, n);
-  const playing = ui?.wissenPlay === a.id;
+  const text = `Schritt ${f.step + 1} von ${total}`;
   return wahlseite('spielzuege', a, {
-    main: html`${feldbild({label: `${a.title}, Schritt ${index + 1} von ${total}: ${s.text}`, players: stepPlayers(a, index), moves: s.moves, ball: s.ball})}
-      <nav class="wk-steps" aria-label="Schritte">
-        <span class="wk-nums">${a.steps.map((_, i) => html`<a class="chip${i === index ? ' on' : ''}" href="${at(i + 1)}"${i === index ? html` aria-current="step"` : ''}><b>${i + 1}</b><span class="sr">Schritt ${i + 1}</span></a>`)}</span>
-        <span class="wk-go">${index > 0 ? html`<a class="btn" href="${at(index)}">Zurück</a>` : ''}${index < total - 1 ? html`<a class="btn pri" href="${at(index + 2)}">Weiter</a>` : ''}</span>
-      </nav>
-      ${reduceMotion() ? '' : html`<div class="acts single"><button class="btn" type="button" data-wissen-play="${a.id}" aria-pressed="${String(playing)}">${playing ? 'Anhalten' : 'Abspielen'}</button></div>`}
-      <p class="wk-step" role="status"><b>Schritt ${index + 1} von ${total}.</b> ${s.text}</p>
+    main: html`${liveFeld({label: `${a.title}: Spielzug in ${total} Schritten, mit Zeitleiste`, zug: a, f})}
+      <div class="wk-timeline">
+        <nav class="wk-marks" aria-label="Schritte">${a.steps.map((_, i) => html`<a class="wk-mk${f.step === i ? ' on' : ''}" href="${at(i + 1)}" data-mark="${i}"${f.step === i ? html` aria-current="step"` : ''}><b>${i + 1}</b><span class="sr">Schritt ${i + 1}</span></a>`)}</nav>
+        <input class="wk-scrub" type="range" min="0" max="${DURATION * 1000}" step="${reduce ? STEP * 1000 : 10}" value="${Math.round(f.t * 1000)}" aria-label="Zeitleiste" aria-valuetext="${text}, ${clock(f.t)} von ${clock(DURATION)}">
+        <div class="wk-ctl${reduce ? ' two' : ''}">${index > 0 ? html`<a class="btn" href="${at(index)}">Zurück</a>` : html`<span></span>`}${reduce ? '' : html`<button class="btn pri" type="button" data-wk="play" aria-pressed="${String(st.playing)}">${st.playing ? 'Pause' : 'Abspielen'}</button>`}${index < total - 1 ? html`<a class="btn${reduce ? ' pri' : ''}" href="${at(index + 2)}">Weiter</a>` : html`<span></span>`}</div>
+        ${reduce ? '' : html`<div class="wk-tools"><button class="chip" type="button" data-wk="speed" aria-pressed="${String(st.speed !== 1)}">${st.speed === 1 ? '1×' : '0,5×'}</button><button class="chip" type="button" data-wk="restart">Neu starten</button><span class="wk-time num" data-wk-time>${clock(f.t)} / ${clock(DURATION)}</span></div>`}
+      </div>
+      <p class="wk-step" role="status" data-wk-caption><b>${text}.</b> ${f.text}</p>
       <h2 class="h2 wk-title" id="w-sel">${a.title}</h2>
       <p class="wk-lead">${a.short}</p>
       <div class="card"><h3 class="h4 first">Idee</h3><p>${a.idee}</p></div>

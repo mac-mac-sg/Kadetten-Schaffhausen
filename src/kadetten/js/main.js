@@ -27,7 +27,7 @@ import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
 import {renderWissen} from './views/wissen.js';
-import {article} from './wissen/inhalt.js';
+import {createWissenSteuerung} from './wissen/steuerung.js';
 
 const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
@@ -37,6 +37,7 @@ const ui = {comp: 'Alle', table: 'QHL', pushBusy: false, pushMessage: '', canIns
 let installPrompt = null, lastView = '', scheduled = false;
 const celebrated = new Map();
 const navigation = createNavigation();
+const wissenSteuerung = createWissenSteuerung({ui, render});
 let navigationPending = true;
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function enterRoute() {
@@ -107,7 +108,7 @@ function render() {
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
 function focusSelector(el) {
-  for (const attr of ['data-wissen-play', 'data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm', 'data-pick']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
+  for (const attr of ['data-wk', 'data-ui', 'data-push-type', 'data-push', 'data-theme-choice', 'data-favourite', 'data-my-game', 'data-vote-select', 'data-vote-confirm', 'data-pick']) if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
 }
 const schedule = () => { if (!scheduled) { scheduled = true; requestAnimationFrame(render); } };
@@ -168,21 +169,6 @@ async function shareSeason() {
   await shareImage(await seasonCard(summary), 'kadetten-meine-saison.png', 'Meine Kadetten-Saison');
 }
 
-let playTimer = null;
-function stopPlay() { clearInterval(playTimer); playTimer = null; ui.wissenPlay = null; }
-/** Spielzug automatisch Schritt für Schritt zeigen (Abspielen / Anhalten). */
-function playWissen(id) {
-  if (ui.wissenPlay === id) { stopPlay(); render(); return; }
-  stopPlay(); ui.wissenPlay = id;
-  if ((parseRoute(location.hash).step || 1) !== 1) location.hash = href.wissen('spielzuege', id, 1); else render();
-  playTimer = setInterval(() => {
-    const route = parseRoute(location.hash), zug = article(id);
-    if (route.view !== 'wissen' || route.id !== id || !zug) { stopPlay(); return; }
-    if ((route.step || 1) >= zug.steps.length) { stopPlay(); render(); return; }
-    location.hash = href.wissen('spielzuege', id, (route.step || 1) + 1);
-  }, 2400);
-}
-
 function announce(text) {
   let live = document.getElementById('announce');
   if (!live) { live = Object.assign(document.createElement('p'), {id: 'announce', className: 'sr'}); live.setAttribute('role', 'status'); document.body.append(live); }
@@ -223,7 +209,7 @@ app.addEventListener('click', event => {
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
   if (t.dataset.rule) { openRule(t.dataset.rule, t); return; }
-  if (t.dataset.wissenPlay) { playWissen(t.dataset.wissenPlay); return; }
+  if (t.dataset.wk) { wissenSteuerung.click(t.dataset.wk); return; }
   if (t.dataset.themeChoice) { applyTheme(t.dataset.themeChoice); render(); }
   else if (t.dataset.ui) { const [k, v] = t.dataset.ui.split(':'); ui[k] = v; if (k === 'comp' && navigation.current) navigation.current.autoNext = true; render(); }
   else if (t.dataset.favourite) {
@@ -251,7 +237,9 @@ app.addEventListener('change', event => {
 });
 addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; ui.canInstall = true; schedule(); });
 
-addEventListener('hashchange', () => { enterRoute(); render(); });
+addEventListener('hashchange', () => { wissenSteuerung.stop(); enterRoute(); render(); });
+app.addEventListener('input', event => { if (event.target.matches?.('.wk-scrub')) wissenSteuerung.seek(Number(event.target.value)); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) wissenSteuerung.stop(); });
 store.subscribe(schedule);
 render();
 store.refresh().then(() => startLive({store}));
