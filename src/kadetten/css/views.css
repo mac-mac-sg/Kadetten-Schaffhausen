@@ -455,3 +455,15 @@
 .fb-mark rect { fill: var(--c-surface-2); stroke: var(--c-line); }
 .fb-mark text { font: 600 8px/1 var(--f-text); fill: currentColor; }
 @media (min-width: 420px) { .wk-three { grid-template-columns: repeat(3, 1fr); } }
+
+/* Wissen · Aufstellungen: Wahlknöpfe, Feldbild am selben Ort, Vergleich als Raster */
+.wk-title { margin: var(--s-4) 0 var(--s-2); }
+.wk-cmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.wk-mini { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-2); min-width: 0; color: var(--c-text); }
+.wk-mini[aria-current] { border-color: var(--c-accent); box-shadow: inset 0 0 0 1px var(--c-accent); }
+.wk-mini .fb.mini svg { border: 0; background: none; border-radius: 0; }
+.wk-mini .fb.mini .fb-p text, .wk-mini .fb.mini .fb-ball { display: none; }
+.wk-mt { font: italic 600 22px/1.1 var(--f-display); }
+.wk-ms { font: 400 var(--fs-meta)/1.35 var(--f-text); color: var(--c-text-muted); overflow-wrap: anywhere; }
+.wk-ms i { font-style: normal; font-weight: 700; color: var(--c-accent-text); margin-right: 2px; }
+@media (min-width: 640px) { .wk-cmp { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

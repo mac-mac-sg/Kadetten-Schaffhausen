@@ -97,11 +97,11 @@ test('Artikel: Regel mit Text und Verweisen, Formation mit Feldbild und drei Kar
   assert.match(rule.body.textContent, /vier Tore aus fünf Würfen/);
   assert.ok(rule.querySelector('a[href="#/wissen/regeln/spielfeld"]'), 'Verweis auf verwandten Artikel');
   const form = page('#/wissen/aufstellungen/abwehr-5-1');
-  assert.ok(form.querySelector('svg.fb-svg, figure.fb svg'));
-  assert.equal(form.querySelectorAll('.wk-three .card').length, 3);
+  assert.ok(form.querySelector('.wk-main figure.fb svg'));
+  assert.equal(form.querySelectorAll('.wk-main .wk-three .card').length, 3);
   const pos = page('#/wissen/aufstellungen/pos-kreis');
-  assert.equal(pos.querySelectorAll('.fb-hl').length, 1, 'genau eine Position hervorgehoben');
-  assert.equal(pos.querySelectorAll('.fb-ghost').length, 5);
+  assert.equal(pos.querySelectorAll('.wk-main .fb-hl').length, 1, 'genau eine Position hervorgehoben');
+  assert.equal(pos.querySelectorAll('.wk-main .fb-ghost').length, 5);
   assert.equal(page('#/wissen/regeln/gibt-es-nicht').querySelector('h1').textContent, 'Wissen', 'unbekannt führt zur Übersicht');
 });
 
@@ -145,4 +145,26 @@ test('Quellcode: Buch-Symbol, Wissen-Ansicht und Blatt «Mehr dazu» sind eingeb
   assert.match(main, /data-wissen-play|wissenPlay/);
   const bericht = readFileSync('src/kadetten/js/views/bericht.js', 'utf8');
   assert.match(bericht, /ruleButton\('wurfzonen'\)/);
+});
+
+test('Aufstellungen: Art und Formation per Wahlknopf, Feldbild am selben Ort, Vergleich aller Formationen', () => {
+  const d = page('#/wissen/aufstellungen');
+  assert.equal(d.querySelectorAll('h1').length, 1);
+  assert.equal(d.querySelector('.wk-main h2').textContent, 'Abwehr 6-0', 'Standard: Abwehr 6-0');
+  assert.deepEqual([...d.querySelectorAll('nav.chips[aria-label="Art"] a')].map(a => a.textContent.trim()), ['Abwehrformationen', 'Angriffsformen', 'Positionen']);
+  assert.equal(d.querySelector('nav.chips[aria-label="Art"] a[aria-current]').textContent.trim(), 'Abwehrformationen');
+  const chips = [...d.querySelectorAll('nav.chips[aria-label="Abwehrformationen"] a')];
+  assert.deepEqual(chips.map(a => a.textContent.trim()), ['6-0', '5-1', '3-2-1', '4-2', 'Mann']);
+  assert.equal(chips[1].getAttribute('href'), '#/wissen/aufstellungen/abwehr-5-1');
+  assert.equal(d.querySelectorAll('.wk-cmp .wk-mini').length, 5, 'alle fünf im Vergleich');
+  assert.equal(d.querySelectorAll('.wk-cmp .wk-mini[aria-current]').length, 1);
+  for (const svg of d.querySelectorAll('.wk-cmp svg')) assert.equal(svg.getAttribute('aria-hidden'), 'true', 'Vergleichsbilder sind Zierde, der Titel steht im Link');
+  assert.match(d.querySelector('.wk-cmp .wk-mini').textContent, /kompakt/i);
+  const angriff = page('#/wissen/aufstellungen/angriff-7-6');
+  assert.equal(angriff.querySelector('nav.chips[aria-label="Angriffsformen"] a[aria-current]').textContent.trim(), '7 gegen 6');
+  assert.equal(angriff.querySelectorAll('.wk-cmp .wk-mini').length, 3);
+  const positionen = page('#/wissen/aufstellungen/pos-tor');
+  assert.equal(positionen.querySelectorAll('.wk-cmp .wk-mini').length, 7);
+  assert.equal(positionen.querySelector('nav.chips[aria-label="Art"] a[aria-current]').textContent.trim(), 'Positionen');
+  assert.equal(page('#/wissen/aufstellungen/gibt-es-nicht').querySelector('.wk-main h2').textContent, 'Abwehr 6-0', 'unbekannt führt zum Standard');
 });
