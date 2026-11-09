@@ -6,7 +6,7 @@ import {parseHTML} from 'linkedom';
 import {parseRoute} from '../src/kadetten/js/router.js';
 import {competitionOf} from '../src/kadetten/js/logic.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
-import {setLogos, nav, venueShort, LOGO} from '../src/kadetten/js/views/parts.js';
+import {setLogos, nav, venueShort, LOGO, tipCard} from '../src/kadetten/js/views/parts.js';
 import {renderJetzt, renderNews} from '../src/kadetten/js/views/jetzt.js';
 import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {renderSaison} from '../src/kadetten/js/views/saison.js';
@@ -471,4 +471,10 @@ test('Startseite: «Unsere Saison» schreibt den Platz aus', () => {
   const t = render('#/').querySelector('a[href="#/statistik"].rowcard');
   assert.match(t.getAttribute('aria-label'), /^\d+\. Platz in der QHL, \d+ Punkte, \d+ Spiele$/);
   assert.match(t.textContent, /Platz in der QHL/);
+});
+
+test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
+  const card = tipCard({game: {id: 1, home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau'}, tip: null, points: null, locked: false});
+  assert.doesNotMatch(String(card), /Ohne Einsatz|richtige Differenz/);
+  assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben/);
 });

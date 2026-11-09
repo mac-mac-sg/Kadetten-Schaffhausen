@@ -52,7 +52,7 @@ test('Vorschau zeigt QHL-Form ohne Cup-Niederlage; Tipp folgt nach Ausgangslage 
   assert.ok(sections.findIndex(s => s.textContent.includes('Ausgangslage')) < sections.findIndex(s => s.textContent.includes('Dein Tipp')));
   const form = out.querySelector('[aria-labelledby="g-lage"]');
   assert.equal(form.querySelector('[role="img"]').getAttribute('aria-label'), 'Form: Sieg');
-  assert.match(form.textContent, /5 letzte QHL-Spiele/);
+  assert.doesNotMatch(form.textContent, /neuestes zuerst/, 'keine erklärenden Sätze');
   assert.equal(out.querySelector('[data-route-back]').getAttribute('href'), '#/saison');
 });
 
