@@ -168,3 +168,23 @@ test('Aufstellungen: Art und Formation per Wahlknopf, Feldbild am selben Ort, Ve
   assert.equal(positionen.querySelector('nav.chips[aria-label="Art"] a[aria-current]').textContent.trim(), 'Positionen');
   assert.equal(page('#/wissen/aufstellungen/gibt-es-nicht').querySelector('.wk-main h2').textContent, 'Abwehr 6-0', 'unbekannt führt zum Standard');
 });
+
+test('Spielzüge: Art und Spielzug per Wahlknopf, Schritte am selben Ort, Vergleich mit dem ersten Schritt', () => {
+  const d = page('#/wissen/spielzuege');
+  assert.equal(d.querySelectorAll('h1').length, 1);
+  assert.equal(d.querySelector('.wk-main h2').textContent, 'Kreuzen', 'Standard: Kreuzen');
+  assert.deepEqual([...d.querySelectorAll('nav.chips[aria-label="Art"] a')].map(a => a.textContent.trim()), ['Rückraum', 'Kreisläufer', 'Sonderlagen']);
+  assert.deepEqual([...d.querySelectorAll('nav.chips[aria-label="Rückraum"] a')].map(a => a.textContent.trim()), ['Kreuzen', 'Doppelpass']);
+  const sonder = page('#/wissen/spielzuege/gegenstoss/2');
+  assert.equal(sonder.querySelector('nav.chips[aria-label="Art"] a[aria-current]').textContent.trim(), 'Sonderlagen');
+  assert.deepEqual([...sonder.querySelectorAll('nav.chips[aria-label="Sonderlagen"] a')].map(a => a.textContent.trim()), ['Überzahl', 'Gegenstoss', 'Freiwurf', '7-m']);
+  assert.match(sonder.querySelector('.wk-step').textContent, /Schritt 2 von 3/);
+  assert.equal(sonder.querySelectorAll('.wk-cmp .wk-mini').length, 4);
+  assert.equal(sonder.querySelectorAll('.wk-cmp .wk-mini[aria-current]').length, 1);
+  for (const a of sonder.querySelectorAll('.wk-cmp .wk-mini')) assert.match(a.getAttribute('href'), /^#\/wissen\/spielzuege\/[a-z-]+$/, 'Vergleichskarten führen zum ersten Schritt');
+  const zug = article('gegenstoss');
+  const mini = sonder.querySelector('.wk-cmp .wk-mini[aria-current] svg');
+  assert.equal(mini.getAttribute('aria-hidden'), 'true');
+  assert.equal(mini.querySelectorAll('.fb-m').length, zug.steps[0].moves.length, 'Mini-Bild zeigt die Wege des ersten Schritts');
+  assert.equal(page('#/wissen/spielzuege/gibt-es-nicht').querySelector('.wk-main h2').textContent, 'Kreuzen', 'unbekannt führt zum Standard');
+});

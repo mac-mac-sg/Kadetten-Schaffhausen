@@ -17,7 +17,7 @@ const D60 = defense([-78, -50, -17, 17, 50, 78]);
 export const GROUPS = {
   regeln: [['spiel', 'Spiel'], ['strafen', 'Strafen'], ['statistik', 'Statistik-Begriffe']],
   aufstellungen: [['abwehr', 'Abwehrformationen'], ['angriff', 'Angriffsformen'], ['positionen', 'Positionen']],
-  spielzuege: [['grundzuege', 'Grundmuster']]
+  spielzuege: [['rueckraum', 'Rückraum'], ['kreis', 'Kreisläufer'], ['sonder', 'Sonderlagen']]
 };
 
 const R = (id, group, title, short, body, extra = {}) => ({id, chapter: 'regeln', group, title, short, body, ...extra});
@@ -105,7 +105,7 @@ const A = (id, title, short, body, extra) => ({id, chapter: 'aufstellungen', tit
 const POSITIONSARTIKEL = POSITIONEN.map(([id, title, hl, point, short, body]) => A(id, title, short, body, {group: 'positionen', field: {label: `Feldbild: Position «${title}» hervorgehoben`, players: id === 'pos-tor' ? [player('TW', point, 'a', {hl: true})] : attackers(hl)}, related: id === 'pos-kreis' ? ['sperre', 'einlaufen'] : ['kreuzen']}));
 
 const FORMATION = (id, group, title, short, field, idee, staerke, schwaeche, related = []) => A(id, title, short, [`Idee: ${idee}`, `Stärke: ${staerke}`, `Schwäche: ${schwaeche}`], {group, field, idee, staerke, schwaeche, related});
-const CHIPS = {'angriff-2-4': '2 Kreisläufer', 'angriff-7-6': '7 gegen 6', 'abwehr-mann': 'Mann'};
+const CHIPS = {'angriff-2-4': '2 Kreisläufer', 'angriff-7-6': '7 gegen 6', 'abwehr-mann': 'Mann', sperre: 'Sperre', einlaufen: 'Einlaufen', ueberzahl: 'Überzahl', gegenstoss: 'Gegenstoss', 'freiwurf-zug': 'Freiwurf', 'siebenmeter-zug': '7-m'};
 const ABWEHR = [
   FORMATION('abwehr-6-0', 'abwehr', 'Abwehr 6-0', 'Alle sechs Verteidiger stehen in einer Reihe an der 6-Meter-Linie.', {label: 'Abwehr 6-0: sechs Verteidiger auf der 6-Meter-Linie', players: D60},
     'Alle sechs stehen in einer Reihe an der 6-Meter-Linie und schliessen den Weg zum Tor.', 'Sehr kompakt, wenig Raum für Durchbrüche und gut gegen den Kreisläufer.', 'Niemand attackiert weit vorne, deshalb sind Distanzwürfe aus dem Rückraum möglich.', ['abwehr-5-1']),
@@ -127,7 +127,8 @@ const ANGRIFF = [
     'Der Angriff spielt dauerhaft in Überzahl. Das eigene Tor bleibt dafür leer.', 'Mehr Optionen und besser gegen eine geschlossene Abwehr.', 'Ein Ballverlust kann mit einem Wurf aufs leere Tor bestraft werden.', ['ueberzahl', 'torhueter'])
 ];
 
-const S = (id, title, short, idee, base, steps, defenders = D60, related = []) => ({id, chapter: 'spielzuege', group: 'grundzuege', title, short, idee, base, steps, defenders, body: steps.map((s, i) => `Schritt ${i + 1}: ${s.text}`), related});
+const ZUG_GRUPPE = {kreuzen: 'rueckraum', doppelpass: 'rueckraum', sperre: 'kreis', einlaufen: 'kreis', ueberzahl: 'sonder', gegenstoss: 'sonder', 'freiwurf-zug': 'sonder', 'siebenmeter-zug': 'sonder'};
+const S = (id, title, short, idee, base, steps, defenders = D60, related = []) => ({id, chapter: 'spielzuege', group: ZUG_GRUPPE[id], title, short, idee, base, steps, defenders, body: steps.map((s, i) => `Schritt ${i + 1}: ${s.text}`), related});
 const g = [110, 10];
 const SPIELZUEGE = [
   S('kreuzen', 'Kreuzen', 'Zwei Rückraumspieler tauschen im Laufen die Plätze und übergeben den Ball.', 'Beim Kreuzen müssen die Verteidiger ihre Gegenspieler übergeben. Dabei entsteht oft kurz eine Lücke.',
