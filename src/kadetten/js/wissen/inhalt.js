@@ -1,6 +1,7 @@
 // Wissensbereich: Regeln, Aufstellungen und Spielzüge. Eine Quelle für Seiten, «?»-Blätter und Feldbilder.
 // Texte in eigenen Worten nach den Spielregeln der IHF; vor der Veröffentlichung von einer fachkundigen Person zu lesen.
 // Feldbild: Koordinaten in einem Rahmen von 220 × 150, das Tor liegt oben in der Mitte (x 110, y 10).
+import {positionArticleId} from './positionen.js';
 
 export const CHAPTERS = [
   ['regeln', 'Regeln'],
@@ -854,9 +855,6 @@ export function spielzugOf(route) {
 
 /** Wissens-Artikel zu einer Position der Kader-Daten («Rückraum mitte», «Flügel links», «Kreis», «Tor»). */
 export function positionArticle(position) {
-  const slug = String(position || '')
-    .toLowerCase()
-    .replace(/ü/g, 'ue')
-    .replace(/\s+/g, '-');
-  return article('pos-' + slug);
+  const id = positionArticleId(position);
+  return id ? article(id) : null;
 }

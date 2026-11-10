@@ -65,6 +65,14 @@ export function parseRoute(hash = '') {
   }
 }
 
+/** Ersetzt ein Wechsel von «from» nach «to» den Verlaufseintrag? Ja innerhalb von Aufstellungen oder Spielzügen
+ * (Wahlknöpfe, Vergleichskarten, Schritte), damit «Zurück» das Kapitel verlässt statt jede Auswahl einzeln zurückzunehmen. */
+export function replacesHistory(from, to) {
+  const a = parseRoute(from),
+    b = parseRoute(to);
+  return a.view === 'wissen' && b.view === 'wissen' && a.chapter === b.chapter && a.chapter !== 'regeln';
+}
+
 export const href = {
   jetzt: () => '#/',
   saison: tab => '#/saison' + (tab && tab !== 'spielplan' ? '/' + tab : ''),

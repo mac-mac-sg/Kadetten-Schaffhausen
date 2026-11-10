@@ -8,7 +8,7 @@ import {topBar, chips, backBar, sectionHead, notice, loading, stats, listRow, pl
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
-import {positionArticle} from '../wissen/inhalt.js';
+import {positionArticleId} from '../wissen/positionen.js';
 import {SEASON} from '../season.js';
 
 const GROUPS = [
@@ -199,13 +199,13 @@ export function renderSpieler({route, state, load, api, now}) {
         : ''
     }
     ${
-      positionArticle(p.position)
+      positionArticleId(p.position)
         ? html`<section class="sec">
       <div class="card list">
       ${listRow({
         title: `Position: ${POSITION(p.position)}`,
         sub: 'Was diese Position im Spiel macht',
-        link: href.wissen('aufstellungen', positionArticle(p.position).id),
+        link: href.wissen('aufstellungen', positionArticleId(p.position)),
         lead: html`<span class="lead">${icon('book')}</span>`
       })}</div>
       </section>`
