@@ -4,6 +4,7 @@ import {icon} from '../icons.js';
 import {AREAS, href} from '../router.js';
 import {OWN_TEAM, initials, shortTeam, outcome, dayLabel, hasScore} from '../logic.js';
 import {SQUAD} from '../../data/squad.js';
+import {SEASON} from '../season.js';
 
 // Nur der Schild (orange Fläche mit K), ohne Sterne und Rahmenlinie: assets/kadetten-wappen.png
 export const LOGO = 'assets/kadetten-wappen.png';
@@ -22,13 +23,13 @@ function logoFor(team) {
 }
 
 const settingsLink = html`<a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('settings', 22)}</a>`;
-const wissenLink = current => html`<a class="icb${current ? ' on' : ''}" href="${href.wissen()}" aria-label="Wissen: Regeln, Aufstellungen und Spielzüge"${current ? html` aria-current="page"` : ''}>${icon('book', 22)}</a>`;
+const wissenLink = html`<a class="icb" href="${href.wissen()}" aria-label="Wissen: Regeln, Aufstellungen und Spielzüge">${icon('book', 22)}</a>`;
 const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="28" height="32"></a>`;
 
 /** Kopfband einer Hauptseite: Kicker, Titel, Zugang zu Verein und «Ich». */
-export const topBar = (title, kicker = 'Saison 2026/27', current = '') => html`<header class="band"><div class="band-acts">${clubLink}${wissenLink(current === 'wissen')}${settingsLink}</div><p class="band-k">${kicker}</p><h1 class="band-t">${title}</h1></header>`;
+export const topBar = (title, kicker = `Saison ${SEASON}`) => html`<header class="band"><div class="band-acts">${clubLink}${wissenLink}${settingsLink}</div><p class="band-k">${kicker}</p><h1 class="band-t">${title}</h1></header>`;
 /** Kopfband der Titelseite: grosser Schriftzug, Wappen links, «Ich» rechts. */
-export const homeBand = () => html`<header class="band band-home"><a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="51"></a><div class="band-acts">${wissenLink(false)}${settingsLink}</div><h1 class="band-t">Kadetten</h1><p class="band-s">Schaffhausen</p><p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p></header>`;
+export const homeBand = () => html`<header class="band band-home"><a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="51"></a><div class="band-acts">${wissenLink}${settingsLink}</div><h1 class="band-t">Kadetten</h1><p class="band-s">Schaffhausen</p><p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p></header>`;
 /** Schmales Kopfband mit Zurück-Knopf und optionaler Aktion (Unterseiten). */
 export const backBar = (label, target, action = '', returnToOrigin = false) => html`<header class="band band-slim"><div class="band-bar">${backLink(label, target, returnToOrigin)}${action}</div></header>`;
 /** Kopfband der Spielseite: Zurück, Teilen und die Spielkarte im Band. */

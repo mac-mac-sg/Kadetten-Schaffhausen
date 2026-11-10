@@ -25,11 +25,11 @@
 .band-crest img { width: 44px; height: auto; }
 .band-tag { margin-top: var(--s-3); }
 
-.icb { width: var(--tap); height: var(--tap); flex: none; border-radius: 50%; display: grid; place-items: center; background: #14141424; color: var(--c-ink); transition: background var(--t-fast) var(--ease); }
-.icb:hover { background: #14141438; }
+.icb { width: var(--tap); height: var(--tap); flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--c-ink-glass); color: var(--c-ink); transition: background var(--t-fast) var(--ease); }
+.icb:hover { background: var(--c-ink-glass-hover); }
 .icb.on { background: var(--c-ink); color: var(--c-accent); }
 .icb.club img { width: 24px; height: auto; }
-.back { display: inline-flex; align-items: center; gap: var(--s-1); height: var(--tap); padding: 0 var(--s-4) 0 var(--s-2); border-radius: 22px; background: #14141424; font: 600 var(--fs-body)/1 var(--f-text); color: var(--c-ink); }
+.back { display: inline-flex; align-items: center; gap: var(--s-1); height: var(--tap); padding: 0 var(--s-4) 0 var(--s-2); border-radius: 22px; background: var(--c-ink-glass); font: 600 var(--fs-body)/1 var(--f-text); color: var(--c-ink); }
 
 .sec { margin: var(--s-6) var(--s-4) 0; }
 .sh { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-2); }
@@ -40,11 +40,10 @@
 .lead { width: 36px; height: 36px; flex: none; border-radius: var(--r-tile); display: grid; place-items: center; background: var(--c-surface-2); color: var(--c-text-muted); }
 
 /* Parallelogramm-Bausteine */
-.btn, .chip, .seg > a, .seg > button, .pill, .f, .tagx, .tag-ink { position: relative; isolation: isolate; border: 0; background: none; }
-.btn::before, .chip::before, .seg > a::before, .seg > button::before, .pill::before, .f::before, .tagx::before, .tag-ink::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--fill, var(--c-chip)); box-shadow: var(--edge, none); transform: skewX(var(--skew)); transition: background var(--t-fast) var(--ease); }
-.tagx, .tag-ink { display: inline-block; padding: 4px 12px; font: 600 var(--fs-meta)/1.3 var(--f-text); margin: 0 5px; }
-.tagx { --fill: var(--c-accent); color: var(--c-on-accent); }
-.tag-ink { --fill: var(--c-ink); color: #fafafa; }
+.btn, .chip, .seg > a, .seg > button, .pill, .f, .tag-ink { position: relative; isolation: isolate; border: 0; background: none; }
+.btn::before, .chip::before, .seg > a::before, .seg > button::before, .pill::before, .f::before, .tag-ink::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--fill, var(--c-chip)); box-shadow: var(--edge, none); transform: skewX(var(--skew)); transition: background var(--t-fast) var(--ease); }
+.tag-ink { display: inline-block; padding: 4px 12px; font: 600 var(--fs-meta)/1.3 var(--f-text); margin: 0 5px; }
+.tag-ink { --fill: var(--c-ink); color: var(--c-on-ink); }
 
 /* Spielkarte: der Moment der App. Zeit oder Spielstand gross, kursiv, wie eine Rückennummer. */
 .hero { position: relative; overflow: hidden; border-radius: var(--r-hero); padding: var(--s-4) var(--s-5) var(--s-5); background: var(--c-surface); border: 1px solid var(--c-line); color: var(--c-text); }
@@ -64,7 +63,7 @@
 .crest.own img { width: 100%; height: 100%; object-fit: contain; }
 .crest.own.sm, .card .crest.own.sm { width: 31px; height: 36px; }
 .crest.own.xs, .card .crest.own.xs { width: 24px; height: 28px; }
-.crest.logo, .card .crest.logo { background: #fff; }
+.crest.logo, .card .crest.logo { background: var(--c-white); }
 .crest.logo img { width: 78%; }
 .kick, .score { font: italic 600 var(--fs-kick)/.9 var(--f-display); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
 .score { font-size: clamp(64px, 20vw, var(--fs-score)); }

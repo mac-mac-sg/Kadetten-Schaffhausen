@@ -52,7 +52,7 @@ function tabellen({state, ui}) {
           return html`<tr${r.team === OWN_TEAM ? html` class="me" aria-current="true"` : ''}><td class="p num">${r.rank}</td><td><span class="tteam">${crest(r.team, 'xs')}${shortTeam(r.team)}</span>${recordBar(rec)}</td><td class="n num">${r.played ?? '–'}</td><td class="n num">${diff === null ? '–' : (diff > 0 ? '+' : '') + diff}</td><td class="n num strong">${r.points ?? '–'}</td></tr>`;
         })}</tbody></table></div>
     </section>
-    <section class="sec"><p class="note">${current === 'QHL' ? 'Sieg 2 Punkte, Unentschieden 1 Punkt. Während eines Kadetten-Spiels zeigt «Jetzt» die Live-Tabelle.' : 'Gruppenphase der EHF European League.'}</p></section>`;
+    <section class="sec"><p class="note">${current === 'QHL' ? 'Sieg 2 Punkte, Unentschieden 1 Punkt. Während eines Kadetten-Spiels zeigt «News» die Live-Tabelle.' : 'Gruppenphase der EHF European League.'}</p></section>`;
 }
 
 function keeperTable({state, load, api, now}) {

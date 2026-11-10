@@ -1,6 +1,6 @@
 // Wiedergabe eines Spielzugs: Abspielen, Pause, Regler, Tempo, Neu starten. Der Zeitgeber läuft nur, solange das Bild sichtbar ist.
-import {article} from './inhalt.js';
-import {frame, advance, clock, DURATION} from './bewegung.js';
+import {article, spielzugOf} from './inhalt.js';
+import {frame, advance, clock, DURATION, animKey, startState} from './bewegung.js';
 import {updateFeld} from './feld.js';
 
 export function createWissenSteuerung({ui, render, root = document, raf = globalThis.requestAnimationFrame?.bind(globalThis), cancel = globalThis.cancelAnimationFrame?.bind(globalThis), now = () => globalThis.performance.now(), visible = null}) {
@@ -15,9 +15,9 @@ export function createWissenSteuerung({ui, render, root = document, raf = global
     updateFeld(svg, f);
     const scrub = q('.wk-scrub'), time = q('[data-wk-time]'), caption = q('[data-wk-caption]');
     const label = `Schritt ${f.step + 1} von ${zug.steps.length}`;
-    if (scrub) { if (Number(scrub.value) !== Math.round(f.t * 1000)) scrub.value = Math.round(f.t * 1000); scrub.setAttribute('aria-valuetext', `${label}, ${clock(f.t)} von ${clock(DURATION)}`); }
+    if (scrub) { scrub.style.setProperty('--p', `${Math.round(f.t / DURATION * 1000) / 10}%`); if (Number(scrub.value) !== Math.round(f.t * 1000)) scrub.value = Math.round(f.t * 1000); scrub.setAttribute('aria-valuetext', `${label}, ${clock(f.t)} von ${clock(DURATION)}`); }
     if (time) time.textContent = `${clock(f.t)} / ${clock(DURATION)}`;
-    root.querySelectorAll('.wk-mk').forEach(a => { const on = Number(a.getAttribute('data-mark')) === f.step; a.setAttribute('class', 'wk-mk' + (on ? ' on' : '')); if (on) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
+    root.querySelectorAll('.wk-mk').forEach(a => { const on = Number(a.getAttribute('data-mark')) === f.step; a.setAttribute('class', 'chip wk-mk' + (on ? ' on' : '')); if (on) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
     if (caption && caption.getAttribute('data-step') !== String(f.step)) {
       caption.setAttribute('data-step', String(f.step));
       const doc = caption.ownerDocument, b = doc.createElement('b');
@@ -55,6 +55,12 @@ export function createWissenSteuerung({ui, render, root = document, raf = global
 
   return {
     paint, stop: () => pause(false),
+    /** Vor dem Zeichnen: Wechselt Spielzug oder Schritt-Adresse, beginnt die Wiedergabe neu am Anfang des Schritts. */
+    sync(route) {
+      if (route.view !== 'wissen' || route.chapter !== 'spielzuege') return;
+      const {zug, index} = spielzugOf(route);
+      if (ui.anim?.key !== animKey(zug, index)) { stopTimer(); ui.anim = startState(zug, index); }
+    },
     /** Knopf mit data-wk: play, speed, restart. */
     click(action) {
       const st = ui.anim;

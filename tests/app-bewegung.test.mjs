@@ -132,15 +132,14 @@ test('Live-Feld: keine style-Attribute, genau ein Bild mit Beschreibung, alle Sp
 
 // ---- Steuerung mit Scheinuhr ----
 function setup(hash = '#/wissen/spielzuege/kreuzen', visible = () => true) {
-  const ui = {};
+  const ui = {}, route = parseRoute(hash);
   const root = parseHTML('<html><body><div id="app"></div></body></html>').document;
-  let renders = 0;
-  const render = () => { renders++; root.getElementById('app').innerHTML = String(renderWissen({route: parseRoute(hash), ui})); };
-  render(); renders = 0;
-  const queue = []; let clockNow = 0;
-  const steuerung = createWissenSteuerung({ui, render, root, raf: fn => queue.push(fn) , cancel: () => { queue.length = 0; }, now: () => clockNow, visible});
+  const queue = []; let clockNow = 0, steuerung = null;
+  const render = () => { steuerung.sync(route); root.getElementById('app').innerHTML = String(renderWissen({route, ui})); };
+  steuerung = createWissenSteuerung({ui, render, root, raf: fn => queue.push(fn), cancel: () => { queue.length = 0; }, now: () => clockNow, visible});
+  render();
   const tickFor = (seconds, step = 0.1) => { for (let s = 0; s < seconds - 1e-9; s += step) { clockNow += step * 1000; const fn = queue.shift(); if (!fn) return; fn(clockNow); } };
-  return {ui, root, steuerung, tickFor, queue, get renders() { return renders; }};
+  return {ui, root, steuerung, tickFor, queue};
 }
 
 test('Steuerung: Abspielen läuft mit der Zeit, Pause hält, Tempo halbiert, Regler hält an, am Ende stoppt es', () => {
@@ -208,4 +207,20 @@ test('Steuerung: ausserhalb des Bildschirms hält die Wiedergabe an und spart Ak
   s.tickFor(0.1);
   assert.equal(s.ui.anim.playing, false, 'Bild nicht mehr sichtbar: Pause');
   assert.equal(s.queue.length, 0);
+});
+
+test('Steuerung: Wechsel von Spielzug oder Schritt-Adresse beginnt am Anfang des Schritts, derselbe Zustand bleibt erhalten', () => {
+  const s = setup('#/wissen/spielzuege/kreuzen/2');
+  assert.equal(s.ui.anim.t, 2);
+  assert.equal(s.ui.anim.playing, false);
+  s.steuerung.seek(3300);
+  const same = s.ui.anim;
+  s.steuerung.sync(parseRoute('#/wissen/spielzuege/kreuzen/2'));
+  assert.equal(s.ui.anim, same, 'gleiche Adresse: nichts ändert sich beim Neuzeichnen');
+  s.steuerung.sync(parseRoute('#/wissen/spielzuege/kreuzen/3'));
+  assert.equal(s.ui.anim.t, 4, 'andere Schritt-Adresse: Anfang des Schritts');
+  s.steuerung.sync(parseRoute('#/wissen/spielzuege/sperre'));
+  assert.deepEqual([s.ui.anim.id, s.ui.anim.t], ['sperre', 0]);
+  s.steuerung.sync(parseRoute('#/wissen/regeln/7m'));
+  assert.equal(s.ui.anim.id, 'sperre', 'andere Seiten lassen den Zustand in Ruhe');
 });

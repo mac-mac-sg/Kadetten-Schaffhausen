@@ -1,4 +1,5 @@
 // Teilen-Bild (1080 × 1350) auf dem Gerät zeichnen: Resultat oder «Deine Saison». Kein Dienst, kein Upload.
+import {SEASON} from './season.js';
 const W = 1080, H = 1350;
 const load = src => new Promise(resolve => { const img = new Image(); img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src; });
 
@@ -54,7 +55,7 @@ export function resultImage({game, label, crests}) {
 }
 
 /** «Deine Saison» als Bild. */
-export function seasonCard(summary, season = '2026/27') {
+export function seasonCard(summary, season = SEASON) {
   return canvasWith(async ctx => {
     text(ctx, 'Meine Saison', W / 2, 230, "600 120px 'Barlow Condensed', sans-serif");
     text(ctx, `Kadetten Schaffhausen · ${season}`, W / 2, 310, "400 42px Inter, sans-serif", '#d4d4d8');
