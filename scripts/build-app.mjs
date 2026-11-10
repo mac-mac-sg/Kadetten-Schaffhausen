@@ -16,7 +16,8 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
   rmSync(outDir, {recursive: true, force: true});
   mkdirSync(join(outDir, 'fonts'), {recursive: true});
 
-  await build({entryPoints: [join(src, 'js/main.js')], outfile: join(outDir, 'app.js'), bundle: true, format: 'esm', target: 'es2020', minify: true, legalComments: 'none', define: {__KADETTEN_API_ORIGIN__: JSON.stringify(apiOrigin)}, logLevel: 'warning'});
+  // Code-Splitting: der Wissensbereich (dynamischer Import) landet in einer eigenen Datei unter chunks/, app.js bleibt der Einstieg.
+  await build({entryPoints: {app: join(src, 'js/main.js')}, outdir: outDir, splitting: true, chunkNames: 'chunks/[name]-[hash]', bundle: true, format: 'esm', target: 'es2020', minify: true, legalComments: 'none', define: {__KADETTEN_API_ORIGIN__: JSON.stringify(apiOrigin)}, logLevel: 'warning'});
   await build({entryPoints: [join(src, 'css/app.css')], outfile: join(outDir, 'app.css'), bundle: true, minify: true, external: ['fonts/*', 'assets/*'], target: ['safari15', 'chrome100', 'firefox100'], logLevel: 'warning'});
 
   cpSync(join(src, 'assets'), join(outDir, 'assets'), {recursive: true});
@@ -37,9 +38,12 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
   for (const file of files) hash.update(file).update(readFileSync(join(outDir, file)));
   const version = hash.digest('hex').slice(0, 16);
 
+  // Dateien, die app.js beim Start statisch importiert, gleich mit vorladen (sonst erst nach app.js angefordert).
+  const startChunks = [...readFileSync(join(outDir, 'app.js'), 'utf8').matchAll(/(?:from|import)\s*"\.\/(chunks\/[^"]+\.js)"/g)].map(m => m[1]);
+  const preload = startChunks.map(c => `<link rel="modulepreload" href="${c}">`).join('');
   const html = readFileSync(join(src, 'index.html'), 'utf8')
     .replace("connect-src 'self' __CONNECT_SRC__;", apiOrigin ? `connect-src 'self' ${apiOrigin};` : "connect-src 'self';")
-    .replace('href="app.css"', `href="app.css?v=${version}"`).replace('src="app.js"', `src="app.js?v=${version}"`).replace('src="theme-init.js"', `src="theme-init.js?v=${version}"`);
+    .replace('href="app.css"', `href="app.css?v=${version}"`).replace('src="app.js"', `src="app.js?v=${version}"`).replace('</head>', `${preload}</head>`).replace('src="theme-init.js"', `src="theme-init.js?v=${version}"`);
   writeFileSync(join(outDir, 'index.html'), html);
 
   // Die 512-px-Symbole braucht nur das Betriebssystem beim Installieren; sie werden nicht vorgeladen.

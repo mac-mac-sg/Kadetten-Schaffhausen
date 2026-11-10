@@ -149,7 +149,9 @@ test('«Ich» ohne Regelliste; Startseite und Spielerprofil führen ins Wissen',
 
 test('Quellcode: Buch-Symbol, Wissen-Ansicht und Blatt «Mehr dazu» sind eingebunden', () => {
   const main = readFileSync('src/kadetten/js/main.js', 'utf8');
-  assert.match(main, /wissen: renderWissen/);
+  assert.match(main, /wissen: renderWissenOderLaden/);
+  assert.match(main, /import\('\.\/wissen\/modul\.js'\)/, 'Wissen wird nachgeladen');
+  assert.doesNotMatch(main, /^import .*(wissen\/|views\/wissen|rules\.js)/m, 'kein statischer Import des Wissensbereichs');
   assert.match(main, /Mehr dazu/);
   assert.match(main, /wissenSteuerung/);
   assert.match(main, /\.wk-scrub/);
@@ -197,4 +199,25 @@ test('Spielzüge: Art und Spielzug per Wahlknopf, Schritte am selben Ort, Vergle
   assert.equal(mini.getAttribute('aria-hidden'), 'true');
   assert.equal(mini.querySelectorAll('.fb-m').length, zug.steps[0].moves.length, 'Mini-Bild zeigt die Wege des ersten Schritts');
   assert.equal(page('#/wissen/spielzuege/gibt-es-nicht').querySelector('.wk-main h2').textContent, 'Kreuzen', 'unbekannt führt zum Standard');
+});
+
+test('Zurück-Taste: Wechsel innerhalb von Aufstellungen oder Spielzügen ersetzt den Verlaufseintrag', async () => {
+  const {replacesHistory} = await import('../src/kadetten/js/router.js');
+  assert.equal(replacesHistory('#/wissen/aufstellungen/abwehr-6-0', '#/wissen/aufstellungen/abwehr-5-1'), true);
+  assert.equal(replacesHistory('#/wissen/aufstellungen', '#/wissen/aufstellungen/pos-kreis'), true);
+  assert.equal(replacesHistory('#/wissen/spielzuege/kreuzen', '#/wissen/spielzuege/kreuzen/2'), true, 'Schritte');
+  assert.equal(replacesHistory('#/wissen/spielzuege/kreuzen/3', '#/wissen/spielzuege/sperre'), true);
+  assert.equal(replacesHistory('#/wissen/aufstellungen', '#/wissen/spielzuege'), false, 'Kapitelwechsel bleibt ein Schritt');
+  assert.equal(replacesHistory('#/wissen', '#/wissen/regeln/7m'), false, 'Regel-Artikel: Zurück führt zur Liste');
+  assert.equal(replacesHistory('#/team/10', '#/wissen/aufstellungen/pos-kreis'), false, 'Einstieg von aussen bleibt ein Schritt');
+  assert.equal(replacesHistory('#/wissen/spielzuege', '#/'), false);
+});
+
+test('Positionen: das kleine Modul kennt genau die Positions-Artikel, das Profil braucht den Wissensbereich nicht', async () => {
+  const {POSITION_IDS, positionArticleId} = await import('../src/kadetten/js/wissen/positionen.js');
+  assert.deepEqual([...POSITION_IDS].sort(), ARTICLES.filter(a => a.group === 'positionen').map(a => a.id).sort());
+  assert.equal(positionArticleId('Rückraum mitte'), 'pos-rueckraum-mitte');
+  assert.equal(positionArticleId('Trainer'), null);
+  const team = readFileSync('src/kadetten/js/views/team.js', 'utf8');
+  assert.doesNotMatch(team, /wissen\/inhalt/, 'Spielerprofil lädt keine Wissensinhalte');
 });

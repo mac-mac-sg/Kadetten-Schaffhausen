@@ -3,7 +3,7 @@ import {API_ORIGIN} from './config.js';
 import {createApi} from './api.js';
 import {createStore} from './store.js';
 import {startLive} from './live.js';
-import {parseRoute, createNavigation, href} from './router.js';
+import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
 import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, togglePick} from './personal.js';
@@ -17,8 +17,7 @@ import {createPush, PUSH_TYPES} from './push.js';
 import {createVotes} from './fan-vote.js';
 import {favourite} from './personal.js';
 import {buildCalendar} from './calendar.js';
-import {RULES} from './rules.js';
-import {nav, setLogos} from './views/parts.js';
+import {nav, setLogos, subBand, backLink, loading, notice} from './views/parts.js';
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
 import {renderSaison} from './views/saison.js';
@@ -26,8 +25,6 @@ import {renderTeam, renderSpieler} from './views/team.js';
 import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
-import {renderWissen} from './views/wissen.js';
-import {createWissenSteuerung} from './wissen/steuerung.js';
 
 const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
@@ -50,10 +47,39 @@ const ui = {
 let installPrompt = null,
   lastView = '',
   scheduled = false,
-  focusChips = false;
+  focusChips = false,
+  replacing = false;
 const celebrated = new Map();
 const navigation = createNavigation();
-const wissenSteuerung = createWissenSteuerung({ui, render});
+// Wissensbereich (Inhalte, Feldbilder, Bewegung) wird erst beim Öffnen nachgeladen: eigene Datei im Build, offline in der Hülle.
+let wissen = null,
+  wissenLaden = null,
+  wissenFehler = false,
+  wissenSteuerung = null;
+function ladeWissen() {
+  wissenLaden ||= import('./wissen/modul.js').then(
+    m => {
+      wissen = m;
+      wissenSteuerung = m.createWissenSteuerung({ui, render});
+      wissenFehler = false;
+      return m;
+    },
+    error => {
+      wissenLaden = null;
+      wissenFehler = true;
+      throw error;
+    }
+  );
+  return wissenLaden;
+}
+function renderWissenOderLaden(context) {
+  if (wissen) return wissen.renderWissen(context);
+  if (!wissenFehler) ladeWissen().then(render, render);
+  return html`${subBand(backLink('Zurück', href.jetzt()), 'Wissen', 'Handball kurz erklärt')}
+    <section class="sec">
+      ${wissenFehler ? notice('Der Wissensbereich konnte nicht geladen werden. Bitte mit Verbindung erneut öffnen.', 'offline') : loading('Wissen wird geladen …')}
+    </section>`;
+}
 let navigationPending = true;
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function enterRoute() {
@@ -61,9 +87,11 @@ function enterRoute() {
   const known = history.state?.kadettenEntry;
   const entry = navigation.enter(location.hash || '#/', known, window.scrollY);
   if (!entry.restore) {
-    navigation.setDepth((previous?.depth ?? -1) + 1);
+    // Ein ersetzter Eintrag (Wechsel innerhalb eines Wissenskapitels) zählt nicht als neuer Schritt im Verlauf.
+    navigation.setDepth((previous?.depth ?? -1) + (replacing ? 0 : 1));
     history.replaceState({...history.state, kadettenEntry: entry.id}, '');
   }
+  replacing = false;
   ui.backTarget = navigation.backTarget();
   // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
   const was = previous ? parseRoute(previous.hash) : null,
@@ -87,7 +115,7 @@ const VIEWS = {
   spieler: renderSpieler,
   verein: renderVerein,
   ich: renderIch,
-  wissen: renderWissen
+  wissen: renderWissenOderLaden
 };
 
 function render() {
@@ -101,10 +129,10 @@ function render() {
   const preserveTicker = window.scrollY > 250 && !navigationPending;
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
-  wissenSteuerung.sync(route);
+  wissenSteuerung?.sync(route);
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
   app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
-  wissenSteuerung.paint();
+  wissenSteuerung?.paint();
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -272,8 +300,14 @@ function announce(text) {
   live.textContent = text;
 }
 
-function openRule(id, trigger) {
-  const rule = RULES[id];
+async function openRule(id, trigger) {
+  let rule;
+  try {
+    rule = (await ladeWissen()).RULES[id];
+  } catch {
+    announce('Die Erklärung konnte nicht geladen werden.');
+    return;
+  }
   if (!rule) return;
   let dialog = document.getElementById('rule-dialog');
   if (!dialog) {
@@ -309,6 +343,17 @@ function downloadCalendar() {
 }
 
 app.addEventListener('click', event => {
+  // Innerhalb von Aufstellungen und Spielzügen ersetzt ein Wechsel den Verlaufseintrag: «Zurück» verlässt das Kapitel.
+  const wissenLink = event.target.closest('a[href^="#/wissen"]');
+  const plainClick = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+  if (wissenLink && plainClick && replacesHistory(location.hash, wissenLink.getAttribute('href'))) {
+    event.preventDefault();
+    if (wissenLink.getAttribute('href') !== location.hash) {
+      replacing = true;
+      location.replace(wissenLink.getAttribute('href'));
+    }
+    return;
+  }
   const back = event.target.closest('[data-route-back]');
   const distance = navigation.backDistance();
   if (back && distance > 0 && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
@@ -323,7 +368,7 @@ app.addEventListener('click', event => {
     return;
   }
   if (t.dataset.wk) {
-    wissenSteuerung.click(t.dataset.wk);
+    wissenSteuerung?.click(t.dataset.wk);
     return;
   }
   if (t.dataset.themeChoice) {
@@ -386,15 +431,15 @@ addEventListener('beforeinstallprompt', event => {
 });
 
 addEventListener('hashchange', () => {
-  wissenSteuerung.stop();
+  wissenSteuerung?.stop();
   enterRoute();
   render();
 });
 app.addEventListener('input', event => {
-  if (event.target.matches?.('.wk-scrub')) wissenSteuerung.seek(Number(event.target.value));
+  if (event.target.matches?.('.wk-scrub')) wissenSteuerung?.seek(Number(event.target.value));
 });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) wissenSteuerung.stop();
+  if (document.hidden) wissenSteuerung?.stop();
 });
 store.subscribe(schedule);
 render();

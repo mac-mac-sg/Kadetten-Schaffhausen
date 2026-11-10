@@ -37,6 +37,12 @@ test('Build: Hülle vollständig, Service Worker ohne Platzhalter, Datendienst n
   assert.ok(existsSync(join(OUT, 'fonts/LICENSE-inter')) && existsSync(join(OUT, 'fonts/LICENSE-barlow-condensed')));
   const js = readFileSync(join(OUT, 'app.js'), 'utf8');
   assert.ok(js.includes(API_ORIGIN_PAGES));
+  // Wissensbereich als eigene, nachgeladene Datei; offline in der Hülle; gemeinsamer Teil wird vorgeladen.
+  const chunks = shell.filter(f => f.startsWith('chunks/'));
+  assert.ok(chunks.some(f => /^chunks\/modul-[A-Z0-9]+\.js$/.test(f)), 'Wissen als eigene Datei in der Hülle');
+  assert.ok(!js.includes('Spielfeld und Torraum'), 'Wissensinhalte nicht im Start-Bündel');
+  assert.match(js, /import\("\.\/chunks\/modul-[A-Z0-9]+\.js"\)/);
+  for (const [, c] of js.matchAll(/from\s*"\.\/(chunks\/[^"]+)"/g)) assert.match(html, new RegExp(`<link rel="modulepreload" href="${c.replace(/[.]/g, '\\.')}">`), 'Vorladen: ' + c);
   // Installierte V2-Apps laufen weiter: gleiche ID und gleicher Scope.
   const manifest = JSON.parse(readFileSync(join(OUT, 'manifest.webmanifest'), 'utf8'));
   assert.deepEqual([manifest.id, manifest.scope, manifest.start_url], ['./', './', './']);
