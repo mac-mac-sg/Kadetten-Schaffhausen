@@ -28,20 +28,33 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
       if (known && (known.pending || now() - known.at < (known.status === 'error' ? 60000 : maxAge))) return known;
       const entry = {status: known?.value !== undefined ? 'ready' : 'loading', value: known?.value, at: now(), pending: true};
       extras.set(key, entry);
-      Promise.resolve().then(fn).then(value => Object.assign(entry, {value, status: 'ready', error: null}))
+      Promise.resolve()
+        .then(fn)
+        .then(value => Object.assign(entry, {value, status: 'ready', error: null}))
         .catch(error => Object.assign(entry, {status: entry.value !== undefined ? 'ready' : 'error', error}))
-        .finally(() => { entry.pending = false; entry.at = now(); emit(); });
+        .finally(() => {
+          entry.pending = false;
+          entry.at = now();
+          emit();
+        });
       return entry;
     },
     /** Zwischengespeicherten Zusatzwert verwerfen (z. B. nach einer eigenen Stimme). */
-    invalidate(key) { extras.delete(key); },
-    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    invalidate(key) {
+      extras.delete(key);
+    },
+    subscribe(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
     async refresh() {
       try {
         const data = await api.data();
         if (!validSnapshot(data)) throw Error('Unvollständiger Datenstand');
         Object.assign(state, {data, savedAt: now(), dataError: null});
-        try { storage?.setItem(SNAPSHOT_KEY, JSON.stringify({savedAt: state.savedAt, data})); } catch {}
+        try {
+          storage?.setItem(SNAPSHOT_KEY, JSON.stringify({savedAt: state.savedAt, data}));
+        } catch {}
       } catch (error) {
         state.dataError = error;
       }
@@ -64,5 +77,9 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
 }
 
 function safeStorage() {
-  try { return globalThis.localStorage || null; } catch { return null; }
+  try {
+    return globalThis.localStorage || null;
+  } catch {
+    return null;
+  }
 }

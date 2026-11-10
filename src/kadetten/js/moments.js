@@ -8,9 +8,16 @@ const played = (games, now) => ownGames(games).filter(g => hasScore(g) && kickof
 /** Aktuelle Serie: Siege in Folge oder ungeschlagen (mindestens 3 Spiele). */
 export function streak(games, now) {
   const list = played(games, now).reverse();
-  let wins = 0, unbeaten = 0;
-  for (const g of list) { if (outcome(g) === 'S') wins++; else break; }
-  for (const g of list) { if (outcome(g) !== 'N') unbeaten++; else break; }
+  let wins = 0,
+    unbeaten = 0;
+  for (const g of list) {
+    if (outcome(g) === 'S') wins++;
+    else break;
+  }
+  for (const g of list) {
+    if (outcome(g) !== 'N') unbeaten++;
+    else break;
+  }
   if (wins >= 3) return {kind: 'wins', count: wins};
   if (unbeaten >= 4) return {kind: 'unbeaten', count: unbeaten};
   return null;
@@ -33,7 +40,8 @@ export function playerMilestones(season, squad) {
   for (const [nr, p] of Object.entries(season?.players || {})) {
     if (!Number.isInteger(p.goals) || p.goals < 5) continue;
     const step = p.goals < 50 ? 10 : p.goals < 100 ? 25 : 50;
-    const target = Math.ceil((p.goals + 1) / step) * step, missing = target - p.goals;
+    const target = Math.ceil((p.goals + 1) / step) * step,
+      missing = target - p.goals;
     const info = squad.find(s => s.number === Number(nr));
     if (info && missing <= 5) out.push({number: Number(nr), name: info.name, goals: p.goals, target, missing});
   }
@@ -44,11 +52,18 @@ export function playerMilestones(season, squad) {
 export function scenario(games, tables, now) {
   const next = nextGame(games, now);
   if (!next || next.league !== 'QHL') return null;
-  const rows = standings(tables?.QHL), own = rows.find(r => r.team === OWN_TEAM);
+  const rows = standings(tables?.QHL),
+    own = rows.find(r => r.team === OWN_TEAM);
   if (!own || own.points === null) return null;
   const after = own.points + 2;
   const ahead = rows.filter(r => r.team !== OWN_TEAM && r.points !== null && r.points >= after);
-  return {game: next, points: after, rankAtLeast: ahead.length + 1, tied: rows.some(r => r.team !== OWN_TEAM && r.points === after), leaderNow: rows[0]};
+  return {
+    game: next,
+    points: after,
+    rankAtLeast: ahead.length + 1,
+    tied: rows.some(r => r.team !== OWN_TEAM && r.points === after),
+    leaderNow: rows[0]
+  };
 }
 
 /** Letztes Duell dieser Saison mit dem nächsten Gegner. */
@@ -56,7 +71,9 @@ export function lastDuel(games, now) {
   const next = nextGame(games, now);
   if (!next) return null;
   const opp = next.home === OWN_TEAM ? next.away : next.home;
-  const prev = played(games, now).filter(g => sameTeam(g.home, opp) || sameTeam(g.away, opp)).at(-1);
+  const prev = played(games, now)
+    .filter(g => sameTeam(g.home, opp) || sameTeam(g.away, opp))
+    .at(-1);
   return prev ? {next, prev, opp} : null;
 }
 
@@ -71,23 +88,71 @@ export function historyOfDay(history, now) {
 export function moments({data, now, squad, history, favourite}) {
   const out = [];
   const s = streak(data.games, now);
-  if (s) out.push({id: 'streak', tag: 'Serie', title: s.kind === 'wins' ? `${s.count} Siege in Folge` : `${s.count} Spiele ungeschlagen`, text: s.kind === 'wins' ? 'So lange haben die Kadetten in dieser Saison nicht mehr verloren.' : 'Kein Spiel mehr verloren seit dem letzten Rückschlag.'});
+  if (s)
+    out.push({
+      id: 'streak',
+      tag: 'Serie',
+      title: s.kind === 'wins' ? `${s.count} Siege in Folge` : `${s.count} Spiele ungeschlagen`,
+      text:
+        s.kind === 'wins'
+          ? 'So lange haben die Kadetten in dieser Saison nicht mehr verloren.'
+          : 'Kein Spiel mehr verloren seit dem letzten Rückschlag.'
+    });
   const sc = scenario(data.games, data.tables, now);
-  if (sc) out.push({id: 'scenario', tag: 'Mit einem Sieg', title: `${sc.points} Punkte`, text: sc.tied ? 'Bei Punktgleichheit entscheidet die Rangfolge des Wettbewerbs. Andere Spiele können den Tabellenstand ändern.' : sc.rankAtLeast === 1 ? `Gegen ${shortTeam(sc.game.home === OWN_TEAM ? sc.game.away : sc.game.home)} wären die Kadetten beim aktuellen Tabellenstand Leader. Andere Spiele können das ändern.` : `Beim aktuellen Tabellenstand danach auf Platz ${sc.rankAtLeast}. Andere Spiele und die Rangfolge bei Punktgleichheit können das ändern.`, link: sc.game.id});
-  const fav = favourite ? (data.playerSeason?.players?.[favourite]) : null;
+  if (sc)
+    out.push({
+      id: 'scenario',
+      tag: 'Mit einem Sieg',
+      title: `${sc.points} Punkte`,
+      text: sc.tied
+        ? 'Bei Punktgleichheit entscheidet die Rangfolge des Wettbewerbs. Andere Spiele können den Tabellenstand ändern.'
+        : sc.rankAtLeast === 1
+          ? `Gegen ${shortTeam(sc.game.home === OWN_TEAM ? sc.game.away : sc.game.home)} wären die Kadetten beim aktuellen Tabellenstand Leader. Andere Spiele können das ändern.`
+          : `Beim aktuellen Tabellenstand danach auf Platz ${sc.rankAtLeast}. Andere Spiele und die Rangfolge bei Punktgleichheit können das ändern.`,
+      link: sc.game.id
+    });
+  const fav = favourite ? data.playerSeason?.players?.[favourite] : null;
   const ms = playerMilestones(data.playerSeason, squad);
   const favMs = ms.find(m => m.number === favourite);
   const m = favMs || ms[0];
-  if (m) out.push({id: 'milestone', tag: m.number === favourite ? 'Dein Spieler' : 'Meilenstein', title: `Noch ${m.missing} ${m.missing === 1 ? 'Tor' : 'Tore'}`, text: `${m.name} steht bei ${m.goals} QHL-Toren – ${m.target} sind in Reichweite.`, player: m.number});
+  if (m)
+    out.push({
+      id: 'milestone',
+      tag: m.number === favourite ? 'Dein Spieler' : 'Meilenstein',
+      title: `Noch ${m.missing} ${m.missing === 1 ? 'Tor' : 'Tore'}`,
+      text: `${m.name} steht bei ${m.goals} QHL-Toren – ${m.target} sind in Reichweite.`,
+      player: m.number
+    });
   else if (fav && Number.isInteger(fav.goals)) {
     const rank = Object.values(data.playerSeason.players).filter(p => Number.isInteger(p.goals) && p.goals > fav.goals).length + 1;
     const name = squad.find(p => p.number === favourite)?.name;
-    if (name) out.push({id: 'favourite', tag: 'Dein Spieler', title: `${fav.goals} Tore`, text: `${name} ist mit ${fav.goals} QHL-Toren Nummer ${rank} im Team.`, player: favourite});
+    if (name)
+      out.push({
+        id: 'favourite',
+        tag: 'Dein Spieler',
+        title: `${fav.goals} Tore`,
+        text: `${name} ist mit ${fav.goals} QHL-Toren Nummer ${rank} im Team.`,
+        player: favourite
+      });
   }
   const d = lastDuel(data.games, now);
-  if (d) out.push({id: 'duel', tag: 'Letztes Duell', title: `${d.prev.score[0]}:${d.prev.score[1]}`, text: `${shortTeam(d.prev.home)} – ${shortTeam(d.prev.away)}. Nächstes Wiedersehen: ${d.next.date.split('-').reverse().slice(0, 2).join('.')}.`, link: d.prev.id});
+  if (d)
+    out.push({
+      id: 'duel',
+      tag: 'Letztes Duell',
+      title: `${d.prev.score[0]}:${d.prev.score[1]}`,
+      text: `${shortTeam(d.prev.home)} – ${shortTeam(d.prev.away)}. Nächstes Wiedersehen: ${d.next.date.split('-').reverse().slice(0, 2).join('.')}.`,
+      link: d.prev.id
+    });
   const big = biggestWin(data.games, now);
-  if (big) out.push({id: 'record', tag: 'Höchster Saisonsieg', title: `${big.game.score[0]}:${big.game.score[1]}`, text: `${shortTeam(big.game.home)} – ${shortTeam(big.game.away)}, ${big.margin} Tore Differenz.`, link: big.game.id});
+  if (big)
+    out.push({
+      id: 'record',
+      tag: 'Höchster Saisonsieg',
+      title: `${big.game.score[0]}:${big.game.score[1]}`,
+      text: `${shortTeam(big.game.home)} – ${shortTeam(big.game.away)}, ${big.margin} Tore Differenz.`,
+      link: big.game.id
+    });
   const h = historyOfDay(history, now);
   if (h) out.push({id: 'history', tag: `Geschichte · ${h.year}`, title: h.title, text: h.text});
   return out.slice(0, 5);
@@ -106,10 +171,14 @@ export function seasonSummary({games, visited, tips, now}) {
   const seen = played(games, now).filter(g => visited.includes(String(g.id)));
   const record = {S: 0, U: 0, N: 0};
   let goals = 0;
-  for (const g of seen) { record[outcome(g)]++; goals += g.home === OWN_TEAM ? g.score[0] : g.score[1]; }
+  for (const g of seen) {
+    record[outcome(g)]++;
+    goals += g.home === OWN_TEAM ? g.score[0] : g.score[1];
+  }
   const tipped = played(games, now).filter(g => Array.isArray(tips[g.id]));
   const points = tipped.reduce((n, g) => n + tipPoints(tips[g.id], g.score), 0);
   const exact = tipped.filter(g => tipPoints(tips[g.id], g.score) === 3).length;
-  const best = seen.filter(g => outcome(g) === 'S').sort((a, b) => Math.abs(b.score[0] - b.score[1]) - Math.abs(a.score[0] - a.score[1]))[0] || null;
+  const best =
+    seen.filter(g => outcome(g) === 'S').sort((a, b) => Math.abs(b.score[0] - b.score[1]) - Math.abs(a.score[0] - a.score[1]))[0] || null;
   return {visits: seen.length, record, goals, tipped: tipped.length, points, exact, best};
 }

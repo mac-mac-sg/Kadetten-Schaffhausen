@@ -12,8 +12,20 @@ const offsetCache = new Map();
 function zurichOffset(epoch) {
   const key = Math.floor(epoch / HOUR);
   if (offsetCache.has(key)) return offsetCache.get(key);
-  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone: ZONE, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'})
-    .formatToParts(new Date(epoch)).map(p => [p.type, p.value]));
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: ZONE,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+      .formatToParts(new Date(epoch))
+      .map(p => [p.type, p.value])
+  );
   const asUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
   const offset = asUtc - Math.floor(epoch / 1000) * 1000;
   offsetCache.set(key, offset);
@@ -35,17 +47,23 @@ export function kickoff(game) {
 export function zurichParts(epoch) {
   const d = new Date(epoch + zurichOffset(epoch));
   const pad = n => String(n).padStart(2, '0');
-  return {date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`, time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`, weekday: d.getUTCDay()};
+  return {
+    date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`,
+    time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`,
+    weekday: d.getUTCDay()
+  };
 }
 
-export const hasScore = game => Array.isArray(game?.score) && game.score.length === 2 && game.score.every(v => Number.isInteger(v) && v >= 0);
+export const hasScore = game =>
+  Array.isArray(game?.score) && game.score.length === 2 && game.score.every(v => Number.isInteger(v) && v >= 0);
 export const involves = (game, team = OWN_TEAM) => game?.home === team || game?.away === team;
 
 /** Ergebnis aus Sicht eines Teams: 'S', 'U', 'N' oder null, wenn kein bestätigtes Resultat vorliegt. */
 export function outcome(game, team = OWN_TEAM) {
   if (!hasScore(game) || !involves(game, team)) return null;
   const [home, away] = game.score;
-  const own = game.home === team ? home : away, other = game.home === team ? away : home;
+  const own = game.home === team ? home : away,
+    other = game.home === team ? away : home;
   return own > other ? 'S' : own < other ? 'N' : 'U';
 }
 
@@ -62,12 +80,20 @@ export function nextGame(games, now) {
 
 /** Letztes Spiel mit bestätigtem Resultat. */
 export function lastResult(games, now) {
-  return ownGames(games).filter(g => hasScore(g) && kickoff(g) <= now).at(-1) || null;
+  return (
+    ownGames(games)
+      .filter(g => hasScore(g) && kickoff(g) <= now)
+      .at(-1) || null
+  );
 }
 
 /** Formkurve der letzten Spiele, neueste zuerst. */
 export function form(games, team = OWN_TEAM, count = 5, league) {
-  return ownGames(games, team).filter(g => hasScore(g) && (!league || g.league === league)).reverse().slice(0, count).map(g => outcome(g, team));
+  return ownGames(games, team)
+    .filter(g => hasScore(g) && (!league || g.league === league))
+    .reverse()
+    .slice(0, count)
+    .map(g => outcome(g, team));
 }
 
 /**
@@ -90,10 +116,11 @@ export function jetztState({games, live, now}) {
 
 /** Tabellenzeilen [Team, Spiele, Tore, Gegentore, Punkte] in Objekte mit Rang. */
 export function standings(rows) {
-  return (Array.isArray(rows) ? rows : []).filter(r => Array.isArray(r) && typeof r[0] === 'string')
+  return (Array.isArray(rows) ? rows : [])
+    .filter(r => Array.isArray(r) && typeof r[0] === 'string')
     .map((r, i) => ({rank: i + 1, team: r[0], played: num(r[1]), goalsFor: num(r[2]), goalsAgainst: num(r[3]), points: num(r[4])}));
 }
-const num = v => Number.isFinite(v) ? v : null;
+const num = v => (Number.isFinite(v) ? v : null);
 
 /** Kurzer Countdown wie «noch 3:30 h», «in 6 Tagen», «morgen». */
 export function countdown(target, now) {
@@ -112,7 +139,8 @@ const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 export function dayLabel(game, now) {
   const at = kickoff(game);
   if (at === null) return '';
-  const day = zurichParts(at), today = zurichParts(now).date;
+  const day = zurichParts(at),
+    today = zurichParts(now).date;
   const diff = Math.round((Date.parse(day.date) - Date.parse(today)) / (24 * HOUR));
   if (diff === 0) return 'Heute';
   if (diff === 1) return 'Morgen';
@@ -123,14 +151,33 @@ export function dayLabel(game, now) {
 
 /** Kurzname für Teams in engen Darstellungen. */
 export function shortTeam(name) {
-  const map = {'Kadetten Schaffhausen': 'Kadetten', 'GC Amicitia Zürich': 'GC Amicitia', 'HC Kriens-Luzern': 'Kriens-Luzern', 'RTV 1879 Basel': 'RTV Basel', 'TSV St. Otmar St. Gallen': 'St. Otmar', 'St. Otmar St. Gallen': 'St. Otmar', 'HSC Suhr Aarau': 'Suhr Aarau', 'Handball Stäfa': 'Stäfa'};
+  const map = {
+    'Kadetten Schaffhausen': 'Kadetten',
+    'GC Amicitia Zürich': 'GC Amicitia',
+    'HC Kriens-Luzern': 'Kriens-Luzern',
+    'RTV 1879 Basel': 'RTV Basel',
+    'TSV St. Otmar St. Gallen': 'St. Otmar',
+    'St. Otmar St. Gallen': 'St. Otmar',
+    'HSC Suhr Aarau': 'Suhr Aarau',
+    'Handball Stäfa': 'Stäfa'
+  };
   return map[name] || name || '';
 }
 
 /** Zwei bis drei Buchstaben als Ersatz für ein fehlendes Wappen. */
 export function initials(name) {
-  const words = shortTeam(name).replace(/[^\p{L}\s-]/gu, '').split(/[\s-]+/).filter(Boolean);
-  return (words.length > 1 ? words.slice(0, 2).map(w => w[0]).join('') : (words[0] || '?').slice(0, 2)).toUpperCase();
+  const words = shortTeam(name)
+    .replace(/[^\p{L}\s-]/gu, '')
+    .split(/[\s-]+/)
+    .filter(Boolean);
+  return (
+    words.length > 1
+      ? words
+          .slice(0, 2)
+          .map(w => w[0])
+          .join('')
+      : (words[0] || '?').slice(0, 2)
+  ).toUpperCase();
 }
 
 /** Alter der Quelldaten, nie der lokalen Empfangszeit. 12 Stunden decken die Nachtpause ab. */
@@ -138,23 +185,38 @@ export function dataFreshness(data, now = Date.now()) {
   const time = value => {
     const at = typeof value === 'string' ? Date.parse(value) : NaN;
     const valid = Number.isFinite(at) && at <= now + 300000;
-    const label = valid ? new Intl.DateTimeFormat('de-CH', {timeZone: ZONE, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'}).format(at) + ' Uhr' : 'Zeitpunkt unbekannt';
+    const label = valid
+      ? new Intl.DateTimeFormat('de-CH', {
+          timeZone: ZONE,
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(at) + ' Uhr'
+      : 'Zeitpunkt unbekannt';
     return {stale: !valid || now - at > 12 * HOUR, label};
   };
   const snapshot = time(data?.checkedAt);
   const names = {games: 'Spielplan', table: 'Tabellen', news: 'News', players: 'Spielerwerte'};
-  const sources = Object.entries(names).filter(([key]) => data?.status?.[key]).map(([key, name]) => {
-    const status = data.status[key], value = time(status.updatedAt);
-    return {name, label: value.label, stale: value.stale || status.ok !== true};
-  });
+  const sources = Object.entries(names)
+    .filter(([key]) => data?.status?.[key])
+    .map(([key, name]) => {
+      const status = data.status[key],
+        value = time(status.updatedAt);
+      return {name, label: value.label, stale: value.stale || status.ok !== true};
+    });
   const delayed = sources.filter(s => s.stale).map(s => s.name);
   return {
     stale: snapshot.stale || delayed.length > 0,
     label: 'Daten aktualisiert: ' + snapshot.label,
-    message: delayed.length ? 'Verzögerte oder unvollständige Datenquellen: ' + delayed.join(', ') + '. Der letzte verfügbare Stand bleibt sichtbar.' : 'Die Angaben sind möglicherweise nicht aktuell.',
+    message: delayed.length
+      ? 'Verzögerte oder unvollständige Datenquellen: ' + delayed.join(', ') + '. Der letzte verfügbare Stand bleibt sichtbar.'
+      : 'Die Angaben sind möglicherweise nicht aktuell.',
     sources
   };
 }
 
 /** Wettbewerb eines Spiels wie in den Filtern: QHL, EHL, Cup (inkl. Turniere mit «cup» im Namen) oder Test. */
-export const competitionOf = game => /cup/i.test(game?.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(game?.league) ? game.league : 'Test';
+export const competitionOf = game =>
+  /cup/i.test(game?.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(game?.league) ? game.league : 'Test';

@@ -4,7 +4,11 @@ import {OWN_TEAM, hasScore, zurichParts, ownGames, standings} from './logic.js';
 
 /** Vereinsnamen vergleichbar machen (Quellen schreiben «TSV St. Otmar» oder «RTV 1879 Basel» unterschiedlich). */
 export function normTeam(name) {
-  return String(name || '').toLowerCase().replace(/^tsv\s+/, '').replace(/\s+/g, ' ').trim();
+  return String(name || '')
+    .toLowerCase()
+    .replace(/^tsv\s+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 export const sameTeam = (a, b) => normTeam(a) === normTeam(b) && normTeam(a) !== '';
 export const isOwn = name => sameTeam(name, OWN_TEAM);
@@ -38,16 +42,27 @@ export function withFinished(game, live, now) {
 export function liveTable(rows, match) {
   const table = standings(rows);
   if (!match || !Array.isArray(match.score) || !/QHL/i.test(match.league || '')) return null;
-  const home = table.find(r => sameTeam(r.team, match.home)), away = table.find(r => sameTeam(r.team, match.away));
+  const home = table.find(r => sameTeam(r.team, match.home)),
+    away = table.find(r => sameTeam(r.team, match.away));
   if (!home || !away || [home, away].some(r => [r.played, r.goalsFor, r.goalsAgainst, r.points].some(v => v === null))) return null;
   const [h, a] = match.score;
   const next = table.map(r => ({...r, previousRank: r.rank}));
   const apply = (row, own, other) => {
     const r = next.find(x => x.team === row.team);
-    r.played += 1; r.goalsFor += own; r.goalsAgainst += other; r.points += own > other ? 2 : own === other ? 1 : 0;
+    r.played += 1;
+    r.goalsFor += own;
+    r.goalsAgainst += other;
+    r.points += own > other ? 2 : own === other ? 1 : 0;
   };
-  apply(home, h, a); apply(away, a, h);
-  next.sort((x, y) => y.points - x.points || (y.goalsFor - y.goalsAgainst) - (x.goalsFor - x.goalsAgainst) || y.goalsFor - x.goalsFor || x.previousRank - y.previousRank);
+  apply(home, h, a);
+  apply(away, a, h);
+  next.sort(
+    (x, y) =>
+      y.points - x.points ||
+      y.goalsFor - y.goalsAgainst - (x.goalsFor - x.goalsAgainst) ||
+      y.goalsFor - x.goalsFor ||
+      x.previousRank - y.previousRank
+  );
   return next.map((r, i) => ({...r, rank: i + 1}));
 }
 
@@ -60,23 +75,51 @@ export function reportFromEhf(a) {
     const keepers = own.filter(p => p.goalkeeper);
     return {
       name: home ? a.home : a.away,
-      players: own.map(p => ({id: p.id, name: p.name, keeper: !!p.goalkeeper, goals: p.goals ?? null, shots: p.shots ?? null, seven: p.seven ?? null, sevenShots: p.sevenShots ?? null, twoMinutes: p.twoMinutes ?? null, saves: p.goalkeeper ? p.saves ?? null : null})),
+      players: own.map(p => ({
+        id: p.id,
+        name: p.name,
+        keeper: !!p.goalkeeper,
+        goals: p.goals ?? null,
+        shots: p.shots ?? null,
+        seven: p.seven ?? null,
+        sevenShots: p.sevenShots ?? null,
+        twoMinutes: p.twoMinutes ?? null,
+        saves: p.goalkeeper ? (p.saves ?? null) : null
+      })),
       saves: keepers.length ? keepers.reduce((n, p) => n + (p.saves || 0), 0) : null,
-      seven: ts.sevenGoals ?? null, sevenShots: ts.sevenShots ?? null, twoMinutes: ts.twoMinutes ?? null, shots: ts.shots ?? null, turnovers: ts.technicalFaults ?? null
+      seven: ts.sevenGoals ?? null,
+      sevenShots: ts.sevenShots ?? null,
+      twoMinutes: ts.twoMinutes ?? null,
+      shots: ts.shots ?? null,
+      turnovers: ts.technicalFaults ?? null
     };
   };
-  return {score: a.score, half: Array.isArray(a.half) ? a.half : [null, null], teams: [team(true), team(false)], spectators: a.spectators ?? null, source: 'EHF'};
+  return {
+    score: a.score,
+    half: Array.isArray(a.half) ? a.half : [null, null],
+    teams: [team(true), team(false)],
+    spectators: a.spectators ?? null,
+    source: 'EHF'
+  };
 }
 
 /** Prüft, ob ein Bericht zum Spiel passt (Resultat und Teams). */
 export function reportMatches(report, game) {
-  return Boolean(report && hasScore(game) && Array.isArray(report.score) && report.score.every((v, i) => v === game.score[i])
-    && report.teams?.length === 2 && sameTeam(report.teams[0].name, game.home) && sameTeam(report.teams[1].name, game.away));
+  return Boolean(
+    report &&
+      hasScore(game) &&
+      Array.isArray(report.score) &&
+      report.score.every((v, i) => v === game.score[i]) &&
+      report.teams?.length === 2 &&
+      sameTeam(report.teams[0].name, game.home) &&
+      sameTeam(report.teams[1].name, game.away)
+  );
 }
 
 /** Torschützen einer Mannschaft, absteigend. Fehlende Werte zählen nicht als null Tore. */
 export function scorers(team) {
-  return (team?.players || []).filter(p => Number.isInteger(p.goals) && p.goals > 0)
+  return (team?.players || [])
+    .filter(p => Number.isInteger(p.goals) && p.goals > 0)
     .sort((a, b) => b.goals - a.goals || String(a.name).localeCompare(String(b.name), 'de'));
 }
 
@@ -91,17 +134,23 @@ export function teamComparison(report) {
     ['Würfe', h.shots, a.shots],
     ['Technische Fehler', h.turnovers, a.turnovers]
   ];
-  return rows.filter(r => Number.isInteger(r[1]) && Number.isInteger(r[2])).map(([label, home, away, homeOf, awayOf]) => ({
-    label, home, away,
-    homeText: Number.isInteger(homeOf) ? `${home}/${homeOf}` : String(home),
-    awayText: Number.isInteger(awayOf) ? `${away}/${awayOf}` : String(away),
-    share: home + away > 0 ? home / (home + away) : .5
-  }));
+  return rows
+    .filter(r => Number.isInteger(r[1]) && Number.isInteger(r[2]))
+    .map(([label, home, away, homeOf, awayOf]) => ({
+      label,
+      home,
+      away,
+      homeText: Number.isInteger(homeOf) ? `${home}/${homeOf}` : String(home),
+      awayText: Number.isInteger(awayOf) ? `${away}/${awayOf}` : String(away),
+      share: home + away > 0 ? home / (home + away) : 0.5
+    }));
 }
 
 /** Namen aus dem SHV-Bericht («PERIĆ Josip») lesbar machen. */
 export function displayName(name) {
-  const parts = String(name || '').trim().split(/\s+/);
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/);
   const last = parts.filter(p => p === p.toUpperCase() && /\p{Lu}/u.test(p));
   const first = parts.filter(p => !last.includes(p));
   if (!last.length || !first.length) return String(name || '');
@@ -113,7 +162,9 @@ export function displayName(name) {
 export function storiesForGame(stories, game) {
   if (!game?.date) return [];
   const opponent = isOwn(game.home) ? game.away : game.home;
-  const words = String(opponent).split(/\s+/).filter(w => w.length > 3 && !/^\d+$/.test(w));
+  const words = String(opponent)
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !/^\d+$/.test(w));
   const start = Date.parse(game.date);
   return (stories || []).filter(s => {
     const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s.date || '');
@@ -128,4 +179,3 @@ export function storiesForGame(stories, game) {
 export function lastGamesOf(games, team, count = 5) {
   return ownGames(games, team).filter(hasScore).reverse().slice(0, count);
 }
-
