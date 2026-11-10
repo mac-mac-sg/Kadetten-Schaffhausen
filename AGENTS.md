@@ -14,7 +14,7 @@ npm run dev     # lokale, schreibgeschützte Vorschau auf http://127.0.0.1:3000
 npm run verify  # alle Prüfungen wie in GitHub Actions: check, test, build:pages, check-pages
 ```
 
-`npm run verify` muss vor jedem Push grün sein. Zusätzlich gilt `npm run build` (bisheriger Sites-Build), wenn `server/` geändert wurde, solange der alte Dienst besteht.
+`npm run verify` muss vor jedem Push grün sein. Der JS-Code der App (`src/kadetten/js`) ist mit Prettier formatiert (`.prettierrc.json`); `npm run check` prüft das, `npm run format` formatiert. HTML-Vorlagen fasst Prettier nicht an: lange Vorlagen an Blockgrenzen oder in `${…}` umbrechen, nie zwischen Inline-Elementen (sonst entsteht sichtbarer Leerraum). Zusätzlich gilt `npm run build` (bisheriger Sites-Build), wenn `server/` geändert wurde, solange der alte Dienst besteht.
 
 ## Arbeitsablauf
 1. Aktuellen Stand von `origin/main` holen; Änderungen anderer erhalten.

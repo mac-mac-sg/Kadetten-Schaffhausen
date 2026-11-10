@@ -23,13 +23,17 @@ export function decodeDeep(value) {
 }
 
 export function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
 }
 
 /** Vertrauenswürdiges, bereits maskiertes HTML. */
 export class SafeHtml {
-  constructor(value) { this.value = value; }
-  toString() { return this.value; }
+  constructor(value) {
+    this.value = value;
+  }
+  toString() {
+    return this.value;
+  }
 }
 
 function part(value) {
@@ -42,7 +46,9 @@ function part(value) {
 /** Vorlagen-Tag: Werte werden maskiert, verschachtelte html``-Ergebnisse bleiben erhalten. */
 export function html(strings, ...values) {
   let out = strings[0];
-  values.forEach((value, i) => { out += part(value) + strings[i + 1]; });
+  values.forEach((value, i) => {
+    out += part(value) + strings[i + 1];
+  });
   return new SafeHtml(out);
 }
 

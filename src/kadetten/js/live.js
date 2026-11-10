@@ -3,7 +3,8 @@
 import {kickoff, ownGames, hasScore} from './logic.js';
 
 export const LIVE_INTERVAL = 30000;
-const BEFORE = 15 * 60000, AFTER = 4 * 3600000;
+const BEFORE = 15 * 60000,
+  AFTER = 4 * 3600000;
 
 /** Soll gerade live abgefragt werden? */
 export function liveWindow({games, live, now}) {
@@ -14,8 +15,15 @@ export function liveWindow({games, live, now}) {
   });
 }
 
-export function startLive({store, doc = globalThis.document, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout}) {
-  let timer = null, stopped = false;
+export function startLive({
+  store,
+  doc = globalThis.document,
+  now = () => Date.now(),
+  setTimer = globalThis.setTimeout,
+  clearTimer = globalThis.clearTimeout
+}) {
+  let timer = null,
+    stopped = false;
   const visible = () => !doc || doc.visibilityState !== 'hidden';
   async function tick() {
     timer = null;
@@ -26,9 +34,16 @@ export function startLive({store, doc = globalThis.document, now = () => Date.no
   }
   const onVisibility = () => {
     if (visible() && !timer) tick();
-    if (!visible() && timer) { clearTimer(timer); timer = null; }
+    if (!visible() && timer) {
+      clearTimer(timer);
+      timer = null;
+    }
   };
   doc?.addEventListener?.('visibilitychange', onVisibility);
   tick();
-  return () => { stopped = true; if (timer) clearTimer(timer); doc?.removeEventListener?.('visibilitychange', onVisibility); };
+  return () => {
+    stopped = true;
+    if (timer) clearTimer(timer);
+    doc?.removeEventListener?.('visibilitychange', onVisibility);
+  };
 }
