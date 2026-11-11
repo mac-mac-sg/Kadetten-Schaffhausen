@@ -28,7 +28,7 @@ Verhältnis als Faustregel: etwa 70 % ruhige Fläche (Papier oder Graphit), 20 %
 
 1. **Wappen-Anschnitt:** das K gross und angeschnitten als Tonwert im Kopfband.
 2. **Schnitt, 8°:** die Neigung der «1791»-Platte; Unterkanten, Knöpfe, Chips, Marker, kursive Ziffern. Es gibt keinen zweiten Winkel und keine Rundungen an Knöpfen.
-3. **Streifen:** die Trikotstreifen nur als schmales Band (höchstens 30 px) oder Rand.
+3. **Streifen:** die Trikotstreifen nur als schmales Band (höchstens 30 px) oder Rand. Im Kopfband laufen sie weich aus; Flächen dürfen an Farbe und Bild als Milchglas erscheinen (Feinschliff in `docs/kadetten-app-design.md`).
 4. **Rückennummer:** Zahlen sind Grafik (Anpfiffzeit, Stand, Rang, Nummern) in Barlow Condensed kursiv.
 
 ## Schrift

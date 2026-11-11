@@ -476,3 +476,41 @@ test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
   assert.doesNotMatch(String(card), /Ohne Einsatz|richtige Differenz/);
   assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben/);
 });
+
+test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein und Karten ohne Rahmen', () => {
+  const stops = [...light['band-bg'].matchAll(/linear-gradient\(([^)]*)\)/g)].flatMap(m => [...m[1].matchAll(/#[0-9a-f]{6}\b/g)].map(x => x[0]));
+  assert.ok(stops.length >= 3 && stops.includes('#ff5d00'), 'Verlauf läuft durch das Wappenorange');
+  for (const stop of stops) assert.ok(contrast(light['c-ink'], stop) >= 4.5, `Tinte auf ${stop}`);
+  const components = read('src/kadetten/css/components.css');
+  assert.match(components, /\.band \{[^}]*background: var\(--band-bg\), var\(--c-accent\)/, 'Orange bleibt als Grundfarbe unter dem Verlauf');
+  assert.match(components, /\.band::after \{[^}]*var\(--stripes-band\)[^}]*mask-image: linear-gradient\(90deg/, 'Streifen im Band laufen aus');
+  assert.match(components, /\.band \+ \*::before \{[^}]*var\(--band-glow\)[^}]*pointer-events: none/, 'Schein unter dem Schnitt');
+  assert.match(components, /\.card \{[^}]*border: 1px solid transparent; box-shadow: var\(--card-shadow\)/, 'Karten: Schatten statt Linie');
+  assert.match(components, /var\(--fill, var\(--c-chip-soft\)\)/, 'nicht gewählte Knöpfe halbdurchsichtig');
+  assert.match(light.stripes, /var\(--c-ink\) 0 6px/, 'Marker und Ränder behalten die harten Streifen');
+  for (const key of ['band-glow', 'c-chip-soft', 'card-shadow', 'glass-bg', 'glass-edge', 'glass-shadow', 'glass-nav', 'glass-sheet']) {
+    assert.ok(light[key], `hell: ${key}`);
+    assert.notEqual(dark[key], light[key], `dunkel hat einen eigenen Wert für ${key}`);
+    assert.equal(tokens.split(`--${key}:`).length - 1, 3, `${key}: hell, dunkel (System) und dunkel (gewählt)`);
+  }
+});
+
+test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rückfall', () => {
+  const glass = read('src/kadetten/css/glass.css');
+  assert.match(read('src/kadetten/css/app.css'), /@import '\.\/glass\.css' layer\(views\);/);
+  const supports = glass.slice(glass.indexOf('@supports'), glass.indexOf('@media (prefers-reduced-transparency'));
+  const fallback = glass.slice(glass.indexOf('@media (prefers-reduced-transparency'));
+  const outside = glass.slice(0, glass.indexOf('@supports'));
+  assert.doesNotMatch(outside, /backdrop-filter/, 'Unschärfe nur innerhalb von @supports');
+  assert.match(supports, /^@supports \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\)/);
+  const selectors = [...supports.matchAll(/^\s{2}([^{@]+)\{[^}]*backdrop-filter/gm)].map(m => m[1].trim());
+  assert.deepEqual(selectors, ['.match-score.after-band .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy', '.sheet', '.sheet::backdrop']);
+  for (const css of [glass, read('src/kadetten/css/components.css'), read('src/kadetten/css/views.css')]) {
+    for (const rule of css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: blur/g)) assert.doesNotMatch(rule[1], /tbl|\.rl\b|\.event|\.prose|\.fb\b|\.card\b|\.plain-list/, 'kein Glas auf Listen, Tabellen, Ticker, Text, Feldbild: ' + rule[1].trim());
+  }
+  for (const sel of selectors) assert.ok(fallback.includes(sel + ' {'), 'Rückfall für ' + sel);
+  assert.equal((fallback.match(/backdrop-filter: none/g) || []).length, selectors.length * 2, 'jede Glasfläche wird bei «Transparenz reduzieren» deckend');
+  assert.match(fallback, /\.nav \{ background: var\(--c-nav-bg\)/);
+  // Spielkarte ragt ins Band (Titelseite).
+  assert.match(outside, /\.match-score\.after-band \{ margin-top: calc\(-0\.9 \* var\(--cut\)\); z-index: 1; \}/);
+});

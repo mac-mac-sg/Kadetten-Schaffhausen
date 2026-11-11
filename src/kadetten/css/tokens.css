@@ -49,6 +49,25 @@
   /* Trikotstreifen: harte Kanten, nie als Fläche */
   --stripes: repeating-linear-gradient(120deg, var(--c-ink) 0 6px, transparent 6px 15px);
 
+  /* Feinschliff: weichere Übergänge und gezieltes Milchglas. Formen (Schnitt, Streifen, Wappen) bleiben unverändert.
+     Band: leiser Verlauf mit Lichtfleck (dunkelstes Orange hält Tinte bei 5,3:1), Streifen im Band feiner und auslaufend,
+     Schein unter dem Schnitt. Glas nur über Farbe oder Bild, nie über Listen. Rückfall: deckende Flächen (glass.css). */
+  --band-bg: radial-gradient(circle at 10% 0%, #ffffff40, #ffffff00 48%), linear-gradient(165deg, #ff7d26 0%, #ff5d00 48%, #f05600 100%);
+  --stripes-band: repeating-linear-gradient(120deg, #141415c7 0 5px, transparent 5px 13px);
+  --band-glow: #ff5d0024;
+  --c-chip-soft: #1414150f;
+  --card-shadow: 0 1px 2px #1414150d, 0 6px 18px #1414150f;
+  --glass-bg: #ffffff9e;
+  --glass-edge: #ffffffb3;
+  --glass-shadow: 0 10px 30px #0000001a;
+  --glass-nav: #ffffffe0;
+  --glass-sheet: #ffffffe0;
+  --glass-on-band: #ffffff42;
+  --glass-on-band-hover: #ffffff66;
+  --glass-on-band-edge: #ffffff59;
+  --glass-photo: #1414158c;
+  --glass-photo-edge: #ffffff33;
+
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
   --r-card: 12px; --r-tile: 8px; --r-ctl: 0px; --r-hero: 12px;
   --tap: 44px;
@@ -61,11 +80,15 @@
   :root:not([data-theme='light']) {
     color-scheme: dark; --c-bg: #141415; --c-surface: #1c1c1e; --c-surface-2: #262628; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14;
     --c-accent-text: #ff8a4d; --c-highlight: #ff5d001f; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #1c1c1e; --c-chip: #262628;
+    --band-glow: #ff5d0033; --c-chip-soft: #ffffff14; --card-shadow: inset 0 1px 0 #ffffff0f, 0 6px 16px #00000047;
+    --glass-bg: #1c1c1ec2; --glass-edge: #ffffff1f; --glass-shadow: 0 10px 30px #00000059; --glass-nav: #161618b8; --glass-sheet: #1c1c1ee0;
   }
 }
 :root[data-theme='dark'] {
   color-scheme: dark; --c-bg: #141415; --c-surface: #1c1c1e; --c-surface-2: #262628; --c-text: #ededed; --c-text-muted: #a1a1a6; --c-line: #ededed14;
   --c-accent-text: #ff8a4d; --c-highlight: #ff5d001f; --c-loss: #3a3a3d; --c-on-loss: #ededed; --c-live: #e5484d; --c-nav-bg: #1c1c1e; --c-chip: #262628;
+    --band-glow: #ff5d0033; --c-chip-soft: #ffffff14; --card-shadow: inset 0 1px 0 #ffffff0f, 0 6px 16px #00000047;
+    --glass-bg: #1c1c1ec2; --glass-edge: #ffffff1f; --glass-shadow: 0 10px 30px #00000059; --glass-nav: #161618b8; --glass-sheet: #1c1c1ee0;
 }
 
 @media (prefers-reduced-motion: reduce) {

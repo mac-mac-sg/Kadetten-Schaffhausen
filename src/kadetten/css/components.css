@@ -6,10 +6,14 @@
 .sh .h2::before, .sec > .h2::before { content: ''; display: inline-block; width: 7px; height: .78em; margin-right: 10px; background: var(--c-accent); transform: skewX(var(--skew)); vertical-align: -.02em; }
 
 /* Kopfband: Wappen-Anschnitt (grosses K als Tonwert), Streifenband an der Schnittkante */
-.band { position: relative; isolation: isolate; overflow: hidden; min-height: calc(150px + var(--cut)); padding: calc(max(env(safe-area-inset-top), 24px) + 30px) var(--s-5) calc(var(--cut) + var(--s-5)); background: var(--c-accent); color: var(--c-ink); clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), 0 100%); }
+.band { position: relative; isolation: isolate; overflow: hidden; min-height: calc(150px + var(--cut)); padding: calc(max(env(safe-area-inset-top), 24px) + 30px) var(--s-5) calc(var(--cut) + var(--s-5)); background: var(--band-bg), var(--c-accent); color: var(--c-ink); clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), 0 100%); }
 /* Wappen-Anschnitt: der Schild (assets/kadetten-wappen.png) gross und angeschnitten, orange auf orange nur als Tonwert */
 .band::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('assets/kadetten-wappen.png') no-repeat right -96px top -36px / 300px auto; opacity: .2; }
-.band::after { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--stripes); clip-path: polygon(0 calc(100% - 30px), 100% calc(100% - var(--cut) - 30px), 100% calc(100% - var(--cut)), 0 100%); }
+/* Streifen im Band: feiner als die Marker und nach links auslaufend, damit die Kante zum Hintergrund weich wird. */
+.band::after { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--stripes-band); -webkit-mask-image: linear-gradient(90deg, #0003, #000 72%); mask-image: linear-gradient(90deg, #0003, #000 72%); clip-path: polygon(0 calc(100% - 30px), 100% calc(100% - var(--cut) - 30px), 100% calc(100% - var(--cut)), 0 100%); }
+/* Schein unter dem Schnitt: das Orange läuft schwach in den Hintergrund aus (liegt hinter dem Inhalt nach dem Band). */
+.band + * { position: relative; }
+.band + *::before { content: ''; position: absolute; z-index: -1; left: 0; right: 0; top: calc(-1 * var(--cut) - 36px); height: 190px; background: radial-gradient(ellipse 95% 60% at 60% 25%, var(--band-glow), transparent 70%); pointer-events: none; }
 .band-k { font: 600 var(--fs-small)/1.3 var(--f-text); }
 .band-t { font: italic 600 80px/.9 var(--f-display); letter-spacing: -.01em; }
 .band-acts { position: absolute; top: calc(max(env(safe-area-inset-top), 24px) + 8px); right: var(--s-4); display: flex; gap: var(--s-2); }
@@ -35,18 +39,19 @@
 .sh { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-2); }
 .more { display: inline-flex; align-items: center; min-height: var(--tap); margin: -12px 0; font: 500 var(--fs-small)/1 var(--f-text); color: var(--c-accent-text); }
 
-.card { display: block; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-card); padding: var(--s-4); }
+/* Karten ohne sichtbaren Rahmen: weicher Schatten, im Dunkeln eine helle Oberkante. Der 1-px-Rand bleibt als Platz (und für Markierungen). */
+.card { display: block; background: var(--c-surface); border: 1px solid transparent; box-shadow: var(--card-shadow); border-radius: var(--r-card); padding: var(--s-4); }
 .card.empty { display: flex; align-items: center; gap: var(--s-3); color: var(--c-text-muted); }
 .lead { width: 36px; height: 36px; flex: none; border-radius: var(--r-tile); display: grid; place-items: center; background: var(--c-surface-2); color: var(--c-text-muted); }
 
 /* Parallelogramm-Bausteine */
 .btn, .chip, .seg > a, .seg > button, .pill, .f, .tag-ink { position: relative; isolation: isolate; border: 0; background: none; }
-.btn::before, .chip::before, .seg > a::before, .seg > button::before, .pill::before, .f::before, .tag-ink::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--fill, var(--c-chip)); box-shadow: var(--edge, none); transform: skewX(var(--skew)); transition: background var(--t-fast) var(--ease); }
+.btn::before, .chip::before, .seg > a::before, .seg > button::before, .pill::before, .f::before, .tag-ink::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--fill, var(--c-chip-soft)); box-shadow: var(--edge, none); transform: skewX(var(--skew)); transition: background var(--t-fast) var(--ease); }
 .tag-ink { display: inline-block; padding: 4px 12px; font: 600 var(--fs-meta)/1.3 var(--f-text); margin: 0 5px; }
 .tag-ink { --fill: var(--c-ink); color: var(--c-on-ink); }
 
 /* Spielkarte: der Moment der App. Zeit oder Spielstand gross, kursiv, wie eine Rückennummer. */
-.hero { position: relative; overflow: hidden; border-radius: var(--r-hero); padding: var(--s-4) var(--s-5) var(--s-5); background: var(--c-surface); border: 1px solid var(--c-line); color: var(--c-text); }
+.hero { position: relative; overflow: hidden; border-radius: var(--r-hero); padding: var(--s-4) var(--s-5) var(--s-5); background: var(--c-surface); border: 1px solid transparent; box-shadow: var(--card-shadow); color: var(--c-text); }
 .hero-link { display: block; }
 .meta { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); font: 400 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
 .pill { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 28px; padding: 0 var(--s-3); margin: 0 4px; font: 600 var(--fs-meta)/1 var(--f-text); --fill: var(--c-accent); color: var(--c-on-accent); white-space: nowrap; }
