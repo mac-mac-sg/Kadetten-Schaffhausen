@@ -93,7 +93,7 @@ Stand: 11. November 2026. Entscheid des Eigentümers: alle Stufen, dezent, für 
 | Schein | schwaches Orange läuft unter dem Schnitt in den Hintergrund aus (`--band-glow`, am ersten Element nach dem Band) |
 | Karten | kein sichtbarer Rahmen; weicher Schatten, im Dunkeln eine helle Oberkante (`--card-shadow`). Der 1-px-Rand bleibt als Platz |
 | Wahlknöpfe, Chips | nicht gewählte halbdurchsichtig (`--c-chip-soft`), gewählte wie bisher |
-| Glas | Spielkarte der Titelseite (ragt in allen Zuständen um den ganzen Schnitt plus 6 px ins Band; Selektor `.band-home + .match-score`), Reiterleiste, runde Knöpfe und «Zurück» im Band, News-Aufmacher (Datum und Titel auf Glas statt Verlauf), «?»-Blatt mit unscharfem Hintergrund |
+| Glas | Spielkarte der Titelseite (ragt in allen Zuständen um den ganzen Schnitt plus 6 px ins Band; Selektor `.band-home + .match-score`), Reiterleiste, runde Knöpfe und «Zurück» im Band, News-Aufmacher (weicher Verlauf für die Lesbarkeit, Glas nur im unteren Teil und zum Foto hin auslaufend, damit das Foto auch bei langen Titeln sichtbar bleibt), «?»-Blatt mit unscharfem Hintergrund |
 
 Regeln:
 - Glas nur über Farbe oder Bild, nie auf Tabellen, Listen, Ticker, Fliesstext oder Feldbildern. Höchstens drei Glasflächen pro Bildschirm, kein Glas auf Glas.

@@ -201,6 +201,14 @@ function liveTableTeaser(data, match) {
     <a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Bei diesem Stand ${own.rank === 1 ? 'Leader' : 'auf Platz ' + own.rank}</span><span class="s">${text}</span></span>${icon('go')}</a></section>`;
 }
 
+/** Läuft das Spiel schon, ist aber noch kein Live-Stand da: sagen, ob er lädt oder nicht erreichbar ist (statt wortlos die Vorschau zu zeigen). */
+function liveHint(game, state, now) {
+  if (kickoff(game) === null || kickoff(game) > now || state.live?.match) return '';
+  return state.liveError
+    ? html`<section class="sec tight">${notice('Live-Stand im Moment nicht erreichbar. Der Abruf wird alle 30 Sekunden wiederholt.')}</section>`
+    : html`<section class="sec tight">${loading('Live-Stand wird geladen …')}</section>`;
+}
+
 export function renderJetzt({state, now, load, api, ui}) {
   const {data, live} = state;
   if (!data)
@@ -238,6 +246,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       <section class="sec match-score" aria-labelledby="j-heute">
         <h2 class="sr" id="j-heute">Heute</h2>
         ${previewHero(game, now, {actions})}</section>
+      ${liveHint(game, state, now)}
       <section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}
         ${stats([
           [own && opp ? `${own.rank}. – ${opp.rank}.` : own ? own.rank + '.' : '–', own && opp ? 'Tabelle' : 'QHL-Platz'],
