@@ -113,15 +113,30 @@ async function getEhfLiveMatch(){
 }
 export async function getNationalLiveMatch(teamId=41473){const games=await liveQuery(liveGamesQuery,{teamId});const selected=selectLiveGame(games,teamId)||selectFinishedGame(games,undefined,teamId);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0],teamId)||parseLiveMatch(detail.game[0],teamId);if(match)match.details=statistics;return match}
 let liveCache,livePending;
+// Letzter gültiger Stand je Quelle: Fällt eine Quelle kurz aus, bleibt ihr letzter Stand als «veraltet» (markiert) nutzbar,
+// statt dass ein laufendes Spiel verschwindet. Danach gilt die Quelle als ausgefallen.
+const STALE_MS=10*60000,SOURCES=['SHV','EHF'],lastGood={};
+export function resetLiveState(){liveCache=undefined;livePending=undefined;for(const k of Object.keys(lastGood))delete lastGood[k]}
 export async function getLiveMatch(){
- if(liveCache&&Date.now()-liveCache.at<20000)return liveCache.value;if(livePending)return livePending;
+ if(liveCache&&Date.now()-liveCache.at<liveCache.ttl)return liveCache.value;if(livePending)return livePending;
  livePending=(async()=>{
   const results=await Promise.allSettled([getNationalLiveMatch(),getEhfLiveMatch()]);
-  const sources=Object.fromEntries(results.map((r,i)=>[["SHV","EHF"][i],r.status==='fulfilled'?{ok:true}:{ok:false,error:String(r.reason?.message||r.reason).slice(0,120)}]));
-  if(results.every(r=>r.status==='rejected')){const failure=Error('All live sources unavailable');failure.sources=sources;throw failure}
-  const match=results.find(r=>r.status==='fulfilled'&&r.value&&r.value.status!=='finished')?.value||null;
-  const finished=results.find(r=>r.status==='fulfilled'&&r.value?.status==='finished')?.value||null;
-  const value={ok:true,checkedAt:new Date().toISOString(),sources,match,finished};liveCache={at:Date.now(),value};return value;
+  const failures=Object.fromEntries(results.map((r,i)=>[SOURCES[i],r.status==='rejected'?String(r.reason?.message||r.reason).slice(0,120):null]));
+  if(results.every(r=>r.status==='rejected')){const failure=Error('All live sources unavailable');failure.sources=Object.fromEntries(SOURCES.map(n=>[n,{ok:false,error:failures[n]}]));throw failure}
+  const now=Date.now(),sources={},values=[];
+  results.forEach((r,i)=>{
+   const name=SOURCES[i];
+   if(r.status==='fulfilled'){lastGood[name]={at:now,value:r.value};sources[name]={ok:true};values.push(r.value);return}
+   const previous=lastGood[name];
+   if(previous&&now-previous.at<STALE_MS){sources[name]={ok:false,error:failures[name],stale:true,since:new Date(previous.at).toISOString()};values.push(previous.value)}
+   else{sources[name]={ok:false,error:failures[name]};values.push(null)}
+  });
+  const match=values.find(v=>v&&v.status!=='finished')||null;
+  const finished=values.find(v=>v?.status==='finished')||null;
+  const degraded=SOURCES.some(n=>!sources[n].ok);
+  const value={ok:true,checkedAt:new Date(now).toISOString(),degraded,sources,match,finished};
+  // Vollständige Antworten 20 s, Teilausfälle nur 5 s, damit die nächste Abfrage die ausgefallene Quelle bald wieder versucht.
+  liveCache={at:now,ttl:degraded?5000:20000,value};return value;
  })();try{return await livePending}finally{livePending=null}
 }
 

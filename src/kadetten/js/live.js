@@ -1,6 +1,6 @@
 // Live-Abfrage: alle 30 Sekunden, nur solange die App sichtbar ist und ein Kadetten-Spiel
 // läuft oder bald beginnt. Unsichtbare Seiten pausieren.
-import {kickoff, ownGames, hasScore} from './logic.js';
+import {kickoff, ownGames, hasScore, competitionOf} from './logic.js';
 
 export const LIVE_INTERVAL = 30000;
 const BEFORE = 15 * 60000,
@@ -46,4 +46,24 @@ export function startLive({
     if (timer) clearTimer(timer);
     doc?.removeEventListener?.('visibilitychange', onVisibility);
   };
+}
+
+/** Welche Quelle ist für ein Spiel zuständig: EHL-Spiele die EHF, alle anderen (QHL, Cup, Test) der SHV. */
+export const sourceFor = game => (competitionOf(game) === 'EHL' ? 'EHF' : 'SHV');
+
+const clock = iso => new Date(iso).toLocaleTimeString('de-CH', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich'});
+
+/** Hinweistext zum Live-Stand oder null, wenn alles in Ordnung ist. Wertet auch die Quellen des Datendiensts aus:
+ * Ein Ausfall der zuständigen Quelle ist etwas anderes als «kein Spiel» und wird so gemeldet. */
+export function liveNotice({live, liveError}, game) {
+  if (liveError)
+    return live
+      ? 'Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.'
+      : 'Live-Stand im Moment nicht erreichbar. Der Abruf wird alle 30 Sekunden wiederholt.';
+  const name = sourceFor(game),
+    source = live?.sources?.[name];
+  if (!source || source.ok !== false) return null;
+  return source.stale
+    ? `Die Quelle ${name} antwortet nicht. Angezeigt wird der Stand von ${clock(source.since)} Uhr.`
+    : `Die Quelle ${name} antwortet im Moment nicht. Der Abruf wird alle 30 Sekunden wiederholt.`;
 }

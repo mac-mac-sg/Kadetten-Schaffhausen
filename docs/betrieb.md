@@ -45,6 +45,16 @@ Der Schreiblauf von `cloudflare-update.yml` sichert am Spieltag und am Folgetag 
 ## Verfügbarkeit und Rückfall
 Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand. Quellenfehler beim Aktualisieren behalten den letzten gültigen Stand je Quelle.
 
+## Live-Abfrage: Ausfall einer Quelle
+
+`/api/live` fragt zwei Quellen parallel ab: SHV (handball.ch, zuständig für QHL, Cup und Tests) und EHF (European League). Stand 11. November 2026:
+
+- **Antwort:** `ok`, `degraded` (mindestens eine Quelle ausgefallen), `sources` (je Quelle `ok`, bei Ausfall `error`, bei weiterverwendetem letztem Stand zusätzlich `stale: true` und `since`), `match`, `finished`. Fallen beide Quellen aus, bleibt es bei 503.
+- **Letzter Stand je Quelle:** Fällt eine Quelle aus, bleibt ihr letzter gültiger Stand bis zu 10 Minuten als «veraltet» (`stale`) nutzbar, damit ein laufendes Spiel nicht verschwindet. Danach gilt `match: null` mit `degraded: true`.
+- **Zwischenspeicher:** vollständige Antworten 20 s, Teilausfälle nur 5 s, damit die ausgefallene Quelle bald wieder versucht wird.
+- **App:** `liveNotice` in `src/kadetten/js/live.js` wertet nur die für das Spiel zuständige Quelle aus (EHL: EHF, sonst SHV). «Die Quelle SHV antwortet im Moment nicht» (kein Stand), «… Angezeigt wird der Stand von HH:MM Uhr» (veraltet) und «Die Quelle meldet noch kein laufendes Spiel» (Quelle gesund, aber kein Live-Spiel) sind drei verschiedene Fälle. Der Abruf der App hat 30 s Zeit (`LIVE_TIMEOUT` in `api.js`), weil der Datendienst bis zu zweimal 12 s auf die SHV-Quelle wartet.
+- **Bei Störung prüfen:** Antwort von `/api/live` ansehen, vor allem `sources` und `checkedAt`. Dauert sie regelmässig über 10 s, ist die SHV-Quelle träge; die Zeitlimits stehen in `server/live.mjs` (12 s je Abruf).
+
 ## V2: Spielhinweise als Web Push
 
 V2 bietet unter Einstellungen → Benachrichtigungen vier separat wählbare Hinweise für «Meine Vereine»: 30 Minuten vor Anspiel, bestätigter Spielbeginn, Pausenresultat und bestätigtes Endresultat. Aktivierung und Browser-Berechtigung gelten nur für dieses Gerät und die eigene V2-PWA. Auf iOS muss V2 zum Home-Bildschirm hinzugefügt sein. V1 aktiviert keine Abonnements. «Testmitteilung senden» überprüft die Zustellung auf dem eigenen Gerät.

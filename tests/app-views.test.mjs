@@ -83,3 +83,27 @@ test('Spieltag nach Anpfiff ohne Live-Stand: Hinweis «wird geladen» bzw. «nic
   assert.doesNotMatch(render('#/', MOMENTS.live), /Live-Stand wird geladen/, 'mit Live-Stand kein Ladehinweis');
   check(render('#/', {now: after}), '#/');
 });
+
+test('Live-Hinweise werten die Quellen des Datendiensts aus: Ausfall der zuständigen Quelle ist nicht «kein Spiel»', () => {
+  const after = Date.parse('2026-11-11T18:30:00Z'), ok = {ok: true, match: null, finished: null, degraded: false, sources: {SHV: {ok: true}, EHF: {ok: true}}};
+  // Stand geladen, beide Quellen in Ordnung, aber kein Live-Spiel: die Quelle meldet noch nichts.
+  assert.match(render('#/', {now: after, live: ok}), /Die Quelle meldet noch kein laufendes Spiel/);
+  assert.doesNotMatch(render('#/', {now: after, live: ok}), /Live-Stand wird geladen/, 'geladen ist geladen');
+  // SHV (zuständig für die QHL) antwortet nicht: das steht da, nicht «kein Spiel» und nicht ewiges Laden.
+  const shvDown = {...ok, degraded: true, sources: {SHV: {ok: false, error: 'timeout'}, EHF: {ok: true}}};
+  const out = render('#/', {now: after, live: shvDown});
+  assert.match(out, /Die Quelle SHV antwortet im Moment nicht[\s\S]*alle 30 Sekunden/);
+  assert.doesNotMatch(out, /Die Quelle meldet noch kein laufendes Spiel|Live-Stand wird geladen/);
+  // Nur die EHF-Quelle fällt aus (für ein QHL-Spiel nicht zuständig): kein Alarm.
+  const ehfDown = {...ok, degraded: true, sources: {SHV: {ok: true}, EHF: {ok: false, error: 'x'}}};
+  assert.doesNotMatch(render('#/', {now: after, live: ehfDown}), /antwortet im Moment nicht/);
+  assert.match(render('#/', {now: after, live: ehfDown}), /Die Quelle meldet noch kein laufendes Spiel/);
+  // Laufendes Spiel mit veraltetem Stand der SHV-Quelle: Zeit des letzten gültigen Stands.
+  const stale = {...MOMENTS.live.live, degraded: true, sources: {SHV: {ok: false, error: 'timeout', stale: true, since: '2026-11-11T18:42:00Z'}, EHF: {ok: true}}};
+  assert.match(render('#/', {now: MOMENTS.live.now, live: stale}), /Die Quelle SHV antwortet nicht\. Angezeigt wird der Stand von 19:42 Uhr/);
+  assert.match(render('#/spiel/508393/live', {now: MOMENTS.live.now, live: stale}), /Angezeigt wird der Stand von 19:42 Uhr/);
+  assert.doesNotMatch(render('#/', MOMENTS.live), /antwortet nicht|antwortet im Moment nicht/, 'gesunde Quellen: kein Hinweis');
+  // Datendienst selbst nicht erreichbar: andere Meldung je nachdem, ob schon ein Stand da ist.
+  assert.match(render('#/', {now: after, state: {liveError: Error('x')}}), /nicht erreichbar\. Der Abruf wird alle 30 Sekunden wiederholt/);
+  assert.match(render('#/', {...MOMENTS.live, state: {liveError: Error('x')}}), /nicht erreichbar\. Es gilt der letzte bekannte Stand/);
+});
