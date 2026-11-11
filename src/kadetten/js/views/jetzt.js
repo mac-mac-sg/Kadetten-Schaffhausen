@@ -17,6 +17,7 @@ import {
   shortTeam
 } from '../logic.js';
 import {findGame, liveTable, sameTeam, withFinished, isOwn, displayName} from '../match.js';
+import {liveNotice} from '../live.js';
 import {liveReport} from './bericht.js';
 import {tipPoints} from '../moments.js';
 import {tips, favourite, pickFor} from '../personal.js';
@@ -204,9 +205,9 @@ function liveTableTeaser(data, match) {
 /** Läuft das Spiel schon, ist aber noch kein Live-Stand da: sagen, ob er lädt oder nicht erreichbar ist (statt wortlos die Vorschau zu zeigen). */
 function liveHint(game, state, now) {
   if (kickoff(game) === null || kickoff(game) > now || state.live?.match) return '';
-  return state.liveError
-    ? html`<section class="sec tight">${notice('Live-Stand im Moment nicht erreichbar. Der Abruf wird alle 30 Sekunden wiederholt.')}</section>`
-    : html`<section class="sec tight">${loading('Live-Stand wird geladen …')}</section>`;
+  if (!state.live && !state.liveError) return html`<section class="sec tight">${loading('Live-Stand wird geladen …')}</section>`;
+  // Ist der Stand geladen, aber leer: entweder meldet die zuständige Quelle keinen Ausfall (dann läuft laut Quelle noch kein Spiel) oder sie antwortet nicht.
+  return html`<section class="sec tight">${notice(liveNotice(state, game) ?? 'Die Quelle meldet noch kein laufendes Spiel.')}</section>`;
 }
 
 export function renderJetzt({state, now, load, api, ui}) {
@@ -226,9 +227,9 @@ export function renderJetzt({state, now, load, api, ui}) {
         <h2 class="sr" id="j-live">Live</h2>
         ${liveHero(game, own, state, now)}</section>
       ${
-        state.liveError
+        liveNotice(state, game)
           ? html`<section class="sec">
-        ${notice('Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.')}</section>`
+        ${notice(liveNotice(state, game))}</section>`
           : ''
       }
       ${liveTableTeaser(data, {...game, league: game.league || own?.league})}

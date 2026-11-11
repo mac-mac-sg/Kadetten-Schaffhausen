@@ -6,6 +6,7 @@ import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
 import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
+import {liveNotice} from '../live.js';
 import {normalizeReport, fitsGame} from '../report.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, pickSection} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
@@ -152,9 +153,9 @@ function vorschau({game, data, load, api, now}) {
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
 function liveTab({game, data, state, ui}) {
   return html`${
-    state.liveError
+    liveNotice(state, game)
       ? html`<section class="sec">
-    ${notice('Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.')}</section>`
+    ${notice(liveNotice(state, game))}</section>`
       : ''
   }${pickSection({match: state.live.match, game, data, ui})}${renderTicker(state.live.match)}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
