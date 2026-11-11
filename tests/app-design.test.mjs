@@ -504,12 +504,14 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
   assert.doesNotMatch(outside, /backdrop-filter/, 'Unschärfe nur innerhalb von @supports');
   assert.match(supports, /^@supports \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\)/);
   const selectors = [...supports.matchAll(/^\s{2}([^{@]+)\{[^}]*backdrop-filter/gm)].map(m => m[1].trim());
-  assert.deepEqual(selectors, ['.band-home + .match-score .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy', '.sheet', '.sheet::backdrop']);
+  assert.deepEqual(selectors, ['.band-home + .match-score .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy::before', '.sheet', '.sheet::backdrop']);
   for (const css of [glass, read('src/kadetten/css/components.css'), read('src/kadetten/css/views.css')]) {
     for (const rule of css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: blur/g)) assert.doesNotMatch(rule[1], /tbl|\.rl\b|\.event|\.prose|\.fb\b|\.card\b|\.plain-list/, 'kein Glas auf Listen, Tabellen, Ticker, Text, Feldbild: ' + rule[1].trim());
   }
-  for (const sel of selectors) assert.ok(fallback.includes(sel + ' {'), 'Rückfall für ' + sel);
-  assert.equal((fallback.match(/backdrop-filter: none/g) || []).length, selectors.length * 2, 'jede Glasfläche wird bei «Transparenz reduzieren» deckend');
+  for (const sel of selectors) assert.ok(fallback.includes((sel.endsWith('::before') ? sel.slice(0, -'::before'.length) : sel) + ' {'), 'Rückfall für ' + sel);
+  assert.equal((fallback.match(/backdrop-filter: none/g) || []).length, (selectors.length - 1) * 2, 'jede Glasfläche wird bei «Transparenz reduzieren» deckend');
+  assert.match(fallback, /\.lead-story:has\(> img\) \.lead-copy::before \{ display: none; \}/, 'Aufmacher: Glasschicht entfällt');
+  assert.match(supports, /\.lead-copy::before \{[^}]*mask-image: linear-gradient\(transparent, #000 70%\)/, 'Glas im Aufmacher läuft zum Foto hin aus');
   assert.match(fallback, /\.nav \{ background: var\(--c-nav-bg\)/);
   // Spielkarte ragt ins Band (Titelseite).
   assert.match(outside, /\.band-home \+ \.match-score \{ margin-top: calc\(-1 \* var\(--cut\) - 6px\); z-index: 1; \}/);

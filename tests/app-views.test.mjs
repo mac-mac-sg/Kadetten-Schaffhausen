@@ -74,3 +74,12 @@ test('Statistik und Spielerprofil nutzen die SHV-Saisonwerte', () => {
   assert.ok(stat.indexOf('Odinn Rikhardsson') < stat.indexOf('Josip Perić'), 'nach Toren sortiert');
   assert.match(render('#/team/10', MOMENTS.alltag), /Josip Perić[\s\S]*>30<[\s\S]*Tore/);
 });
+
+test('Spieltag nach Anpfiff ohne Live-Stand: Hinweis «wird geladen» bzw. «nicht erreichbar» statt wortloser Vorschau', () => {
+  const after = Date.parse('2026-11-11T18:30:00Z'), before = MOMENTS.spieltag;
+  assert.match(render('#/', {now: after}), /Live-Stand wird geladen/);
+  assert.match(render('#/', {now: after, state: {liveError: Error('Zeitüberschreitung')}}), /Live-Stand im Moment nicht erreichbar[\s\S]*alle 30 Sekunden/);
+  assert.doesNotMatch(render('#/', before), /Live-Stand/, 'vor dem Anpfiff kein Hinweis');
+  assert.doesNotMatch(render('#/', MOMENTS.live), /Live-Stand wird geladen/, 'mit Live-Stand kein Ladehinweis');
+  check(render('#/', {now: after}), '#/');
+});

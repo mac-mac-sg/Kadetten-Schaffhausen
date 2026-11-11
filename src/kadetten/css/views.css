@@ -254,7 +254,7 @@
 .lead-story { display: block; position: relative; overflow: hidden; background: var(--c-surface-2); border-radius: var(--r-card) var(--r-card) 0 0; clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut) * .4), 0 100%); }
 .lead-story > img { width: 100%; aspect-ratio: 1.35; height: auto; object-fit: cover; }
 .lead-copy { display: block; padding: var(--s-5) var(--s-5) calc(var(--cut) * .4 + var(--s-3)); }
-.lead-story:has(> img) .lead-copy { position: absolute; inset: auto 0 0; padding-top: 64px; background: linear-gradient(transparent, var(--c-shade-strong)); color: var(--c-on-photo); }
+.lead-story:has(> img) .lead-copy { position: absolute; isolation: isolate; inset: auto 0 0; padding-top: 64px; background: linear-gradient(transparent, var(--c-shade-strong)); color: var(--c-on-photo); }
 .lead-copy h2, .lead-copy h3 { font: italic 600 clamp(30px, 8.6vw, 40px)/1 var(--f-display); text-wrap: pretty; }
 .story-date { display: block; font-size: var(--fs-meta); margin-bottom: 6px; }
 .news-heading { margin-top: var(--s-6); }
