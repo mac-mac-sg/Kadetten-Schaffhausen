@@ -24,6 +24,25 @@ test('API liest nur, ohne Anmeldedaten, Live nie aus dem Cache', async () => {
   await assert.rejects(failing.data(), /kein JSON/);
 });
 
+test('Live-Spielstand wird auch nach dem normalen API-Zeitlimit noch übernommen', async ({mock}) => {
+  mock.timers.enable({apis: ['setTimeout']});
+  const match = {id: 508393, score: [16, 14]};
+  const api = createApi({fetchImpl: (url, {signal}) => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(json({ok: true, match})), 12000);
+    signal.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    }, {once: true});
+  })});
+  const store = createStore({api, storage: null});
+  const live = store.refreshLive();
+  const normalRequest = assert.rejects(api.data(), {name: 'AbortError'});
+  mock.timers.tick(12000);
+  await Promise.all([live, normalRequest]);
+  assert.deepEqual(store.state.live?.match, match);
+  assert.equal(store.state.liveError, null);
+});
+
 test('Datenstand: letzter gültiger Stand bleibt bei Ausfall, Live wird nie gespeichert', async () => {
   const storage = memory();
   let fail = false;
