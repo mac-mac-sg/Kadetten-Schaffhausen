@@ -2,12 +2,14 @@
 import {decodeDeep} from './text.js';
 
 export const TIMEOUT = 10000;
+// Der Datendienst liest zuerst die SHV-Spielliste und danach die Details, je mit bis zu 12 Sekunden.
+const LIVE_TIMEOUT = 30000;
 
 export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = TIMEOUT} = {}) {
-  async function get(path, {fresh = false, decode = true} = {}) {
+  async function get(path, {fresh = false, decode = true, requestTimeout = timeout} = {}) {
     if (typeof path !== 'string' || !path.startsWith('/api/') || path.includes('..')) throw Error('Ungültiger API-Pfad');
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+    const timer = setTimeout(() => controller.abort(), requestTimeout);
     try {
       const response = await fetchImpl(origin + path, {
         method: 'GET',
@@ -30,7 +32,7 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
     get,
     data: () => get('/api/data'),
     // Live-Antworten kommen nie aus einem Cache.
-    live: () => get('/api/live', {fresh: true}),
+    live: () => get('/api/live', {fresh: true, requestTimeout: LIVE_TIMEOUT}),
     report: gameId => get('/api/reports/' + id(gameId)),
     ehfReport: gameId => get('/api/ehf-reports/' + id(gameId)),
     matchReport: gameId => get('/api/match-reports/' + id(gameId)),
