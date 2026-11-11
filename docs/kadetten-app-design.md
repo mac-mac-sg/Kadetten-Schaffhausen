@@ -77,10 +77,28 @@ Alle Zahlen mit Tabellenziffern.
 - Flächen sind ruhig und neutral (Papier, Graphit). Orange gehört dem Kopfband, der Auswahl, den Siegen, der Hauptaktion und dem Kadetten-Anteil in Grafiken.
 - Kein Leuchten, keine farbigen Schatten, keine Verläufe zwischen Farbtönen. Neutrale Verläufe nur zur Lesbarkeit von Text auf Fotos.
 - Der Schnitt ist **eine** Neigung (8°). Keine weiteren Winkel, keine Rundungen an Knöpfen und Chips.
-- Streifen nur als Band oder Rand, höchstens 30 px breit.
+- Streifen nur als Band oder Rand, höchstens 30 px breit. Im Kopfband feiner und auslaufend (siehe Feinschliff).
 - Normale Schreibweise, keine Versalien mit Sperrung, keine Ausrufezeichen.
 - Bewegung nur mit Bedeutung: Farb- und Flächenwechsel 150 ms, Druck 0,98, eine Kurve `cubic-bezier(.22, 1, .36, 1)`. Siegmoment: die Spielkarte leuchtet einmal kurz orange auf; aus bei «Bewegung reduzieren».
 - Antippziele mindestens 44 px. Die Seiten erzeugen keine `style`-Attribute (Content-Security-Policy `style-src 'self'`); berechnete Breiten laufen über `data-style` und das CSSOM.
+
+## Feinschliff: weiche Übergänge und gezieltes Glas
+
+Stand: 11. November 2026. Entscheid des Eigentümers: alle Stufen, dezent, für Hell und Dunkel; die Spielkarte ragt ins Band. Formen (Schnitt, Streifen, Wappen, Rückennummern) bleiben, geändert sind nur Flächen und Kanten. Werte in `tokens.css`, Glas in `css/glass.css`.
+
+| Stelle | Umsetzung |
+|---|---|
+| Kopfband | leiser Verlauf mit Lichtfleck (`--band-bg`), Wappenorange in der Mitte; das dunkelste Orange `#f05600` hält Tinte bei 5,3:1 |
+| Streifen im Band | feiner (5 px auf 13 px, 78 % Tinte) und nach links auslaufend (`--stripes-band` mit Maske). Marker und Ränder behalten die harten Streifen (`--stripes`) |
+| Schein | schwaches Orange läuft unter dem Schnitt in den Hintergrund aus (`--band-glow`, am ersten Element nach dem Band) |
+| Karten | kein sichtbarer Rahmen; weicher Schatten, im Dunkeln eine helle Oberkante (`--card-shadow`). Der 1-px-Rand bleibt als Platz |
+| Wahlknöpfe, Chips | nicht gewählte halbdurchsichtig (`--c-chip-soft`), gewählte wie bisher |
+| Glas | Spielkarte der Titelseite (ragt um 0,9 × Schnitt ins Band), Reiterleiste, runde Knöpfe und «Zurück» im Band, News-Aufmacher (Datum und Titel auf Glas statt Verlauf), «?»-Blatt mit unscharfem Hintergrund |
+
+Regeln:
+- Glas nur über Farbe oder Bild, nie auf Tabellen, Listen, Ticker, Fliesstext oder Feldbildern. Höchstens drei Glasflächen pro Bildschirm, kein Glas auf Glas.
+- Glas steht in `@supports (backdrop-filter)`. Ohne Unterstützung und bei «Transparenz reduzieren» (`prefers-reduced-transparency`) gelten die deckenden Flächen; dort entfällt auch der Schein.
+- Kontrast im Bild gemessen (390 px, Hell und Dunkel): kleinster Wert 4,8:1 (grauer Text oben in der Spielkarte über durchscheinendem Orange). Deshalb ist das dunkle Kartenglas mit 76 % dichter als in der Skizze.
 
 ## Seiten
 
