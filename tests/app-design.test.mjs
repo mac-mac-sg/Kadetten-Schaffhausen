@@ -504,7 +504,7 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
   assert.doesNotMatch(outside, /backdrop-filter/, 'Unschärfe nur innerhalb von @supports');
   assert.match(supports, /^@supports \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\)/);
   const selectors = [...supports.matchAll(/^\s{2}([^{@]+)\{[^}]*backdrop-filter/gm)].map(m => m[1].trim());
-  assert.deepEqual(selectors, ['.match-score.after-band .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy', '.sheet', '.sheet::backdrop']);
+  assert.deepEqual(selectors, ['.band-home + .match-score .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy', '.sheet', '.sheet::backdrop']);
   for (const css of [glass, read('src/kadetten/css/components.css'), read('src/kadetten/css/views.css')]) {
     for (const rule of css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: blur/g)) assert.doesNotMatch(rule[1], /tbl|\.rl\b|\.event|\.prose|\.fb\b|\.card\b|\.plain-list/, 'kein Glas auf Listen, Tabellen, Ticker, Text, Feldbild: ' + rule[1].trim());
   }
@@ -512,5 +512,8 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
   assert.equal((fallback.match(/backdrop-filter: none/g) || []).length, selectors.length * 2, 'jede Glasfläche wird bei «Transparenz reduzieren» deckend');
   assert.match(fallback, /\.nav \{ background: var\(--c-nav-bg\)/);
   // Spielkarte ragt ins Band (Titelseite).
-  assert.match(outside, /\.match-score\.after-band \{ margin-top: calc\(-0\.9 \* var\(--cut\)\); z-index: 1; \}/);
+  assert.match(outside, /\.band-home \+ \.match-score \{ margin-top: calc\(-1 \* var\(--cut\) - 6px\); z-index: 1; \}/);
+  // Gilt für alle Zustände der Titelseite: die Karte folgt immer direkt auf das Titelband.
+  const jetzt = read('src/kadetten/js/views/jetzt.js');
+  assert.equal((jetzt.match(/\$\{homeBand\(\)\}\s*(?:\$\{\s*game\s*\?\s*html`)?<section class="sec match-score/g) || []).length, 4, 'Alltag, Spieltag, Live, Nachspiel');
 });
