@@ -1,11 +1,12 @@
 /* Milchglas, gezielt: Spielkarte im Band, Reiterleiste, Knöpfe im Band, News-Aufmacher, Blatt.
    Nie auf Tabellen, Listen, Ticker oder Fliesstext. Nur wenn der Browser Unschärfe kann; sonst und bei
    «Transparenz reduzieren» bleiben die deckenden Flächen aus components.css und views.css. */
-.match-score.after-band { margin-top: calc(-0.9 * var(--cut)); z-index: 1; }
+/* Titelseite: die Spielkarte ragt in allen Zuständen (Alltag, Spieltag, Live, Nachspiel) ins Band. */
+.band-home + .match-score { margin-top: calc(-1 * var(--cut) - 6px); z-index: 1; }
 .band .hero { box-shadow: none; }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .match-score.after-band .hero { background: var(--glass-bg); -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); border-color: var(--glass-edge); box-shadow: var(--glass-shadow); }
+  .band-home + .match-score .hero { background: var(--glass-bg); -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); border-color: var(--glass-edge); box-shadow: var(--glass-shadow); }
   .nav { background: var(--glass-nav); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); border-top-color: var(--glass-edge); }
   .icb:not(.on), .back { background: var(--glass-on-band); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px var(--glass-on-band-edge); }
   .icb:not(.on):hover, .back:hover { background: var(--glass-on-band-hover); }
@@ -15,7 +16,7 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .match-score.after-band .hero { background: var(--c-surface); -webkit-backdrop-filter: none; backdrop-filter: none; border-color: transparent; box-shadow: var(--card-shadow); }
+  .band-home + .match-score .hero { background: var(--c-surface); -webkit-backdrop-filter: none; backdrop-filter: none; border-color: transparent; box-shadow: var(--card-shadow); }
   .nav { background: var(--c-nav-bg); -webkit-backdrop-filter: none; backdrop-filter: none; border-top-color: var(--c-line); }
   .icb:not(.on), .back { background: var(--c-ink-glass); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
   .lead-story:has(> img) .lead-copy { padding-top: 64px; background: linear-gradient(transparent, var(--c-shade-strong)); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
