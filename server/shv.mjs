@@ -10,12 +10,13 @@ export function parsePlayerSeason(response){
  for(const p of staff.player){
   if(p.teamId!==41473||seen.has(p.playerId)||p.useReducedResultDisplay===true)throw Error('Invalid SHV player scope');seen.add(p.playerId);
   for(const k of ['games','totalScore','totalScoreField','totalScore7m','totalYellowCards','total2Minutes','totalSuspension'])if(!nonnegative(p[k]))throw Error('Missing or invalid SHV metric');
-  if(p.games>team.gamesTotal||p.totalScoreField+p.totalScore7m!==p.totalScore)throw Error('SHV player totals mismatch');
+  if(p.games>team.gamesTotal)throw Error(`SHV player totals mismatch: Spieler ${p.playerId} hat ${p.games} Spiele, das Team ${team.gamesTotal}`);
+  if(p.totalScoreField+p.totalScore7m!==p.totalScore)throw Error(`SHV player totals mismatch: Spieler ${p.playerId} Feld ${p.totalScoreField} + 7 m ${p.totalScore7m} ≠ Total ${p.totalScore}`);
   total+=p.totalScore;
   const nr=playerNumbers[p.playerId];if(!nr)continue;
   players[nr]={shvPlayerId:p.playerId,games:p.games,goals:p.totalScore,fieldGoals:p.totalScoreField,sevenMeterGoals:p.totalScore7m,goalsPerGame:p.games?Math.round(p.totalScore/p.games*10)/10:null,yellowCards:p.totalYellowCards,twoMinutes:p.total2Minutes,disqualifications:p.totalSuspension};
  }
- if(total!==team.totalScoreTeam||Object.keys(players).length<10)throw Error('Incomplete SHV scoring totals');
+ if(total!==team.totalScoreTeam||Object.keys(players).length<10)throw Error(`Incomplete SHV scoring totals: Spieler ${total} Tore, Team ${team.totalScoreTeam}, zugeordnet ${Object.keys(players).length}`);
  return {season:'2026/27',competition:'QHL',teamId:41473,teamGames:team.gamesTotal,players,source:'https://www.handball.ch/de/matchcenter/teams/41473'};
 }
 export async function fetchPlayerSeason(){
