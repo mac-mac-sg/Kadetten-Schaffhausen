@@ -28,3 +28,14 @@ test('QHL-Saisonimport lehnt fehlende Tore, duplizierte Spieler und falsche Sais
     assert.throws(() => parsePlayerSeason(broken));
   }
 });
+
+test('QHL-Saisonimport nennt bei inkonsistenten Zählern Spieler und Zahlen', () => {
+  const broken = structuredClone(fixture),
+    p = broken.data.playerStaff[0].player[0];
+  p.totalScoreField += 1;
+  assert.throws(() => parsePlayerSeason(broken), e => e.message.includes('Spieler ' + p.playerId) && e.message.includes('Total ' + p.totalScore));
+  const many = structuredClone(fixture),
+    q = many.data.playerStaff[0].player[0];
+  q.games = many.data.teamDashboard[0].gamesTotal + 1;
+  assert.throws(() => parsePlayerSeason(many), e => e.message.includes('Spieler ' + q.playerId) && e.message.includes('Spiele'));
+});
