@@ -6,7 +6,7 @@ import {startLive} from './live.js';
 import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
-import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, togglePick} from './personal.js';
+import {toggleFavourite, toggleMyGame, changeTip, myGames, tips} from './personal.js';
 import {resultImage, seasonCard, shareImage} from './share-image.js';
 import {seasonSummary} from './moments.js';
 import {outcome, shortTeam} from './logic.js';
@@ -186,8 +186,7 @@ function focusSelector(el) {
     'data-favourite',
     'data-my-game',
     'data-vote-select',
-    'data-vote-confirm',
-    'data-pick'
+    'data-vote-confirm'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
@@ -388,10 +387,6 @@ app.addEventListener('click', event => {
       const shv = favouriteShv();
       push.update(shv ? device.types : device.types.filter(x => x !== 'favourite'), shv).catch(() => {});
     }
-    render();
-  } else if (t.dataset.pick) {
-    const next = togglePick(parseRoute(location.hash).id, {id: t.dataset.pick, name: t.dataset.pickName});
-    announce(next ? 'Favorit gemerkt. Abstimmen kannst du nach dem Abpfiff.' : 'Favorit entfernt.');
     render();
   } else if (t.dataset.voteSelect) {
     const id = parseRoute(location.hash).id;

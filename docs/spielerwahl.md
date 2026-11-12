@@ -1,32 +1,31 @@
 # Spielerwahl «Spieler des Matchs»
 
-Stand: 8. November 2026. Konzept und Umsetzung der Fan-Wahl in der Kadetten App (Designsprache [«Schnitt»](kadetten-app-design.md)). Umgesetzt ist **Variante C, Stufe 1**. Stufe 2 ist nicht umgesetzt und braucht einen eigenen Auftrag.
+Stand: 12. November 2026. Konzept und Umsetzung der Fan-Wahl in der Kadetten App (Designsprache [«Schnitt»](kadetten-app-design.md)). Umgesetzt ist **Variante C**. Seit dem 12. November 2026 ist die Wahl **nur während des Spiels** offen, vom Anpfiff bis zum Schlusspfiff (Entscheid des Eigentümers). Die frühere Karte «Dein Favorit?» (merken statt abstimmen) entfällt.
 
 ## Ablauf
 
 | Phase | Was die Fans sehen |
 |---|---|
-| Vor Anpfiff | nichts zu wählen |
-| Live | Karte «Dein Favorit?» im Ticker und in der Übersicht: bis zu drei Chips mit den besten eigenen Torschützen (Rückennummer und Nachname), «Alle» blendet den ganzen Kader ein. Antippen merkt den Favoriten, nochmals antippen entfernt ihn. Es wird nichts abgestimmt. |
-| Abpfiff | Sobald der bestätigte Bericht vorliegt, öffnet die Wahl. Hinweis auf der Titelseite und in der Statistik; der Favorit ist vorgewählt. |
-| Wahlfenster | Wahlseite mit Vorschlägen nach Spieldaten; Stimme abgeben, eine pro Gerät. |
-| Ergebnis | erst nach Schluss: Anteile je Spieler, eigene Stimme markiert |
+| Vor Anpfiff | nichts zu wählen; die Wahlseite sagt «öffnet mit dem Anpfiff» |
+| Live | Karte «Wähle den Spieler des Matchs» auf der Titelseite, im Ticker und in der Statistik, sobald die Live-Quelle die Spieler der Kadetten meldet. Wahlseite mit Vorschlägen nach den Live-Werten; Stimme abgeben, eine pro Gerät. Kein Zwischenstand. |
+| Schlusspfiff | Die Wahl schliesst, sobald die Live-Quelle das Spiel nicht mehr als laufend meldet (spätestens 3 Stunden nach dem geplanten Anpfiff oder mit dem bestätigten Resultat im Datenstand). |
+| Ergebnis | nach dem Schlusspfiff auf der Spielseite: Anteile je Spieler, eigene Stimme markiert |
 
 ## Wahlseite (Variante C)
 
-Kopfband mit Titel, darunter **Vorschläge nach Spieldaten** als Zeilen mit Porträt, Nummer, Name, gemeldeten Werten und einer Begründung: «Meiste Tore», «Zweitmeiste Tore» (oder «Gleich viele Tore») und «Meiste Paraden». Alle weiteren Spieler stehen eingeklappt darunter, geordnet nach Beitrag. Ohne gemeldete Werte gibt es keine Vorschläge und alle Spieler sind sichtbar; Begründungen werden nie erfunden. Die Auswahl ist ein Tipp auf die Zeile (Streifenrand, «Gewählt»), die Stimme geht erst mit dem festen Knopf «Stimme für <Nachname> abgeben» raus. Der Favorit aus dem Live-Spiel trägt das Etikett «Dein Favorit». Unter der Liste steht «Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins».
+Kopfband mit Titel, darunter **Vorschläge nach Spieldaten** als Zeilen mit Porträt, Nummer, Name, gemeldeten Werten und einer Begründung: «Meiste Tore», «Zweitmeiste Tore» (oder «Gleich viele Tore») und «Meiste Paraden». Alle weiteren Spieler stehen eingeklappt darunter, geordnet nach Beitrag. Ohne gemeldete Werte gibt es keine Vorschläge und alle Spieler sind sichtbar; Begründungen werden nie erfunden. Die Auswahl ist ein Tipp auf die Zeile (Streifenrand, «Gewählt»), die Stimme geht erst mit dem festen Knopf «Stimme für <Nachname> abgeben» raus. Ein früher gemerkter Favorit ist vorgewählt und trägt das Etikett «Dein Favorit». Unter der Liste steht «Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins».
 
 ## Technik
 
 | Teil | Datei |
 |---|---|
-| Vorschläge, Live-Chips, Nummernzuordnung (reine Funktionen) | `src/kadetten/js/wahl.js` |
+| Vorschläge, Nummernzuordnung (reine Funktionen) | `src/kadetten/js/wahl.js` |
 | Favorit je Spiel, nur lokal (`v2:app-picks`, höchstens 200 Spiele, Eingaben geprüft) | `src/kadetten/js/personal.js` |
-| Karte «Dein Favorit?» und Wahlliste | `src/kadetten/js/views/bericht.js` (`pickSection`, `voteSection`) |
+| Live-Hinweis und Wahlliste | `src/kadetten/js/views/bericht.js` (`liveVoteCard`, `voteSection`) |
 | Einbindung in Spielseite und Titelseite | `views/spiel.js`, `views/jetzt.js`, `main.js` |
-| Wahl selbst (Fenster, Kandidaten, eine Stimme pro Gerät) | `server/app-fan.mjs`, **unverändert** |
+| Wahl selbst (Fenster, Kandidaten aus dem Live-Stand, eine Stimme pro Gerät) | `server/app-fan.mjs` |
 
-Der Favorit verlässt das Gerät nie. Es gibt keinen neuen Schreibweg und keine Änderung am Datendienst.
+Es gibt keinen neuen Schreibweg; geändert sind nur Zeitfenster und Herkunft der Kandidaten.
 
 ## Regeln, die immer gelten
 
@@ -35,12 +34,12 @@ Der Favorit verlässt das Gerät nie. Es gibt keinen neuen Schreibweg und keine 
 - Keine Personendaten; Gerätekennung zufällig und nur gehasht im Datendienst.
 - Heim- und Auswärtsspiele gleich.
 
-## Heute im Datendienst (unverändert)
+## Im Datendienst
 
-Die Wahl öffnet 90 Minuten nach Anpfiff und nur, wenn Resultat und Spielbericht bestätigt sind. Kandidaten stammen aus dem Bericht. Sie schliesst 26 Stunden nach Anpfiff. Eine Stimme pro Gerät, höchstens sechs pro Anschluss. Das Ergebnis erscheint erst nach Schluss.
+Die Wahl ist offen, solange `/api/live` ein laufendes Kadetten-Spiel meldet und der geplante Anpfiff höchstens 15 Minuten in der Zukunft und höchstens 3 Stunden zurück liegt; ein bestätigtes Resultat im Datenstand schliesst sie. Kandidaten sind die Spieler der Kadetten aus dem Live-Stand (SHV oder EHF). Die Liste wird unter `app/votes/<id>/candidates` gesichert (60 Tage), damit das Ergebnis nach dem Schlusspfiff alle Kandidaten zeigt, auch eingewechselte. Fällt die Live-Quelle aus, bleibt die Wahl geschlossen statt zu raten. Eine Stimme pro Gerät, höchstens sechs pro Anschluss. Ältere Wahlen ohne gesicherte Liste zeigen die Kandidaten aus dem Spielbericht.
 
 ## Nicht umgesetzt
 
 - **Push «Wahl offen»:** braucht eine Änderung im Datendienst (neuer Push-Typ im Push-Monitor und Neubereitstellung des Workers). Bis dahin weisen Titelseite und Spielseite auf die offene Wahl hin.
-- **Stufe 2 (Wahl ab der 2. Halbzeit):** Kandidaten aus der Live-Aufstellung, Stimme bis zum Schluss änderbar. Erweitert den bestehenden Schreibweg in `server/app-fan.mjs` (Zeitfenster, Kandidaten aus Live-Daten, Ändern statt Sperren); braucht den ausdrücklichen Auftrag des Eigentümers (AGENTS.md).
+- **Stimme ändern:** Die Stimme ist endgültig; Ändern bis zum Schlusspfiff bräuchte einen eigenen Auftrag.
 - Entwürfe der Varianten A (Karten) und B (Bühne) liegen im Design-Canvas; sie wurden nicht gewählt.

@@ -19,37 +19,65 @@ const game = {id: '508393', date: '2026-11-11', time: '19:15', home: 'Kadetten S
 const kickoff = Date.parse('2026-11-11T18:15:00Z');
 const report = {score: [33, 27], teams: [{name: 'Kadetten Schaffhausen', players: [{id: 10, name: 'PERIĆ Josip', goals: 8, keeper: false}, {id: 1, name: 'BERGMANN Leon', keeper: true, saves: 12, keeperShots: 30}, {id: 16, name: 'SERAVALLI Mathieu', keeper: true, saves: null, keeperShots: null}]}, {name: 'HSC Suhr Aarau', players: [{id: 99, name: 'MUSTER Max', goals: 9}]}]};
 const env = () => ({DATA: kv(), BUCKET: bucket({'kadetten/current.json': {games: [game]}, 'kadetten/reports/508393.json': report})});
-const post = (body, {origin = APP_ORIGIN, ip = '1.2.3.4'} = {}) => new Request('https://api.test/api/app/votes/508393', {method: 'POST', headers: {Origin: origin, 'Content-Type': 'application/json', 'CF-Connecting-IP': ip}, body: JSON.stringify(body)});
-const call = (e, r, now) => appRoute(r, e, new URL(r.url), now);
+const call = (e, r, now, live = null) => appRoute(r, e, new URL(r.url), now, async () => live);
 const device = n => String(n).padStart(43, 'a');
 
-test('Fan-Wahl: Zeitfenster, Kandidaten aus dem Spielbericht, eine Stimme pro Gerät', async () => {
-  const e = env(), open = kickoff + 3 * 3600000;
-  assert.deepEqual(voteWindow(game, kickoff).open, false);
-  let r = await call(e, new Request('https://api.test/api/app/votes/508393'), kickoff + 30 * 60000);
-  let d = await r.json();
-  assert.equal(d.open, false); assert.equal(d.candidates.length, 0, 'vor Spielende keine Kandidaten');
-  d = await (await call(e, new Request('https://api.test/api/app/votes/508393'), open)).json();
+// Laufendes Spiel (noch ohne Resultat im Datenstand) und Live-Stand mit Spielern beider Teams wie /api/live.
+const running = {...game, score: undefined};
+const env2 = () => ({DATA: kv(), BUCKET: bucket({'kadetten/current.json': {games: [running]}})});
+const live = (players, status = 'live') => ({ok: true, match: status === 'finished' ? null : {id: 508393, home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau', status, details: {players}}, finished: status === 'finished' ? {id: 508393, status} : null});
+const lineup = [{id: 10, home: true, name: 'PERIĆ Josip', goals: 3}, {id: 1, home: true, name: 'BERGMANN Leon', goals: 0}, {id: 99, home: false, name: 'MUSTER Max', goals: 4}];
+const post = (body, {origin = APP_ORIGIN, ip = '1.2.3.4'} = {}) => new Request('https://api.test/api/app/votes/508393', {method: 'POST', headers: {Origin: origin, 'Content-Type': 'application/json', 'CF-Connecting-IP': ip}, body: JSON.stringify(body)});
+const get = () => new Request('https://api.test/api/app/votes/508393');
+
+test('Fan-Wahl: nur während des Spiels offen, Kandidaten aus dem Live-Stand, eine Stimme pro Gerät', async () => {
+  const e = env2(), during = kickoff + 40 * 60000;
+  // Vor dem Anpfiff: geschlossen, auch wenn ein anderes Spiel live wäre; Öffnungszeit ist der Anpfiff.
+  let d = await (await call(e, get(), kickoff - 3600000, live(lineup))).json();
+  assert.deepEqual([d.open, d.candidates.length, d.opensAt, d.closesAt], [false, 0, kickoff, null]);
+  assert.equal(voteWindow(running, during, null).open, false, 'ohne Live-Stand geschlossen');
+  // Während des Spiels: offen, nur Kadetten-Spieler.
+  let r = await call(e, get(), during, live(lineup));
+  d = await r.json();
   assert.equal(d.open, true);
-  assert.deepEqual(d.candidates.map(c => c.id), ['10', '1'], 'nur Kadetten, Torhüter ohne Einsatz entfällt');
+  assert.deepEqual(d.candidates.map(c => c.id), ['10', '1']);
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), APP_ORIGIN);
-  assert.equal((await call(e, post({player: '10', device: device(1)}, {origin: 'https://evil.test'}), open)).status, 403);
-  assert.equal((await call(e, post({player: '99', device: device(1)}), open)).status, 400, 'Gegner nicht wählbar');
-  assert.equal((await call(e, post({player: '10', device: 'kurz'}), open)).status, 400);
-  r = await call(e, post({player: '10', device: device(1)}), open);
+  assert.equal((await call(e, post({player: '10', device: device(1)}, {origin: 'https://evil.test'}), during, live(lineup))).status, 403);
+  assert.equal((await call(e, post({player: '99', device: device(1)}), during, live(lineup))).status, 400, 'Gegner nicht wählbar');
+  assert.equal((await call(e, post({player: '10', device: 'kurz'}), during, live(lineup))).status, 400);
+  r = await call(e, post({player: '10', device: device(1)}), during, live(lineup));
   d = await r.json();
   assert.equal(r.status, 200); assert.equal(d.voted, '10'); assert.equal(d.counts['10'], 1); assert.equal(d.total, 1);
-  assert.equal((await call(e, post({player: '1', device: device(1)}), open)).status, 409, 'zweite Stimme desselben Geräts');
+  assert.equal((await call(e, post({player: '1', device: device(1)}), during, live(lineup))).status, 409, 'zweite Stimme desselben Geräts');
   assert.ok([...e.DATA.data.keys()].every(k => !k.includes(device(1))), 'Geräteschlüssel nur gehasht gespeichert');
-  for (let i = 2; i <= VOTES_PER_IP; i++) assert.equal((await call(e, post({player: '1', device: device(i)}), open)).status, 200);
-  assert.equal((await call(e, post({player: '1', device: device(99)}), open)).status, 429, 'Grenze pro Anschluss');
-  assert.equal((await call(e, post({player: '1', device: device(98)}, {ip: '5.6.7.8'}), open)).status, 200);
-  d = await (await call(e, new Request('https://api.test/api/app/votes/508393'), open)).json();
-  assert.deepEqual([d.counts['10'], d.counts['1'], d.total], [1, VOTES_PER_IP, VOTES_PER_IP + 1]);
-  assert.equal((await call(e, post({player: '10', device: device(50)}, {ip: '9.9.9.9'}), kickoff + 27 * 3600000)).status, 409, 'nach Ablauf geschlossen');
-  assert.equal((await call(e, new Request('https://api.test/api/app/votes/000'), open)).status, 404);
+  for (let i = 2; i <= VOTES_PER_IP; i++) assert.equal((await call(e, post({player: '1', device: device(i)}), during, live(lineup))).status, 200);
+  assert.equal((await call(e, post({player: '1', device: device(99)}), during, live(lineup))).status, 429, 'Grenze pro Anschluss');
+  // Ein später eingesetzter Spieler kommt dazu, frühere bleiben in der Liste.
+  const later = [...lineup.slice(1), {id: 7, home: true, name: 'NEU Nils', goals: 1}];
+  assert.equal((await call(e, post({player: '7', device: device(98)}, {ip: '5.6.7.8'}), during + 60000, live(later))).status, 200);
+  // Nach dem Schlusspfiff: geschlossen, Ergebnis mit der gesicherten Liste.
+  d = await (await call(e, get(), kickoff + 2 * 3600000, live([], 'finished'))).json();
+  assert.equal(d.open, false);
+  assert.deepEqual(d.candidates.map(c => c.id).sort(), ['1', '10', '7']);
+  assert.deepEqual([d.counts['10'], d.counts['1'], d.counts['7'], d.total], [1, VOTES_PER_IP - 1, 1, VOTES_PER_IP + 1]);
+  assert.equal((await call(e, post({player: '10', device: device(50)}, {ip: '9.9.9.9'}), kickoff + 2 * 3600000, live([], 'finished'))).status, 409, 'nach dem Schlusspfiff geschlossen');
+  // Liefert die Live-Quelle noch ein Spiel, gilt es nach drei Stunden nicht mehr als dieses Spiel.
+  assert.equal((await call(e, post({player: '10', device: device(51)}, {ip: '9.9.9.8'}), kickoff + 3 * 3600000 + 1, live(lineup))).status, 409);
+  assert.equal((await call(e, new Request('https://api.test/api/app/votes/000'), during, live(lineup))).status, 404);
   const preflight = new Request('https://api.test/api/app/votes/508393', {method: 'OPTIONS', headers: {Origin: APP_ORIGIN}});
-  assert.equal((await call(e, preflight, open)).status, 204);
+  assert.equal((await call(e, preflight, during)).status, 204);
+});
+
+test('Fan-Wahl: Spiel mit bestätigtem Resultat ist geschlossen; alte Wahlen zeigen die Kandidaten aus dem Spielbericht', async () => {
+  const e = env();
+  let fails = 0;
+  const d = await (await appRoute(get(), e, new URL(get().url), kickoff + 3600000, async () => { fails++; throw new Error('offline'); })).json();
+  assert.equal(d.open, false);
+  assert.equal(fails, 0, 'mit Resultat keine Live-Abfrage');
+  assert.deepEqual(d.candidates.map(c => c.id), ['10', '1'], 'nur Kadetten, Torhüter ohne Einsatz entfällt');
+  // Fällt die Live-Quelle während des Spiels aus, bleibt die Wahl zu statt zu raten.
+  const r = await appRoute(get(), env2(), new URL(get().url), kickoff + 600000, async () => { throw new Error('offline'); });
+  assert.equal((await r.json()).open, false);
 });
 
 test('Fan-Wahl über den Worker; Datenstand bleibt schreibgeschützt', async () => {

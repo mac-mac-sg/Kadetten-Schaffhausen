@@ -216,9 +216,9 @@ test('Statistik: Spielverlauf mit zwei Kurven, Legende mit Toren und Tordifferen
 });
 
 // ---- Spielerwahl, Variante C, Stufe 1 ----
-import {suggestions, livePicks, numberFor, surname} from '../src/kadetten/js/wahl.js';
+import {suggestions, numberFor, surname} from '../src/kadetten/js/wahl.js';
 import {picks, pickFor, togglePick, PICKS_KEY} from '../src/kadetten/js/personal.js';
-import {voteSection, pickSection} from '../src/kadetten/js/views/bericht.js';
+import {voteSection, liveVoteCard} from '../src/kadetten/js/views/bericht.js';
 const mem = () => { const m = new Map(); return {getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k)}; };
 const cands = [{id: '1', name: 'LIOI Alessio', goals: 2, saves: null}, {id: '2', name: 'PERIC Josip', goals: 7, saves: null}, {id: '3', name: 'SERAVALLI Mathieu', goals: null, saves: 11}, {id: '4', name: 'KUETTEL Dimitrij', goals: 4, saves: null}, {id: '5', name: 'MEIER Max', goals: 0, saves: null}];
 const dom2 = v => parseHTML('<html><body>' + String(v) + '</body></html>').document;
@@ -230,7 +230,6 @@ test('Vorschläge nach Spieldaten: meiste Tore, zweitmeiste Tore, meiste Paraden
   assert.equal(suggestions([{id: '1', name: 'A', goals: 3}, {id: '2', name: 'B', goals: 3}]).picked[1].reason, 'Gleich viele Tore');
   assert.deepEqual(suggestions(null), {picked: [], rest: []});
   assert.deepEqual(suggestions([{id: '9', name: 'X', goals: 0}]).picked, [], 'ohne gemeldete Werte keine Begründung erfunden');
-  assert.deepEqual(livePicks([{id: 1, name: 'A', goals: 1}, {id: 2, name: 'B', goals: 5}, {id: 3, name: 'C', goals: 0}, {id: 4, name: 'D', goals: 3}, {id: 5, name: 'E', goals: 2}]).map(p => p.id), [2, 4, 5]);
   assert.equal(numberFor({playerSeason: {players: {10: {shvPlayerId: 7}}}}, '7'), 10);
   assert.equal(numberFor({}, '7'), null);
   assert.equal(surname('Josip Perić'), 'Perić');
@@ -272,25 +271,24 @@ test('Wahlliste: Vorschläge mit Begründung, weitere Spieler eingeklappt, Favor
   assert.ok(noData.querySelector('details.vote-rest').hasAttribute('open'), 'ohne Vorschläge sind alle Spieler sichtbar');
 });
 
-test('Live-Spiel: «Dein Favorit?» mit Chips der besten Torschützen, Alle-Schalter, Favorit bleibt sichtbar', () => {
-  const players = [{id: 2, home: true, name: 'PERIC Josip', goals: 7}, {id: 4, home: true, name: 'KUETTEL Dimitrij', goals: 4}, {id: 1, home: true, name: 'LIOI Alessio', goals: 2}, {id: 8, home: true, name: 'MEIER Max', goals: 1}, {id: 20, home: false, name: 'GEGNER Gerd', goals: 9}];
-  const match = {id: 'x', home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau', score: [24, 21], league: 'QHL', details: {ok: true, players}};
+test('Live-Spiel: Hinweis auf die Fan-Wahl nur während der Wahl, ohne Zwischenstand', () => {
   const game = {id: 'x', home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau', league: 'QHL'};
-  const data = {playerSeason: {players: {10: {shvPlayerId: 2}}}};
-  const d = dom2(pickSection({match, game, data, ui: {}}));
-  const chips = [...d.querySelectorAll('.pick-chips [data-pick]')];
-  assert.deepEqual(chips.map(c => c.getAttribute('data-pick')), ['2', '4', '1'], 'drei beste eigene Torschützen, nie der Gegner');
-  assert.equal(chips[0].querySelector('b').textContent, '10');
-  assert.ok(d.querySelector('[data-ui="pickAll:1"]'), 'Alle einblenden');
-  assert.match(d.body.textContent, /Die Wahl öffnet nach dem Abpfiff/);
-  assert.equal(d.querySelectorAll('[data-vote-confirm],[data-vote]').length, 0, 'live wird nichts abgestimmt');
-  const all = dom2(pickSection({match, game, data, ui: {pickAll: '1'}}));
-  assert.equal(all.querySelectorAll('[data-pick]').length, 4);
-  assert.ok(all.querySelector('[data-ui="pickAll:0"]'));
-  assert.equal(dom2(pickSection({match: {...match, details: null}, game, data, ui: {}})).querySelectorAll('[data-pick]').length, 0);
-  assert.equal(pickSection({match, game: {id: 'y', home: 'A', away: 'B'}, data, ui: {}}), '', 'nur Spiele der Kadetten');
-  const mem2 = mem();
-  assert.equal(togglePick('x', {id: 8, name: 'MEIER Max'}, mem2).id, '8');
+  const open = {status: 'ready', value: {open: true, opensAt: 1, closesAt: null, candidates: cands, counts: {2: 5}, total: 5}};
+  let d = dom2(liveVoteCard({game, vote: open}));
+  assert.equal(d.querySelector('a.vote-teaser').getAttribute('href'), '#/spiel/x/wahl');
+  assert.match(d.body.textContent, /Wähle den Spieler des Matchs/);
+  assert.match(d.body.textContent, /offen bis zum Schlusspfiff/);
+  assert.doesNotMatch(d.body.textContent, /%/, 'kein Zwischenstand');
+  d = dom2(liveVoteCard({game, vote: open, mine: '2'}));
+  assert.match(d.body.textContent, /Deine Stimme ist gespeichert/);
+  d = dom2(liveVoteCard({game, vote: {status: 'ready', value: {open: false, opensAt: 1, closesAt: null, candidates: []}}}));
+  assert.match(d.body.textContent, /sobald die Quelle die Spieler der Kadetten meldet/);
+  assert.equal(liveVoteCard({game, vote: {status: 'loading'}}), '');
+  // Wahlseite: ohne Schlusszeit steht «bis zum Schlusspfiff».
+  const page = dom2(voteSection({vote: {status: 'ready', value: {open: true, closesAt: null, candidates: cands}}, now: 0, data: {}}));
+  assert.match(page.body.textContent, /offen bis zum Schlusspfiff/);
+  const before = dom2(voteSection({vote: {status: 'ready', value: {open: false, opensAt: 1000, closesAt: null, candidates: []}}, now: 0}));
+  assert.match(before.body.textContent, /öffnet mit dem Anpfiff und läuft bis zum Schlusspfiff/);
 });
 
 // ---- Schusseffizienz in der Saison-Torschützenliste ----

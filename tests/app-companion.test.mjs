@@ -69,7 +69,7 @@ test('Spielerwahl benötigt Auswahl und Bestätigung, Fotos werden anhand Quelle
  const invalid=doc(voteSection({vote,now,data,selected:'evil'}));
  assert.ok(invalid.querySelector('[data-vote-confirm]').hasAttribute('disabled'));
  const receipt=doc(voteSection({vote,now,data,mine:'99'}));
- assert.match(receipt.body.textContent,/Ergebnis erscheint nach Wahlende/);
+ assert.match(receipt.body.textContent,/Ergebnis erscheint nach dem Schlusspfiff/);
  assert.doesNotMatch(receipt.body.textContent, /100\s*%/);
  assert.ok(!receipt.querySelector('[data-vote-confirm]'));
  const closed=doc(voteSection({vote:{...vote,value:{...vote.value,open:false}},now,data,mine:'99'}));

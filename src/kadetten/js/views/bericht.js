@@ -6,7 +6,7 @@ import {shortTeam} from '../logic.js';
 import {isOwn, displayName, storiesForGame} from '../match.js';
 import {reportText, goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
 import {favourite, pickFor} from '../personal.js';
-import {suggestions, livePicks, numberFor, surname} from '../wahl.js';
+import {suggestions, numberFor, surname} from '../wahl.js';
 import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
 
 export const ruleButton = id => html`<button type="button" class="rule" data-rule="${id}" aria-label="Erklärung anzeigen">?</button>`;
@@ -328,15 +328,12 @@ export function voteSection({vote, mine, now, busy, message, selected, data, pic
   if (!v || !Array.isArray(v.candidates) || !v.candidates.length) {
     if (v && v.opensAt && now < v.opensAt)
       return html`<section class="sec" aria-labelledby="g-vote">
-        ${sectionHead('Spieler des Matchs', '', '', 'g-vote')}${notice('Die Fan-Wahl öffnet nach Spielende, sobald der Spielbericht vorliegt.', 'star')}</section>`;
+        ${sectionHead('Spieler des Matchs', '', '', 'g-vote')}${notice('Die Fan-Wahl öffnet mit dem Anpfiff und läuft bis zum Schlusspfiff.', 'star')}</section>`;
     return html`<section class="sec">
       ${
         vote?.status === 'loading'
           ? loading('Die Fan-Wahl wird geladen …')
-          : notice(
-              'Die Fan-Wahl ist derzeit nicht geöffnet. Sie erscheint nach Spielende, sobald der bestätigte Spielbericht vorliegt.',
-              'star'
-            )
+          : notice('Die Fan-Wahl ist nur während des Spiels offen, vom Anpfiff bis zum Schlusspfiff.', 'star')
       }</section>`;
   }
   const total = v.total || 0,
@@ -354,12 +351,12 @@ export function voteSection({vote, mine, now, busy, message, selected, data, pic
       .join(' · ');
   const closes = v.closesAt
     ? new Date(v.closesAt).toLocaleString('de-CH', {timeZone: 'Europe/Zurich', weekday: 'short', hour: '2-digit', minute: '2-digit'})
-    : '';
+    : 'zum Schlusspfiff';
   const playerInfo = c => {
     const nr = numberFor(data, c.id);
     return nr === null ? null : playerByNumber(nr);
   };
-  // Wahlliste: Vorschläge nach Spieldaten mit Begründung, die übrigen Spieler eingeklappt. Der Favorit aus dem Live-Spiel ist vorgewählt.
+  // Wahlliste: Vorschläge nach Spieldaten mit Begründung, die übrigen Spieler eingeklappt. Ein früher gemerkter Favorit ist vorgewählt.
   const row = (c, reason) => {
     const player = playerInfo(c),
       chosen = String(selected) === String(c.id),
@@ -392,7 +389,7 @@ export function voteSection({vote, mine, now, busy, message, selected, data, pic
     }
   </div>`;
   return html`<section class="sec vote-panel" aria-labelledby="g-vote">${sectionHead('Deine Stimme zählt', '', '', 'g-vote')}
-    ${mine && v.open ? html`<p class="note" role="status">Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.</p>` : ''}
+    ${mine && v.open ? html`<p class="note" role="status">Deine Stimme ist gespeichert. Das Ergebnis erscheint nach dem Schlusspfiff.</p>` : ''}
     ${
       showResults
         ? html`<div class="card list vote">${sorted.map(c => {
@@ -419,7 +416,7 @@ export function voteSection({vote, mine, now, busy, message, selected, data, pic
       (showResults
         ? `${total} ${total === 1 ? 'Stimme' : 'Stimmen'}${v.open ? ` · Wahl offen bis ${closes}` : ' · Wahl beendet'}`
         : mine
-          ? 'Deine Stimme ist gespeichert. Das Ergebnis erscheint nach Wahlende.'
+          ? 'Deine Stimme ist gespeichert. Das Ergebnis erscheint nach dem Schlusspfiff.'
           : `Wähle deinen Spieler und bestätige die Stimme. Eine Stimme pro Gerät, offen bis ${closes}.`)
     } Inoffizielle Fan-Wahl, keine Auszeichnung des Vereins.</p>
   </section>`;
@@ -626,39 +623,16 @@ export function liveReport(match) {
   };
 }
 
-/** Live-Spiel: «Dein Favorit?». Nur merken, nicht abstimmen: Die Wahl öffnet nach dem Abpfiff (Stufe 1, nur auf diesem Gerät). */
-export function pickSection({match, game, data, ui}) {
-  if (!game || (!isOwn(game.home) && !isOwn(game.away))) return '';
-  const report = liveReport(match);
-  const own = report?.teams.find(t => isOwn(t.name));
-  const players = (own?.players || []).filter(p => p.id != null && p.name);
-  const mine = pickFor(game.id);
-  const all = ui?.pickAll === '1';
-  const shown = all
-    ? [...players].sort((a, b) => (b.goals ?? 0) - (a.goals ?? 0) || String(a.name).localeCompare(String(b.name), 'de'))
-    : livePicks(players);
-  // Ein gemerkter Favorit bleibt sichtbar, auch wenn er (noch) nicht zu den Torschützen gehört.
-  if (mine && !shown.some(p => String(p.id) === mine.id)) shown.unshift({id: mine.id, name: mine.name, goals: null});
-  const chip = p => {
-    const nr = numberFor(data, p.id),
-      on = mine?.id === String(p.id);
-    return html`<button type="button" class="chip${on ? ' on' : ''}" data-pick="${p.id}" data-pick-name="${p.name}" aria-pressed="${String(on)}">${nr !== null ? html`<b class="num">${nr}</b>` : ''}${surname(displayName(p.name))}</button>`;
-  };
-  return html`<section class="sec pick" aria-labelledby="g-pick">${sectionHead('Dein Favorit?', '', '', 'g-pick')}
-    <div class="card">
-      <p class="fine">Merken statt abstimmen: Die Wahl öffnet nach dem Abpfiff. Dein Favorit bleibt auf diesem Gerät und wird dann vorgewählt.</p>
-      ${
-        shown.length || players.length
-          ? html`<div class="chips pick-chips" role="group" aria-label="Favorit für den Spieler des Matchs">
-            ${shown.map(chip)}${
-              players.length > shown.length || all
-                ? html`<button type="button" class="chip" data-ui="${'pickAll:' + (all ? '0' : '1')}" aria-pressed="${String(all)}">${all ? 'Weniger' : 'Alle'}</button>`
-                : ''
-            }</div>`
-          : html`<p class="note pick-empty" role="status">${icon('team', 18)}<span>Sobald die Quelle Spieler meldet, erscheinen hier Vorschläge.</span></p>`
-      }
-      ${mine ? html`<p class="pick-now" role="status">Dein Favorit: <b>${displayName(mine.name)}</b></p>` : ''}
-    </div></section>`;
+/** Live-Spiel: Hinweis auf die Fan-Wahl. Sie ist nur während des Spiels offen, vom Anpfiff bis zum Schlusspfiff. */
+export function liveVoteCard({game, vote, mine}) {
+  const v = vote?.value;
+  if (!game || !v) return '';
+  if (v.open)
+    return html`<section class="sec">
+      <a class="card rowcard vote-teaser" href="${href.spiel(game.id, 'wahl')}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">${
+        mine ? 'Deine Stimme ist gespeichert' : 'Wähle den Spieler des Matchs'
+      }</span><span class="s">${mine ? 'Das Ergebnis erscheint nach dem Schlusspfiff' : 'Inoffizielle Fan-Wahl, offen bis zum Schlusspfiff'}</span></span>${icon('go')}</a></section>`;
+  return html`<section class="sec">${notice('Die Fan-Wahl öffnet, sobald die Quelle die Spieler der Kadetten meldet, und läuft bis zum Schlusspfiff.', 'star')}</section>`;
 }
 
 export function renderLiveStats({match, data, ui}) {
