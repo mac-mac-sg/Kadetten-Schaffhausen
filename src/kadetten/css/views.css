@@ -359,14 +359,9 @@
 .card > .h4 { margin-top: var(--s-5); }
 .card > .h4 + .chart-wrap .chart { height: 96px; }
 
-/* Live-Spiel: «Dein Favorit?» (merken, nicht abstimmen) */
-.pick .chips { margin: var(--s-3) 0 0; }
-.pick .fine { margin: 0; }
+/* Chips mit Nummer (Rückennummer oder Schritt) */
 .chip b { margin-right: 6px; font: italic 600 20px/1 var(--f-display); color: var(--c-accent-text); }
 .chip.on b { color: var(--c-on-accent); }
-.pick-now { margin-top: var(--s-3); font: 400 var(--fs-small)/1.4 var(--f-text); color: var(--c-text-muted); }
-.pick-now b { color: var(--c-text); font-weight: 600; }
-.pick-empty { margin-top: var(--s-3); }
 
 /* EHL-Statistik wie in Matchday: Toptorschützen, Quote je Halbzeit, Paraden nach Wurfzone */
 .h4.first { margin-top: 0; }

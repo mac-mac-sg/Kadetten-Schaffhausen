@@ -21,14 +21,6 @@ export function suggestions(candidates) {
   return {picked, rest};
 }
 
-/** Die bis zu drei besten Torschützen der eigenen Mannschaft aus den Live-Werten (nur Spieler mit gemeldeten Toren). */
-export function livePicks(players, limit = 3) {
-  return (Array.isArray(players) ? players : [])
-    .filter(p => p && p.id != null && count(p.goals))
-    .sort((a, b) => count(b.goals) - count(a.goals) || byName(a, b))
-    .slice(0, limit);
-}
-
 /** Rückennummer eines Spielers anhand der Quellen-ID (SHV oder EHF) aus den Saisonwerten, sonst null. */
 export function numberFor(data, id) {
   const find = (season, key) => Object.entries(season?.players || {}).find(([, p]) => String(p[key]) === String(id))?.[0];

@@ -8,7 +8,7 @@ import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kicko
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {liveNotice} from '../live.js';
 import {normalizeReport, fitsGame} from '../report.js';
-import {renderBericht, renderLiveStats, loadReportFor, voteSection, pickSection} from './bericht.js';
+import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor} from '../personal.js';
 import {
@@ -150,14 +150,18 @@ function vorschau({game, data, load, api, now}) {
     }`;
 }
 
+/** Hinweis auf die Fan-Wahl während des Spiels (nur mit Datendienst). */
+const voteCard = (game, ui, load) =>
+  ui.votes ? liveVoteCard({game, vote: load('votes:' + game.id, () => ui.votes.status(game.id), 30000), mine: myVotes()[game.id]}) : '';
+
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
-function liveTab({game, data, state, ui}) {
+function liveTab({game, data, state, ui, load}) {
   return html`${
     liveNotice(state, game)
       ? html`<section class="sec">
     ${notice(liveNotice(state, game))}</section>`
       : ''
-  }${pickSection({match: state.live.match, game, data, ui})}${renderTicker(state.live.match)}<section class="sec">
+  }${voteCard(game, ui, load)}${renderTicker(state.live.match)}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
 }
 
@@ -235,12 +239,12 @@ export function renderSpiel({route, state, now, load, api, ui}) {
       ? report(tab === 'rueckblick' ? 'rueckblick' : 'statistik')
       : phase === 'live'
         ? tab === 'live'
-          ? liveTab({game, data, state, ui})
+          ? liveTab({game, data, state, ui, load})
           : tab === 'bericht'
             ? report()
             : html`<section class="sec">
               <a class="btn pri" href="${href.spiel(game.id, 'live')}">Zum Liveticker</a></section>
-              ${pickSection({match: live.match, game, data, ui})}${renderLiveStats({match: live.match, data, ui})}`
+              ${voteCard(game, ui, load)}${renderLiveStats({match: live.match, data, ui})}`
         : html`${vorschau({game, data, load, api, now, ui})}<section class="sec">
           ${notice('Der Liveticker und die Spielwerte erscheinen ab Anpfiff.', 'jetzt')}</section>`;
   return html`${matchBand(

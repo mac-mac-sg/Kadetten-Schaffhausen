@@ -2,15 +2,18 @@
 // - GET  /api/app/calendar.ics      Kalender-Abo mit allen Kadetten-Spielen (nur lesend)
 // - GET  /api/app/votes/:id         Fan-Wahl «Spieler des Matchs»: Stand, Kandidaten, Zeitfenster
 // - POST /api/app/votes/:id         eine Stimme pro Gerät und Spiel (Entscheid des Eigentümers, 5.11.2026)
+// Die Wahl ist nur während des Spiels offen, vom Anpfiff bis zum Schlusspfiff (Entscheid des Eigentümers, 12.11.2026).
 // Die Fan-Wahl ist der einzige öffentliche Schreibweg neben dem Push-Abo. Sie speichert nur gezählte Stimmen
 // unter zufälligen, gehashten Geräteschlüsseln, keine Personendaten, und ist auf die App-Herkunft beschränkt.
 import {pushKickoff} from './push-monitor.mjs';
+import {getLiveMatch} from './live.mjs';
 
 export const APP_ORIGIN = 'https://mac-mac-sg.github.io';
 const OWN = 'Kadetten Schaffhausen';
 const HOUR = 3600000;
-export const VOTE_OPEN_AFTER = 90 * 60000;   // frühestens 90 Minuten nach Anpfiff (Spiel vorbei)
-export const VOTE_CLOSE_AFTER = 26 * HOUR;   // bis etwa 24 Stunden nach Spielende
+export const VOTE_EARLY = 15 * 60000;        // Anpfiff darf so viel früher liegen als im Spielplan
+export const VOTE_LATEST = 3 * HOUR;         // spätestens so lange nach dem geplanten Anpfiff gilt ein Live-Spiel als dieses Spiel
+const KEEP = 60 * 86400;                     // Stimmen und Kandidaten bleiben 60 Tage für das Ergebnis
 export const VOTES_PER_IP = 6;               // pro Spiel und Anschluss (Haushalte teilen sich eine Adresse)
 
 const sha = async value => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))), b => b.toString(16).padStart(2, '0')).join('');
@@ -23,8 +26,9 @@ async function snapshot(env) {
   return saved ? saved.json() : null;
 }
 
-/** Kandidaten aus dem gesicherten Spielbericht (QHL/Cup: SHV, EHL: EHF-Archiv). Ohne Bericht keine Wahl. */
-export async function candidates(env, game) {
+/** Kandidaten aus dem gesicherten Spielbericht (QHL/Cup: SHV, EHL: EHF-Archiv). Nur für Wahlen vor dem 12.11.2026, die nach
+ * Spielende liefen und keine gespeicherte Kandidatenliste haben. */
+export async function reportCandidates(env, game) {
   if (game.league === 'EHL') {
     const stored = await env.BUCKET?.get('kadetten/ehf/' + game.id + '.json');
     const record = stored ? await stored.json() : null;
@@ -42,12 +46,27 @@ export async function candidates(env, game) {
     .map(p => ({id: String(p.id), name: p.name, goals: p.goals ?? null, saves: p.keeper ? p.saves ?? null : null}));
 }
 
-/** Zeitfenster der Wahl: nach Spielende (bestätigtes Resultat) bis etwa 24 Stunden danach. */
-export function voteWindow(game, now) {
+/** Kandidaten aus dem Live-Stand: die Spieler der Kadetten, die die Quelle (SHV oder EHF) für das laufende Spiel meldet. */
+export function liveCandidates(match) {
+  const players = match?.details?.players;
+  if (!Array.isArray(players)) return [];
+  const ownHome = isOwn(match.home);
+  if (!ownHome && !isOwn(match.away)) return [];
+  const seen = new Set();
+  return players.filter(p => p && p.home === ownHome && p.id != null && /^[\w-]{1,40}$/.test(String(p.id)) && p.name && !seen.has(String(p.id)) && seen.add(String(p.id)))
+    .map(p => ({id: String(p.id), name: String(p.name).slice(0, 80), goals: Number.isInteger(p.goals) ? p.goals : null, saves: Number.isInteger(p.saves) ? p.saves : null}));
+}
+
+/**
+ * Zeitfenster der Wahl: offen, solange die Live-Quelle ein laufendes Kadetten-Spiel meldet und der geplante Anpfiff dieses Spiels
+ * höchstens 15 Minuten in der Zukunft und höchstens 3 Stunden zurück liegt. Mit dem Schlusspfiff (Quelle meldet das Spiel als beendet)
+ * oder einem bestätigten Resultat im Datenstand schliesst sie.
+ */
+export function voteWindow(game, now, live = null) {
   const kickoff = pushKickoff(game);
-  if (!Number.isFinite(kickoff) || !Array.isArray(game.score)) return {open: false, opensAt: null, closesAt: null};
-  const opensAt = kickoff + VOTE_OPEN_AFTER, closesAt = kickoff + VOTE_CLOSE_AFTER;
-  return {open: now >= opensAt && now < closesAt, opensAt, closesAt};
+  if (!Number.isFinite(kickoff)) return {open: false, opensAt: null, closesAt: null};
+  const running = Boolean(live?.match && live.match.status !== 'finished') && !Array.isArray(game.score) && now >= kickoff - VOTE_EARLY && now < kickoff + VOTE_LATEST;
+  return {open: running, opensAt: kickoff, closesAt: null};
 }
 
 async function tally(kv, id) {
@@ -89,7 +108,7 @@ export function buildCalendar(games, now) {
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
-export async function appRoute(request, env, url, now = Date.now()) {
+export async function appRoute(request, env, url, now = Date.now(), liveFn = getLiveMatch) {
   if (url.pathname === '/api/app/calendar.ics') {
     if (request.method !== 'GET' && request.method !== 'HEAD') return reply({error: 'GET required'}, 405);
     const data = await snapshot(env);
@@ -102,8 +121,21 @@ export async function appRoute(request, env, url, now = Date.now()) {
   const id = m[1], data = await snapshot(env);
   const game = data?.games?.find(g => String(g.id) === id && (isOwn(g.home) || isOwn(g.away)));
   if (!game) return reply({error: 'Spiel nicht gefunden'}, 404);
-  const window = voteWindow(game, now);
-  const list = window.opensAt && now >= window.opensAt ? await candidates(env, game) : [];
+  // Den Live-Stand nur rund um den Anpfiff abfragen; sonst ist die Wahl ohnehin geschlossen.
+  const kickoff = pushKickoff(game);
+  const near = Number.isFinite(kickoff) && !Array.isArray(game.score) && now >= kickoff - VOTE_EARLY && now < kickoff + VOTE_LATEST;
+  let live = null;
+  if (near) try { live = await liveFn(); } catch { live = null; }
+  const window = voteWindow(game, now, live);
+  const listKey = 'app/votes/' + id + '/candidates';
+  let list = window.open ? liveCandidates(live.match) : [];
+  if (list.length) {
+    // Liste für das Ergebnis nach dem Schlusspfiff sichern; frühere Kandidaten (zum Beispiel ausgewechselt) bleiben dabei.
+    const saved = (await env.DATA.get(listKey, 'json')) || [];
+    const merged = [...list, ...saved.filter(c => !list.some(x => x.id === c.id))];
+    if (JSON.stringify(merged) !== JSON.stringify(saved)) await env.DATA.put(listKey, JSON.stringify(merged), {expirationTtl: KEEP});
+    list = merged;
+  } else if (!window.open) list = (await env.DATA.get(listKey, 'json')) || (await reportCandidates(env, game));
   const state = async () => ({ok: true, open: window.open && list.length > 0, opensAt: window.opensAt, closesAt: window.closesAt, candidates: list, ...(await tally(env.DATA, id))});
   if (request.method === 'GET') return reply(await state());
   if (request.method !== 'POST') return reply({error: 'Method not allowed'}, 405);
@@ -119,9 +151,8 @@ export async function appRoute(request, env, url, now = Date.now()) {
   const ipKey = 'app/votes/' + id + '/ip/' + await sha(request.headers.get('CF-Connecting-IP') || 'unknown');
   const used = Number(await env.DATA.get(ipKey)) || 0;
   if (used >= VOTES_PER_IP) return reply({error: 'Von diesem Anschluss wurden schon viele Stimmen abgegeben.'}, 429);
-  const ttl = Math.max(60, Math.ceil((window.closesAt - now) / 1000) + 30 * 86400);
-  await env.DATA.put(voteKey, player.id, {metadata: {p: player.id}, expirationTtl: ttl});
-  await env.DATA.put(ipKey, String(used + 1), {expirationTtl: Math.max(60, Math.ceil((window.closesAt - now) / 1000))});
+  await env.DATA.put(voteKey, player.id, {metadata: {p: player.id}, expirationTtl: KEEP});
+  await env.DATA.put(ipKey, String(used + 1), {expirationTtl: 6 * 3600});
   await env.DATA.delete('app/votes/' + id + '/tally');
   return reply({...(await state()), voted: player.id});
 }

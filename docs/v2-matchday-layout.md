@@ -17,7 +17,7 @@ Der Build liest ausschliesslich aus `src/kadetten/`. Die gemeinsam aussehenden A
 | Kontext | Funktion | Verhalten |
 |---|---|---|
 | Abgeschlossenes Kadetten-QHL-Spiel | Artikel zum Spiel | Bis zu drei vorhandene Vereinsartikel mit Gegnerbezug, vom Spieltag bis zwei Tage danach; öffnen intern im Matchday-Artikelbildschirm |
-| Abgeschlossenes Kadetten-QHL-Spiel | Spieler des Matchs | Aufklappbare Fan-Wahl mit Quellenkandidaten, Portrait-Zuordnung über SHV-ID, Auswahl und separater Bestätigung; Ergebnis erst nach Wahlende |
+| Laufendes Kadetten-Spiel | Spieler des Matchs | Fan-Wahl nur vom Anpfiff bis zum Schlusspfiff, Kandidaten aus dem Live-Stand, Portrait-Zuordnung über SHV-ID, Auswahl und separater Bestätigung; Ergebnis erst nach dem Schlusspfiff auf der Spielseite |
 | Abgeschlossenes Kadetten-QHL-Spiel | Ich war in der Halle | Umschalter mit lokal gespeichertem Besuch, auch bei Auswärtsspielen |
 | Kadetten-QHL-Spiel vor Anpfiff | Dein Tipp | Lokaler Ergebnistipp; ab Anpfiff gesperrt, auch wenn der Bildschirm geöffnet bleibt |
 
