@@ -34,8 +34,21 @@ test('QHL-Saisonimport nennt bei inkonsistenten Zählern Spieler und Zahlen', ()
     p = broken.data.playerStaff[0].player[0];
   p.totalScoreField += 1;
   assert.throws(() => parsePlayerSeason(broken), e => e.message.includes('Spieler ' + p.playerId) && e.message.includes('Total ' + p.totalScore));
+});
+
+test('QHL-Saisonimport übernimmt Spieler mit mehr Spielen als das Team und meldet es', () => {
   const many = structuredClone(fixture),
     q = many.data.playerStaff[0].player[0];
   q.games = many.data.teamDashboard[0].gamesTotal + 1;
-  assert.throws(() => parsePlayerSeason(many), e => e.message.includes('Spieler ' + q.playerId) && e.message.includes('Spiele'));
+  const warnings = [],
+    original = console.warn;
+  console.warn = message => warnings.push(message);
+  try {
+    const result = parsePlayerSeason(many);
+    assert.equal(Object.values(result.players).find(p => p.shvPlayerId === q.playerId)?.games, q.games);
+  } finally {
+    console.warn = original;
+  }
+  assert.equal(warnings.length, 1);
+  assert.ok(warnings[0].includes('Spieler ' + q.playerId));
 });
