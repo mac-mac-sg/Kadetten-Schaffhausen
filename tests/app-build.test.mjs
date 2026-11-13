@@ -10,10 +10,10 @@ function sources(dir) {
   return readdirSync(dir).flatMap(name => { const p = join(dir, name); return statSync(p).isDirectory() ? sources(p) : [p]; });
 }
 
-test('Eigene Codebasis: keine Datei der neuen App greift auf src/client zu', () => {
+test('Eigene Codebasis: keine Datei der Kadetten-App greift auf das Archiv von Matchday zu', () => {
   for (const file of sources('src/kadetten').filter(f => /\.(js|css|html)$/.test(f))) {
     const text = readFileSync(file, 'utf8');
-    assert.doesNotMatch(text, /src\/client|\.\.\/\.\.\/client|from ['"]\.\.\/\.\.\/\.\./, file);
+    assert.doesNotMatch(text, /src\/client|archive\/matchday|\.\.\/\.\.\/client|from ['"]\.\.\/\.\.\/\.\./, file);
   }
 });
 

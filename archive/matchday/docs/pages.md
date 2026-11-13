@@ -1,0 +1,246 @@
+# Veröffentlichung wie Essens-Check
+
+> Stand 06.10.2026: Die App liest seit dem Umschalten vom Cloudflare-Datendienst, siehe [Umzug auf Cloudflare](cloudflare-umzug.md) und [Betrieb](betrieb.md). Der bisherige Sites-Dienst wurde am 23. Oktober 2026 abgeschaltet (Phase 4).
+
+Entscheid vom 03.10.2026: keine separate Testumgebung; GitHub Actions und GitHub Pages wie bei Essens-Check. Für den Datendienst wird das bereits eingerichtete Cloudflare-Konto verwendet.
+
+## Ablauf
+
+Ein Pull Request prüft Syntax, Tests, Pages-Build und Projektpfade. Nach Merge nach main prüft der Workflow nochmals und veröffentlicht ausschliesslich dist/client auf GitHub Pages. Zugangsdaten und Worker-Code werden nicht mitveröffentlicht. Die Pipeline nutzt die gleichen versionierten GitHub-Pages-Actions wie Essens-Check.
+
+Die App verwendet relative Assetpfade, Manifest-Scope und Service-Worker-Scope für `/Kadetten-Schaffhausen/`. `npm run build:pages` erzeugt die öffentliche Oberfläche; `npm run build` behält den bisherigen Sites-Build bei.
+
+Seit Schritt 6 der [Kadetten Companion App](kadetten-app.md) liegen zwei getrennte Apps in `dist/client`: unter `/` V1 «Matchday» aus `src/client` (eingefroren, `scripts/check-v1-frozen.mjs`) und unter `/v2/` die Kadetten Companion App aus `src/kadetten` (`scripts/build-app.mjs`, geprüft von `scripts/check-preview.mjs`). Die Abschnitte «V2: …» weiter unten beschreiben die bisherige V2 und gelten nicht mehr für `/v2/`.
+
+Die einmalige Repository-Einstellung ist Settings → Pages → Source → GitHub Actions. Der Workflow versucht die Einrichtung über configure-pages. Wenn GitHub diese administrative Aktion mit seinem Workflow-Token nicht zulässt, muss der Eigentümer die Einstellung einmal selbst setzen und den Workflow erneut ausführen.
+
+## Datendienst
+
+GitHub Pages führt kein Worker-Backend aus. Für die bestehenden Funktionen ist der Datendienst auf Cloudflare Workers zuständig: https://kadetten-api.mac-mac-sg.workers.dev (Worker `kadetten-api`, Speicher Workers KV; Aufbau und Verlauf des Umzugs: docs/cloudflare-umzug.md). Der bisherige Sites-Datendienst unter https://kadetten.ma-ra10.chatgpt.site läuft unverändert weiter, wird von der Pages-App aber nicht mehr gelesen.
+
+- News und vollständige versionierte Artikel im KV-Speicher
+- Spielplan, Tabellen und Spielerwerte, aktualisiert durch den Workflow «Cloudflare-Datenaktualisierung» (GitHub Actions, Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20)
+- bestätigte Live-Werte, Formkurven und Direktvergleiche (beim Aufruf aus den externen Quellen geholt)
+
+Die Pages-App liest diese öffentlichen APIs ohne Cookies und ohne Zugangsschlüssel. Der Dienst erlaubt CORS ausschliesslich für öffentliche GET-Endpunkte und den Ursprung https://mac-mac-sg.github.io. Schreib-/Login-Endpunkte erhalten keine CORS-Freigabe. Die GitHub-App besitzt keinen manuellen Aktualisieren-Button und keinen Freigabeablauf. Sie liest den zuletzt automatisch aktualisierten Datenstand; Live-Abfragen bleiben unabhängig davon erhalten. Matchprogramme, Vorschauen und Rückblicke entstehen im autorisierten Actions-Schreiblauf und werden vom Datendienst ausgeliefert.
+
+Das ist eine Migration von Codebasis, Oberfläche und Veröffentlichung nach GitHub. Der Datendienst bleibt eine ausdrücklich dokumentierte Abhängigkeit. Vollständige Artikel und laufende Statistiken werden nicht in Git-Commits kopiert. Es gibt keine separate Testumgebung.
+
+## Betrieb und Rückkehr
+
+Der ursprüngliche Sites-Link ist seit dem 23. Oktober 2026 abgeschaltet; ein Zurückschalten auf den bisherigen Datendienst ist nicht mehr möglich. Zum Rücknehmen einer fehlerhaften UI-Version den entsprechenden Merge auf main mit einem neuen Commit rückgängig machen; die Pages-Pipeline veröffentlicht diesen Stand. Bei einem Datendienst-Ausfall kennzeichnet die App den letzten gespeicherten Stand. Live-Antworten werden nie aus dem Offline-Cache angezeigt.
+
+
+### Arena-Hintergrund auf der News-Startseite
+Die drei Vereine verwenden lokal ausgelieferte Fotos hinter Kopfzeile und Spieltagsblock. Alle drei Fotos werden mit der Offline-Hülle vorgeladen und im Build-Hash berücksichtigt. Vereinsfarbene Lichtverläufe, leichte Unschärfe und dunkle Glasflächen erhalten die Lesbarkeit. Das bereits abgedunkelte Otmar-Banner wird nur per CSS aufgehellt.
+
+Bildquellen:
+- Kadetten: BBC Arena, bestehendes Foto `assets/bbc-arena-hall.webp`.
+- FCSG: FC St.Gallen 1879, Berit Sitterstadion, https://www.fcsg.ch/pages/beritklinik; Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/berit-sitterstadion.jpg?v=1782912949&width=1200; lokale Datei `assets/fcsg-stadium.webp`.
+- St. Otmar: TSV St.Otmar, Kreuzbleiche-Tribüne, https://otmar.ch/; Bild https://data.otmar.ch/data/home/_headerSplashScreen/70186/Kreuzbleiche-Tribuene-Herobanner.webp; lokale Datei `assets/otmar-kreuzbleiche.webp`.
+
+### Einführung & Tipps
+Beim ersten Öffnen auf einem Gerät erscheint eine überspringbare Einführung in vier Schritten: Vereinswahl, News, Spiele und Kader. Abschluss, Überspringen und Escape speichern `fan-app-onboarding-v1` lokal. Auf der Startseite unter Einstellungen → Einführung & Tipps lässt sich die Einführung jederzeit erneut öffnen, auch in der installierten App. Nach dem ersten vollständigen Durchlauf kann der bestehende Installationshinweis folgen; eine Installation erfolgt weiterhin nur nach ausdrücklichem Klick. Die erneut geöffnete Einführung zeigt keinen Installationshinweis.
+
+### Einheitliche Bedienung und Offline-Nutzung
+Spielbereiche verwenden «Statistiken» und für laufende Ereignisse «Liveticker». Handball-Rückblicke bleiben als eigene Berichte bezeichnet. Spielerprofile haben bei allen Vereinen die Abschnitte Steckbrief und Statistik sowie einen klaren Rückweg zum Kader. Der Handball-Steckbrief bleibt bewusst bildfüllend; FCSG behält den Vereinskontext in der Kopfzeile.
+
+Die FCSG-Spielseite nutzt einen kompakten Detailkopf ohne erneuten Link auf dieselbe Seite. Der Spielplan markiert das nächste Spiel innerhalb des gewählten Wettbewerbs. Der Kalender startet im aktuellen Schweizer Monat. Bereichsspezifische Quellenfehler und verzögerte Datenstände erscheinen bei den jeweiligen Inhalten.
+
+Alle drei Vereins-Snapshots sowie bereits gelesene Artikel werden offline gesichert. Versionierte Artikel werden nur mit passender Version gespeichert; nicht versionierte Otmar-Artikel werden online zuerst neu gelesen. Der Bildcache berücksichtigt die offiziellen Bildhosts aller drei Vereine. Live- und Verlaufsabfragen bleiben ausschliesslich im Netz. EHF-Bilanzbalken entstehen nur aus einer vollständigen, mit Tabellenpunkten übereinstimmenden Resultatliste; Punkte allein erlauben keine eindeutige Bilanz.
+
+### Auslieferung und Ladevolumen
+Der Build bündelt die in `index.html` geordneten Quellskripte zu `js/app.js` und die Stylesheets zu `app.css`. Die Plattformkonfiguration bleibt ein eigenes Skript; beide Skripte werden mit `defer` in definierter Reihenfolge ausgeführt. Die Quellmodule bleiben für Entwicklung und Tests getrennt. PDF.js wird erst beim Öffnen eines Matchprogramms geladen; sein Worker wird relativ zur App-Basis adressiert.
+
+Der Versionshash berücksichtigt Quellmodule und erzeugte Dateien. Die veröffentlichte Service-Worker-Hülle enthält die erzeugten Dateien und erhält bei der Aktivierung die gespeicherten Vereins-Snapshots. `check-pages.mjs` prüft Dateipfade, Reihenfolge, `defer`, gemeinsame Cache-Version und PDF-Dateien.
+
+Messung vom 12.10.2026 (JavaScript und CSS, ohne Bilder/API-Antworten): 30 Abrufe → 3, 644'018 → 533'192 unkomprimierte Bytes, 161'339 → 124'465 Bytes bei lokal gemessener Gzip-Kompression. Das ist eine Volumenmessung, keine pauschale Aussage zur Ladezeit auf einem konkreten Gerät. 60 Ansichten bei 390/1280 px wurden mit identischen Daten verglichen; die geprüften Layout- und Stilwerte stimmen überein. Doppelte beziehungsweise überlagerte Deklarationen und Regeln des ehemaligen Vereinswechsel-/Refresh-Knopfs wurden entfernt; bestehende Fallbackketten und Bewegungseinstellungen bleiben berücksichtigt.
+
+### Meine Woche und visuelle Einführung
+Unter Spiele ergänzt «Meine Woche» Liste und Kalender. Die gemeinsame Ansicht verwendet dasselbe Monatsraster und dieselbe Monatsnavigation wie «Kalender», zeigt aber nur die Wappen der in den Einstellungen ausgewählten Vereine. Beide Ansichten behalten beim Wechsel den gewählten Monat. Eine Begegnung zweier ausgewählter Vereine wird zusammengeführt und zeigt beide eigenen Wappen; jedes öffnet die passenden Vereins-Spielinfos. Heim-/Auswärtsmarkierungen bleiben erhalten, Gegner und bestätigte Resultate stehen im zugänglichen Linktext und in den Spielinfos.
+
+Solange die gemeinsame Ansicht sichtbar ist, werden die offiziellen Live-Endpunkte aller ausgewählten Vereine alle 30 Sekunden abgefragt. Fehler behalten den letzten gültigen Stand; offline stehen die gespeicherten Spielpläne zur Verfügung. Veraltete Daten, fehlgeschlagene Aktualisierungen und Offline-Zustand erscheinen als kleiner roter Punkt oben rechts. Die Details öffnen sich erst beim Antippen. Auch ein Hinweis auf eine neue App-Version ist dort kompakt und lädt die App erst auf ausdrücklichen Klick neu.
+
+Die vier Einführungsschritte enthalten dekorative Beispiele für Vereinswahl, News, Wochenansicht sowie Kader mit hervorgehobenem Vereinswappen für Geschichte und Erfolge. Die gespeicherte Einführungsversion bleibt gleich: Bestehende Nutzer erhalten keinen erneuten automatischen Durchlauf und können sie über die Einstellungen öffnen.
+
+### Stabile Kopfzeile im Spielplan
+Liste und Kalender verwenden dieselben Abstände, Schriftgrössen und die gleiche Vereinskopfzeile. Die kompakte Darstellung auf niedrigen Displays gilt für beide Ansichten; «1. Mannschaft …», Titel und Umschalter wechseln deshalb nicht ihre Position. Der Kalender bleibt im sichtbaren Bereich ohne Seitenscrollen. Die Vereinskopfzeile mit Vereinsauswahl bleibt auch beim Scrollen der Liste dauerhaft sichtbar. Die Spielplan-Laschen rasten unmittelbar darunter ein; die Saisonzeile kann dahinter verschwinden. Beim Zentrieren des nächsten Spiels werden beide sichtbaren Kopfbereiche berücksichtigt. Eine einpixelige Überlappung verhindert einen durchscheinenden Spalt.
+
+Die optionale Browser-Regression `node scripts/check-games-layout.mjs` läuft nach `npm run build:pages` mit installiertem Playwright/Chromium. Sie prüft Liste → Kalender → Meine Woche → Kalender → Meine Woche → Liste bei allen drei Vereinen, vier Fenstergrössen und mit/ohne Partien. Vorhandene Browser-Runtimes können über `GAMES_PLAYWRIGHT_MODULE` und `GAMES_CHROMIUM_EXECUTABLE` eingebunden werden; produktive Daten und zusätzliche npm-Abhängigkeiten sind nicht erforderlich.
+
+Der gemeinsame Titel «Spiele» und der Umschalter stehen in allen drei Ansichten an derselben Stelle. Wettbewerbsauswahl und Quellenhinweise folgen darunter; die gemeinsame Ansicht zeigt dort dieselbe Monatsnavigation wie der Kalender. Beim Umschalten beginnt die neue Ansicht oben, damit eine lange Spielplan-Liste die kürzere Wochenansicht nicht ans Ende scrollt. Die Liste zentriert weiterhin das nächste Spiel.
+
+### Matchday-Rahmen
+Am Schweizer Spieltag läuft ein heller Lichtabschnitt entlang des vorhandenen Kartenrahmens: eine Runde in 8 Sekunden, in der letzten Stunde vor dem bestätigten Anpfiff in 5 Sekunden und bei offiziell bestätigtem Live-Status in 3 Sekunden. Ein erreichter Anpfiff allein erzeugt keinen Live-Status. Der Lichtabschnitt pulsiert dezent in seiner Helligkeit; der bestehende Wappen-Herzschlag bleibt erhalten. Die Karte und ihre Inhalte werden dabei nicht skaliert.
+
+Eine dekorative SVG-Kontur folgt den tatsächlichen vier CSS-Ecken, einschliesslich unterschiedlicher und elliptischer Radien. Ein ResizeObserver passt sie an Grösse und Zeilenumbrüche an. Datenaktualisierungen behalten denselben SVG-Knoten, damit die Runde nicht neu beginnt. Der Effekt verwendet Orange, Grün beziehungsweise Gelb für Kadetten, FCSG und St. Otmar. Nach einem bestätigten Endresultat stoppt die Bewegung; der ruhende Rahmen verwendet die vorhandenen Ergebnisfarben. Ausgeblendete Seiten pausieren und bei reduzierter Bewegung bleibt ein statischer Schimmer. Vor dem Matchday bleibt der bestehende Vorschau-Schimmer erhalten.
+
+### Hellmodus in V1
+In den Einstellungen unter «Darstellung» schaltet «Heller Modus» die gesamte V1 um. Standard bleibt dunkel. Die Wahl gilt für alle Vereine auf diesem Gerät und wird unter `fan-v1-theme` gespeichert; die Startseite setzt sie vor dem App-Bündel, damit beim erneuten Öffnen keine dunkle Zwischenansicht erscheint. Ein fehlender oder gesperrter lokaler Speicher verhindert die Bedienung nicht. V2 behält seine unabhängigen Einstellungen.
+
+Die helle Farbpalette umfasst Navigation, Vereinsmenü, Dialoge, Leseflächen, Spielplan, Kalender, Tabellen, Spielerstatistiken, Matchdetails, Diagramme und Vereinsgeschichte. Fotos behalten ihre natürlichen Farben; Matchday-Karten und das Aufstellungs-Spielfeld verwenden bewusst dunkle Flächen mit heller Schrift. `scripts/check-v1-theme.mjs` prüft Umschalten, Wiederherstellen, Vereinswechsel, kleine Displays, Einführung und Kontraste im Browser.
+
+### V1: Wischen zwischen Hauptansichten
+Ein deutlicher horizontaler Wisch im Inhalt wechselt zwischen News, Spiele, Tabelle und Kader. Nach links geht es zur nächsten, nach rechts zur vorherigen Ansicht; an den Enden bleibt die aktuelle Ansicht geöffnet. Beim ersten Öffnen der Spiele erscheint die ungefilterte Liste mit dem nächsten Spiel im Mittelpunkt. Beim Zurückkehren über Navigation oder Wischgeste bleiben Listen-/Kalenderansicht, Wettbewerb, Monat und Leseposition pro Verein innerhalb der laufenden App-Sitzung erhalten. Verein und Browserhistorie bleiben erhalten.
+
+Vertikales Scrollen, mehrfingerige Gesten, Textauswahl, Bildschirmränder, Bedienelemente, Kalender und tatsächlich horizontal scrollbare Inhalte lösen keinen Tabwechsel aus. Artikel, Spieleinzelansichten, Spielerprofile, Vereinsgeschichte und offene Dialoge sind ausgenommen. Der Inhalt folgt dem Finger mit einer skriptfreien Vorschau der Nachbaransicht; beim Loslassen gleitet er weiter oder zurück. Die Vorschau berücksichtigt die gemerkte Ansicht und Leseposition. Fixierte Leisten und Filter bleiben stehen. Bei reduzierter Bewegung entfällt der Effekt. V2 bleibt unabhängig.
+
+`tests/swipe-tabs.test.mjs` prüft Gestenerkennung und Ausschlüsse; `scripts/check-tab-swipes.mjs` prüft native Touch-Ereignisse über Chromium/CDP, Navigationszustand, Scrollverhalten und Barrierefreiheit. Die Browser-Umgebungsvariablen entsprechen `scripts/check-v1-theme.mjs`.
+
+## V1: Ansichten behalten und ruhiger lesen
+
+Während der laufenden App-Sitzung bleiben Scrollpositionen getrennt nach Verein und Route erhalten. Listenansicht und Kalender sowie die Wettbewerbsfilter haben eigene Positionen; Zurück aus einem Artikel führt zur zuvor gelesenen News-Karte. Neue Starts beginnen weiterhin bei den Kadetten bzw. einem ausdrücklich verlinkten Verein.
+
+Die Spieleliste trennt das aktuelle Spiel durch feine Linien von den übrigen Partien: «Vergangen» mit Pfeil nach oben steht direkt davor, «Kommend» mit Pfeil nach unten direkt danach. Ein Marker erscheint nur, wenn auf der jeweiligen Seite weitere Spiele vorhanden sind; ohne aktuelles Spiel erscheinen keine Marker. Die drei bisherigen Sprungbuttons entfallen. Ausserhalb des aktuellen Spiels erscheint zusätzlich «Zum aktuellen Spiel» über der Hauptnavigation. Weite Sprünge sind sofort, kurze Sprünge können weich erfolgen; reduzierte Bewegung und Tastatureingaben bleiben unmittelbar.
+
+Unter Einstellungen → Darstellung lässt sich die Leseschrift zwischen Standard (17 px) und Gross (20 px) umstellen. Die Auswahl wird lokal gespeichert und gilt für Artikel. Erstmaliges Laden verwendet statische Textplatzhalter mit zugänglicher Statusmeldung; Fehler bieten weiterhin einen erneuten Versuch.
+
+Beim Lesen unterhalb des ersten News-Bereichs verändern eingehende Artikel die sichtbare Liste nicht. «Neue Beiträge verfügbar» übernimmt die neue Liste auf Wunsch und führt zum Anfang. Andere Daten werden weiter aktualisiert; beim nächsten bewussten Ansichtswechsel wird die vorgemerkte Liste ebenfalls übernommen.
+
+`tests/view-state.test.mjs` deckt Ansichten, Vereinswechsel, Filter und vorgemerkte News ab. `scripts/check-view-comfort.mjs` prüft nach dem Pages-Build zusätzlich reale Browserhistorie, Spielabschnittsmarkierungen, Kalender-/Filterzustand, Schriftgrösse, neue News für alle drei Vereine, Ladefehler sowie mobile und Desktop-Barrierefreiheit. Browser-Variablen entsprechen den übrigen Layoutprüfungen.
+
+## V1: einklappender Spielkopf
+
+Der grosse Spielkopf mit Teamlogos bleibt beim Öffnen sichtbar und scrollt mit dem Inhalt nach oben. Sobald die Spielbereich-Laschen die Vereinskopfzeile erreichen, übernimmt eine kompakte Zeile mit Zurück-Link, kleinen Logos, Teams und Termin beziehungsweise bestätigtem Spielstand/Status. Die Laschen bleiben direkt darunter erreichbar. Beim Zurückscrollen erscheint der grosse Kopf wieder. Die kompakte Zeile überlagert den auslaufenden Kopf, sodass sich die Dokumenthöhe beim Umschalten nicht verändert.
+
+Das Verhalten gilt für Handball- und FCSG-Spielseiten in V1. Ein Laschenwechsel innerhalb desselben Spiels behält den kompakten Zustand, wenn noch keine andere Leseposition für die Zielansicht gespeichert ist. Live-Aktualisierungen übernehmen Spielstand und Status, ohne allein wegen der erweiterten Kopf-Darstellung die unveränderte Handball-Live-Ansicht neu aufzubauen. Reduzierte Bewegung verzichtet auf den kurzen Übergang; V2 bleibt unverändert.
+
+`tests/match-header.test.mjs` deckt Einklappen, Rückkehr, Live-Werte, unveränderte Live-Antworten und V2 ab. `scripts/check-match-header.mjs` prüft im Browser alle drei Vereine bei 390 px und Desktop in hell/dunkel: stabile Dokumentposition, kompakte Kopf-/Laschen-Geometrie, Rückwege, Laschenwechsel, geänderte Spielstände, reduzierte Bewegung und axe-Barrierefreiheit. Browser-Variablen entsprechen den übrigen Layoutprüfungen; `MATCH_HEADER_SCREENSHOT` und `MATCH_HEADER_REPORT` sind optionale Ausgaben.
+
+## App-Symbol V1
+
+Der Pages-Build setzt ausschliesslich für V1 das freigegebene Fanschal-Symbol ein: `assets/app-v1-scarf-glow-*` in 192/512 px, mit zusätzlicher Maskable-Version, Apple-Touch-Icon (180 px) und Favicon (64 px). Die Grafik verwendet die freigegebene Variante 3 mit kräftigem Orange, Grün und Gelb sowie weichem Lichtsaum auf dunklem Hintergrund. Sie wurde für die Icon-Grössen verkleinert. Das Maskable-Symbol hat zusätzliche Randreserve. Neue Dateinamen lösen die Erkennung einer Icon-Änderung durch installierte Browser-Apps aus. Der Build hasht und speichert die Symbole in der Offline-Hülle. Vereinswappen unter `assets/logo.png` und die V2-Installationssymbole bleiben erhalten. `scripts/check-preview.mjs` prüft diese Grenze. Der lokale ungebündelte Entwicklungsserver nutzt weiterhin die ursprüngliche Hülle; das installierbare V1-Paket entsteht durch `npm run build:pages`.
+
+V1 heisst «Matchday»: Manifest-Name und Kurzname, Apple-Web-App-Titel, initialer Browser-Titel, Installationshinweis/-bestätigung und Offline-Seite verwenden diesen Namen. Die bestehende App-ID, Startadresse, Scope und gespeicherten Einstellungen bleiben erhalten. Die Vereinsauswahl heisst weiterhin «Meine Vereine». Die Umbenennung erfolgt ausschliesslich im V1-Build; V2 bleibt bei «Meine Vereine».
+
+## V1: Spielvorschau ohne Aufmacherfoto
+
+Die Handball-Spielvorschau bei Kadetten und St. Otmar beginnt direkt unter den Spielbereich-Laschen mit dem Inhalt. Das grosse Mannschaftsfoto und der dekorative Slogan entfallen; die Paarung bildet die Seitenüberschrift im gleichen Schriftstil wie die Statistiküberschriften. Vorschautext, Matchprogramm und Spieldetails bleiben erhalten. Der einklappende Spielkopf funktioniert weiter. V2 bleibt unverändert.
+
+## V1: Handball-Statistiken in der FCSG-Kachelsprache
+
+Kadetten und St. Otmar verwenden für abgeschlossene Spiele und verfügbare Live-Teamwerte dieselben Vergleichszeilen wie das FCSG-Matchcenter. Durchgehende Balken zeigen die Anteile beider Mannschaften; Vereinsfarben folgen auch bei Auswärtsspielen der eigenen Mannschaft, Gegner bleiben blaugrau. Kacheln, Torverlauf und Spielerbereiche erhalten einen gemeinsamen dezenten Verlauf (Orange/Gold, im hellen Modus sehr leicht).
+
+Die führende Zahl wird zurückhaltend hinterlegt: höhere Tore/Quoten/Paraden, weniger Fehler/Strafen; Würfe und Auszeiten sind bei Live-Teamwerten neutral. Gleichstände und fehlende Werte erhalten keine Hervorhebung. Fehlende Vergleichswerte bleiben als Strich mit leerem Balken erhalten. Daten, Reihenfolge und Mannschaftsumschalter bleiben bestehen. V2 und FCSG sind nicht verändert.
+
+## V1: gespielte Partien in der kompakten Tabelle
+
+Auf Mobilgeräten steht unter dem Torverhältnis klein die Anzahl gespielter Partien («11 Spiele»). Das gilt für Kadetten, St. Otmar und FCSG sowie die European League. Punkte und Bilanzbalken behalten ihren Platz. Desktop und V2 behalten ihre bisherige Darstellung; für Screenreader bleibt die bestehende Spaltendarstellung erhalten. `scripts/check-standings-layout.mjs` prüft Sichtbarkeit, Zuordnung und Platzbedarf zusätzlich zur Barrierefreiheit.
+
+## V2: kompakter Startbereich mit horizontalem Match-Band
+
+V2 zeigt auf der Startseite eine einzelne dunkle Spielkachel: Heim- und Gastmannschaft stehen horizontal mit kleinen Wappen links und rechts, die Anspielzeit beziehungsweise der bestätigte Spielstand in der Mitte. Oben stehen Datum mit Jahr und Wettbewerb, unten Heim-/Auswärtsspiel. Live-Phase/Spielminute oder «Endresultat» ergänzen den zentralen Stand. Die gesamte Kachel öffnet Vorschau, Live-Ansicht oder Rückblick/Statistiken; es gibt kein separates Pfeil-Icon und keinen zweiten Button. Lange Namen dürfen umbrechen. Die separate Vorschau-Ebene und zusätzliche Ergebnis-/Tabellenkacheln entfallen im Titelbereich. Die News folgen direkt. Im Dunkelmodus ist die Kachel heller als die Seite und leicht orange, grün beziehungsweise gelb getönt. V1, Spielübersichten, Datenabfragen und Spielseiten bleiben erhalten.
+
+`tests/v2-ticket.test.mjs` prüft Links, fehlende Werte, Live-/Endstände, HTML-Maskierung und Aktualisierungen ohne Ersetzen des Linkknotens. Nach `npm run build:pages` prüft `GAMES_AXE_SCRIPT=<axe.min.js> node scripts/check-v2-ticket.mjs` alle drei Vereine in hell/dunkel mit Vorschau, Live und Endresultat sowie 320/390 px und Desktop. Browser-Variablen: `GAMES_PLAYWRIGHT_MODULE` und `GAMES_CHROMIUM_EXECUTABLE`. Die Browserprüfung verwendet lokale Testdaten; produktive Daten werden nicht verändert.
+
+
+### V2: zwei wählbare Foto-Titelbereiche
+
+Einstellungen → Darstellung → «Titelbereich der Startseite» wechselt zwischen «Bild-Fenster» (abgerundeter Fotoabschluss, Standard) und «Geschwungener Vereinskopf» (gleicher Foto-Titelbereich mit dem Schwung der Vereinsseite). Beide Varianten zeigen feste vereinsbezogene Motive der Kadetten, des FCSG beziehungsweise von St. Otmar hinter Vereinsmenü und Match-Band. Das dunkle Match-Band bleibt vollständig antippbar und ohne Pfeil-Icon. Die News folgen direkt. Die Bildhelligkeit berücksichtigt die unterschiedlichen Quelldateien.
+
+Die Auswahl wird mit `fan-v2-header-style` im isolierten V2-Speicher auf diesem Gerät für alle Vereine gespeichert; gesperrter Speicher verhindert den Wechsel innerhalb der Sitzung nicht. Ein Wechsel ändert nur die Darstellung, ohne Match-/News-Inhalte neu aufzubauen. Spielstandsaktualisierungen erhalten Foto und Abschluss. V1 lädt weder die Auswahl noch die neuen Titelstile.
+
+
+### Bildmotive im V2-Titelbereich
+
+Die Titelbilder sind individuell auf die Vereine abgestimmt: Kadetten-Wurfszene (`news-34268.webp`, André Frensel, vorhandenes Vereins-Newsbild), gefülltes FCSG-Stadion unter Flutlicht (`v2-header-fcsg-evening.webp`) und Hand auf dem St.-Otmar-Wappen (`v2-header-otmar-heart.webp`). Die Auswahl bleibt unabhängig von neuen News stabil. Die beiden zusätzlichen Bilder sind lokal als WebP abgelegt und zusammen mit dem Kadetten-Motiv in den Offline-Hüllen beider Versionen vorgeladen. Die Vereinsseite mit ihren Heimstättenbildern bleibt erhalten. Die Einstellung heisst nun «Bild-Fenster»; gespeicherte Auswahlwerte bleiben kompatibel.
+
+Quellen der Vereinsfotos:
+- FCSG: https://www.fcsg.ch/pages/sponsoring · Bild https://cdn.shopify.com/s/files/1/0694/0681/8529/files/00cc4688-795e-4037-9bfe-4914335c97ed.jpg?v=1742886803 (für die App auf 1400 px als WebP komprimiert).
+- St. Otmar: https://data.otmar.ch/data/verein/Symbolbilder/_headerIntro/30430/StOtmar-Logo-Hand-auf-dem-Herz.webp (unverändert übernommen).
+Alle Bildrechte verbleiben bei den Vereinen und jeweiligen Urhebern; es werden keine KI-Bilder als Spielszenen verwendet.
+
+FCSG und St. Otmar verwenden eigene Bildausschnitte: Beim Stadion liegt der Schwerpunkt auf den gefüllten Rängen und dem Spielfeld statt auf dem Dach. Bei St. Otmar rückt das Vereinswappen mit der Hand auf dem Herzen ins Bildfenster oberhalb der Spielkachel. Das freigegebene Kadetten-Motiv und sein Ausschnitt bleiben unverändert. Neue Bilddateinamen verhindern, dass noch gespeicherte alte Motive verwendet werden.
+
+Der Vereinswechsel auf der V2-Startseite öffnet den neuen Verein immer am Seitenanfang, damit der Abstand zwischen Vereinsmenü und Match-Band bei allen drei Vereinen und beiden Titelvarianten gleich bleibt (48 px). Die Rückkehr aus einem Newsartikel behält die Leseposition; V1 und die übrigen Ansichten behalten ihre bisherige Positionsspeicherung.
+
+Die V2-Titelbilder sind leicht entsättigt und kontrastärmer. Ein transparenter Schleier nimmt die jeweilige Vereinsfarbe auf (hell und weich im Hellmodus, dunkel getönt im Dunkelmodus); nach unten läuft das Foto in die aktuelle Seitenfläche aus. Dies gilt für beide Titelvarianten. Die Bildmotive, Ausschnitte, Spielkarte und Farben der Newsbilder bleiben erhalten.
+
+### Lichtsaum der V2-Spielkarte
+
+Ein einzelner feiner Lichtsaum in Vereinsfarbe folgt dem vorhandenen Kartenrand. Ferne Spiele bleiben ruhig und statisch. Innerhalb von 24 Stunden atmet der Saum sehr langsam (6 s), am Schweizer Spieltag sanft pulsierend (3,6 s), während bestätigter Live-Spiele etwas lebendiger (2,6 s). Nur die Deckkraft verändert sich; Karte, Text und Hintergrund bleiben still. Nach Spielende verschwindet der Lichteffekt, der vorhandene Ergebnisrand bleibt erhalten. Bei «Bewegungen reduzieren» bleibt der Saum in allen Vorschau-/Live-Zuständen statisch. Die gesamte Karte bleibt ein einzelner Link.
+
+Im V2-Match-Band steht oben «Heute», «Morgen» oder «In X Tagen» auf Basis des Schweizer Kalenderdatums. Live-/Endzustände sind dort mit «Jetzt live» bzw. «Beendet» gekennzeichnet. Das vollständige Datum mit Wochentag und Jahr steht unten anstelle der bisherigen Heim-/Auswärtszeile. Diese Einordnung bleibt im zugänglichen Linktext erhalten; die Anspielzeit beziehungsweise das Resultat bleibt zentral zwischen den Mannschaften.
+
+### Gemeinsamer Titelbereich in V1 und V2
+
+V1 und V2 zeigen auf der Vorschau-/Live-Kachel einen weichen Lichtreflex: oben links neutral aufgehellt, unten rechts leicht in Vereinsfarbe. Er leuchtet beim Anzeigen einmal sanft auf (2,4 s) und bleibt anschliessend ruhig. Nur die Deckkraft der dekorativen Fläche ändert sich; Inhalte liegen darüber, der bestehende Lichtsaum bleibt separat erhalten. Bei reduzierter Bewegung ist der Reflex sofort statisch, nach bestätigtem Endresultat entfällt er. Der in V2 freigegebene Reflex liegt im gemeinsamen Titelstil; Intensität und Verhalten sind in beiden Versionen identisch. `scripts/check-v2-ticket.mjs` prüft diese Grenzen im Browser.
+
+Der freigegebene Titelbereich ist in `js/home-title.js` und `home-title.css` zusammengeführt. Beide Versionen nutzen dieselben Vereinsfotos, die horizontale Spielkarte mit Tageshinweis/Datum, 48 px Abstand und den nach Spielnähe abgestuften Lichtsaum. Beide Titelvarianten stehen in den Einstellungen bereit. Die Speicherung bleibt pro Version getrennt. Die drei lokalen Titelbilder gehören jetzt zur gemeinsamen Offline-Hülle. Beim Vereinswechsel öffnet auch V1 die Startseite oben; Rückkehr aus Artikeln und Positionsspeicherung anderer Ansichten bleiben erhalten. V1 behält seine News- und Detailansichten; V2-exklusive Karte, News-Erweiterungen und Teilen-Funktionen werden nicht in V1 geladen.
+
+### Spieleliste in V2 wie V1
+
+V2 übernimmt für die Spieleliste die gemeinsamen V1-Regeln: kompakte Zeilen, gut lesbare Ergebniszahlen, dezente Flächen und die farbige linke Ergebniskante für Sieg, Unentschieden und Niederlage. Auch die aktuelle Spielkarte folgt den vorhandenen V1-Stilen. Die V2-Überlagerungen für Rahmen, Schatten, Schrift, Metadaten und Abstände entfallen dort. Filter, Kalender, Spielreihenfolge, Daten und die gemeinsame Startseitenkarte bleiben erhalten.
+
+## V2: Magazin-Ausgabe
+
+V2 öffnet mit einem fotografischen Cover und eigener Matchday-Wortmarke. Die Titelzeile zeigt dauerhaft den tatsächlichen Vereinsnamen. Im überlappenden Match-Deck stehen Heim- und Gastverein mit Wappen neben der grossen Anspielzeit beziehungsweise dem bestätigten Spielstand; Countdown, vollständiges Datum und ein breiter Einstieg führen zur Vorschau, zum Liveticker oder zum Rückblick. Unbestätigte Anspielzeiten und fehlende Resultate werden weiterhin als offen dargestellt. Die Spielkarte trägt eine dezente Tönung in Vereinsfarbe (Kadetten orange, FCSG grün, St. Otmar gelb), im Dunkelmodus etwas kräftiger; Text und Aktionsfläche behalten ihre kontrastreichen Themenfarben.
+
+Die News beginnen direkt unter dem Match-Deck mit dem neuesten Beitrag als grossem Bildaufmacher; alle weiteren Beiträge erscheinen einheitlich als kompakte Zeilen mit gleich grossen Bildern rechts. Feine durchgehende Linien trennen die Zeilen; eine kräftigere Linie in Vereinsfarbe schliesst den einzigen grossen Aufmacher ab. Kein Artikel wird im Cover doppelt gezeigt. Nach sechs Beiträgen lassen sich alle übrigen Beiträge einblenden. Originalartikel, Artikelrouten und Vereinsarchive bleiben erhalten. Die Navigation heisst «Magazin», «Spiele», «Tabelle», «Team», «Verein» und verwendet dieselben Routen wie zuvor. Die aktive Rubrik sitzt in einem Kreis innerhalb einer geschwungenen Aussparung; Kreis und Menüfläche beginnen auf derselben Höhe. Aussparung und Symbole wechseln in kurzen Übergängen. Alle fünf Einträge zeigen ihr Icon und ihre Beschriftung; die aktive Beschriftung ist fett. Die Leiste ist 70 statt 78 Pixel hoch und rückt damit näher an den unteren Rand. V2 verwendet fest diese kompakte, randbündige Variante mit allen fünf Beschriftungen. Die frühere Menüauswahl entfällt; zuvor gespeicherte Einstellungen für das schwebende Menüband werden ignoriert. Die gesamte Menüfläche verwendet ein leicht transparentes Glas mit Hintergrundunschärfe und feiner Lichtkante. Im dunklen Modus ist die Glasfarbe leicht aufgehellt, damit sie sich vom schwarzen Seitenhintergrund abhebt. Es gibt keinen zusätzlichen durchscheinenden Streifen. Der untere Sicherheitsabstand bleibt Teil derselben Glasfläche; ohne Blur-Unterstützung dient eine deckende Fläche als Rückfall. Alle Linknamen bleiben für Hilfstechnologien erhalten. Tastaturbedienung und reduzierte Bewegung verzichten auf diese Übergänge.
+
+Die Teamseite ergänzt einen fotografischen Einstieg und zeigt danach direkt die Spieler. Geschichte, Erfolge und Heimstätte sind über den eigenständigen Menüpunkt «Verein» erreichbar. Diese fünfte Hauptansicht ist auch per Wischgeste vom Team aus erreichbar und besitzt ihre eigene Leseposition; auf der Magazinseite entfällt die zusätzliche Vereinskachel. Spielerporträts und Statistiken bleiben erhalten. Matchcenter, Tabellen, Artikel und Vereinsseiten verwenden die neue Schrift- und Flächengestaltung; Datenquellen, Kalender, Wettbewerbsfilter, Benachrichtigungen und Aktualisierungsintervalle bleiben bestehen. Die frühere Auswahl zwischen zwei Titelabschlüssen wird in V2 durch das Magazin-Cover ersetzt. Hell-/Dunkelmodus und getrennte V2-Einstellungen bleiben verfügbar.
+
+Die neuen Renderer und Styles laden ausschliesslich im V2-Build. Das bestehende Mannschaftsfoto wird zusätzlich in dessen Offline-Hülle aufgenommen; V1 bleibt bei seiner bisherigen Gestaltung. Verifikation: `npm run verify`; `tests/v2-ticket.test.mjs` prüft unter anderem unveränderte Artikelanzahl/-routen aller Vereine, Einblenden aller News, Spielzustände, fehlende Werte und die Erhaltung des fokussierten Live-Links.
+
+### V2: Magazin auf allen Detailseiten
+
+Artikel öffnen mit der originalen Datumszeile und dem Titel vor dem Foto. Die vorhandenen DOM-Knoten werden verschoben; Volltext, Nachladeziel, Quellenlinks und weitere Artikel bleiben unverändert erreichbar. Spielerporträts verwenden markante Namen und ruhige Statistikflächen; FCSG erhält einen gemeinsamen Foto-/Titelbereich. Die beiden bisherigen Spielerabschnitte und ihre Filter bleiben erhalten.
+
+Matchcenter, Vorschau, Rückblick, Live-Ticker, Aufstellung und Statistiken teilen Typografie, Kapiteltrenner und kompakte Datenflächen. Der einklappende Spielkopf und Live-Aktualisierungen behalten ihre bisherigen Ziele. Die Vereinschronik erhält ein Foto-Cover und Magazin-Kapitel mit Jahr, Titel, Originalbild und vollständigem Text. Die Jahresnavigation läuft horizontal; die aktive Station wird bei Bedarf sichtbar gehalten. QHL-Vereinsdetails, Matchprogramm-Viewer und Einstellungsdialoge übernehmen dieselben Schrift- und Flächenregeln.
+
+Die Erweiterung liegt ausschliesslich in `v2/matchday.js` und `v2/matchday.css`. V1 lädt sie nicht. `tests/v2-detail-magazine.test.mjs` prüft die Identität und Erhaltung der Titel-, Artikel-, Statistik-, Quellen- und Bildknoten sowie die wiederholte Anwendung bei Live-Updates. Browserprüfung erfolgt mit dem Pages-Build auf Handybreite und mit Hell-/Dunkelmodus; nicht verfügbare externe Inhalte behalten ihre bestehenden Fehlermeldungen.
+
+### V2: Spielplan ohne Wettbewerbsfilter
+
+Liste, Kalender und «Meine Woche» bleiben verfügbar. Der Wettbewerbsfilter entfällt in V2 bei allen drei Vereinen; ein zuvor ausgewählter Wettbewerb wird vor dem Rendern auf «Alle» zurückgesetzt, damit keine Spiele unsichtbar bleiben. V1 behält seinen Filter. `tests/v2-ticket.test.mjs` prüft die Entfernung und das Zurücksetzen in allen drei Ansichten und Vereinsausgaben.
+
+### V2: Trennung der Spiele im hellen Modus
+
+Normale Karten der Spieleliste erhalten im hellen Modus eine leicht graue Fläche, eine feine Kontur oben, unten und rechts sowie einen sehr dezenten Schatten. Die farbige linke Ergebniskante bleibt bestehen. Die hervorgehobene aktuelle Partie und laufende FCSG-Spiele behalten ihre eigenen Flächen; Dunkelmodus und V1 bleiben unverändert.
+
+### V2: Ergebnisfarben im hellen Modus
+
+Die Ergebniswörter auf Spielkarten erscheinen im hellen Modus kräftig und fett: Sieg grün, Niederlage rot, Unentschieden bernsteinfarben. Die Worte bleiben zusätzlich zur Farbe lesbar. Dunkelmodus, übrige Metadaten und farbige Ergebniskanten bleiben unverändert.
+
+### Laufende Cupspiele auf der Startseite
+
+V1 und V2 verwenden dieselbe Spieltagsauswahl. Heutige Pflichtspiele einschliesslich Cup bleiben auch nach der Anspielzeit im Vordergrund, bis Live-Daten beziehungsweise das bestätigte Endresultat eintreffen; Testspiele sind davon ausgenommen. Das Endresultat bleibt bis zum Schweizer Tageswechsel sichtbar. SHV-Namenszusätze wie «(QHL)» und «(MNLB)» werden für den Spielabgleich und die Wappenzuordnung normalisiert. Live-Spielstände werden vor der Darstellung um Datum, Anspielzeit und bekannte Vereinsnamen aus dem Spielplan ergänzt; ohne lokalen Eintrag gilt das aktuelle Schweizer Datum. Cup-Live-Daten gehören zur SHV-Quelle, auch wenn zeitweise keine frische Antwort vorliegt.
+
+### Statistiklasche in V2
+
+Die Statistiklasche verwendet ein modulares Dashboard: Tore, Gegentore und Differenz aus Sicht des gewählten Vereins stehen als drei Kennzahlen oben. Sie werden nur aus dem angezeigten bestätigten Spielstand abgeleitet; fehlende Spielstände ergeben keine Nullwerte. Torverlauf beziehungsweise FCSG-Torgefährlichkeit, Teamvergleiche und Spielerstatistiken erhalten eigene Kacheln mit 14-Pixel-Rundungen und klaren Abständen. Beim Handball steht der vorhandene Torverlauf vor dem Teamvergleich. Alle Quellen, Tabellen, Mannschaftsumschalter und Live-Aktualisierungen bleiben erhalten. Matchcenter-Titel und Resultatbereich sowie andere Laschen bleiben unverändert.
+
+### Kadetten-Mannschaftsfoto in V2
+
+Der Kader beginnt mit dem offiziellen Mannschaftsfoto 2026/27 in voller Breite und ohne seitlichen Zuschnitt. Der Schriftzug «Das Team» folgt unter dem Bild, bevor die Spielergruppen beginnen. Das Foto wird als optimiertes WebP mit der V2-App ausgeliefert und offline vorgemerkt. Quelle: https://kadettensh.ch/downloads/ (Foto: https://kadettensh.ch/wp-content/downloads/Kadetten_Mannschaft_26_27_RGB.jpg).
+
+### V2-Spielerkacheln
+
+Die Spielerkacheln aller drei Vereine verwenden die Fotokarten aus Variante 1: zwei Spalten, 3:4-Format, 16-Pixel-Ecken und ein dunkler Verlauf unter der Beschriftung. Vorname und Nachname stehen unten links, die Rückennummer in einer eigenen Spalte rechts. Lange Namen dürfen umbrechen und kollidieren nicht mit der Nummer. Originalfotos, Spielerlinks, Positionsgruppen und das Mannschaftsfoto bleiben erhalten.
+
+Statistikrahmen greifen auch direkt auf die ursprünglichen Statistikmodule. Damit sind nachgeladene Torverläufe, Teamvergleiche, Halbzeiten und Spielerstatistiken sofort vollständig umrahmt, bevor die zusätzliche V2-Dekoration läuft.
+
+Als Master für alle Flächen innerhalb der V2-Spielstatistiken gilt die Spielerstatistik des abgeschlossenen Spiels: 14-Pixel-Rundung, 1-Pixel-Rahmen in `--line`, neutrale Fläche `--surface-2` (hell: `#f1f2f3`). Hauptmodule, Kennzahlen, Formkurven-Unterkacheln und Duell-Zusammenfassungen verwenden dieselben zentralen Werte, auch ohne nachträgliche Dekoration. Inhaltliche Vereins- und Ergebnisfarben bleiben erhalten.
+
+### Reduzierte Zusatztexte in V2
+
+Wiederholte Quellen-, Berechnungs- und Aktualisierungsfussnoten sind in V2 ausgeblendet. Dazu gehören die beiden langen Texte unter der Saison-/Spielerstatistik in der Tabelle sowie vergleichbare Zusatztexte in Spiel- und Spieleransichten. Sie sind in den gemeinsamen Renderern als `data-explanation` markiert; V1 zeigt sie weiterhin. Konkrete Leerzustände, Fehlerhinweise, Warnungen vor unvollständigen Daten und benötigte Beschriftungen bleiben sichtbar.
+
+### Einheitliche Titelleiste in V2
+
+Alle Hauptbereiche zeigen die Wortmarke MATCHDAY, auch Team und Verein. Die obere Zeile verwendet ein gemeinsames Raster mit eigenem Platz für Wortmarke, Vereinsauswahl und Einstellungen. Das Wappen steht immer neben dem lesbaren Vereinskurznamen (KADETTEN, FCSG oder ST. OTMAR); der frühere Rückfall auf ein Wappen ohne Namen entfällt.
+
+### Ruhige Magazin-Startseite in V2
+
+Der kompakte Bildbereich zeigt den Vereinsnamen in Leseschrift. Ein gedämpftes Foto und die dezent getönte Spielkachel mit Textabsprung halten Vorschau, Live-Spiel oder Tagesresultat im Fokus. Die ganze Spielkachel bleibt klickbar; unter «Aktuell» bleibt nur der neueste Artikel hervorgehoben.
+
+### Abgestufter Dunkelmodus in V2
+
+V2 verwendet einen getönten dunklen Grund, hellere Karten und nochmals angehobene Dialog-/Menüflächen. Gebrochenes Weiss und hellere Vereinsakzente sorgen für ruhigere Kontraste. Redaktionelle Fotos sind leicht gedämpft; Wappen und Diagramme behalten ihre Farben. Nur die aktive Menüauswahl und Live-Elemente erhalten einen schwachen Lichtschein. Die gemeinsame Statistikfläche gilt weiterhin für alle Statistikmodule. Der helle Modus und V1 bleiben unverändert.
+
+### Umschaltbares Menüband in V2
+
+Unter Einstellungen → Menüband stehen «V2 · Mit Aussparung» und «V1 · Schwebendes Menüband» zur Wahl. Die V1-Alternative nutzt ein getöntes Glasband mit abgerundeter aktiver Fläche und kurzem Indikator. Alle fünf V2-Ziele bleiben beschriftet. Die Einstellung wird ausschliesslich für V2 unter `fan-v2-navigation-style` gespeichert; ohne Auswahl bleibt das bisherige V2-Menü aktiv.
+
+### Matchday: durchgängige Spielerprofile
+In V1 bilden das grosse Spielerfoto, der Steckbrief und sämtliche Saisonstatistiken einen durchgängigen Scrollverlauf ohne Einrasten. Das Foto bleibt beim Herunterscrollen hinter den nachfolgenden Inhalten stehen; ein zweites Portrait und die bisherigen Abschnittspunkte entfallen. Bei reduzierter Bewegung scrollt das Foto normal mit. Die separate V2 behält ihre bisherige Darstellung und Abschnittsnavigation.

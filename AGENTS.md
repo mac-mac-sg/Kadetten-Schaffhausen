@@ -10,15 +10,15 @@ Voraussetzung: Node.js 22.12 oder neuer (`.node-version`). Ein Devcontainer (`.d
 
 ```sh
 npm ci          # Abhängigkeiten
-npm run dev     # lokale, schreibgeschützte Vorschau auf http://127.0.0.1:3000
+npm run dev     # lokale, schreibgeschützte Vorschau der Kadetten-App auf http://127.0.0.1:3001
 npm run verify  # alle Prüfungen wie in GitHub Actions: check, test, build:pages, check-pages
 ```
 
-`npm run verify` muss vor jedem Push grün sein. Der JS-Code der App (`src/kadetten/js`) ist mit Prettier formatiert (`.prettierrc.json`); `npm run check` prüft das, `npm run format` formatiert. HTML-Vorlagen fasst Prettier nicht an: lange Vorlagen an Blockgrenzen oder in `${…}` umbrechen, nie zwischen Inline-Elementen (sonst entsteht sichtbarer Leerraum). Zusätzlich gilt `npm run build` (bisheriger Sites-Build), wenn `server/` geändert wurde, solange der alte Dienst besteht.
+`npm run verify` muss vor jedem Push grün sein. Der JS-Code der App (`src/kadetten/js`) ist mit Prettier formatiert (`.prettierrc.json`); `npm run check` prüft das, `npm run format` formatiert. HTML-Vorlagen fasst Prettier nicht an: lange Vorlagen an Blockgrenzen oder in `${…}` umbrechen, nie zwischen Inline-Elementen (sonst entsteht sichtbarer Leerraum). Der frühere Sites-Build mit Server-Bündel liegt im Archiv (`node archive/matchday/build.mjs`) und wird nur noch gebraucht, solange der alte Sites-Dienst besteht.
 
 ## Arbeitsablauf
 1. Aktuellen Stand von `origin/main` holen; Änderungen anderer erhalten.
-2. Eigener Branch pro Änderung. Nur `src/kadetten/` (neue Kadetten Companion App), `server/` (Datendienst), `tests/`, `scripts/`, `docs/` und `.github/` bearbeiten. `src/client/` (V1 «Matchday» und bisherige V2) wird nicht mehr geändert; `scripts/check-v1-frozen.mjs` prüft in `npm run verify`, dass die V1-Ausgabe bytegleich bleibt. `dist/` ist erzeugt und wird nicht committet.
+2. Eigener Branch pro Änderung. Nur `src/kadetten/` (neue Kadetten Companion App), `server/` (Datendienst), `tests/`, `scripts/`, `docs/` und `.github/` bearbeiten. `archive/matchday/` (die archivierte App Matchday) nur auf ausdrücklichen Auftrag ändern; ihre Tests laufen mit `npm run test:archiv`. `dist/` ist erzeugt und wird nicht committet.
 3. Prüfen (`npm run verify`), committen, pushen, Pull Request nach `main` erstellen (Vorlage: `.github/pull_request_template.md`). GitHub Actions prüft den PR.
 4. Merge auf `main` veröffentlicht die Oberfläche automatisch auf GitHub Pages. Direkte Pushes auf `main` nur auf ausdrücklichen Auftrag, nach allen Prüfungen, niemals mit Force.
 5. Kleine, einzeln prüfbare PRs. Verhalten ändern und Umbauen nicht mischen.
@@ -29,8 +29,7 @@ Definition of Done: `npm run verify` grün, neues Verhalten durch einen Test abg
 - Sprache der App: Deutsch mit Schweizer Rechtschreibung. Mobile Nutzung zuerst; bestehendes orange/dunkles Design erhalten.
 - Fehlende Werte nicht erfinden und nicht als null Tore interpretieren. Fehlgeschlagene Datenquellen müssen ihren letzten gültigen Stand behalten.
 - Texte aus dem Datendienst kommen HTML-maskiert an; `sanitiseSnapshot` (js/logic.js) normalisiert sie beim Einlesen. Neue Datenfelder, die als HTML ausgegeben werden, dort aufnehmen.
-- Neue Client-Dateien in `index.html`, `sw.js` (SHELL) und `scripts/build.mjs` (shellFiles) eintragen; `tests/shell.test.mjs` prüft das.
-- Neue App (`src/kadetten/`): ES-Module ohne Framework, gebündelt von `scripts/build-app.mjs` nach `dist/app`; die Hülle für den Service Worker wird dort automatisch erzeugt. Keine Dateien aus `src/client/` importieren (`tests/app-build.test.mjs`). Lokale Vorschau: `npm run dev:app` (http://127.0.0.1:3001). Aufbau und Gestaltung: docs/kadetten-app.md und docs/kadetten-app-design.md.
+- Neue App (`src/kadetten/`): ES-Module ohne Framework, gebündelt von `scripts/build-app.mjs` (Pages: nach `dist/client` und `dist/client/v2`); die Hülle für den Service Worker wird dort automatisch erzeugt. Keine Dateien aus dem Archiv importieren (`tests/app-build.test.mjs`). Lokale Vorschau: `npm run dev` (http://127.0.0.1:3001). Aufbau und Gestaltung: docs/kadetten-app.md und docs/kadetten-app-design.md.
 - Keine Tests auf Dateien in /tmp oder persönliche lokale Pfade aufbauen.
 - GitHub Actions nur mit Commit-SHA einbinden (`tests/hardening.test.mjs` prüft das).
 - Behauptungen belegen: nicht „geprüft" schreiben, ohne den Befehl oder die Messung zu nennen. Nicht Geprüftes ausdrücklich als solches kennzeichnen.
