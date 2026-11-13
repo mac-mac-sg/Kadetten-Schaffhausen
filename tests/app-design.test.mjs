@@ -61,6 +61,19 @@ test('Kontraste (WCAG AA): Text, Orange als Schrift und Schrift auf Orange in He
   assert.ok(contrast('#fafafa', light['c-ink']) >= 7, 'weisse Schrift auf Tinte (Etikett im Kopfband)');
 });
 
+test('Kontraste: graue Schrift im dunklen Thema mindestens 7:1, Bilanz-Grau (Unentschieden, Niederlage) mindestens 3:1', () => {
+  for (const surface of ['c-bg', 'c-surface']) assert.ok(contrast(dark['c-text-muted'], dark[surface]) >= 7, `dunkel: Nebentext auf ${surface}`);
+  assert.ok(contrast(dark['c-text-muted'], dark['c-chip']) >= 6.5, 'dunkel: Nebentext auf Chip');
+  for (const [name, t] of [['hell', light], ['dunkel', dark]]) {
+    for (const token of ['c-graph-draw', 'c-graph-loss', 'c-accent']) assert.ok(contrast(t[token], t['c-surface']) >= 3, `${name}: ${token} auf der Karte`);
+    assert.notEqual(t['c-graph-draw'], t['c-graph-loss'], `${name}: Unentschieden und Niederlage unterscheidbar`);
+  }
+  const views = read('src/kadetten/css/views.css');
+  assert.match(views, /\.wld \.d \{ background: var\(--c-graph-draw\); \}/);
+  assert.match(views, /\.wld \.l \{ background: var\(--c-graph-loss\); \}/);
+  assert.doesNotMatch(views, /\.wld \.[dl] \{[^}]*opacity/, 'keine Abschwächung über Deckkraft');
+});
+
 test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein, Wissen und «Ich»', () => {
   for (const hash of ['#/saison', '#/statistik', '#/statistik/spieler', '#/team', '#/verein', '#/news']) {
     const d = render(hash);

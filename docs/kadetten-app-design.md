@@ -25,7 +25,7 @@ Tokens als CSS-Variablen `--c-*` in `src/kadetten/css/tokens.css`; Modus über `
 | `surface` | `#ffffff` | `#1c1c1e` | Karten, Navigation |
 | `surface-2` | `#ece8e1` | `#262628` | Symbolfelder, ruhige Etiketten |
 | `chip` | `#e4dfd6` | `#262628` | Fläche inaktiver Chips, Segmente, Tipp-Knöpfe |
-| `text` / `text-muted` | `#141415` / `#525252` | `#ededed` / `#a1a1a6` | Text |
+| `text` / `text-muted` | `#141415` / `#525252` | `#ededed` / `#b0b0b6` | Text |
 | `accent` | `#ff5d00` | `#ff5d00` | Kadettenorange, **aus dem Wappen gemessen**; Flächen, Auswahl, Siege, Hauptaktion |
 | `on-accent` / `ink` | `#141415` | `#141415` | Tinte auf Orange (Kopfband, Knöpfe) |
 | `accent-text` | `#b23c08` | `#ff8a4d` | Orange als Schrift |
