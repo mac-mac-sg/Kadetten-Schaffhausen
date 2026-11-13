@@ -7,6 +7,7 @@ import {moments} from '../src/kadetten/js/moments.js';
 import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {renderSpieler} from '../src/kadetten/js/views/team.js';
 import {renderJetzt} from '../src/kadetten/js/views/jetzt.js';
+import {renderIch} from '../src/kadetten/js/views/ich.js';
 import {renderSaison} from '../src/kadetten/js/views/saison.js';
 
 const now = Date.parse('2026-11-06T10:00:00Z');
@@ -76,4 +77,26 @@ test('Startseite beschränkt Momente auf zwei; Szenarien berücksichtigen Punktg
   const plan = dom(renderSaison({...ctx, route: {view: 'spielplan'}}));
   assert.equal(plan.querySelectorAll('[data-next-game]').length, 1);
   assert.equal(plan.querySelector('[data-next-game] a').getAttribute('href'), '#/spiel/next');
+});
+
+test('«Ich»: Aktualitätswerte stehen eingeklappt unter dem Datenschutz, die Kurzzeile nennt verzögerte Quellen', () => {
+  const ich = state => dom(renderIch({theme: 'system', state, ui: {}, now}));
+  const status = key => ({ok: true, updatedAt: '2026-11-06T08:20:00Z', ...key});
+  const fresh = ich({data: {...data, status: {games: status(), table: status(), news: status(), players: status()}}});
+  const box = fresh.querySelector('details#i-fresh');
+  assert.ok(box, 'aufklappbarer Punkt');
+  assert.ok(!box.hasAttribute('open'), 'standardmässig zu');
+  assert.equal(box.querySelector('summary .t').textContent, 'Aktualität der Daten');
+  assert.equal(box.querySelector('summary .s').textContent, 'Alle Quellen aktuell');
+  assert.equal(box.querySelectorAll('.rl').length, 4, 'alle Quellen innen');
+  assert.match(box.textContent, /Daten aktualisiert: 06\.11\.2026, 09:20 Uhr/);
+  const privacy = [...fresh.querySelectorAll('.rl')].find(r => /Datenschutz/.test(r.textContent));
+  assert.ok(privacy, 'Datenschutz bleibt sichtbar');
+  const order = [...fresh.querySelectorAll('.rl, details#i-fresh')];
+  assert.ok(order.indexOf(privacy) < order.indexOf(box), 'Aktualität folgt auf den Datenschutz');
+  assert.equal(fresh.querySelectorAll('.card.list .rl.compact').length, 0, 'keine Quellenzeilen ausserhalb des Menüs');
+  const late = ich({data: {...data, status: {games: status(), players: {ok: false, updatedAt: '2026-10-31T20:20:00Z'}}}});
+  assert.equal(late.querySelector('details#i-fresh summary .s').textContent, 'Verzögert: Spielerwerte');
+  assert.match(late.querySelector('details#i-fresh').textContent, /Verzögert/);
+  assert.equal(ich({data}).querySelector('details#i-fresh summary .s').textContent, 'Zeitpunkt der letzten Aktualisierung');
 });

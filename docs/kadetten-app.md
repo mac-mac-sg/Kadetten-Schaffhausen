@@ -89,7 +89,7 @@ Abgenommen anhand der Skizzen in Graustufen (5. November 2026). Reihenfolge von 
 | Team | Kader/Staff · Spielerkarten nach Position (Tor, Rückraum, Flügel/Kreis) |
 | Spieler | Bild, Name, Nummer, Position · Saisonwerte (Spiele, Tore, 7-m) · Steckbrief · Letzte Spiele · «Als Lieblingsspieler merken» |
 | Verein | Bild · Titel (Meister, Cup, Supercup) · Geschichte mit Archivbildern · Heimhalle |
-| Ich | Benachrichtigungen (Anpfiff, Endresultat, Halbzeitstand, News) · Meine Spiele · Lieblingsspieler · Kalender-Abo · Darstellung System/Hell/Dunkel · App installieren · Datenschutz & Impressum · Link zu Matchday |
+| Ich | Benachrichtigungen (Anpfiff, Endresultat, Halbzeitstand, News) · Meine Spiele · Lieblingsspieler · Kalender-Abo · Darstellung System/Hell/Dunkel · App installieren · Datenschutz & Impressum · aufklappbar «Aktualität der Daten» (Stand je Quelle) |
 
 Hauptnavigation unten: Jetzt, Saison, Team, Verein. «Ich» als Symbol oben rechts. Unterseiten haben oben links «← zurück».
 
@@ -162,7 +162,7 @@ Alle Bereiche sind aufgebaut (`src/kadetten/js/views/`):
 | Saison | Spielplan nach Monat mit Filter Alle/QHL/EHL/Cup/Test und markiertem nächstem Spiel; Tabellen QHL und European League mit Bilanz und Tordifferenz; Statistik: Torschützen QHL | `/api/data` (`playerSeason` vom SHV) |
 | Team | Kader nach Position mit Fotos; Spielerprofil mit Saisonwerten, Steckbrief, Lieblingsspieler | `data/squad.js`, `playerSeason` |
 | Verein | Titelzahlen mit Jahren, Geschichte mit Archivbildern, Heimhalle | `data/club.js` |
-| Ich | Push (30 Min. vorher, Anpfiff, Halbzeit, Endresultat) über den bestehenden Dienst, Meine Spiele, Lieblingsspieler, Kalenderdatei (.ics, auf dem Gerät erzeugt), Darstellung, App installieren, Link zu Matchday | `/api/push/*` (bestehend), lokal |
+| Ich | Push (30 Min. vorher, Anpfiff, Halbzeit, Endresultat) über den bestehenden Dienst, Meine Spiele, Lieblingsspieler, Kalenderdatei (.ics, auf dem Gerät erzeugt), Darstellung, App installieren | `/api/push/*` (bestehend), lokal |
 | News | Liste und Artikel mit Volltext; Artikel-HTML wird von `sanitize.js` bereinigt (nur erlaubte Elemente, nur HTTPS) | `/api/articles` |
 
 Abweichungen vom Seitenaufbau, weil Daten fehlen (nichts wird erfunden):
