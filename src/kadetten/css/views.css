@@ -76,7 +76,8 @@
 .cmp > b { font: 600 var(--fs-h2)/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cmp > b.own { color: var(--c-accent-text); }
 .bar { display: grid; gap: var(--s-2); }
-.bar > span { font: 400 var(--fs-meta)/1 var(--f-text); color: var(--c-text-muted); text-align: center; }
+/* Beschriftung in der schmalen Mittelspalte des Teamvergleichs bleibt bei 12 px, sonst bricht «Wurfquote ?» um */
+.bar > span { font: 400 12px/1 var(--f-text); color: var(--c-text-muted); text-align: center; }
 .bar > i { display: flex; height: 4px; overflow: hidden; background: var(--c-surface-2); }
 .bar > i > b { background: var(--c-accent); }
 .bar > i.right { justify-content: flex-end; }
@@ -392,8 +393,8 @@
 .wld { display: flex; gap: 1px; height: 3px; width: 112px; max-width: 100%; border-radius: 2px; overflow: hidden; }
 .wld i { display: block; min-width: 0; height: 100%; }
 .wld .w { background: var(--c-win); }
-.wld .d { background: var(--c-text-muted); opacity: .5; }
-.wld .l { background: var(--c-text-muted); opacity: .2; }
+.wld .d { background: var(--c-graph-draw); }
+.wld .l { background: var(--c-graph-loss); }
 
 /* Artikel: Spielpaarung als Karte (Logos begrenzt, Resultat als Rückennummer) */
 .prose .fixture { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-3); margin: var(--s-4) 0; padding: var(--s-4) var(--s-3); background: var(--c-surface); border-radius: var(--r-tile); position: relative; overflow: hidden; }
