@@ -252,7 +252,7 @@ test('Schreiblauf: die KI und der sachliche Text erhalten die gesammelten Fakten
 });
 
 test('Oberfläche: «KI-Match-Vorschau» nur für KI-Texte und ältere Einsendungen, «Match-Vorschau» für Texte aus Daten', () => {
-  const src = fs.readFileSync('src/client/js/views-match.js', 'utf8');
+  const src = fs.readFileSync('archive/matchday/client/js/views-match.js', 'utf8');
   assert.match(src, /const ai=p\.generator!=='daten'/);
   assert.match(src, /ai\?'KI-Match-Vorschau':'Match-Vorschau'/);
   assert.match(src, /generator==='ki'\?'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert/);

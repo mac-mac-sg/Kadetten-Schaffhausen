@@ -1,5 +1,7 @@
 # Kadetten Companion App (V2) – Spezifikation
 
+**Seit 13. November 2026:** Die Kadetten-App ist die gültige App unter https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ (Kopie unter `/v2/`); Matchday ist archiviert ([GitHub Pages](pages.md)).
+
 **Aktuell ab 7. November 2026:** Die App ist reine Kadetten-App in der [Designsprache «Schnitt»](kadetten-app-design.md) mit vier Tabs (News, Spiele, Tabelle, Kader); Verein erreicht man über das Wappen, Persönliches über «Ich». Das [Matchday-Layout](v2-matchday-layout.md) ist abgelöst. Gestaltung und Seitenaufbau stehen im Designdokument; die Abschnitte «Struktur» und «Seitenaufbau» unten beschreiben die frühere Gliederung (Jetzt, Saison, Team, Verein) und gelten für Inhalte und Zustände weiter, nicht für Navigation und Gestaltung.
 
 Stand: 5. November 2026. Grundlage: [Recherche Vereins- und Fan-Apps](research/vereins-und-fan-apps.md) und [Designanalyse und Funktionskatalog](research/designanalyse-und-funktionen.md).
@@ -12,7 +14,7 @@ Die V2 unter `/v2/` wird als eigenständige Kadetten Companion App neu aufgebaut
 
 | Thema | Entscheid |
 |---|---|
-| Matchday | Die V1 unter `/` ist die App «Matchday» mit Kadetten, FC St. Gallen und St. Otmar. An der V1 werden keine Änderungen mehr vorgenommen. |
+| Matchday | Seit 13. November 2026 archiviert ([archive/matchday](../archive/matchday/README.md)). Die Kadetten-App läuft unter `/` (gleiche Manifest-ID und gleicher Scope wie Matchday) und als Kopie unter `/v2/`. FC St. Gallen und St. Otmar werden nicht mehr aktualisiert. |
 | Neuaufbau | Die Kadetten-App wird komplett neu gestaltet und neu aufgebaut. Die bisherige V2 dient nur als Fundus (Datenlogik, Prüfwissen); sie gibt Struktur und Gestaltung nicht vor. |
 | Ort | Die neue App ersetzt die bisherige V2 direkt unter `/v2/`. Installations-ID, Scope und `v2:`-Speicherschlüssel bleiben, damit installierte Apps weiterlaufen. |
 | Technik | Ohne Framework: ES-Module, CSS mit Layern und Tokens, esbuild. Eigene Codebasis ohne gemeinsame Client-Dateien mit V1; die V1-Ausgabe bleibt nachweisbar bytegleich. |

@@ -8,7 +8,7 @@
 <!-- Ergebnis von `npm run verify` und, wo sinnvoll, zusätzliche Belege (Test, der ohne die Änderung fehlschlägt; Browser-Prüfung; Vergleich vorher/nachher). -->
 
 ## Veröffentlichung
-<!-- Oberfläche (`src/client/`): wird nach dem Merge automatisch auf GitHub Pages veröffentlicht.
+<!-- Oberfläche (`src/kadetten/`): wird nach dem Merge automatisch auf GitHub Pages veröffentlicht.
      Server (`server/`): läuft im getrennten Datendienst und wirkt erst nach dessen Neubereitstellung. -->
 
 ## Nicht enthalten

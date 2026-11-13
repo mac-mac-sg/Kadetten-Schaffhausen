@@ -5,12 +5,13 @@ const VERSION = '__VERSION__';
 const SHELL = __SHELL__;
 const API_ORIGIN = '__API_ORIGIN__';
 const SCOPE = new URL(self.registration.scope);
-// Alle Caches tragen den Pfad der App, damit sie die Caches von V1 «Matchday» auf derselben Domain nie berühren.
+// Alle Caches tragen den Pfad der App. Unter / und unter /v2/ läuft dieselbe App, jede mit ihren eigenen Caches.
 const NS = encodeURIComponent(SCOPE.pathname);
 const SHELL_CACHE = 'kadetten-app-shell-' + NS + '-' + VERSION;
 const DATA_CACHE = 'kadetten-app-data-' + NS;
-// Caches der bisherigen V2 am selben Ort (kadetten-offline-<Version>-<Pfad>, kadetten-articles-v2-<Pfad>).
-const OLD_V2 = key => (key.startsWith('kadetten-offline-') || key.startsWith('kadetten-articles-v2-')) && key.endsWith('-' + NS);
+// Caches der archivierten App Matchday unter / und der bisherigen V2 unter /v2/ am selben Ort
+// (kadetten-offline-<Version>-<Pfad>, kadetten-articles-v2-<Pfad>). Sie werden beim Aktivieren gelöscht.
+const OLD_CACHE = key => (key.startsWith('kadetten-offline-') || key.startsWith('kadetten-articles-v2-')) && key.endsWith('-' + NS);
 const CACHEABLE_API = /^\/api\/(data|reports\/|ehf-reports\/|head-to-head|recent-games|previews\/|programmes\/[^/]+$|articles\/)/;
 const NEVER_CACHE = /^\/api\/(live|push\/|access|refresh)/;
 
@@ -25,7 +26,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     for (const key of await caches.keys()) {
-      if ((key.startsWith('kadetten-app-shell-' + NS + '-') && key !== SHELL_CACHE) || OLD_V2(key)) await caches.delete(key);
+      if ((key.startsWith('kadetten-app-shell-' + NS + '-') && key !== SHELL_CACHE) || OLD_CACHE(key)) await caches.delete(key);
     }
     await self.clients.claim();
   })());

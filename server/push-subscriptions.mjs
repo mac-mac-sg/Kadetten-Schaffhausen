@@ -2,7 +2,8 @@ import {sendPush, unbase64} from './web-push.mjs';
 export const PUSH_ORIGIN='https://mac-mac-sg.github.io';
 export const PUSH_PREFIX='push/v2/devices/';
 export const PUSH_TYPES=['reminder','start','half','final','favourite'];
-export const PUSH_CLUBS=['kadetten','fcsg','otmar'];
+// Nur noch Kadetten: FC St. Gallen und St. Otmar gehörten zur archivierten App Matchday (archive/matchday/README.md).
+export const PUSH_CLUBS=['kadetten'];
 export const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),v=>v.toString(16).padStart(2,'0')).join('');
 const reply=(data,status=200)=>new Response(status===204?null:JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':PUSH_ORIGIN,'Access-Control-Allow-Methods':'GET, PUT, DELETE, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Vary':'Origin'}});
 export function validPushSubscription(s) {

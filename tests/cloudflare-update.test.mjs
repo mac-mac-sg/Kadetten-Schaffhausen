@@ -65,6 +65,8 @@ test('runRefresh: Trockenlauf schreibt nichts, normaler Lauf sichert alten Stand
     assert.equal(real.written, true);
     assert.ok(mem.has('kadetten/previous.json') && mem.has('kadetten/current.json'));
     assert.equal(JSON.parse(mem.get('kadetten/current.json')).stories[0].title, 'Titel 0');
+    assert.ok(![...mem.keys()].some(k => /^(fcsg|otmar)\//.test(k)), 'FC St. Gallen und St. Otmar werden nicht mehr aktualisiert');
+    assert.equal('fcsg' in real || 'otmar' in real, false);
     const none = await runRefresh(bucket, {previous: seed, hadPrevious: false, supplied: {}});
     assert.equal(none.ok, false, 'ohne erreichbare Quelle gilt der Lauf als fehlgeschlagen');
   });

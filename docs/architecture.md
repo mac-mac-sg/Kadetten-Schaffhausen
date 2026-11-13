@@ -2,7 +2,9 @@
 
 ## Oberfläche
 
-Vanilla JavaScript und CSS in src/client. Hash-Routen für News, Spiele, Tabelle, Kader und die Vereinsseite (`#club`). Keine Framework-Migration in dieser Etappe.
+**Seit 13. November 2026:** Die Oberfläche ist die Kadetten-App in `src/kadetten` (Aufbau: [kadetten-app.md](kadetten-app.md)). Die folgenden Abschnitte zur Oberfläche beschreiben grösstenteils die archivierte App Matchday ([archive/matchday](../archive/matchday/README.md)); die Abschnitte zum Datendienst gelten weiter, ausser für FC St. Gallen und St. Otmar, die nicht mehr aktualisiert werden.
+
+Matchday (archiviert): Vanilla JavaScript und CSS in src/client (heute `archive/matchday/client`). Hash-Routen für News, Spiele, Tabelle, Kader und die Vereinsseite (`#club`). Keine Framework-Migration in dieser Etappe.
 
 ### Aufbau von src/client
 

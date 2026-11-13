@@ -75,3 +75,14 @@ test('Spielerwahl benötigt Auswahl und Bestätigung, Fotos werden anhand Quelle
  const closed=doc(voteSection({vote:{...vote,value:{...vote.value,open:false}},now,data,mine:'99'}));
  assert.match(closed.body.textContent,/100\s*%/);
 });
+
+test('Adressen der archivierten App Matchday führen zur passenden Ansicht der Kadetten-App', () => {
+  assert.deepEqual(parseRoute('#match/508393/stats'), {area: 'saison', view: 'spiel', id: '508393'});
+  assert.equal(parseRoute('#season/games').view, 'spielplan');
+  assert.equal(parseRoute('#season/table').view, 'tabellen');
+  assert.equal(parseRoute('#season/squad').view, 'team');
+  assert.deepEqual(parseRoute('#player/10'), {area: 'team', view: 'spieler', id: '10'});
+  assert.equal(parseRoute('#player/josip-peric').view, 'team', 'Namen als Kennung führen zum Kader');
+  assert.equal(parseRoute('#home').view, 'jetzt');
+  assert.equal(parseRoute('#club').view, 'jetzt');
+});

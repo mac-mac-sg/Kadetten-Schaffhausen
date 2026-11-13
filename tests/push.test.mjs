@@ -98,7 +98,7 @@ test('Service worker shows V2 pushes and navigates only within V2; V1 ignores pu
  for(const scope of ['https://mac-mac-sg.github.io/Kadetten-Schaffhausen/','https://mac-mac-sg.github.io/Kadetten-Schaffhausen/v2/']){
   const handlers={},shown=[],opened=[];
   const self={registration:{scope,showNotification:async(...args)=>shown.push(args)},addEventListener:(name,fn)=>handlers[name]=fn,clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
-  vm.runInNewContext(fs.readFileSync('src/client/sw.js','utf8'),{self,URL,Response,Request,console});
+  vm.runInNewContext(fs.readFileSync('archive/matchday/client/sw.js','utf8'),{self,URL,Response,Request,console});
   const waits=[];handlers.push({data:{json:()=>({title:'Endresultat',body:'Heim 30 : 32 Gast',url:'https://evil.test/',tag:'match'})},waitUntil:p=>waits.push(p)});await Promise.all(waits);
   if(!scope.endsWith('/v2/')){assert.equal(shown.length,0);continue}
   assert.equal(shown.length,1);assert.equal(shown[0][1].data.url,scope);
@@ -137,4 +137,9 @@ test('Worker returns readable, origin-scoped push errors when storage or transpo
  assert.equal(unavailable.status,503);assert.equal(unavailable.headers.get('Access-Control-Allow-Origin'),PUSH_ORIGIN);assert.doesNotMatch(await unavailable.text(),/private details/);
  const rejected=await worker.fetch(request('https://evil.test'),env);
  assert.equal(rejected.status,403);assert.equal(rejected.headers.get('Access-Control-Allow-Origin'),null);
+});
+
+test('Push nur noch für die Kadetten: FC St. Gallen und St. Otmar gehören zur archivierten App Matchday', async () => {
+  const {PUSH_CLUBS} = await import('../server/push-subscriptions.mjs');
+  assert.deepEqual(PUSH_CLUBS, ['kadetten']);
 });

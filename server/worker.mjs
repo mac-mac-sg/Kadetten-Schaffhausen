@@ -181,7 +181,6 @@ async function refreshData(request, env, u) {
   if (!result.ok) return json({error: 'All sources failed', status: result.next.status}, 502);
   const {next} = result;
   return json({
-    fcsg: result.fcsg,
     checkedAt: next.checkedAt,
     status: next.status,
     games: next.games.length,

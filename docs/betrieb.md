@@ -6,13 +6,17 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 
 | Teil | Wo es läuft | Wie es aktualisiert wird |
 | --- | --- | --- |
-| Oberfläche (`src/client/`) | GitHub Pages: https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ | Automatisch nach Merge auf `main` (`.github/workflows/deploy.yml`) |
-| Datendienst (`server/`) | Cloudflare Worker `kadetten-api`: https://kadetten-api.mac-mac-sg.workers.dev (Konfiguration `cloudflare/api/wrangler.toml`; Adresse in der App durch `scripts/build.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung automatisch bei Änderungen unter `server/` sowie manuell per Workflow «Cloudflare-Datendienst bereitstellen» |
+| Oberfläche: Kadetten-App (`src/kadetten/`) | GitHub Pages: https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ und als Kopie unter `/v2/` ([pages.md](pages.md)) | Automatisch nach Merge auf `main` (`.github/workflows/deploy.yml`) |
+| Datendienst (`server/`) | Cloudflare Worker `kadetten-api`: https://kadetten-api.mac-mac-sg.workers.dev (Konfiguration `cloudflare/api/wrangler.toml`; Adresse in der App durch `scripts/build-app.mjs`) | **Nicht** durch den Pages-Workflow. Neubereitstellung automatisch bei Änderungen unter `server/` sowie manuell per Workflow «Cloudflare-Datendienst bereitstellen» |
 | Speicher | Workers KV `kadetten-data`, Bindung `DATA`; Schlüssel siehe docs/architecture.md | Schreibt nur der Aktualisierungslauf (REST-Schnittstelle von Cloudflare) |
 | Datenaktualisierung | GitHub Actions: Workflow «Cloudflare-Datenaktualisierung» (`cloudflare-update.yml`), Zeitplan Schweizer Zeit 06:20, 09:20, 12:20, 15:20, 18:20, 21:20, 22:20 (ausgelöst ausschliesslich vom Cron-Trigger des Workers), jederzeit auch manuell | Holt Quellen, rechnet, schreibt Datenstand, Artikel, Berichte, FCSG, Matchprogramm des nächsten Heimspiels und die Match-Vorschauen |
 | Match-Vorschauen | im selben Lauf; KI von Cloudflare Workers AI (Mistral Small 3.1) mit sachlichem Text als Rückfall, Details [vorschauen.md](vorschauen.md) | Abschaltbar mit der Repository-Variable `KI_VORSCHAU` = `aus` |
 | Android-Widget | Gebaut von `.github/workflows/android-widget.yml` | Bei Änderungen unter `android-widget/`. Liest vom Cloudflare-Datendienst (`WidgetRepository.java`), wie die App. Bereits installierte ältere APKs benötigen die neue Widget-Version. |
 | Bisheriger Sites-Dienst | ChatGPT Sites, https://kadetten.ma-ra10.chatgpt.site | **Abgeschaltet** vom Eigentümer am 23. Oktober 2026 (Phase 4). Import und Live-Routen-Prüfung sind aus dem Repository entfernt. Ältere Widget-APKs, die noch dort lasen, zeigen keine Daten mehr und benötigen die neue Widget-Version |
+
+## Matchday archiviert (13. November 2026)
+
+Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([archive/matchday](../archive/matchday/README.md)). Unter der öffentlichen Adresse läuft die Kadetten-App. Der Datenlauf aktualisiert FC St. Gallen und St. Otmar nicht mehr (keine Daten, Vorschauen, Matchberichte, Rückblicke), Push gilt nur noch für die Kadetten. Die Endpunkte `/api/fcsg/*` und `/api/otmar/*` bleiben bestehen und liefern den zuletzt gespeicherten Stand.
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - **GitHub-Secrets:** `CLOUDFLARE_API_TOKEN` (Cloudflare-Token mit den Berechtigungen für Workers-Skripte, Workers KV Storage: Edit und Workers AI: Edit) und `CLOUDFLARE_ACCOUNT_ID`. Optional `KADETTEN_UPDATE_KEY`: wird nur gebraucht, wenn Dritte per `POST` in den Datendienst schreiben sollen; im Regelbetrieb nicht eingerichtet.

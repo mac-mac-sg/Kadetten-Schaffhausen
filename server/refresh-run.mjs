@@ -1,10 +1,6 @@
-import {storeOtmarUpdate} from './otmar.mjs';
-import otmarSeed from './otmar-seed.json' with {type:'json'};
 import {refresh,mergeConfirmedResults} from './update.mjs';
 import {archiveCompletedReports, getArchivedReport} from './live.mjs';
 import {aggregatePlayerSeason} from './shv.mjs';
-import {storeFcsgUpdate} from './fcsg.mjs';
-import fcsgSeed from './fcsg-seed.json' with {type: 'json'};
 
 // Eine Aktualisierung des Datenstands. Wird vom Worker (POST /api/refresh) und vom Actions-Lauf (scripts/cloudflare-update.mjs)
 // gemeinsam verwendet. `bucket` hat `get(key)` und `put(key, value)`.
@@ -40,8 +36,7 @@ export async function runRefresh(bucket, {previous, hadPrevious, supplied = {}, 
   next.games = mergeConfirmedResults(next.games,reports.finished);
   await seasonFromReports(bucket, next);
   await bucket.put('kadetten/current.json', JSON.stringify(next));
-  const fcsg = await storeFcsgUpdate(bucket, fcsgSeed);
-  const otmarReports = await archiveCompletedReports(bucket,'otmar');
-  const otmar = await storeOtmarUpdate(bucket,otmarSeed,next);
-  return {ok: true, next, reports, fcsg, otmar, otmarReports, written: true};
+  // FC St. Gallen und St. Otmar werden seit der Archivierung von Matchday (13.11.2026) nicht mehr aktualisiert.
+  // Ihre Endpunkte liefern den zuletzt gespeicherten Stand (archive/matchday/README.md).
+  return {ok: true, next, reports, written: true};
 }
