@@ -138,3 +138,8 @@ test('Worker returns readable, origin-scoped push errors when storage or transpo
  const rejected=await worker.fetch(request('https://evil.test'),env);
  assert.equal(rejected.status,403);assert.equal(rejected.headers.get('Access-Control-Allow-Origin'),null);
 });
+
+test('Push nur noch für die Kadetten: FC St. Gallen und St. Otmar gehören zur archivierten App Matchday', async () => {
+  const {PUSH_CLUBS} = await import('../server/push-subscriptions.mjs');
+  assert.deepEqual(PUSH_CLUBS, ['kadetten']);
+});

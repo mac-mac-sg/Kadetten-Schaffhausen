@@ -1,5 +1,5 @@
 // Aktualisierung des Datenstands in GitHub Actions (Phase 2 des Cloudflare-Umzugs, docs/cloudflare-umzug.md).
-// Ruft die Quellen selbst ab (kadettensh.ch, SHV, FCSG), rechnet mit dem Code des Datendienstes und schreibt das Ergebnis in den
+// Ruft die Quellen selbst ab (kadettensh.ch, SHV, EHF), rechnet mit dem Code des Datendienstes und schreibt das Ergebnis in den
 // KV-Namespace. Quellenfehler behalten den letzten gültigen Stand.
 //   node scripts/cloudflare-update.mjs              Trockenlauf: ruft die Quellen ab, schreibt nichts
 //   node scripts/cloudflare-update.mjs --schreiben  schreibt in den KV-Speicher
@@ -7,10 +7,7 @@
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import seed from '../server/seed.json' with {type: 'json'};
-import fcsgSeed from '../server/fcsg-seed.json' with {type: 'json'};
 import {runRefresh} from '../server/refresh-run.mjs';
-import {syncFcsgReports} from './lib/fcsg-reports.mjs';
-import {refreshFcsg} from '../server/fcsg.mjs';
 import {kvRestStore} from './lib/kv-rest-store.mjs';
 import {syncProgrammes} from './lib/programmes-source.mjs';
 import {syncPreviews} from './lib/preview-sync.mjs';
@@ -62,10 +59,6 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
   if (schreiben) await bucket.put('kadetten/current.json', JSON.stringify(result.next));
 
   if (schreiben) {
-    write(table('St. Otmar',result.otmar.status));
-    write(`\nSt. Otmar: ${result.otmar.games} Spiele, ${result.otmar.news} Meldungen, ${result.otmar.players} Spieler.`);
-    write(table('FCSG', result.fcsg.status));
-    write(`\nFCSG: ${result.fcsg.games} Spiele, ${result.fcsg.news} Meldungen, ${result.fcsg.players} Spieler.`);
     write(`\nSpielberichte: ${result.reports.ok ? 'ok' : 'mit Fehlern'}, ${result.reports.reports.length} geprüft.`);
     // Matchprogramm des nächsten Heimspiels (Phase 2b). Ein Fehler hier lässt den Datenstand unberührt und das bisherige Programm stehen.
     try {
@@ -76,9 +69,7 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     }
     // Match-Vorschauen ohne KI aus den bestätigten Daten (Weg B, docs/vorschauen.md). Fehler lassen alles Übrige unberührt.
     try {
-      const savedFcsg = await bucket.get('fcsg/current.json');
-      const savedOtmar = await bucket.get('otmar/current.json');
-      const v = await syncPreviews(bucket, {snapshot: result.next, fcsgData: savedFcsg ? await savedFcsg.json() : fcsgSeed,otmarData:savedOtmar?await savedOtmar.json():null}, {headToHead: previewDuels, recentGames: previewRecent, rewrite});
+      const v = await syncPreviews(bucket, {snapshot: result.next, fcsgData: null, otmarData: null}, {headToHead: previewDuels, recentGames: previewRecent, rewrite});
       write(`\nVorschauen: ${v.written} geschrieben, ${v.unchanged} unverändert, ${v.kept} bestehende bleiben, ${v.skipped} ohne genug Daten${v.errors ? `, ${v.errors} Fehler` : ''}. KI: ${rewrite ? `${v.ki} Texte, ${v.fallback} Rückfälle auf den sachlichen Text` : 'aus'}.`);
       for (const r of v.rejected.slice(0, 4)) write(`- KI-Text für ${r.id} nicht verwendet: ${r.problems.join('; ').slice(0, 200)}`);
     } catch (e) {
@@ -95,22 +86,13 @@ export async function main({schreiben = false, env = process.env, fetchFn = fetc
     // KI-Matchbericht zu abgeschlossenen QHL-Spielen (aus dem gesicherten SHV-Spielbericht).
     try {
       const q = await syncQhlReports(bucket, {games: result.next.games, write: reportWriter});
-      const savedOtmar=await bucket.get('otmar/current.json');
-      if(savedOtmar) {const o=await syncQhlReports(bucket,{games:(await savedOtmar.json()).games,write:reportWriter,club:'otmar'});write(`\nSt. Otmar QHL-Matchberichte: ${o.written} geschrieben.`);}
       write(`\nQHL-Matchberichte: ${q.checked} abgeschlossene Spiele, ${q.written} geschrieben, ${q.kept} fertig vorhanden, ${q.reports} Berichte (${q.ki} mit KI).`);
       for (const note of q.notes) write(`- ${note}`);
     } catch (e) {
       write(`\nQHL-Matchberichte: Fehler (${String(e.message).slice(0, 120)}); bestehende bleiben.`);
     }
-    try {
-      const saved=await bucket.get('fcsg/current.json');
-      if(saved){const r=await syncFcsgReports(bucket,await saved.json(),{write:reportWriter});write(`\nFCSG-Rückblicke: ${r.written} geschrieben, ${r.ki} mit KI.`);}
-    } catch { write('\nFCSG-Rückblicke: bestehende Berichte bleiben erhalten.'); }
     write('\nDer KV-Speicher ist aktualisiert.');
   } else {
-    const savedFcsg = await bucket.get('fcsg/current.json');
-    const fcsg = await refreshFcsg(savedFcsg ? await savedFcsg.json() : fcsgSeed);
-    write(table('FCSG', fcsg.status));
     write('\nTrockenlauf: nichts geschrieben.');
   }
   return result;
