@@ -108,7 +108,6 @@ export function renderIch({theme, state, ui, now}) {
             ? html`<button class="rl" type="button" data-install><span class="lead">${icon('ich')}</span><span class="grow"><span class="t">App installieren</span><span class="s">Auf den Home-Bildschirm</span></span>${icon('go')}</button>`
             : ''
         }
-        ${listRow({title: 'FC St. Gallen und St. Otmar', sub: 'in der App Matchday', link: '../', end: icon('ext')})}
         ${listRow({title: 'Datenschutz', sub: 'Keine Werbung, kein Tracking. Persönliches bleibt auf diesem Gerät.', end: ''})}
       </div>
       ${
