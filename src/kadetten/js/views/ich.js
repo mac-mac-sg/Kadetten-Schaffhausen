@@ -33,6 +33,14 @@ export function renderIch({theme, state, ui, now}) {
   const visited = myGames(),
     games = ownGames(state.data?.games).filter(g => visited.includes(String(g.id)));
   const freshness = dataFreshness(state.data, now);
+  const late = freshness.sources.filter(source => source.stale).map(source => source.name);
+  const freshStatus = late.length
+    ? 'Verzögert: ' + late.join(', ')
+    : freshness.stale
+      ? 'Aktualität bitte prüfen'
+      : freshness.sources.length
+        ? 'Alle Quellen aktuell'
+        : 'Zeitpunkt der letzten Aktualisierung';
   const blocked = supported && globalThis.Notification?.permission === 'denied';
   return html`${subBand(backLink('Zurück', href.jetzt()), 'Ich', 'Einstellungen')}
     <section class="sec" id="push" aria-labelledby="i-push">${sectionHead('Benachrichtigungen', '', '', 'i-push')}
@@ -110,20 +118,22 @@ export function renderIch({theme, state, ui, now}) {
         }
         ${listRow({title: 'Datenschutz', sub: 'Keine Werbung, kein Tracking. Persönliches bleibt auf diesem Gerät.', end: ''})}
       </div>
-      ${
-        freshness.sources.length
-          ? html`<div class="card list pad-top-s">
-        ${freshness.sources.map(source =>
-          listRow({
-            title: source.name,
-            sub: source.label + ' · Schweizer Zeit',
-            end: source.stale ? 'Verzögert' : 'Aktuell',
-            cls: 'compact'
-          })
-        )}</div>`
-          : ''
-      }
-      <p class="fine pad-top">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
+      <details class="card more-card aktuell" id="i-fresh">
+        <summary><span class="grow"><span class="t">Aktualität der Daten</span><span class="s">${freshStatus}</span></span></summary>
+        ${
+          freshness.sources.length
+            ? html`<div class="list">${freshness.sources.map(source =>
+                listRow({
+                  title: source.name,
+                  sub: source.label + ' · Schweizer Zeit',
+                  end: source.stale ? 'Verzögert' : 'Aktuell',
+                  cls: 'compact'
+                })
+              )}</div>`
+            : ''
+        }
+        <p class="fine pad-top-s">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
+      </details>
       <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.</p>
     </section>`;
 }
