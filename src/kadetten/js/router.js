@@ -60,6 +60,16 @@ export function parseRoute(hash = '') {
       return safeId(second) ? {area: 'saison', view: 'spiel', id: second} : {area: 'jetzt', view: 'jetzt'};
     case 'news':
       return safeId(second) ? {area: 'jetzt', view: 'artikel', id: second} : {area: 'jetzt', view: 'news'};
+    // Adressen der archivierten App Matchday (#season/…, #player/<Nummer>, #home), damit geteilte Links weiter passen.
+    case 'season':
+      return second === 'table'
+        ? {area: 'statistik', view: 'tabellen'}
+        : second === 'squad'
+          ? {area: 'team', view: 'team'}
+          : {area: 'saison', view: 'spielplan'};
+    case 'player':
+      // Matchday kannte auch Namen als Kennung; nur Rückennummern passen zur Kadetten-App.
+      return /^\d{1,3}$/.test(second || '') ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
     default:
       return {area: 'jetzt', view: 'jetzt'};
   }

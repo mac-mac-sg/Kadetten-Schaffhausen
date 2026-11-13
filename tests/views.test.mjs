@@ -9,7 +9,7 @@ class DOMParser {parseFromString(html){return parseHTML('<html><body>'+html+'</b
 // Lädt alle Oberflächen-Skripte (ausser dem Startcode) in eine einfache Browser-Attrappe
 // und baut die Ansichten mit dem mitgelieferten Datenstand. Fängt Tippfehler und
 // kaputte Vorlagen ab, ohne einen Browser zu brauchen.
-const html = fs.readFileSync('src/client/index.html', 'utf8');
+const html = fs.readFileSync('archive/matchday/client/index.html', 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"?]+)/g)]
   .map(m => m[1])
   .filter(s => (s.startsWith('js/') || s.startsWith('data/') || s === 'enhancements.js') && s !== 'js/main.js');
@@ -44,7 +44,7 @@ const context = {
   console
 };
 vm.createContext(context);
-for (const file of scripts) vm.runInContext(fs.readFileSync('src/client/' + file, 'utf8'), context, {filename: file});
+for (const file of scripts) vm.runInContext(fs.readFileSync('archive/matchday/client/' + file, 'utf8'), context, {filename: file});
 const run = code => vm.runInContext(code, context);
 const view = code => {
   const out = run(code);
@@ -537,7 +537,7 @@ test('Statistik abgeschlossener QHL-Spiele: Mannschaftswahl, Feldspieler mit Tor
 });
 
 test('Router kennt den Tab «report»',()=>{
- assert.match(fs.readFileSync('src/client/js/router.js','utf8'),/\['overview', 'report', 'squad', 'stats'\]\.includes\(tab\)/);
+ assert.match(fs.readFileSync('archive/matchday/client/js/router.js','utf8'),/\['overview', 'report', 'squad', 'stats'\]\.includes\(tab\)/);
 });
 
 test('European-League-Bilanzen verwenden vollständige bestätigte Resultate statt uneindeutiger Punkte',()=>{
@@ -1015,7 +1015,7 @@ test('V2 can omit calculation footnotes without losing season figures or unavail
   const unavailable=parseHTML(view('seasonPlayerLeaders()')).document;
   assert.ok(unavailable.querySelector('p.muted:not(.data-explanation)'));
   assert.match(unavailable.querySelector('p.muted').textContent,/nicht verfügbar/);
-  assert.match(fs.readFileSync('src/client/v2/matchday.css','utf8'),/html\[data-preview='v2'\] #app \.data-explanation \{ display:none !important; \}/);
+  assert.match(fs.readFileSync('archive/matchday/client/v2/matchday.css','utf8'),/html\[data-preview='v2'\] #app \.data-explanation \{ display:none !important; \}/);
  }finally{context.__notesSaved=saved;run('activeClub=__notesSaved.club;updateState=__notesSaved.state;players=__notesSaved.players;games=__notesSaved.games;tableLeague=__notesSaved.league');}
 });
 

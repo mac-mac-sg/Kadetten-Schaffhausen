@@ -6,7 +6,7 @@ import {publicReadCors} from '../server/cors.mjs';
 test('Pages adapter reads public APIs without cookies and rejects writes',async()=>{
  const calls=[];
  const context={window:{KADETTEN_PLATFORM:{apiOrigin:'https://kadetten-api.mac-mac-sg.workers.dev'}},Response,fetch:async(...args)=>{calls.push(args);return Response.json({ok:true})}};
- vm.createContext(context);vm.runInContext(fs.readFileSync('src/client/platform.js','utf8'),context);
+ vm.createContext(context);vm.runInContext(fs.readFileSync('archive/matchday/client/platform.js','utf8'),context);
  await context.apiFetch('/api/data',{credentials:'include'});
  assert.equal(calls[0][0],'https://kadetten-api.mac-mac-sg.workers.dev/api/data');assert.equal(calls[0][1].credentials,'omit');
  assert.deepEqual(await (await context.apiFetch('/api/access')).json(),{canUpdate:false});assert.equal(calls.length,1);
@@ -21,7 +21,7 @@ test('CORS exposes only public reads and never update or identity routes',()=>{
 });
 
 test('Umschaltung: Build-Adresse des Datendienstes steht im CSP, der bisherige Dienst nicht mehr',()=>{
- const build=fs.readFileSync('scripts/build.mjs','utf8'),html=fs.readFileSync('src/client/index.html','utf8');
+ const build=fs.readFileSync('archive/matchday/build.mjs','utf8'),html=fs.readFileSync('archive/matchday/client/index.html','utf8');
  const origin=build.match(/apiOrigin=process\.env\.KADETTEN_TARGET==='pages'\?'(https:\/\/[^']+)'/)[1];
  assert.equal(origin,'https://kadetten-api.mac-mac-sg.workers.dev');
  const csp=html.match(/Content-Security-Policy" content="([^"]+)"/)[1];

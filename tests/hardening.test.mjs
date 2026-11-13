@@ -27,7 +27,7 @@ test('Authorised refresh with invalid JSON or a non-object body is rejected with
 });
 
 test('CSP hash in index.html matches the inline script, so a script edit cannot silently break the app',()=>{
-  const html=fs.readFileSync('src/client/index.html','utf8');
+  const html=fs.readFileSync('archive/matchday/client/index.html','utf8');
   const csp=html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
   assert.ok(csp,'CSP meta tag missing');
   assert.ok(html.indexOf('Content-Security-Policy')<html.indexOf('<script'),'CSP must precede all scripts');

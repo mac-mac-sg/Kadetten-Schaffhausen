@@ -16,7 +16,7 @@ function logic(nowIso, games = []) {
   }
   const context = {Date: FixedDate, Intl, games, liveState: null, offlineData: false, navigator: {onLine: true}};
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync('src/client/js/logic.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('archive/matchday/client/js/logic.js', 'utf8'), context);
   return context;
 }
 const game = (date, time, extra = {}) => ({

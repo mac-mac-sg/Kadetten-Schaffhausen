@@ -1,5 +1,5 @@
 // Baut die Kadetten Companion App (src/kadetten) nach dist/app.
-// Eigene Codebasis: liest nichts aus src/client und verändert die V1-Ausgabe nicht.
+// Eigene Codebasis: liest nichts aus dem Archiv von Matchday (archive/matchday).
 // KADETTEN_TARGET=pages setzt die Adresse des Datendienstes; ohne Angabe liest die App vom eigenen Host (npm run dev:app).
 import {build} from 'esbuild';
 import {createHash} from 'node:crypto';
