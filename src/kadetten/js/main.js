@@ -6,7 +6,7 @@ import {startLive} from './live.js';
 import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
-import {toggleFavourite, toggleMyGame, changeTip, myGames, tips} from './personal.js';
+import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, needsWelcome, markWelcome} from './personal.js';
 import {resultImage, seasonCard, shareImage} from './share-image.js';
 import {seasonSummary} from './moments.js';
 import {outcome, shortTeam} from './logic.js';
@@ -21,10 +21,13 @@ import {nav, setLogos, subBand, backLink, loading, notice} from './views/parts.j
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
 import {renderSaison} from './views/saison.js';
-import {renderTeam, renderSpieler} from './views/team.js';
+import {renderTeam, renderSpieler, renderVergleich} from './views/team.js';
 import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
+import {renderQuiz} from './views/quiz.js';
+import {renderStart} from './views/start.js';
+import {answerQuiz} from './quiz.js';
 import {liveTile, renderLiveTile} from './views/live-kachel.js';
 
 const api = createApi({origin: API_ORIGIN});
@@ -81,6 +84,11 @@ function renderWissenOderLaden(context) {
       ${wissenFehler ? notice('Der Wissensbereich konnte nicht geladen werden. Bitte mit Verbindung erneut öffnen.', 'offline') : loading('Wissen wird geladen …')}
     </section>`;
 }
+// Erster Start: einmalige Einführung, nur beim Öffnen der Titelseite. Danach gilt sie als gesehen.
+if (/^#?\/?$/.test(location.hash) && needsWelcome()) {
+  markWelcome();
+  history.replaceState(history.state, '', href.start());
+}
 let navigationPending = true;
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function enterRoute() {
@@ -114,8 +122,11 @@ const VIEWS = {
   statistik: renderSaison,
   team: renderTeam,
   spieler: renderSpieler,
+  vergleich: renderVergleich,
   verein: renderVerein,
   ich: renderIch,
+  quiz: renderQuiz,
+  start: renderStart,
   wissen: renderWissenOderLaden
 };
 
@@ -404,6 +415,11 @@ app.addEventListener('click', event => {
   } else if (t.dataset.myGame) {
     toggleMyGame(t.dataset.myGame);
     render();
+  } else if (t.dataset.quiz) {
+    const [week, index, choice] = t.dataset.quiz.split(':').map(Number);
+    answerQuiz(week, index, choice);
+    render();
+    document.getElementById('main')?.focus({preventScroll: true});
   } else if (t.dataset.share) share(t.dataset.share);
   else if (t.dataset.tip) {
     const [id, team, delta] = t.dataset.tip.split(':');
@@ -421,6 +437,14 @@ app.addEventListener('click', event => {
   }
 });
 app.addEventListener('change', event => {
+  if (event.target.matches('[data-compare]')) {
+    const route = parseRoute(location.hash);
+    const next = {a: route.a, b: route.b, [event.target.dataset.compare]: event.target.value || null};
+    // Die Auswahl ersetzt den Verlaufseintrag: «Zurück» führt zum Kader, nicht durch jede Auswahl.
+    replacing = true;
+    location.replace(href.vergleich(next.a || next.b, next.a ? next.b : null));
+    return;
+  }
   if (event.target.matches('[data-push-type]') && push.device()?.active) pushAction('update');
 });
 addEventListener('beforeinstallprompt', event => {

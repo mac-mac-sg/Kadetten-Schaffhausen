@@ -10,7 +10,7 @@ export const AREAS = [
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
 const VEREIN_TABS = ['geschichte', 'titel'];
 export const WISSEN_CHAPTERS = ['regeln', 'aufstellungen', 'spielzuege'];
-export const GAME_TABS = ['vorschau', 'live', 'bericht', 'rueckblick', 'wahl'];
+export const GAME_TABS = ['vorschau', 'live', 'bericht', 'rueckblick', 'wahl', 'kurz'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
 export function parseRoute(hash = '') {
@@ -38,11 +38,19 @@ export function parseRoute(hash = '') {
     case 'statistik':
       return {area: 'statistik', view: second === 'spieler' ? 'statistik' : 'tabellen'};
     case 'team':
+      if (second === 'vergleich') {
+        const nr = v => (/^\d{1,3}$/.test(v || '') ? v : null);
+        return {area: 'team', view: 'vergleich', a: nr(parts[2]), b: nr(parts[3])};
+      }
       return safeId(second) ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
     case 'verein':
       return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich':
       return {area: null, view: 'ich'};
+    case 'start':
+      return {area: null, view: 'start', step: /^[1-3]$/.test(second || '') ? Number(second) : 1};
+    case 'quiz':
+      return {area: null, view: 'quiz'};
     case 'wissen':
       return {
         area: null,
@@ -88,8 +96,11 @@ export const href = {
   saison: tab => '#/saison' + (tab && tab !== 'spielplan' ? '/' + tab : ''),
   team: () => '#/team',
   spieler: id => '#/team/' + encodeURIComponent(id),
+  vergleich: (a, b) => '#/team/vergleich' + (a ? '/' + encodeURIComponent(a) + (b ? '/' + encodeURIComponent(b) : '') : ''),
   verein: tab => '#/verein' + (tab ? '/' + tab : ''),
   ich: () => '#/ich',
+  quiz: () => '#/quiz',
+  start: step => '#/start' + (step && step > 1 ? '/' + step : ''),
   wissen: (chapter, id, step) =>
     '#/wissen' +
     (chapter && (chapter !== 'regeln' || id) ? '/' + chapter : '') +

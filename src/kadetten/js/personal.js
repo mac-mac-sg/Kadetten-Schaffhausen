@@ -95,3 +95,11 @@ export function togglePick(gameId, player, s) {
   write(PICKS_KEY, Object.keys(all).length ? all : null, s);
   return all[key] || null;
 }
+
+/** Erster Start: Die Einführung erscheint einmal. Wer schon einen Lieblingsspieler oder Tipps hat, sieht sie nicht. */
+export const WELCOME_KEY = 'v2:app-welcome';
+export function needsWelcome(s) {
+  if (read(WELCOME_KEY, null, s)) return false;
+  return favourite(s) === null && !Object.keys(tips(s)).length && !myGames(s).length;
+}
+export const markWelcome = s => write(WELCOME_KEY, 1, s);

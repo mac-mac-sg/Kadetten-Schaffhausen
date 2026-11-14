@@ -211,6 +211,8 @@ export function renderSpieler({route, state, load, api, now}) {
       </section>`
         : ''
     }
+    <section class="sec">
+      <a class="btn wide" href="${href.vergleich(p.number)}">Mit anderem Spieler vergleichen</a></section>
     ${
       p.url
         ? html`<section class="sec">
@@ -218,5 +220,67 @@ export function renderSpieler({route, state, load, api, now}) {
       ${listRow({title: 'Profil auf kadettensh.ch', end: icon('ext'), link: p.url})}</div>
       </section>`
         : ''
+    }`;
+}
+
+/** Spielervergleich: zwei Kaderspieler nebeneinander, Werte der QHL-Saison. */
+const CMP_ROWS = [
+  ['games', 'Spiele'],
+  ['goals', 'Tore'],
+  ['goalsPerGame', 'Tore pro Spiel'],
+  ['fieldGoals', 'Feldtore'],
+  ['sevenMeterGoals', '7-m-Tore'],
+  ['twoMinutes', 'Zeitstrafen'],
+  ['yellowCards', 'Verwarnungen']
+];
+const cmpValue = v => (typeof v === 'number' ? String(v).replace('.', ',') : '–');
+export function compareRows(a, b) {
+  return CMP_ROWS.map(([key, label]) => {
+    const x = a?.[key],
+      y = b?.[key];
+    const both = typeof x === 'number' && typeof y === 'number';
+    return {label, a: cmpValue(x), b: cmpValue(y), lead: both && x !== y ? (x > y ? 'a' : 'b') : null};
+  });
+}
+function playerSelect(side, current, other) {
+  return html`<label class="cmp-pick"><span class="sr">${side === 'a' ? 'Erster Spieler' : 'Zweiter Spieler'}</span>
+    <select data-compare="${side}">
+      <option value="">Spieler wählen</option>
+      ${SQUAD.filter(p => String(p.number) !== other).map(
+        p => html`<option value="${p.number}"${String(p.number) === current ? html` selected` : ''}>${p.number} · ${p.name}</option>`
+      )}
+    </select></label>`;
+}
+function compareHead(p) {
+  if (!p) return html`<span class="cmp-head empty"><span class="no num" aria-hidden="true">?</span></span>`;
+  return html`<a class="cmp-head" href="${href.spieler(p.number)}"><img src="${playerPhoto(p.number)}" alt="" width="160" height="200" loading="lazy" decoding="async"><b>${p.name.split(' ').slice(-1)[0]}</b><small>${POSITION(p.position)} · <span class="num">#${p.number}</span></small></a>`;
+}
+export function renderVergleich({route, state}) {
+  const find = nr => SQUAD.find(p => String(p.number) === nr) || null;
+  const a = find(route.a),
+    b = find(route.b);
+  const players = state.data?.playerSeason?.players;
+  const rows = a && b ? compareRows(players?.[a.number], players?.[b.number]) : [];
+  return html`${backBar('Kader', href.team())}
+    <h1 class="h1 pad">Spielervergleich</h1>
+    <section class="sec" aria-label="Auswahl">
+      <div class="cmp-picks">${playerSelect('a', route.a, route.b)}${playerSelect('b', route.b, route.a)}</div>
+      <div class="cmp-heads">${compareHead(a)}${compareHead(b)}</div>
+    </section>
+    ${
+      a && b
+        ? html`<section class="sec" aria-labelledby="vg-werte">${sectionHead(`Saison ${SEASON} · QHL`, '', '', 'vg-werte')}
+      ${
+        players
+          ? html`<div class="card list">${rows.map(
+              r =>
+                html`<div class="cmp"><b${r.lead === 'a' ? html` class="own"` : ''}>${r.a}</b><span class="cmp-label">${r.label}</span><b${r.lead === 'b' ? html` class="own"` : ''}>${r.b}</b></div>`
+            )}</div>
+          <p class="fine pad-top">Der höhere Wert ist hervorgehoben. Quelle: Schweizerischer Handball-Verband. – = nicht gemeldet.</p>`
+          : state.data
+            ? notice('Noch keine Saisonwerte vorhanden.', 'saison')
+            : loading()
+      }</section>`
+        : html`<section class="sec">${notice('Wähle zwei Spieler, um ihre Saisonwerte zu vergleichen.', 'team')}</section>`
     }`;
 }

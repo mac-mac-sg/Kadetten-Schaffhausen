@@ -7,7 +7,8 @@ import {API_ORIGIN} from '../config.js';
 import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {liveNotice} from '../live.js';
-import {normalizeReport, fitsGame} from '../report.js';
+import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
+import {shortCards} from '../kurz.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor} from '../personal.js';
@@ -66,6 +67,51 @@ function outcomeByName(g, team) {
   return own > other ? 'S' : own < other ? 'N' : 'U';
 }
 
+const perGame = (value, played) => (Number.isFinite(value) && played > 0 ? Math.round((value / played) * 10) / 10 : null);
+const comma = v => (v === null ? '–' : String(v).replace('.', ','));
+
+/** Gegner-Check (QHL): Tore und Gegentore pro Spiel aus der Tabelle, dazu die besten Werfer des Gegners laut SHV. */
+export function gegnerCheck({game, own, opp, scorers}) {
+  const name = shortTeam(opponentOf(game));
+  const rows =
+    own && opp
+      ? [
+          ['Tore pro Spiel', perGame(own.goalsFor, own.played), perGame(opp.goalsFor, opp.played), 1],
+          ['Gegentore pro Spiel', perGame(own.goalsAgainst, own.played), perGame(opp.goalsAgainst, opp.played), -1]
+        ].filter(r => r[1] !== null && r[2] !== null)
+      : [];
+  const players = Array.isArray(scorers?.players) ? scorers.players.slice(0, 3) : [];
+  if (!rows.length && !players.length) return '';
+  const ownHome = isOwn(game.home);
+  return html`<section class="sec" aria-labelledby="g-check">${sectionHead('Gegner-Check', '', '', 'g-check')}
+    ${
+      rows.length
+        ? html`<div class="card list">
+      <div class="cmp head"><span>${ownHome ? 'Kadetten' : name}</span><span></span><span>${ownHome ? name : 'Kadetten'}</span></div>
+      ${rows.map(([label, k, o, dir]) => {
+        const left = ownHome ? k : o,
+          right = ownHome ? o : k,
+          better = (k - o) * dir > 0;
+        return html`<div class="cmp"><b${ownHome && better ? html` class="own"` : ''}>${comma(left)}</b><span class="cmp-label">${label}</span><b${!ownHome && better ? html` class="own"` : ''}>${comma(right)}</b></div>`;
+      })}</div>`
+        : ''
+    }
+    ${
+      players.length
+        ? html`<h3 class="h4 pad-top">Darauf achten: beste Werfer von ${name}</h3>
+      <div class="card list">${players.map(p =>
+        listRow({
+          title: p.name,
+          sub: `${p.games} ${p.games === 1 ? 'Spiel' : 'Spiele'}${Number.isInteger(p.sevenMeterGoals) && p.sevenMeterGoals > 0 ? ` · ${p.sevenMeterGoals} vom 7-m-Punkt` : ''}`,
+          end: html`<span class="res num">${p.goals}<small> Tore</small></span>`,
+          cls: 'compact'
+        })
+      )}</div>
+      <p class="fine pad-top">Saisonwerte laut Schweizerischem Handball-Verband, alle Wettbewerbsspiele.</p>`
+        : ''
+    }</section>`;
+}
+
 function vorschau({game, data, load, api, now}) {
   const table = standings(data.tables?.[game.league === 'EHL' ? 'EHL' : 'QHL']);
   const own = table.find(r => r.team === OWN_TEAM),
@@ -81,6 +127,8 @@ function vorschau({game, data, load, api, now}) {
       ? API_ORIGIN + programme.value.pdfPath
       : null;
   const p = preview?.value;
+  const oppScorers =
+    game.league === 'QHL' && !hasScore(game) ? load('opponent:' + opponentOf(game), () => api.opponent(opponentOf(game)), 900000) : null;
   const ownLast = ownGames(data.games)
     .filter(g => hasScore(g) && kickoff(g) < kickoff(game))
     .reverse()
@@ -103,6 +151,7 @@ function vorschau({game, data, load, api, now}) {
       </div>
 
     </section>
+    ${game.league === 'QHL' ? gegnerCheck({game, own, opp, scorers: oppScorers?.value?.ok ? oppScorers.value : null}) : ''}
     ${tipFor(game, now)}
     ${
       p?.paragraphs?.length
@@ -184,6 +233,35 @@ function bericht({game, phase, data, load, api, ui, state, now, part = 'alles'})
   return renderBericht({game, data, entry, ui, normalized, voting, part, supported});
 }
 
+/** «Spiel in 30 Sekunden»: wischbare Karten aus Resultat und Spielbericht. */
+function kurz({game, data, load, api, title}) {
+  const supported = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '');
+  const entry = supported ? loadReportFor(load, api, game) : null;
+  let report = null,
+    goals = [];
+  if (entry?.status === 'ready') {
+    const candidate = game.league === 'EHL' ? normalizeReport(null, entry.value.archive) : normalizeReport(entry.value.shv, null);
+    report = fitsGame(candidate, game) ? candidate : null;
+    goals = goalTimeline(entry.value.archive, entry.value.shv);
+  }
+  const cards = shortCards({game, report, goals, tables: data.tables, games: data.games});
+  return html`${subBand(backLink('Zum Spiel', href.spiel(game.id, 'bericht')), 'Spiel in 30 Sekunden', title)}
+    <section class="sec" aria-label="Zusammenfassung in Karten">
+      ${entry?.status === 'loading' ? loading('Spielbericht wird geladen …') : ''}
+      <ol class="kurz">${cards.map(
+        (c, i) => html`<li class="kurz-card${i === 0 ? ' first' : ''}">
+          <span class="tag-ink">${c.kicker}</span>
+          <b class="kurz-fig num">${c.figure}</b>
+          <span class="kurz-title">${c.title}</span>
+          <span class="kurz-text">${c.text}</span>
+          <span class="kurz-count num" aria-hidden="true">${i + 1}/${cards.length}</span></li>`
+      )}</ol>
+      ${cards.length > 1 ? html`<p class="fine pad-top">Zur Seite wischen für die nächste Karte.</p>` : ''}
+    </section>
+    <section class="sec"><div class="acts">
+      <a class="btn pri" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a><button class="btn" type="button" data-share-image="${game.id}">${icon('share')}Teilen</button></div></section>`;
+}
+
 export function renderSpiel({route, state, now, load, api, ui}) {
   const {data, live} = state;
   if (!data) return html`${backBar('News', href.jetzt())}<h1 class="h1 pad">Spiel</h1><section class="sec">${loading()}</section>`;
@@ -199,11 +277,13 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   const twoTabs = phase === 'bericht';
   let tab = route.tab || (phase === 'live' ? 'live' : 'vorschau');
   // Alte Adressen (Übersicht, Ticker) eines abgeschlossenen Spiels dieser Wettbewerbe führen zur Statistik.
-  if (twoTabs && tab !== 'wahl' && !FINISHED_TABS.some(([id]) => id === tab)) tab = 'bericht';
+  if (tab === 'kurz' && !twoTabs) tab = route.tab === 'kurz' ? (phase === 'live' ? 'live' : 'vorschau') : tab;
+  if (twoTabs && tab !== 'wahl' && tab !== 'kurz' && !FINISHED_TABS.some(([id]) => id === tab)) tab = 'bericht';
   // Vor Anpfiff gibt es nur die Vorschau; Ticker und Statistik wären leer, also keine Reiterleiste.
   const preOnly = phase === 'vorschau';
   if (preOnly && tab !== 'wahl') tab = 'vorschau';
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
+  if (tab === 'kurz') return kurz({game, data, load, api, title});
   const share = hasScore(game)
     ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share')}</button>`
     : '';
@@ -255,6 +335,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     ${hero}</section>`
   )}
     ${preOnly ? '' : segment(tabs, tab, 'Spielseite')}
+    ${twoTabs && tab === 'bericht' ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(game.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Spiel in 30 Sekunden</span><span class="s">Das Wichtigste in wenigen Karten</span></span>${icon('go')}</a></section>` : ''}
     ${twoTabs && tab === 'bericht' ? tipFor(game, now) : ''}
     ${content}
     ${

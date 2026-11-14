@@ -1,5 +1,6 @@
 // «Jetzt»: richtet sich nach dem Spieltag (Alltag, Spieltag, Live, Nachspiel).
 import {html} from '../text.js';
+import {quizTeaser} from './quiz.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {
@@ -275,11 +276,15 @@ export function renderJetzt({state, now, load, api, ui}) {
     const next = nextGame(data.games, now);
     const actions = html`<div class="acts">
       <a class="btn pri" href="${href.spiel(shown.id)}">${icon('doc')}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share')}Teilen</button></div>`;
+    const kurzLink = hasScore(shown)
+      ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(shown.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Spiel in 30 Sekunden</span><span class="s">Das Wichtigste in wenigen Karten</span></span>${icon('go')}</a></section>`
+      : '';
     const table = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
     return html`${homeBand()}
       <section class="sec match-score" aria-labelledby="j-end">
         <h2 class="sr" id="j-end">Endresultat</h2>
         ${resultHero(shown, now, {actions, celebrate: outcome(shown) === 'S'})}</section>
+      ${kurzLink}
       ${tipFor(shown, now)}
       ${
         table && shown.league === 'QHL'
@@ -309,6 +314,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         : ''
     }
     ${newsBlock(data, 3)}
+    ${quizTeaser(now)}
     ${
       own
         ? html`<section class="sec" aria-labelledby="j-saison">

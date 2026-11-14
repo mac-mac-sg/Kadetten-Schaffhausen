@@ -1,6 +1,7 @@
 import {refresh,mergeConfirmedResults} from './update.mjs';
 import {archiveCompletedReports, getArchivedReport} from './live.mjs';
 import {aggregatePlayerSeason} from './shv.mjs';
+import {updateRankHistory} from './rank-history.mjs';
 
 // Eine Aktualisierung des Datenstands. Wird vom Worker (POST /api/refresh) und vom Actions-Lauf (scripts/cloudflare-update.mjs)
 // gemeinsam verwendet. `bucket` hat `get(key)` und `put(key, value)`.
@@ -29,6 +30,8 @@ export async function runRefresh(bucket, {previous, hadPrevious, supplied = {}, 
     : async () => {};
   const next = await refresh(previous, supplied, saveArticle);
   if (!Object.values(next.status).some(x => x.ok)) return {ok: false, next};
+  // Saisonkurve: Rang der Kadetten je eigener Runde (nur wenn die Tabelle dieses Laufs gültig ist).
+  if (next.status.table?.ok === true) next.rankHistory = updateRankHistory(next.rankHistory, next.tables?.QHL, next.checkedAt);
   if (!write) return {ok: true, next: await seasonFromReports(bucket, next), written: false};
   if (hadPrevious) await bucket.put('kadetten/previous.json', JSON.stringify(previous));
   await bucket.put('kadetten/current.json', JSON.stringify(next));
