@@ -484,3 +484,74 @@ nav.chips { scroll-margin-top: var(--s-3); }
 .wk-ctl .btn { width: 100%; margin: 0; padding: 0 var(--s-2); }
 .wk-time { margin-left: auto; color: var(--c-text-muted); font: 500 var(--fs-small)/1 var(--f-text); }
 .wk-tools { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+
+/* Spielervergleich */
+.cmp-picks, .cmp-heads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
+.cmp-pick select { width: 100%; min-height: 48px; padding: 0 var(--s-3); border: 1px solid var(--c-card-edge-strong, var(--c-line)); border-radius: 10px; background: var(--c-card); color: var(--c-text); font: 500 var(--fs-body)/1.2 var(--f-text); }
+.cmp-heads { margin-top: var(--s-3); }
+.cmp-head { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--s-3); border-radius: 14px; background: var(--c-card); border: 1px solid var(--c-card-edge); box-shadow: var(--card-shadow); text-align: center; }
+.cmp-head img { width: 96px; height: 120px; object-fit: cover; object-position: top; border-radius: 10px; background: var(--c-black); }
+.cmp-head b { margin-top: var(--s-2); font: italic 600 var(--fs-h2)/1 var(--f-display); }
+.cmp-head small { font: 400 var(--fs-meta)/1.3 var(--f-text); color: var(--c-text-muted); }
+.cmp-head.empty { min-height: 180px; justify-content: center; }
+.cmp-head.empty .no { font: italic 600 var(--fs-kick)/1 var(--f-display); color: var(--c-text-muted); }
+.cmp-label { text-align: center; font: 400 var(--fs-small)/1.2 var(--f-text); color: var(--c-text-muted); }
+
+/* Saisonkurve */
+.chart.season { height: 120px; }
+.chart.season .c-line { stroke: var(--c-accent); stroke-width: 2.5; }
+.chart.season .c-up { opacity: .18; }
+
+/* Spiel in 30 Sekunden: wischbare Karten (Scroll-Snap, ohne Skript) */
+.kurz { display: flex; gap: var(--s-3); margin: 0 calc(-1 * var(--s-4)); padding: 0 var(--s-4) var(--s-2); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.kurz::-webkit-scrollbar { display: none; }
+.kurz-card { position: relative; flex: 0 0 84%; min-height: 320px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: var(--s-1); padding: var(--s-5); border-radius: 18px; overflow: hidden; background: var(--c-tile); color: var(--c-on-tile); }
+.kurz-card:only-child { flex-basis: 100%; }
+.kurz-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 34%; background: var(--band-bg); clip-path: polygon(0 0, 100% 0, 100% 62%, 0 100%); }
+.kurz-card .tag-ink { position: absolute; top: var(--s-4); left: var(--s-4); margin: 0 5px; }
+.kurz-fig { font: italic 600 var(--fs-score)/.85 var(--f-display); color: var(--c-tile-hot); }
+.kurz-card.first .kurz-fig { color: var(--c-on-tile); }
+.kurz-title { font: italic 600 var(--fs-figure)/1.05 var(--f-display); }
+.kurz-text { font: 400 var(--fs-body)/1.4 var(--f-text); color: var(--c-tile-muted); }
+.kurz-count { position: absolute; top: var(--s-4); right: var(--s-4); font: 600 var(--fs-meta)/1 var(--f-text); color: var(--c-ink); }
+
+/* Quiz der Woche */
+.quiz-card { padding: var(--s-5) var(--s-4); }
+.quiz-opts { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
+.quiz-opts .btn { justify-content: flex-start; min-height: 52px; white-space: normal; text-align: left; line-height: 1.25; }
+.quiz-card.result { text-align: center; }
+.quiz-card.result .kick { display: block; color: var(--c-accent-text); }
+.quiz-card.result p { margin-top: var(--s-2); }
+.quiz-card.result .acts { margin-top: var(--s-4); }
+.quiz-list { list-style: none; }
+.quiz-done { display: flex; gap: var(--s-3); padding: var(--s-3) 0; border-top: 1px solid var(--c-line); }
+.quiz-done:first-child { border-top: 0; }
+.quiz-done b { display: block; font: 600 var(--fs-body)/1.3 var(--f-text); }
+.quiz-done .s { display: block; margin-top: 2px; font: 400 var(--fs-small)/1.4 var(--f-text); color: var(--c-text-muted); }
+.quiz-done .more { display: inline-block; margin-top: var(--s-1); }
+.quiz-mark { flex: none; width: 24px; height: 24px; display: grid; place-items: center; font: 600 14px/1 var(--f-text); transform: skewX(var(--skew)); background: var(--c-surface-2); color: var(--c-text); }
+.quiz-done.ok .quiz-mark { background: var(--c-accent); color: var(--c-on-accent); }
+
+/* Erster Start */
+.start .lede { font: 400 var(--fs-lead)/1.45 var(--f-text); color: var(--c-text-muted); margin-bottom: var(--s-4); }
+.start-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+.start-pl { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 0 var(--s-2); border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: var(--c-card); color: var(--c-text); box-shadow: var(--card-shadow); }
+.start-pl img { width: 100%; height: 96px; object-fit: cover; object-position: top; background: var(--c-black); }
+.start-pl .num { position: absolute; top: 4px; left: 8px; font: italic 600 var(--fs-h2)/1 var(--f-display); color: var(--c-accent); }
+.start-pl b { font: 600 var(--fs-small)/1.2 var(--f-text); padding: 0 4px; text-align: center; }
+.start-pl.on { border-color: var(--c-accent); }
+.start-pl:focus-visible { outline: 2px solid var(--c-text); outline-offset: 2px; }
+.start-nav .btn.pri:only-child { grid-column: 2; }
+
+/* Playoff-Serien */
+.po { margin-top: var(--s-3); padding: var(--s-4); }
+.po:first-of-type { margin-top: 0; }
+.po-head { display: flex; align-items: center; gap: var(--s-3); }
+.po-head .t { display: block; font: 600 var(--fs-body)/1.25 var(--f-text); }
+.po-head .s { display: block; font: 400 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.po-score { font: italic 600 var(--fs-h1)/1 var(--f-display); }
+.po.won .po-score { color: var(--c-accent-text); }
+.po-dots { display: flex; gap: 6px; margin: var(--s-3) 0 var(--s-2); list-style: none; }
+.po-dots li { flex: 1; height: 8px; transform: skewX(var(--skew)); background: var(--c-surface-2); }
+.po-dots li.w { background: var(--c-accent); }
+.po-dots li.l { background: var(--c-graph-loss); }

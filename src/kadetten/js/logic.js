@@ -219,4 +219,23 @@ export function dataFreshness(data, now = Date.now()) {
 
 /** Wettbewerb eines Spiels wie in den Filtern: QHL, EHL, Cup (inkl. Turniere mit «cup» im Namen) oder Test. */
 export const competitionOf = game =>
-  /cup/i.test(game?.league || '') ? 'Cup' : ['QHL', 'EHL'].includes(game?.league) ? game.league : 'Test';
+  /cup/i.test(game?.league || '')
+    ? 'Cup'
+    : ['QHL', 'EHL'].includes(game?.league)
+      ? game.league
+      : /^QHL\b|play-?off/i.test(game?.league || '')
+        ? 'QHL'
+        : 'Test';
+
+/** Saisonkurve: Punkte der Kadetten nach jeder gespielten QHL-Runde (Sieg 2, Unentschieden 1). */
+export function pointsCurve(games, team = OWN_TEAM) {
+  let points = 0;
+  return ownGames(games, team)
+    .filter(g => g.league === 'QHL' && hasScore(g))
+    .sort((a, b) => kickoff(a) - kickoff(b))
+    .map((g, i) => {
+      const result = outcome(g, team);
+      points += result === 'S' ? 2 : result === 'U' ? 1 : 0;
+      return {round: i + 1, result, points, opponent: g.home === team ? g.away : g.home};
+    });
+}

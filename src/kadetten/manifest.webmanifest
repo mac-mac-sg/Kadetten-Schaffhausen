@@ -9,6 +9,11 @@
   "display": "standalone",
   "background_color": "#141415",
   "theme_color": "#141415",
+  "shortcuts": [
+    {"name": "Spiele", "short_name": "Spiele", "url": "./#/saison", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"}]},
+    {"name": "Tabelle", "short_name": "Tabelle", "url": "./#/statistik", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"}]},
+    {"name": "Kader", "short_name": "Kader", "url": "./#/team", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png"}]}
+  ],
   "icons": [
     {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

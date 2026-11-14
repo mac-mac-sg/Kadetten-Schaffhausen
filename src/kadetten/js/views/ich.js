@@ -43,6 +43,7 @@ export function renderIch({theme, state, ui, now}) {
         : 'Zeitpunkt der letzten Aktualisierung';
   const blocked = supported && globalThis.Notification?.permission === 'denied';
   return html`${subBand(backLink('Zurück', href.jetzt()), 'Ich', 'Einstellungen')}
+    <section class="sec"><div class="card list">${listRow({title: 'App einrichten', sub: 'Lieblingsspieler, Mitteilungen und Tipp in drei Schritten', link: href.start()})}</div></section>
     <section class="sec" id="push" aria-labelledby="i-push">${sectionHead('Benachrichtigungen', '', '', 'i-push')}
       <div class="card list">
         ${PUSH_TYPES.filter(([id]) => id !== 'favourite' || (fav && favShv && ui.pushFavourite)).map(

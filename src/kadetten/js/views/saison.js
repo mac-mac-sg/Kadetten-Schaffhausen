@@ -1,8 +1,21 @@
 // «Saison»: Spielplan & Resultate, Tabellen, Statistik.
-import {html} from '../text.js';
+import {html, raw} from '../text.js';
 import {href} from '../router.js';
-import {OWN_TEAM, ownGames, kickoff, hasScore, shortTeam, standings, nextGame, zurichParts, competitionOf} from '../logic.js';
+import {
+  OWN_TEAM,
+  ownGames,
+  kickoff,
+  hasScore,
+  shortTeam,
+  standings,
+  nextGame,
+  zurichParts,
+  competitionOf,
+  pointsCurve,
+  outcome
+} from '../logic.js';
 import {icon} from '../icons.js';
+import {playoffSeries, seriesText} from '../playoffs.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
@@ -14,6 +27,25 @@ const TABS = [
   ['tabellen', 'Tabelle', '#/statistik'],
   ['statistik', 'Spielerwerte', '#/statistik/spieler']
 ];
+
+/** Playoff-Serien der Kadetten über dem Spielplan (erscheint erst, wenn der Spielplan Playoff-Spiele enthält). */
+export function playoffBlock(games, now) {
+  const series = playoffSeries(games);
+  if (!series.length) return '';
+  return html`<section class="sec" aria-labelledby="s-po">${sectionHead('Playoffs', '', '', 's-po')}
+    ${series.map(
+      s => html`<div class="card po${s.state === 'open' ? '' : ' ' + s.state}">
+        <div class="po-head">${crest(s.opponent, 'sm')}<span class="grow"><span class="t">${s.stage} · ${shortTeam(s.opponent)}</span><span class="s">${seriesText(s)}</span></span><b class="po-score num">${s.wins}:${s.losses}</b></div>
+        <ol class="po-dots" aria-label="${`Best of ${s.bestOf}`}">${[...Array(s.bestOf).keys()].map(i => {
+          const g = s.games[i],
+            r = g && hasScore(g) ? {S: 'w', N: 'l', U: 'u'}[outcome(g)] || '' : '';
+          return html`<li class="${r}"><span class="sr">Spiel ${i + 1}${r === 'w' ? ': Sieg' : r === 'l' ? ': Niederlage' : ': offen'}</span></li>`;
+        })}</ol>
+        ${s.next ? html`<div class="list">${gameRow(s.next, now)}</div>` : ''}
+        <p class="fine">Best of ${s.bestOf}${s.assumed ? ' (angenommen, solange nicht alle Spiele angesetzt sind)' : ''}: ${s.target} Siege entscheiden die Serie.</p>
+      </div>`
+    )}</section>`;
+}
 
 function spielplan({state, now, ui}) {
   const games = ownGames(state.data.games);
@@ -29,6 +61,7 @@ function spielplan({state, now, ui}) {
     months.get(key).push(g);
   }
   return html`${chips('comp', [['Alle', 'Alle'], ...present.map(c => [c, c])], filter, 'Wettbewerb')}
+    ${['Alle', 'QHL'].includes(filter) ? playoffBlock(state.data.games, now) : ''}
     ${[...months].map(
       ([key, items]) => html`<section class="sec" aria-labelledby="${'m-' + key}">
         ${sectionHead(`${MONTHS[+key.slice(5) - 1]} ${key.slice(0, 4)}`, '', '', 'm-' + key)}
@@ -49,6 +82,43 @@ function recordBar(rec) {
   if (!Array.isArray(rec) || rec.length !== 3 || rec.some(n => !Number.isFinite(n)) || !rec.some(n => n > 0)) return '';
   const [w, d, l] = rec;
   return html`<span class="wld" role="img" aria-label="${`${w} Siege, ${d} Unentschieden, ${l} Niederlagen`}"><i class="w" data-style="${'flex:' + w}"></i><i class="d" data-style="${'flex:' + d}"></i><i class="l" data-style="${'flex:' + l}"></i></span>`;
+}
+
+/** Saisonkurve: Punkte nach Runden gegen das Maximum, darunter der Rang je Runde (sobald der Datendienst ihn festhält). */
+export function seasonCurve(data) {
+  const curve = pointsCurve(data.games);
+  if (curve.length < 2) return '';
+  const W = 320,
+    H = 120,
+    n = curve.length,
+    max = 2 * n;
+  const x = i => ((i / n) * W).toFixed(1),
+    y = p => (H - 6 - (p / max) * (H - 16)).toFixed(1);
+  const path = 'M0 ' + y(0) + curve.map(c => ` L${x(c.round)} ${y(c.points)}`).join('');
+  const last = curve.at(-1);
+  const ranks = new Map((Array.isArray(data.rankHistory) ? data.rankHistory : []).map(e => [e.played, e.rank]));
+  const own = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
+  if (own && own.played === n) ranks.set(n, own.rank);
+  const known = curve.filter(c => ranks.has(c.round));
+  const label = `Saisonkurve: ${last.points} von ${max} möglichen Punkten nach ${n} Runden.`;
+  return html`<section class="sec" aria-labelledby="t-kurve">${sectionHead('Saisonkurve', '', '', 't-kurve')}
+    <div class="card">
+      <div class="chart-wrap">${raw(`<svg class="chart season" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}" preserveAspectRatio="none">
+        <line x1="0" y1="${y(0)}" x2="${W}" y2="${y(max)}" class="c-half"/>
+        <path d="${path} L${W} ${y(0)} L0 ${y(0)} Z" class="c-up"/>
+        <path d="${path}" class="c-line"/>
+      </svg>`)}<div class="chart-axis"><span>Start</span><span>Punkte nach Runden · gestrichelt: Maximum</span><span>Runde ${n}</span></div></div>
+      <div class="facts3">
+        <span><b class="num">${last.points}</b><small>von ${max} Punkten</small></span>
+        <span><b class="num">${String(Math.round((last.points / n) * 100) / 100).replace('.', ',')}</b><small>Punkte pro Spiel</small></span>
+        <span><b class="num">${own ? own.rank + '.' : '–'}</b><small>Rang aktuell</small></span>
+      </div>
+      ${
+        known.length > 1
+          ? html`<p class="fine">Rang nach Runde: ${known.map(c => `${c.round}. Runde: ${ranks.get(c.round)}.`).join(' · ')}</p>`
+          : html`<p class="fine">Der Rang je Runde wird ab jetzt festgehalten und erscheint hier nach den nächsten Spielen.</p>`
+      }
+    </div></section>`;
 }
 
 function tabellen({state, ui}) {
@@ -89,6 +159,7 @@ function tabellen({state, ui}) {
             </tr>`;
         })}</tbody></table></div>
     </section>
+    ${current === 'QHL' ? seasonCurve(state.data) : ''}
     <section class="sec">
       <p class="note">${
         current === 'QHL'

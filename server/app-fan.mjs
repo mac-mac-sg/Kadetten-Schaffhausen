@@ -7,6 +7,7 @@
 // unter zufälligen, gehashten Geräteschlüsseln, keine Personendaten, und ist auf die App-Herkunft beschränkt.
 import {pushKickoff} from './push-monitor.mjs';
 import {getLiveMatch} from './live.mjs';
+import {getOpponent} from './opponent.mjs';
 
 export const APP_ORIGIN = 'https://mac-mac-sg.github.io';
 const OWN = 'Kadetten Schaffhausen';
@@ -108,11 +109,21 @@ export function buildCalendar(games, now) {
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
-export async function appRoute(request, env, url, now = Date.now(), liveFn = getLiveMatch) {
+export async function appRoute(request, env, url, now = Date.now(), liveFn = getLiveMatch, opponentFn = getOpponent) {
   if (url.pathname === '/api/app/calendar.ics') {
     if (request.method !== 'GET' && request.method !== 'HEAD') return reply({error: 'GET required'}, 405);
     const data = await snapshot(env);
     return new Response(buildCalendar(data?.games, now), {headers: {'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'public, max-age=900', 'Content-Disposition': 'inline; filename="kadetten.ics"', 'Access-Control-Allow-Origin': APP_ORIGIN}});
+  }
+  if (url.pathname === '/api/app/opponent') {
+    if (request.method !== 'GET') return reply({error: 'GET required'}, 405);
+    const team = url.searchParams.get('team') || '';
+    // Nur Gegner aus dem eigenen QHL-Spielplan: kein offener Zugang zur Quelle.
+    const data = await snapshot(env);
+    const known = data?.games?.some(g => g.league === 'QHL' && (isOwn(g.home) ? g.away : isOwn(g.away) ? g.home : null) === team);
+    if (!known) return reply({error: 'Gegner nicht im Spielplan'}, 404);
+    try { return reply(await opponentFn(team), 200, {'Cache-Control': 'public, max-age=900'}); }
+    catch { return reply({ok: false, error: 'Gegnerwerte nicht verfügbar'}, 503); }
   }
   const m = /^\/api\/app\/votes\/([a-zA-Z0-9_-]{1,80})$/.exec(url.pathname);
   if (!m) return reply({error: 'Not found'}, 404);
