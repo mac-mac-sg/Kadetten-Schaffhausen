@@ -71,6 +71,10 @@ Spielseite (von Jetzt, Spielplan, Spieler, Artikel) ─ Vorschau → Live → Be
 | Live | Spielstand, Phase und Spielzeit, Halbzeitstand, Live-Tabelle, «Stand vor x Sekunden» |
 | Bericht | Endresultat und Halbzeit, Torschützen, Paraden, 7-m, Zeitstrafen, Teamvergleich, Tabelle danach, Artikel zum Spiel |
 
+### Live-Kachel
+
+Läuft ein Kadetten-Spiel, zeigt eine schmale dunkle Kachel über der Navigation Stand, Phase und Minute (`js/views/live-kachel.js`). Sie erscheint nicht auf der Titelseite, nicht in der Ansicht des laufenden Spiels und nicht in Ansichten ohne Navigation. Antippen öffnet `#/spiel/<id>/live`. Steigt der Stand der Kadetten, steht 45 Sekunden «Tor Kadetten» und die Zahl in Orange. Spiele anderer Mannschaften zeigen keine Kachel. Die Vorlage war die Live-Leiste der archivierten Matchday-App (`archive/matchday/client/v2/matchday.js`, `v2SyncLiveBar`), die Form folgt dem Schnitt (Streifenrand, schräge Marken).
+
 ## Seitenaufbau
 
 Abgenommen anhand der Skizzen in Graustufen (5. November 2026). Reihenfolge von oben nach unten.
