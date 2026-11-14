@@ -40,7 +40,7 @@
 .more { display: inline-flex; align-items: center; min-height: var(--tap); margin: -12px 0; font: 500 var(--fs-small)/1 var(--f-text); color: var(--c-accent-text); }
 
 /* Karten ohne sichtbaren Rahmen: weicher Schatten, im Dunkeln eine helle Oberkante. Der 1-px-Rand bleibt als Platz (und für Markierungen). */
-.card { display: block; background: var(--c-surface); border: 1px solid transparent; box-shadow: var(--card-shadow); border-radius: var(--r-card); padding: var(--s-4); }
+.card { display: block; background: var(--c-card); border: 1px solid var(--c-card-edge); box-shadow: var(--card-shadow); border-radius: var(--r-card); padding: var(--s-4); }
 .card.empty { display: flex; align-items: center; gap: var(--s-3); color: var(--c-text-muted); }
 .lead { width: 36px; height: 36px; flex: none; border-radius: var(--r-tile); display: grid; place-items: center; background: var(--c-surface-2); color: var(--c-text-muted); }
 
