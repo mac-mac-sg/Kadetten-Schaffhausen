@@ -204,3 +204,18 @@ test('Playoffs: Serien aus dem Spielplan, Cup-Final zählt nicht', () => {
   assert.equal(won.state, 'won');
   assert.equal(seriesText(won), 'Serie gewonnen 3:1');
 });
+
+test('Gegner-Check gilt auch für European League: Tabellenvergleich ohne Werferliste', () => {
+  const g = game('e1', '2026-11-24', OWN, 'Chambery Savoie Mont Blanc HB', null, {league: 'EHL'});
+  const out = String(gegnerCheck({game: g, own: {played: 1, goalsFor: 39, goalsAgainst: 32}, opp: {played: 1, goalsFor: 33, goalsAgainst: 34}, scorers: null}));
+  assert.match(out, /39/);
+  assert.match(out, /Gruppenphase der European League nach 1 Spiel\./);
+  assert.doesNotMatch(out, /beste Werfer/);
+});
+
+test('Teamnamen: «Chambéry» der Tabelle und der Spielplan-Name gelten als dasselbe Team', async () => {
+  const {sameTeam} = await import('../src/kadetten/js/match.js');
+  assert.equal(sameTeam('Chambéry', 'Chambery Savoie Mont Blanc HB'), true);
+  assert.equal(sameTeam('GC Amicitia Zürich', 'GC Amicitia Zurich'), true);
+  assert.equal(sameTeam('BSV Bern', 'HC Izvidac'), false);
+});

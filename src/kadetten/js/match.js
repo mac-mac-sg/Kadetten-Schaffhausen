@@ -4,11 +4,17 @@ import {OWN_TEAM, hasScore, zurichParts, ownGames, standings} from './logic.js';
 
 /** Vereinsnamen vergleichbar machen (Quellen schreiben «TSV St. Otmar» oder «RTV 1879 Basel» unterschiedlich). */
 export function normTeam(name) {
-  return String(name || '')
-    .toLowerCase()
-    .replace(/^tsv\s+/, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    String(name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{M}/gu, '')
+      .replace(/^tsv\s+/, '')
+      // Die Tabelle schreibt «Chambéry», der Spielplan «Chambery Savoie Mont Blanc HB».
+      .replace(/^chambery\b.*$/, 'chambery')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 export const sameTeam = (a, b) => normTeam(a) === normTeam(b) && normTeam(a) !== '';
 export const isOwn = name => sameTeam(name, OWN_TEAM);
