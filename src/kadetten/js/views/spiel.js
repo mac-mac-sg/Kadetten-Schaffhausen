@@ -93,7 +93,11 @@ export function gegnerCheck({game, own, opp, scorers}) {
           right = ownHome ? o : k,
           better = (k - o) * dir > 0;
         return html`<div class="cmp"><b${ownHome && better ? html` class="own"` : ''}>${comma(left)}</b><span class="cmp-label">${label}</span><b${!ownHome && better ? html` class="own"` : ''}>${comma(right)}</b></div>`;
-      })}</div>`
+      })}</div>${
+        game.league === 'EHL' && own?.played && opp?.played
+          ? html`<p class="fine pad-top">Gruppenphase der European League nach ${own.played === opp.played ? own.played : own.played + ' bzw. ' + opp.played} ${own.played === 1 && opp.played === 1 ? 'Spiel' : 'Spielen'}.</p>`
+          : ''
+      }`
         : ''
     }
     ${
@@ -151,7 +155,7 @@ function vorschau({game, data, load, api, now}) {
       </div>
 
     </section>
-    ${game.league === 'QHL' ? gegnerCheck({game, own, opp, scorers: oppScorers?.value?.ok ? oppScorers.value : null}) : ''}
+    ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp, scorers: oppScorers?.value?.ok ? oppScorers.value : null}) : ''}
     ${tipFor(game, now)}
     ${
       p?.paragraphs?.length
