@@ -22,7 +22,10 @@ Tokens als CSS-Variablen `--c-*` in `src/kadetten/css/tokens.css`; Modus über `
 | Token | Hell | Dunkel | Verwendung |
 |---|---|---|---|
 | `bg` | `#f6f3ee` (Papier) | `#141415` | Seitenhintergrund |
-| `surface` | `#ffffff` | `#1c1c1e` | Karten, Navigation |
+| `surface` | `#ffffff` | `#1c1c1e` | Navigation, Blätter, Spielkarte im Band |
+| `card` | wie `surface` | `#232326` | Karten (`.card`); im Dunkeln mit feinem Rand `card-edge` (`#ededed14`), Listenkarten mit `card-edge-strong` (`#ededed26`) und Zeilenlinien `line-list`, ohne Schatten |
+| `surface-2` / `chip` | `#ece8e1` / `#e4dfd6` | `#2a2a2d` / `#2a2a2d` | Kacheln auf Karten, nicht gewählte Knöpfe |
+| `graph-draw` / `graph-loss` | `#6b7179` / `#8f959d` | `#9aa1aa` / `#6b7179` | Unentschieden und Niederlage im Bilanz-Balken (je mindestens 3:1) |
 | `surface-2` | `#ece8e1` | `#262628` | Symbolfelder, ruhige Etiketten |
 | `chip` | `#e4dfd6` | `#262628` | Fläche inaktiver Chips, Segmente, Tipp-Knöpfe |
 | `text` / `text-muted` | `#141415` / `#525252` | `#ededed` / `#b0b0b6` | Text |
@@ -91,7 +94,8 @@ Stand: 11. November 2026. Entscheid des Eigentümers: alle Stufen, dezent, für 
 | Kopfband | leiser Verlauf mit Lichtfleck (`--band-bg`), Wappenorange in der Mitte; das dunkelste Orange `#f05600` hält Tinte bei 5,3:1 |
 | Streifen im Band | feiner (5 px auf 13 px, 78 % Tinte) und nach links auslaufend (`--stripes-band` mit Maske). Marker und Ränder behalten die harten Streifen (`--stripes`) |
 | Schein | schwaches Orange läuft unter dem Schnitt in den Hintergrund aus (`--band-glow`, am ersten Element nach dem Band) |
-| Karten | kein sichtbarer Rahmen; weicher Schatten, im Dunkeln eine helle Oberkante (`--card-shadow`). Der 1-px-Rand bleibt als Platz |
+| Karten | Hell: kein sichtbarer Rahmen, weicher Schatten. Dunkel: hellere Fläche (`--c-card`) mit feinem 1-px-Rand und heller Oberkante; Karten aus Zeilen (Spieleliste, Tabelle) mit kräftigerem Rand, ohne Schatten (Entscheid 14.11.2026) |
+| Datum auf Foto-Aufmachern | schräger Tintenchip wie «Tradition seit 1791», helle Schrift (16:1), bei jedem Foto lesbar (Entscheid 14.11.2026) |
 | Wahlknöpfe, Chips | nicht gewählte halbdurchsichtig (`--c-chip-soft`), gewählte wie bisher |
 | Glas | Spielkarte der Titelseite (ragt in allen Zuständen um den ganzen Schnitt plus 6 px ins Band; Selektor `.band-home + .match-score`), Reiterleiste, runde Knöpfe und «Zurück» im Band, News-Aufmacher (weicher Verlauf für die Lesbarkeit, Glas nur im unteren Teil und zum Foto hin auslaufend, damit das Foto auch bei langen Titeln sichtbar bleibt), «?»-Blatt mit unscharfem Hintergrund |
 

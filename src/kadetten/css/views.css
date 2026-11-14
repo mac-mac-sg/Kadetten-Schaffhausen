@@ -12,7 +12,8 @@
 .clamp { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* Listen */
-.card.list { padding: 0 var(--s-4); }
+/* Karten aus Zeilen (Spieleliste, Tabelle): im dunklen Thema mit kräftigerem Rand und Zeilenlinien statt Schatten, damit dicht gestapelte Karten klar getrennt sind */
+.card.list { padding: 0 var(--s-4); border-color: var(--c-card-edge-strong); box-shadow: var(--card-shadow-list, var(--card-shadow)); --c-line: var(--c-line-list, var(--c-line)); }
 .card.pad-s { padding: var(--s-2) var(--s-3); }
 .rl { width: 100%; display: flex; align-items: center; gap: var(--s-3); min-height: 56px; padding: var(--s-2) 0; border-top: 1px solid var(--c-line); text-align: left; color: inherit; }
 .card.list > :first-child, .card.list .list > :first-child, .card-in.list > :first-child, .next-wrap:first-child .rl { border-top: 0; }
@@ -98,7 +99,7 @@
 
 /* Team: Porträt mit Schnitt, Rückennummer gross und kursiv */
 .pgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
-.pc { display: block; overflow: hidden; border-radius: var(--r-card); background: var(--c-surface); border: 1px solid var(--c-line); }
+.pc { display: block; overflow: hidden; border-radius: var(--r-card); background: var(--c-card); border: 1px solid var(--c-line); }
 .pc .ph { position: relative; display: block; aspect-ratio: 3 / 2; background: var(--c-black); overflow: hidden; clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }
 .pc .ph img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }
 .pc .fav { position: absolute; left: var(--s-2); top: var(--s-2); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--c-surface); color: var(--c-accent-text); }
@@ -263,6 +264,9 @@
 .lead-story:has(> img) .lead-copy { position: absolute; isolation: isolate; inset: auto 0 0; padding-top: 64px; background: linear-gradient(transparent, var(--c-shade-strong)); color: var(--c-on-photo); }
 .lead-copy h2, .lead-copy h3 { font: italic 600 clamp(30px, 8.6vw, 40px)/1 var(--f-display); text-wrap: pretty; }
 .story-date { display: block; font-size: var(--fs-meta); margin-bottom: 6px; }
+/* Datum auf dem Foto-Aufmacher: schräger Tintenchip wie «Tradition seit 1791», lesbar bei jedem Foto */
+.lead-story:has(> img) .story-date { position: relative; isolation: isolate; display: inline-block; margin-bottom: 8px; padding: 4px 12px; font-weight: 600; color: var(--c-on-ink); }
+.lead-story:has(> img) .story-date::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--c-ink); transform: skewX(var(--skew)); }
 .news-heading { margin-top: var(--s-6); }
 .news-rows .rl { padding: var(--s-3) 0; min-height: 92px; }
 .news-rows .t { font-weight: 600; }

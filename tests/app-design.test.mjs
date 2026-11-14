@@ -74,6 +74,27 @@ test('Kontraste: graue Schrift im dunklen Thema mindestens 7:1, Bilanz-Grau (Une
   assert.doesNotMatch(views, /\.wld \.[dl] \{[^}]*opacity/, 'keine Abschwächung über Deckkraft');
 });
 
+test('Dunkle Karten: hellere Fläche mit feinem Rand, Listenkarten mit stärkerem Rand ohne Schatten; Hell unverändert', () => {
+  assert.equal(dark['c-card'], '#232326');
+  assert.ok(contrast(dark['c-card'], dark['c-bg']) >= 1.15, 'Karte hebt sich vom Grund ab');
+  for (const token of ['c-text-muted', 'c-accent-text']) assert.ok(contrast(dark[token], dark['c-card']) >= 6.5, `dunkel: ${token} auf der Karte`);
+  assert.ok(contrast(dark['c-graph-loss'], dark['c-card']) >= 3, 'dunkel: Bilanz-Niederlage auf der Karte');
+  assert.ok(contrast(dark['c-surface-2'], dark['c-card']) >= 1.08, 'Kacheln auf Karten bleiben erkennbar');
+  assert.equal(light['c-card'], 'var(--c-surface)', 'hell: Karte wie bisher');
+  assert.equal(light['c-card-edge'], 'transparent', 'hell: kein Rand');
+  assert.equal(dark['card-shadow-list'], 'none');
+  const components = read('src/kadetten/css/components.css'), views = read('src/kadetten/css/views.css');
+  assert.match(components, /\.card \{[^}]*background: var\(--c-card\); border: 1px solid var\(--c-card-edge\)/);
+  assert.match(views, /\.card\.list \{[^}]*border-color: var\(--c-card-edge-strong\)[^}]*--c-line: var\(--c-line-list, var\(--c-line\)\)/);
+});
+
+test('Foto-Aufmacher: Datum steht im schrägen Tintenchip und ist bei jedem Foto lesbar', () => {
+  const views = read('src/kadetten/css/views.css');
+  assert.match(views, /\.lead-story:has\(> img\) \.story-date \{[^}]*display: inline-block[^}]*color: var\(--c-on-ink\)/);
+  assert.match(views, /\.lead-story:has\(> img\) \.story-date::before \{[^}]*background: var\(--c-ink\)[^}]*skewX\(var\(--skew\)\)/);
+  assert.ok(contrast(light['c-on-ink'], light['c-ink']) >= 7, 'helle Schrift auf Tinte');
+});
+
 test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein, Wissen und «Ich»', () => {
   for (const hash of ['#/saison', '#/statistik', '#/statistik/spieler', '#/team', '#/verein', '#/news']) {
     const d = render(hash);
@@ -488,7 +509,7 @@ test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
   assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben/);
 });
 
-test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein und Karten ohne Rahmen', () => {
+test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein und Karten mit Schatten (hell ohne Rand)', () => {
   const stops = [...light['band-bg'].matchAll(/linear-gradient\(([^)]*)\)/g)].flatMap(m => [...m[1].matchAll(/#[0-9a-f]{6}\b/g)].map(x => x[0]));
   assert.ok(stops.length >= 3 && stops.includes('#ff5d00'), 'Verlauf läuft durch das Wappenorange');
   for (const stop of stops) assert.ok(contrast(light['c-ink'], stop) >= 4.5, `Tinte auf ${stop}`);
@@ -496,7 +517,7 @@ test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein un
   assert.match(components, /\.band \{[^}]*background: var\(--band-bg\), var\(--c-accent\)/, 'Orange bleibt als Grundfarbe unter dem Verlauf');
   assert.match(components, /\.band::after \{[^}]*var\(--stripes-band\)[^}]*mask-image: linear-gradient\(90deg/, 'Streifen im Band laufen aus');
   assert.match(components, /\.band \+ \*::before \{[^}]*var\(--band-glow\)[^}]*pointer-events: none/, 'Schein unter dem Schnitt');
-  assert.match(components, /\.card \{[^}]*border: 1px solid transparent; box-shadow: var\(--card-shadow\)/, 'Karten: Schatten statt Linie');
+  assert.match(components, /\.card \{[^}]*border: 1px solid var\(--c-card-edge\); box-shadow: var\(--card-shadow\)/, 'Karten: Schatten, Rand nur im dunklen Thema');
   assert.match(components, /var\(--fill, var\(--c-chip-soft\)\)/, 'nicht gewählte Knöpfe halbdurchsichtig');
   assert.match(light.stripes, /var\(--c-ink\) 0 6px/, 'Marker und Ränder behalten die harten Streifen');
   for (const key of ['band-glow', 'c-chip-soft', 'card-shadow', 'glass-bg', 'glass-edge', 'glass-shadow', 'glass-nav', 'glass-sheet']) {
