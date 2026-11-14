@@ -223,7 +223,7 @@ Die Endpunkte unter `/api/app/` und die Tor-Mitteilungen wirken erst nach der Be
 | Punkt | Umsetzung | Daten |
 |---|---|---|
 | Erster Start | `#/start` in drei Schritten (Lieblingsspieler, Mitteilungen, erster Tipp), jeder Schritt überspringbar. Erscheint einmal beim Öffnen der Titelseite, wenn noch keine persönlichen Angaben vorhanden sind (`v2:app-welcome`). Später unter «Ich» → «App einrichten». | lokal |
-| Gegner-Check | In der Vorschau von QHL-Spielen: Tore und Gegentore pro Spiel beider Teams aus der Tabelle, dazu die drei besten Werfer des Gegners. Fehlt die Antwort des Datendiensts, entfällt die Werferliste. | Tabelle; `GET /api/app/opponent?team=` (server/opponent.mjs, Spielerliste der SHV-Schnittstelle, 15 Minuten zwischengespeichert, nur Gegner aus dem QHL-Spielplan) |
+| Gegner-Check | In der Vorschau von QHL- und EHL-Spielen: Tore und Gegentore pro Spiel beider Teams aus der Tabelle, in der EHL mit Hinweis auf die Zahl der Spiele. Bewusst ohne Spielerlisten, damit die Seite nicht überladen wird. | Tabelle |
 | Spiel in 30 Sekunden | `#/spiel/<id>/kurz`: bis zu fünf wischbare Karten (Resultat, Wendepunkt, bester Werfer, Zahl des Spiels, Tabelle danach). Karten ohne Werte entfallen. Einstieg im Reiter «Statistik» und auf der Titelseite nach dem Spiel. | Spielbericht (`js/kurz.js`) |
 | Spielervergleich | `#/team/vergleich/<Nr>/<Nr>`: zwei Kaderspieler mit den QHL-Saisonwerten, der höhere Wert ist hervorgehoben. Einstieg im Spielerprofil. | `playerSeason` |
 | Saisonkurve | Unter der QHL-Tabelle: Punkte nach Runden gegen das Maximum, Punkte pro Spiel, Rang. Den Rang je Runde hält der Datendienst ab der Bereitstellung fest (`rankHistory`, server/rank-history.mjs); frühere Runden kennt die Quelle nicht. | Spielplan, Tabelle, `rankHistory` |
@@ -231,7 +231,7 @@ Die Endpunkte unter `/api/app/` und die Tor-Mitteilungen wirken erst nach der Be
 | Playoffs | Über dem Spielplan erscheinen die Serien der Kadetten (Stand, fehlende Siege, nächstes Spiel), sobald der Spielplan Playoff-Spiele enthält. Erkannt werden sie an Wettbewerb oder Runde («Playoff», «Viertelfinal», «Halbfinal», «Final»); der Datendienst übernimmt dafür neu das Feld `round` der Quelle. | Spielplan (`js/playoffs.js`) |
 | Schnellzugriffe | Langer Druck auf das App-Symbol führt zu Spiele, Tabelle und Kader (`shortcuts` im Manifest). | keine |
 
-Nicht gegen die Quelle geprüft: Die Spielerliste der SHV für gegnerische Teams (der Host liefert in der Entwicklungsumgebung keine vollständige Zertifikatskette) und die Bezeichnung der Playoff-Spiele (im November stehen noch keine im Spielplan). Beide Funktionen bleiben unsichtbar, wenn die Daten fehlen oder anders aussehen. «Best of 5» gilt als Annahme, bis alle Spiele einer Serie angesetzt sind.
+Nicht gegen die Quelle geprüft: die Bezeichnung der Playoff-Spiele (im November stehen noch keine im Spielplan). Die Playoff-Ansicht bleibt unsichtbar, wenn die Daten fehlen oder anders aussehen. «Best of 5» gilt als Annahme, bis alle Spiele einer Serie angesetzt sind.
 
 Noch offen: Tippspiel mit Vergleich unter Fans (bräuchte einen weiteren Schreibweg), «An diesem Tag» mit Tagesdaten (die Geschichte enthält nur Jahre), Ticket-Link und Sender (Angaben vom Club).
 
