@@ -38,7 +38,6 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
     matchReport: gameId => get('/api/match-reports/' + id(gameId)),
     headToHead: (home, away) => get('/api/head-to-head?home=' + id(home) + '&away=' + id(away)),
     recentGames: team => get('/api/recent-games?team=' + id(team)),
-    opponent: team => get('/api/app/opponent?team=' + id(team)),
     preview: gameId => get('/api/previews/kadetten/' + id(gameId)),
     programme: gameId => get('/api/programmes/' + id(gameId)),
     // Artikel-HTML bleibt unverändert und läuft durch sanitize.js.

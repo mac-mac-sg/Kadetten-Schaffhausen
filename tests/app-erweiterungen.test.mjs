@@ -12,8 +12,6 @@ import {needsWelcome, markWelcome, toggleFavourite} from '../src/kadetten/js/per
 import {gegnerCheck} from '../src/kadetten/js/views/spiel.js';
 import {playoffSeries, playoffStage, seriesText} from '../src/kadetten/js/playoffs.js';
 import {updateRankHistory} from '../server/rank-history.mjs';
-import {opponentId, parseOpponent, getOpponent} from '../server/opponent.mjs';
-import {appRoute} from '../server/app-fan.mjs';
 
 const OWN = 'Kadetten Schaffhausen';
 const memory = () => {
@@ -142,43 +140,15 @@ test('Erster Start: einmalig und nur ohne persönliche Angaben', () => {
   assert.equal(href.start(2), '#/start/2');
 });
 
-test('Gegner-Check: Vergleich aus der Tabelle und beste Werfer, sonst nichts', () => {
+test('Gegner-Check: Vergleich aus der Tabelle, sonst nichts', () => {
   const g = game('7', '2026-12-01', OWN, 'Pfadi Winterthur');
   const own = {played: 8, goalsFor: 262, goalsAgainst: 232},
     opp = {played: 8, goalsFor: 250, goalsAgainst: 234};
-  assert.equal(String(gegnerCheck({game: g, own: null, opp: null, scorers: null})), '');
-  const out = String(gegnerCheck({game: g, own, opp, scorers: {players: [{name: 'Max Muster', games: 8, goals: 51, sevenMeterGoals: 12}]}}));
+  assert.equal(String(gegnerCheck({game: g, own: null, opp: null})), '');
+  const out = String(gegnerCheck({game: g, own, opp}));
   assert.match(out, /32,8/);
   assert.match(out, /31,3/);
-  assert.match(out, /Max Muster/);
-  assert.match(out, /8 Spiele · 12 vom 7-m-Punkt/);
-});
-
-test('Gegner-Check im Datendienst: Antwort der Quelle wird geprüft, fremde Teams abgelehnt', async () => {
-  const games = [{seasonId: 2026, homeTeamId: 41473, homeTeamName: OWN, awayTeamId: 40900, awayTeamName: 'TSV St. Otmar St. Gallen'}];
-  assert.equal(opponentId(games, 'St. Otmar St. Gallen'), 40900);
-  assert.equal(opponentId(games, OWN), null);
-  const staff = {
-    teamDashboard: [{teamId: 40900, gamesTotal: 9, totalScoreTeam: 250}],
-    playerStaff: [{player: [
-      {playerId: 1, teamId: 40900, firstName: 'A', lastName: 'Eins', games: 9, totalScore: 40, totalScore7m: 5, total2Minutes: 3},
-      {playerId: 2, teamId: 40900, firstName: 'B', lastName: 'Zwei', games: 9, totalScore: 55, totalScore7m: 0, total2Minutes: 1},
-      {playerId: 3, teamId: 1, firstName: 'Fremd', lastName: 'X', games: 9, totalScore: 99},
-      {playerId: 4, teamId: 40900, firstName: 'Ohne', lastName: 'Tor', games: 9, totalScore: 0}
-    ]}]
-  };
-  const parsed = parseOpponent(staff, 40900, 'St. Otmar St. Gallen');
-  assert.deepEqual(parsed.players.map(p => [p.name, p.goals]), [['B Zwei', 55], ['A Eins', 40]]);
-  assert.throws(() => parseOpponent({teamDashboard: [{teamId: 1}], playerStaff: [{player: []}]}, 40900, 'x'));
-  assert.throws(() => parseOpponent({...staff, playerStaff: [{player: []}]}, 40900, 'x'));
-  const value = await getOpponent('St. Otmar St. Gallen', async (q, v) => (v.teamId === 41473 ? {games} : staff), 1000);
-  assert.equal(value.ok, true);
-  const env = {BUCKET: {get: async () => ({json: async () => ({games: [game('1', '2026-12-01', OWN, 'Pfadi Winterthur')]})})}};
-  const call = team => appRoute(new Request('https://x/api/app/opponent?team=' + encodeURIComponent(team)), env, new URL('https://x/api/app/opponent?team=' + encodeURIComponent(team)), Date.now(), undefined, async t => ({ok: true, team: t, players: []}));
-  assert.equal((await call('Unbekannt')).status, 404);
-  const ok = await call('Pfadi Winterthur');
-  assert.equal(ok.status, 200);
-  assert.equal((await ok.json()).team, 'Pfadi Winterthur');
+  assert.doesNotMatch(out, /beste Werfer/);
 });
 
 test('Playoffs: Serien aus dem Spielplan, Cup-Final zählt nicht', () => {
@@ -205,9 +175,9 @@ test('Playoffs: Serien aus dem Spielplan, Cup-Final zählt nicht', () => {
   assert.equal(seriesText(won), 'Serie gewonnen 3:1');
 });
 
-test('Gegner-Check gilt auch für European League: Tabellenvergleich ohne Werferliste', () => {
+test('Gegner-Check gilt auch für European League', () => {
   const g = game('e1', '2026-11-24', OWN, 'Chambery Savoie Mont Blanc HB', null, {league: 'EHL'});
-  const out = String(gegnerCheck({game: g, own: {played: 1, goalsFor: 39, goalsAgainst: 32}, opp: {played: 1, goalsFor: 33, goalsAgainst: 34}, scorers: null}));
+  const out = String(gegnerCheck({game: g, own: {played: 1, goalsFor: 39, goalsAgainst: 32}, opp: {played: 1, goalsFor: 33, goalsAgainst: 34}}));
   assert.match(out, /39/);
   assert.match(out, /Gruppenphase der European League nach 1 Spiel\./);
   assert.doesNotMatch(out, /beste Werfer/);

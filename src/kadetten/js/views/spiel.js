@@ -70,8 +70,8 @@ function outcomeByName(g, team) {
 const perGame = (value, played) => (Number.isFinite(value) && played > 0 ? Math.round((value / played) * 10) / 10 : null);
 const comma = v => (v === null ? '–' : String(v).replace('.', ','));
 
-/** Gegner-Check (QHL): Tore und Gegentore pro Spiel aus der Tabelle, dazu die besten Werfer des Gegners laut SHV. */
-export function gegnerCheck({game, own, opp, scorers}) {
+/** Gegner-Check (QHL, EHL): Tore und Gegentore pro Spiel beider Teams aus der Tabelle. */
+export function gegnerCheck({game, own, opp}) {
   const name = shortTeam(opponentOf(game));
   const rows =
     own && opp
@@ -80,38 +80,20 @@ export function gegnerCheck({game, own, opp, scorers}) {
           ['Gegentore pro Spiel', perGame(own.goalsAgainst, own.played), perGame(opp.goalsAgainst, opp.played), -1]
         ].filter(r => r[1] !== null && r[2] !== null)
       : [];
-  const players = Array.isArray(scorers?.players) ? scorers.players.slice(0, 3) : [];
-  if (!rows.length && !players.length) return '';
+  if (!rows.length) return '';
   const ownHome = isOwn(game.home);
   return html`<section class="sec" aria-labelledby="g-check">${sectionHead('Gegner-Check', '', '', 'g-check')}
-    ${
-      rows.length
-        ? html`<div class="card list">
+    <div class="card list">
       <div class="cmp head"><span>${ownHome ? 'Kadetten' : name}</span><span></span><span>${ownHome ? name : 'Kadetten'}</span></div>
       ${rows.map(([label, k, o, dir]) => {
         const left = ownHome ? k : o,
           right = ownHome ? o : k,
           better = (k - o) * dir > 0;
         return html`<div class="cmp"><b${ownHome && better ? html` class="own"` : ''}>${comma(left)}</b><span class="cmp-label">${label}</span><b${!ownHome && better ? html` class="own"` : ''}>${comma(right)}</b></div>`;
-      })}</div>${
-        game.league === 'EHL' && own?.played && opp?.played
-          ? html`<p class="fine pad-top">Gruppenphase der European League nach ${own.played === opp.played ? own.played : own.played + ' bzw. ' + opp.played} ${own.played === 1 && opp.played === 1 ? 'Spiel' : 'Spielen'}.</p>`
-          : ''
-      }`
-        : ''
-    }
+      })}</div>
     ${
-      players.length
-        ? html`<h3 class="h4 pad-top">Darauf achten: beste Werfer von ${name}</h3>
-      <div class="card list">${players.map(p =>
-        listRow({
-          title: p.name,
-          sub: `${p.games} ${p.games === 1 ? 'Spiel' : 'Spiele'}${Number.isInteger(p.sevenMeterGoals) && p.sevenMeterGoals > 0 ? ` · ${p.sevenMeterGoals} vom 7-m-Punkt` : ''}`,
-          end: html`<span class="res num">${p.goals}<small> Tore</small></span>`,
-          cls: 'compact'
-        })
-      )}</div>
-      <p class="fine pad-top">Saisonwerte laut Schweizerischem Handball-Verband, alle Wettbewerbsspiele.</p>`
+      game.league === 'EHL' && own?.played && opp?.played
+        ? html`<p class="fine pad-top">Gruppenphase der European League nach ${own.played === opp.played ? own.played : own.played + ' bzw. ' + opp.played} ${own.played === 1 && opp.played === 1 ? 'Spiel' : 'Spielen'}.</p>`
         : ''
     }</section>`;
 }
@@ -155,7 +137,7 @@ function vorschau({game, data, load, api, now}) {
       </div>
 
     </section>
-    ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp, scorers: oppScorers?.value?.ok ? oppScorers.value : null}) : ''}
+    ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
     ${tipFor(game, now)}
     ${
       p?.paragraphs?.length
