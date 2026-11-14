@@ -25,6 +25,7 @@ import {renderTeam, renderSpieler} from './views/team.js';
 import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
+import {liveTile, renderLiveTile} from './views/live-kachel.js';
 
 const api = createApi({origin: API_ORIGIN});
 const push = createPush({origin: API_ORIGIN});
@@ -131,7 +132,11 @@ function render() {
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   wissenSteuerung?.sync(route);
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
-  app.innerHTML = String(html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}`);
+  const tile = liveTile({state: store.state, route, now: context.now});
+  app.innerHTML = String(
+    html`<main id="main" tabindex="-1">${VIEWS[route.view](context)}</main>${route.area ? nav(route.area) : ''}${renderLiveTile(tile)}`
+  );
+  document.documentElement.classList.toggle('has-tile', Boolean(tile));
   wissenSteuerung?.paint();
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
