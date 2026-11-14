@@ -634,12 +634,66 @@ nav.chips { scroll-margin-top: var(--s-3); }
 .sk-dl dd { margin: 0; font-weight: 600; text-align: right; }
 .sk-src { margin-top: auto; font: 400 3.8cqw/1.3 var(--f-text); color: var(--c-tile-muted); }
 .sk.rueck .sk-wap { z-index: 1; }
-/* Neue Karten */
-.sk-reveal { display: flex; gap: var(--s-3); margin: 0 calc(-1 * var(--s-4)); padding: var(--s-2) var(--s-4); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.sk-reveal::-webkit-scrollbar { display: none; }
-.sk-reveal li { flex: 0 0 78%; scroll-snap-align: center; }
-.sk-reveal li:only-child { flex-basis: 100%; }
-.sk-reveal .sk { animation: sk-in .5s cubic-bezier(.2, .8, .2, 1) both; }
-@keyframes sk-in { from { opacity: 0; transform: translateY(16px) rotate(-2deg); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .sk-reveal .sk { animation: none; } }
 .quiz-cards { margin-top: var(--s-4); text-align: left; }
+
+/* Sammelkarten in Bewegung: Glanz, Drehen, Fächer. Alles nur mit CSS; «Bewegung reduzieren» schaltet es ab. */
+.sk-gl { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(115deg, transparent 35%, #ffffff59 48%, #ffffff00 60%) no-repeat; background-size: 250% 100%; background-position: 160% 0; animation: sk-gl 7s ease-in-out infinite; mix-blend-mode: soft-light; }
+.sk.legende .sk-gl { background-image: linear-gradient(115deg, transparent 30%, #ff8a4d66 42%, #ffffffa6 50%, #ff8a4d66 58%, transparent 70%); mix-blend-mode: screen; animation-duration: 5s; }
+@keyframes sk-gl { 0%, 55% { background-position: 160% 0; } 85%, 100% { background-position: -60% 0; } }
+a.sk { transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s; }
+a.sk:hover, a.sk:focus-visible { transform: translateY(-4px) rotate(-1deg); }
+a.sk:active { transform: scale(.97); }
+.sk-grid.enter > *, .sk-row.enter > * { animation: sk-up .45s cubic-bezier(.2, .8, .2, 1) both; }
+.sk-grid.enter > :nth-child(2), .sk-row.enter > :nth-child(2) { animation-delay: 50ms; }
+.sk-grid.enter > :nth-child(3), .sk-row.enter > :nth-child(3) { animation-delay: 100ms; }
+.sk-grid.enter > :nth-child(4) { animation-delay: 150ms; }
+.sk-grid.enter > :nth-child(5) { animation-delay: 200ms; }
+.sk-grid.enter > :nth-child(6) { animation-delay: 250ms; }
+.sk-grid.enter > :nth-child(n + 7) { animation-delay: 300ms; }
+@keyframes sk-up { from { opacity: 0; transform: translateY(18px) rotate(-1.5deg); } to { opacity: 1; transform: none; } }
+.btn.pulse { animation: sk-pulse 2.4s ease-in-out infinite; }
+@keyframes sk-pulse { 0%, 70%, 100% { transform: none; } 80% { transform: scale(1.03); } 90% { transform: scale(.99); } }
+.prog-bar i { animation: sk-bar .9s cubic-bezier(.2, .8, .2, 1) both; transform-origin: left; }
+@keyframes sk-bar { from { transform: scaleX(0); } }
+
+/* Umdrehen: beide Seiten übereinander, gedreht um die Hochachse */
+.sk-flip { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; perspective: 1400px; }
+.sk-flip.lg { max-width: 320px; margin: 0 auto; }
+.sk-face { position: absolute; inset: 0; display: block; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .7s cubic-bezier(.3, .7, .2, 1); }
+.sk-face.rear { transform: rotateY(180deg); }
+.sk-flip.is-back > .sk-face, .fan-c.is-open .sk-face { transform: rotateY(-180deg); }
+.sk-flip.is-back > .sk-face.rear, .fan-c.is-open .sk-face.rear { transform: rotateY(0deg); }
+.sk-face > .sk { height: 100%; }
+.sk-flip.enter { animation: sk-up .5s cubic-bezier(.2, .8, .2, 1) both; }
+
+/* Verdeckte Karte */
+.sk.cover { background: var(--c-ink); box-shadow: 0 6px 20px #14141455; }
+.sk-cs { position: absolute; inset: 0; background: repeating-linear-gradient(120deg, #ff5d0033 0 3cqw, transparent 3cqw 8cqw); }
+.sk-cs::after { content: ''; position: absolute; inset: 5cqw; border: 1.2cqw solid var(--c-accent); border-radius: 8px; }
+.sk-cw { position: absolute; left: 50%; top: 42%; width: 34cqw; transform: translate(-50%, -50%) rotate(-6deg); }
+.sk-cn { position: absolute; left: 0; right: 0; bottom: 14cqw; text-align: center; font: italic 600 11cqw/1 var(--f-display); color: var(--c-on-ink); letter-spacing: .02em; }
+
+/* Fächer */
+.fan { --n: 1; position: relative; height: min(104vw, 460px); margin: var(--s-2) calc(-1 * var(--s-4)) 0; overflow-x: clip; overflow-y: visible; }
+.fan-c { --i: 0; --spread: min(7deg, calc(30deg / var(--n))); --a: calc((var(--i) - (var(--n) - 1) / 2) * var(--spread)); position: absolute; left: 50%; top: 6%; width: min(48%, 220px); padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 135%; transform: translateX(-50%) rotate(var(--a)); transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .3s; z-index: calc(1 + var(--i)); }
+.fan-c:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 4px; border-radius: 12px; }
+.fan-c:hover { transform: translateX(-50%) rotate(var(--a)) translateY(-3%); }
+.fan-c.is-open { z-index: calc(20 + var(--i)); transform: translateX(-50%) rotate(calc(var(--a) * 1.15)) translateY(-5%); }
+.fan-c.is-open .sk-flip { animation: fan-pop .7s cubic-bezier(.2, .8, .2, 1); }
+.fan-c.is-open.r-spezial .sk-face.rear > .sk { box-shadow: 0 0 0 2px #ff5d00, 0 10px 30px #ff5d0066; }
+.fan-c.is-open.r-legende .sk-face.rear > .sk { animation: fan-glow 2.2s ease-in-out .7s infinite; }
+@keyframes fan-pop { 0% { transform: scale(1); } 45% { transform: scale(1.08) translateY(-4%); } 100% { transform: scale(1); } }
+@keyframes fan-glow { 0%, 100% { box-shadow: 0 0 0 3px #ff5d00, 0 6px 22px #ff5d0055; } 50% { box-shadow: 0 0 0 3px #ff8a4d, 0 10px 40px #ff5d00aa; } }
+.fan.deal .fan-c { animation: fan-deal .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * 90ms); }
+@keyframes fan-deal { from { opacity: 0; transform: translateX(-50%) translateY(40%) rotate(0deg) scale(.9); } }
+.fan.spread .fan-c { --spread: min(10deg, calc(44deg / var(--n))); width: min(42%, 190px); }
+.fan-hint { text-align: center; margin-top: var(--s-2); }
+.fi-0 { --i: 0; } .fi-1 { --i: 1; } .fi-2 { --i: 2; } .fi-3 { --i: 3; } .fi-4 { --i: 4; } .fi-5 { --i: 5; }
+.fi-6 { --i: 6; } .fi-7 { --i: 7; } .fi-8 { --i: 8; } .fi-9 { --i: 9; } .fi-10 { --i: 10; } .fi-11 { --i: 11; }
+.fn-1 { --n: 1; } .fn-2 { --n: 2; } .fn-3 { --n: 3; } .fn-4 { --n: 4; } .fn-5 { --n: 5; } .fn-6 { --n: 6; }
+.fn-7 { --n: 7; } .fn-8 { --n: 8; } .fn-9 { --n: 9; } .fn-10 { --n: 10; } .fn-11 { --n: 11; } .fn-12 { --n: 12; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-gl, .btn.pulse, .prog-bar i, .sk-grid.enter > *, .sk-row.enter > *, .sk-flip.enter, .fan.deal .fan-c, .fan-c.is-open .sk-flip, .fan-c.is-open.r-legende .sk-face.rear > .sk { animation: none; }
+  .sk-face, .fan-c, a.sk { transition: none; }
+}

@@ -104,3 +104,30 @@ test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen mit
   assert.equal(b.perfect, 2);
   assert.equal(b.quote, Math.round((10 / (3 * QUIZ_SIZE)) * 100));
 });
+
+test('Neue Karten als Fächer: verdeckt ausgeteilt, aufgedeckte Karten offen, am Ende aufgefächert', async () => {
+  const {renderNeu} = await import('../src/kadetten/js/views/sammlung.js');
+  const state = {data: {games: []}};
+  const cards = ['k-10', 'g-roots', 'o-arena'];
+  const closed = String(renderNeu({state, ui: {newCards: cards, revealed: [], enter: true}}));
+  assert.match(closed, /class="fan fn-3 deal"/);
+  assert.equal((closed.match(/data-reveal="/g) || []).length, 3);
+  assert.match(closed, /data-reveal-all/);
+  assert.doesNotMatch(closed, /is-open/);
+  const one = String(renderNeu({state, ui: {newCards: cards, revealed: ['k-10']}}));
+  assert.equal((one.match(/ is-open/g) || []).length, 1);
+  const all = String(renderNeu({state, ui: {newCards: cards, revealed: cards}}));
+  assert.match(all, /class="fan fn-3 spread"/);
+  assert.doesNotMatch(all, /data-reveal-all/);
+  assert.match(String(renderNeu({state, ui: {}})), /keine neuen Karten/);
+});
+
+test('Kartenansicht: Vorder- und Rückseite liegen für die Drehung übereinander', async () => {
+  const {renderKarte} = await import('../src/kadetten/js/views/sammlung.js');
+  globalThis.localStorage = memory();
+  claim({...base, favourite: 10}, {rng: () => 0});
+  const out = String(renderKarte({route: {id: 'k-10'}, state: {data: {games: []}}, ui: {flip: 'k-10'}}));
+  assert.match(out, /class="sk-flip lg is-back"/);
+  assert.equal((out.match(/class="sk-face/g) || []).length, 2);
+  delete globalThis.localStorage;
+});

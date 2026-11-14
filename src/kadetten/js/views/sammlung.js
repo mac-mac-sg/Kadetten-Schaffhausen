@@ -51,14 +51,15 @@ export function cardFront(card, {size = '', link = true} = {}) {
   const img = card.image
     ? html`<span class="sk-img"><img src="${card.image}" alt="" loading="lazy" decoding="async"></span><span class="sk-stp" aria-hidden="true"></span>`
     : html`<span class="sk-big num" aria-hidden="true">${card.big}</span><img class="sk-wap" src="${LOGO}" alt="" aria-hidden="true">`;
-  const body = html`${img}${card.image ? html`<span class="sk-no num" aria-hidden="true">${card.big}</span>` : ''}
+  const shine = rarity === 'spezial' || rarity === 'legende' ? html`<span class="sk-gl" aria-hidden="true"></span>` : '';
+  const body = html`${img}${shine}${card.image ? html`<span class="sk-no num" aria-hidden="true">${card.big}</span>` : ''}
     <span class="sk-tag">${card.art === 'kader' ? 'Kader' : RARITY_LABEL[rarity]}</span>
     <span class="sk-txt"><span class="sk-k">${card.kicker}</span><span class="sk-t">${card.title}</span></span>
     <span class="sk-f"><span>${no ? '#' + pad(no) : 'Moment'}</span><span>${ART_LABEL[card.art]}</span></span>`;
   const cls = `sk ${rarity} a-${card.art}${card.image ? '' : ' typo'}${size ? ' ' + size : ''}`;
   return link
     ? html`<a class="${cls}" href="${href.karte(card.id)}" aria-label="${`${card.title}, ${ART_LABEL[card.art]}, ${RARITY_LABEL[rarity]}`}">${body}</a>`
-    : html`<div class="${cls}">${body}</div>`;
+    : html`<span class="${cls}">${body}</span>`;
 }
 function cardLocked(card) {
   return html`<div class="sk lock" aria-label="${`Karte ${pad(NUMBER.get(card.id))}, noch nicht gesammelt`}">
@@ -96,7 +97,7 @@ function cardBack(card, data) {
     </div><img class="sk-wap" src="${LOGO}" alt="" aria-hidden="true"></div>`;
 }
 
-export function renderMein({state, now}) {
+export function renderMein({state, now, ui = {}}) {
   const input = sammelInput(state),
     open = pending(input),
     prog = progress(),
@@ -111,7 +112,7 @@ export function renderMein({state, now}) {
       <span class="claim-k">Neue Karten</span>
       <b class="claim-n num">${gained}</b>
       <span class="claim-t">${open.length === 1 ? open[0].label : `${open.length} Belohnungen, zuletzt: ${open.at(-1).label}`}</span>
-      <button class="btn pri wide" type="button" data-claim>Karten abholen</button></div></section>`
+      <button class="btn pri wide pulse" type="button" data-claim>Karten abholen</button></div></section>`
         : ''
     }
     <section class="sec" aria-labelledby="m-quiz">${sectionHead('Quiz der Woche', 'Zum Quiz', href.quiz(), 'm-quiz')}
@@ -130,7 +131,7 @@ export function renderMein({state, now}) {
             total = arts.reduce((n, a) => n + prog.per[a].total, 0);
           return html`<span><i class="r-${r}"></i>${RARITY_LABEL[r]} <b class="num">${have}/${total}</b></span>`;
         })}</span></a>
-      ${latest.length ? html`<div class="sk-row">${latest.map(c => cardFront(c, {size: 'sm'}))}</div>` : ''}
+      ${latest.length ? html`<div class="sk-row${ui.enter ? ' enter' : ''}">${latest.map(c => cardFront(c, {size: 'sm'}))}</div>` : ''}
       <p class="fine pad-top">Karten gibt es für das Quiz der Woche, für Tipps, für Heimspiele in der Halle und wenn du ein Spiel live in der App verfolgst.</p>
     </section>
     <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
@@ -158,10 +159,14 @@ export function renderSammlung({state, ui}) {
     <section class="sec" aria-label="Karten">
       ${
         list.length
-          ? html`<div class="sk-grid">${list.map(c => (cards[c.id] ? cardFront(c) : cardLocked(c)))}</div>`
+          ? html`<div class="sk-grid${ui.enter ? ' enter' : ''}">${list.map(c => (cards[c.id] ? cardFront(c) : cardLocked(c)))}</div>`
           : notice(mine ? 'In dieser Art hast du noch keine Karte.' : 'Keine Karten in dieser Art.', 'star')
       }</section>`;
 }
+
+/** Rückseite einer neuen Karte, solange sie verdeckt ist. */
+const cover = () =>
+  html`<span class="sk cover" aria-hidden="true"><span class="sk-cs"></span><img class="sk-cw" src="${LOGO}" alt=""><span class="sk-cn">Kadetten</span></span>`;
 
 export function renderKarte({route, state, ui}) {
   const games = state.data?.games || [];
@@ -170,25 +175,40 @@ export function renderKarte({route, state, ui}) {
   if (!card || !owned)
     return html`${subBand(backLink('Sammlung', href.sammlung()), 'Karte', '')}<section class="sec">${notice('Diese Karte ist noch nicht in deiner Sammlung.', 'star')}</section>`;
   const back = ui.flip === card.id;
+  // Beide Seiten liegen übereinander; «Umdrehen» dreht die Karte in 3D (main.js setzt nur die Klasse, ohne neu zu zeichnen).
   return html`${subBand(backLink('Sammlung', href.sammlung(), true), card.title, `${ART_LABEL[card.art]} · ${RARITY_LABEL[rarityOf(card)]}`)}
-    <section class="sec sk-view">${back ? cardBack(card, state.data) : cardFront(card, {size: 'lg', link: false})}
-      <div class="acts single"><button class="btn" type="button" data-flip="${card.id}" aria-pressed="${String(back)}">${icon('share')}${back ? 'Vorderseite' : 'Umdrehen'}</button></div>
+    <section class="sec sk-view">
+      <div class="sk-flip lg${back ? ' is-back' : ''}${ui.enter ? ' enter' : ''}" data-flipcard="${card.id}">
+        <div class="sk-face" aria-hidden="${String(back)}">${cardFront(card, {size: 'lg', link: false})}</div>
+        <div class="sk-face rear" aria-hidden="${String(!back)}">${cardBack(card, state.data)}</div>
+      </div>
+      <div class="acts single"><button class="btn" type="button" data-flip="${card.id}" aria-pressed="${String(back)}">${icon('share')}<span>${back ? 'Vorderseite' : 'Umdrehen'}</span></button></div>
       ${card.art === 'kader' ? html`<div class="card list pad-top">${listRow({title: 'Zum Spielerprofil', link: href.spieler(card.number)})}</div>` : ''}
       ${card.art === 'moment' && card.game ? html`<div class="card list pad-top">${listRow({title: 'Zum Spiel', link: href.spiel(card.game)})}</div>` : ''}
     </section>`;
 }
 
+/** Neue Karten als Fächer: verdeckt ausgeteilt, Antippen deckt eine Karte auf, «Alle aufdecken» alle nacheinander. */
 export function renderNeu({state, ui}) {
   const games = state.data?.games || [];
   const fresh = (ui.newCards || []).map(id => cardById(id, games)).filter(Boolean);
-  return html`${subBand(backLink('Mein Bereich', href.ich()), fresh.length === 1 ? 'Neue Karte' : 'Neue Karten', fresh.length ? `${fresh.length} ${fresh.length === 1 ? 'Karte' : 'Karten'} in deiner Sammlung` : '')}
+  const open = new Set(ui.revealed || []);
+  const n = Math.min(fresh.length, 12);
+  const all = fresh.length > 0 && fresh.every(c => open.has(c.id));
+  return html`${subBand(backLink('Mein Bereich', href.ich()), fresh.length === 1 ? 'Neue Karte' : 'Neue Karten', fresh.length ? `${fresh.length} ${fresh.length === 1 ? 'Karte' : 'Karten'} für deine Sammlung` : '')}
     <section class="sec" aria-label="Neue Karten">
       ${
         fresh.length
-          ? html`<ol class="sk-reveal">${fresh.map(c => html`<li>${cardFront(c, {size: 'lg'})}</li>`)}</ol>
-        ${fresh.length > 1 ? html`<p class="fine pad-top">Zur Seite wischen für die nächste Karte. Antippen öffnet die Karte mit Rückseite.</p>` : ''}`
+          ? html`<div class="fan fn-${n}${ui.enter ? ' deal' : ''}${all && n > 1 ? ' spread' : ''}">${fresh.map((c, i) => {
+              const shown = open.has(c.id);
+              return html`<button type="button" class="fan-c fi-${Math.min(i, 11)} r-${rarityOf(c)}${shown ? ' is-open' : ''}" data-reveal="${c.id}" aria-label="${shown ? `${c.title}, ${ART_LABEL[c.art]}` : `Karte ${i + 1} aufdecken`}">
+                <span class="sk-flip"><span class="sk-face">${cover()}</span><span class="sk-face rear">${cardFront(c, {link: false})}</span></span></button>`;
+            })}</div>
+          <p class="fine fan-hint" role="status">${all ? (fresh.length === 1 ? 'Die Karte ist jetzt in deiner Sammlung.' : 'Alle Karten sind jetzt in deiner Sammlung.') : 'Antippen deckt eine Karte auf.'}</p>`
           : notice('Im Moment gibt es keine neuen Karten. Sie warten im Quiz der Woche, bei Tipps und Heimspielen.', 'star')
       }
-      <div class="acts single"><a class="btn pri" href="${href.sammlung()}">Zur Sammlung</a></div>
+      <div class="acts${fresh.length && !all ? '' : ' single'}">${
+        fresh.length && !all ? html`<button class="btn" type="button" data-reveal-all>Alle aufdecken</button>` : ''
+      }<a class="btn pri" href="${href.sammlung()}">Zur Sammlung</a></div>
     </section>`;
 }
