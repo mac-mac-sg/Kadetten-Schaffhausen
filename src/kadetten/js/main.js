@@ -27,6 +27,9 @@ import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
 import {renderQuiz} from './views/quiz.js';
 import {renderStart} from './views/start.js';
+import {renderMein, renderSammlung, renderKarte, renderNeu, sammelInput} from './views/sammlung.js';
+import {claim, noteLive} from './sammeln.js';
+import {involves} from './logic.js';
 import {answerQuiz} from './quiz.js';
 import {liveTile, renderLiveTile} from './views/live-kachel.js';
 
@@ -126,6 +129,10 @@ const VIEWS = {
   verein: renderVerein,
   ich: renderIch,
   quiz: renderQuiz,
+  mein: renderMein,
+  sammlung: renderSammlung,
+  karte: renderKarte,
+  neu: renderNeu,
   start: renderStart,
   wissen: renderWissenOderLaden
 };
@@ -202,7 +209,8 @@ function focusSelector(el) {
     'data-favourite',
     'data-my-game',
     'data-vote-select',
-    'data-vote-confirm'
+    'data-vote-confirm',
+    'data-flip'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
@@ -415,6 +423,13 @@ app.addEventListener('click', event => {
   } else if (t.dataset.myGame) {
     toggleMyGame(t.dataset.myGame);
     render();
+  } else if (t.hasAttribute('data-claim')) {
+    ui.newCards = claim(sammelInput(store.state));
+    announce(ui.newCards.length === 1 ? 'Eine neue Karte gesammelt.' : `${ui.newCards.length} neue Karten gesammelt.`);
+    location.hash = href.neu();
+  } else if (t.dataset.flip) {
+    ui.flip = ui.flip === t.dataset.flip ? '' : t.dataset.flip;
+    render();
   } else if (t.dataset.quiz) {
     const [week, index, choice] = t.dataset.quiz.split(':').map(Number);
     answerQuiz(week, index, choice);
@@ -465,7 +480,12 @@ app.addEventListener('input', event => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) wissenSteuerung?.stop();
 });
-store.subscribe(schedule);
+// «Live dabei»: Ein laufendes Kadetten-Spiel, das die App gesehen hat, bringt eine Sammelkarte.
+store.subscribe(() => {
+  const match = store.state.live?.match;
+  if (match && involves(match)) noteLive(String(match.id));
+  schedule();
+});
 render();
 store.refresh().then(() => startLive({store}));
 document.addEventListener('visibilitychange', () => {

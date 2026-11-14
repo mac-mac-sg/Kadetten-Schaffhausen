@@ -58,6 +58,7 @@ export function renderQuiz({now}) {
         <b class="kick num">${s.right}/${QUIZ_SIZE}</b>
         <p>${s.right === QUIZ_SIZE ? 'Alles richtig. Stark!' : s.right >= 3 ? 'Gut gespielt.' : 'Nächste Woche gibt es eine neue Chance.'}</p>
         <p class="fine">Neues Quiz am ${day(nextQuizAt(now))}.</p>
+        <a class="card rowcard quiz-cards" href="${href.ich()}"><span class="lead">${icon('star')}</span><span class="grow"><span class="t">${s.right === QUIZ_SIZE ? '3 Sammelkarten verdient' : '2 Sammelkarten verdient'}</span><span class="s">In «Mein Bereich» abholen</span></span>${icon('go')}</a>
         <div class="acts single"><button class="btn pri" type="button" data-share="${`Quiz der Woche in der Kadetten-App: ${s.right} von ${QUIZ_SIZE} richtig.`}">${icon('share')}Ergebnis teilen</button></div>
       </div></section>`
     }

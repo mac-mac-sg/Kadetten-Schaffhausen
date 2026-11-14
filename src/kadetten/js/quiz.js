@@ -9,6 +9,8 @@ const EPOCH = 4 * 86400000 - 3600000;
 
 export const weekIndex = now => Math.floor((now - EPOCH) / WEEK);
 export const nextQuizAt = now => EPOCH + (weekIndex(now) + 1) * WEEK;
+/** Ein Zeitpunkt innerhalb einer Quiz-Woche (für Auswertungen vergangener Wochen). */
+export const inWeek = week => EPOCH + Number(week) * WEEK + 1;
 
 /** Feste Reihenfolge aller Fragen: gemischt, aber auf jedem Gerät gleich. */
 function order(count) {
@@ -69,7 +71,7 @@ export function quizStats(answers, questions = QUESTIONS) {
   for (const [week, given] of Object.entries(answers)) {
     if (given.length < QUIZ_SIZE) continue;
     weeks++;
-    const quiz = weeklyQuiz(EPOCH + Number(week) * WEEK + 1, questions);
+    const quiz = weeklyQuiz(inWeek(week), questions);
     right += given.filter((choice, i) => quiz.questions[i].c === choice).length;
   }
   return {weeks, right, total: weeks * QUIZ_SIZE};

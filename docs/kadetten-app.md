@@ -233,6 +233,10 @@ Die Endpunkte unter `/api/app/` und die Tor-Mitteilungen wirken erst nach der Be
 
 Nicht gegen die Quelle geprüft: die Bezeichnung der Playoff-Spiele (im November stehen noch keine im Spielplan). Die Playoff-Ansicht bleibt unsichtbar, wenn die Daten fehlen oder anders aussehen. «Best of 5» gilt als Annahme, bis alle Spiele einer Serie angesetzt sind.
 
+### Sammelkarten und Mein Bereich (14. November 2026)
+
+`#/ich` ist «Mein Bereich» mit Quiz-Bilanz und Sammelkarten, die Einstellungen liegen unter `#/ich/einstellungen`. 112 Karten zu Kader, Geschichte, Orten, Titeln, legendären Spielen, Legenden, Trainern und Machern, dazu Momentkarten für besuchte Heimspiele. Karten gibt es für Quiz, Tipps, Hallenbesuche und live verfolgte Spiele, ohne Konto und ohne Doppelte. Details, Regeln und Quellen: [sammelkarten.md](sammelkarten.md).
+
 Noch offen: Tippspiel mit Vergleich unter Fans (bräuchte einen weiteren Schreibweg), «An diesem Tag» mit Tagesdaten (die Geschichte enthält nur Jahre), Ticket-Link und Sender (Angaben vom Club).
 
 ## Bewusst nicht vorgesehen
