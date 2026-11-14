@@ -32,6 +32,9 @@
 .next-wrap { position: relative; margin: 0 calc(-1 * var(--s-4)); padding: var(--s-2) var(--s-4) 0 var(--s-5); background: var(--c-highlight); border-top: 1px solid var(--c-line); }
 .next-wrap::before, .tbl-real tr.me td:first-child::before, .stripe-edge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 3px, var(--c-ink) 3px 6px); }
 .next-wrap .rl { border-top: 0; }
+/* Der Pfeil steht in der Mitte des ganzen Blocks (Etikett und Zeile), nicht nur der Zeile. */
+.next-wrap .rl > .icon:last-child { position: absolute; right: var(--s-4); top: 50%; transform: translateY(-50%); }
+.next-wrap .rl { padding-right: calc(24px + var(--s-3)); }
 .tag { font: 600 var(--fs-meta)/1 var(--f-text); color: var(--c-accent-text); }
 .acts.single { grid-template-columns: 1fr; }
 .acts.single:has(> :nth-child(2)) { grid-template-columns: 1fr 1fr; }
