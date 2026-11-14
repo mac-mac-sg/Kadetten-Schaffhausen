@@ -46,7 +46,13 @@ export function parseRoute(hash = '') {
     case 'verein':
       return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich':
-      return {area: null, view: 'ich'};
+      return second === 'einstellungen' ? {area: null, view: 'ich'} : {area: null, view: 'mein'};
+    case 'sammlung':
+      return second === 'neu'
+        ? {area: null, view: 'neu'}
+        : safeId(second)
+          ? {area: null, view: 'karte', id: second}
+          : {area: null, view: 'sammlung'};
     case 'start':
       return {area: null, view: 'start', step: /^[1-3]$/.test(second || '') ? Number(second) : 1};
     case 'quiz':
@@ -99,6 +105,10 @@ export const href = {
   vergleich: (a, b) => '#/team/vergleich' + (a ? '/' + encodeURIComponent(a) + (b ? '/' + encodeURIComponent(b) : '') : ''),
   verein: tab => '#/verein' + (tab ? '/' + tab : ''),
   ich: () => '#/ich',
+  einstellungen: () => '#/ich/einstellungen',
+  sammlung: () => '#/sammlung',
+  karte: id => '#/sammlung/' + encodeURIComponent(id),
+  neu: () => '#/sammlung/neu',
   quiz: () => '#/quiz',
   start: step => '#/start' + (step && step > 1 ? '/' + step : ''),
   wissen: (chapter, id, step) =>

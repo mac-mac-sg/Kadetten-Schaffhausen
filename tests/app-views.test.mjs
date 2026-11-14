@@ -12,11 +12,12 @@ import {renderSaison} from '../src/kadetten/js/views/saison.js';
 import {renderTeam, renderSpieler} from '../src/kadetten/js/views/team.js';
 import {renderVerein} from '../src/kadetten/js/views/verein.js';
 import {renderIch} from '../src/kadetten/js/views/ich.js';
+import {renderMein, renderSammlung, renderKarte, renderNeu} from '../src/kadetten/js/views/sammlung.js';
 import {renderArtikel} from '../src/kadetten/js/views/artikel.js';
 
 const data = decodeDeep(JSON.parse(readFileSync('server/seed.json', 'utf8')));
 data.playerSeason = {season: '2026/27', teamGames: 8, players: {10: {shvPlayerId: 1, games: 8, goals: 30, sevenMeterGoals: 4, goalsPerGame: 3.8, twoMinutes: 1}, 6: {shvPlayerId: 2, games: 8, goals: 41, sevenMeterGoals: 20, goalsPerGame: 5.1, twoMinutes: 0}}};
-const VIEWS = {jetzt: renderJetzt, news: renderNews, artikel: renderArtikel, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch};
+const VIEWS = {jetzt: renderJetzt, news: renderNews, artikel: renderArtikel, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch, mein: renderMein, sammlung: renderSammlung, karte: renderKarte, neu: renderNeu};
 const load = () => ({status: 'loading'});
 const api = {};
 
@@ -33,7 +34,7 @@ function check(out, hash) {
   for (const [, href] of out.matchAll(/href="([^"]*)"/g)) assert.ok(href === '../' || /^(#\/|https:\/\/|assets\/)/.test(href) || /^https:/.test(href), `${hash}: Link ${href}`);
 }
 
-const HASHES = ['#/', '#/news', '#/news/bukarest', '#/news/gibts-nicht', '#/spiel/508338', '#/spiel/508338/vorschau', '#/spiel/508338/live', '#/spiel/508393', '#/spiel/508393/bericht', '#/spiel/000', '#/saison', '#/saison/tabellen', '#/saison/statistik', '#/team', '#/team/10', '#/team/99', '#/verein', '#/ich'];
+const HASHES = ['#/', '#/ich', '#/ich/einstellungen', '#/sammlung', '#/sammlung/k-10', '#/sammlung/neu', '#/news', '#/news/bukarest', '#/news/gibts-nicht', '#/spiel/508338', '#/spiel/508338/vorschau', '#/spiel/508338/live', '#/spiel/508393', '#/spiel/508393/bericht', '#/spiel/000', '#/saison', '#/saison/tabellen', '#/saison/statistik', '#/team', '#/team/10', '#/team/99', '#/verein', '#/ich'];
 const MOMENTS = {
   alltag: {now: Date.parse('2026-11-05T10:00:00Z')},
   spieltag: {now: Date.parse('2026-11-11T14:30:00Z')},

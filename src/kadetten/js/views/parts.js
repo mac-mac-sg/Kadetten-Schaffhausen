@@ -31,7 +31,7 @@ function logoFor(team) {
   return file ? `assets/clubs/club-${file}.webp` : null;
 }
 
-const settingsLink = html`<a class="icb" href="${href.ich()}" aria-label="Ich: persönliche Funktionen und Einstellungen">${icon('settings', 22)}</a>`;
+const settingsLink = html`<a class="icb" href="${href.ich()}" aria-label="Mein Bereich: Sammelkarten, Quiz und Einstellungen">${icon('ich', 22)}</a>`;
 const wissenLink = html`<a class="icb" href="${href.wissen()}" aria-label="Wissen: Regeln, Aufstellungen und Spielzüge">${icon('book', 22)}</a>`;
 const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="28" height="32"></a>`;
 

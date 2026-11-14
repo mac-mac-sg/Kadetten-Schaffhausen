@@ -13,12 +13,13 @@ import {renderSaison} from '../src/kadetten/js/views/saison.js';
 import {renderTeam, renderSpieler} from '../src/kadetten/js/views/team.js';
 import {renderVerein} from '../src/kadetten/js/views/verein.js';
 import {renderIch} from '../src/kadetten/js/views/ich.js';
+import {renderMein, renderSammlung, renderKarte, renderNeu} from '../src/kadetten/js/views/sammlung.js';
 
 const read = path => readFileSync(path, 'utf8');
 const tokens = read('src/kadetten/css/tokens.css');
 const data = decodeDeep(JSON.parse(read('server/seed.json')));
 const now = Date.parse('2026-11-05T10:00:00Z');
-const VIEWS = {jetzt: renderJetzt, news: renderNews, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch};
+const VIEWS = {jetzt: renderJetzt, news: renderNews, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch, mein: renderMein, sammlung: renderSammlung, karte: renderKarte, neu: renderNeu};
 function render(hash, ui = {}, load = () => ({status: 'loading'})) {
   setLogos(data.clubLogos);
   const route = parseRoute(hash);
@@ -217,8 +218,8 @@ test('Spielerseite: Name und Position unter dem Porträt statt über dem Trikot'
   assert.equal(d.querySelector('.big-hero .no').textContent, '10');
 });
 
-test('Unterseiten mit Titel im Kopfband: Ich, Geschichte, Trophäenschrank', () => {
-  for (const [hash, title, back] of [['#/ich', 'Ich', '#/'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
+test('Unterseiten mit Titel im Kopfband: Mein Bereich, Einstellungen, Sammlung, Geschichte, Trophäenschrank', () => {
+  for (const [hash, title, back] of [['#/ich', 'Mein Bereich', '#/'], ['#/ich/einstellungen', 'Einstellungen', '#/ich'], ['#/sammlung', 'Sammlung', '#/ich'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
     const d = render(hash);
     assert.equal(d.querySelector('header.band-sub .band-t').textContent, title, hash);
     assert.equal(d.querySelector('header.band-sub a.back').getAttribute('href'), back, hash);

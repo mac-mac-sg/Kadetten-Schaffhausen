@@ -1,4 +1,4 @@
-// «Ich»: persönliche Funktionen und Einstellungen. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
+// Einstellungen (unter «Mein Bereich»): Mitteilungen, Kalender, Darstellung, Deine Saison. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -42,7 +42,7 @@ export function renderIch({theme, state, ui, now}) {
         ? 'Alle Quellen aktuell'
         : 'Zeitpunkt der letzten Aktualisierung';
   const blocked = supported && globalThis.Notification?.permission === 'denied';
-  return html`${subBand(backLink('Zurück', href.jetzt()), 'Ich', 'Einstellungen')}
+  return html`${subBand(backLink('Mein Bereich', href.ich()), 'Einstellungen', 'Mein Bereich')}
     <section class="sec"><div class="card list">${listRow({title: 'App einrichten', sub: 'Lieblingsspieler, Mitteilungen und Tipp in drei Schritten', link: href.start()})}</div></section>
     <section class="sec" id="push" aria-labelledby="i-push">${sectionHead('Benachrichtigungen', '', '', 'i-push')}
       <div class="card list">
