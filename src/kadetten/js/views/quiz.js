@@ -25,7 +25,7 @@ export function quizTeaser(now) {
         : s.given.length
           ? `Frage ${s.given.length + 1} von ${QUIZ_SIZE}`
           : 'Fünf Fragen zu Handball und Verein'
-    }</span><span class="s">${s.done ? `Neues Quiz am ${day(nextQuizAt(now))}` : 'Jede Woche neu, ohne Anmeldung'}</span></span>${icon('go')}</a></section>`;
+    }</span>${s.done ? html`<span class="s">Neues Quiz am ${day(nextQuizAt(now))}</span>` : ''}</span>${icon('go')}</a></section>`;
 }
 
 function answered(q, choice, index) {
