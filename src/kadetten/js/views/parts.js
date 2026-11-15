@@ -8,6 +8,27 @@ import {SEASON} from '../season.js';
 
 // Nur der Schild (orange Fläche mit K), ohne Sterne und Rahmenlinie: assets/kadetten-wappen.png
 export const LOGO = 'assets/kadetten-wappen.png';
+/** Spielort für die Zeile «Spielort»: Halle ohne vorangestellten Ort, Ort, Adresse (nur BBC Arena bekannt) und Kartenlink.
+ * Die Quelle liefert «Thun Lachen, Thun»; die Kartensuche nutzt die ganze Angabe, bei der BBC Arena die Adresse. */
+export const BBC_ARENA_ADDRESS = 'Schweizersbildstrasse 10, 8207 Schaffhausen';
+export function venueInfo(venue) {
+  const text = String(venue || '').trim();
+  if (!text) return null;
+  const parts = text.split(',').map(p => p.trim()),
+    place = parts.length > 1 ? parts.at(-1) : '';
+  if (/BBC Arena/i.test(text)) {
+    const query = 'BBC Arena, ' + BBC_ARENA_ADDRESS;
+    return {
+      name: 'BBC Arena',
+      place: BBC_ARENA_ADDRESS,
+      home: true,
+      url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query)
+    };
+  }
+  const hall = parts[0],
+    name = place && hall.startsWith(place + ' ') && hall.length > place.length + 1 ? hall.slice(place.length + 1) : hall;
+  return {name, place, home: false, url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(text)};
+}
 export const venueShort = venue =>
   /BBC Arena/i.test(venue || '')
     ? 'BBC Arena'

@@ -189,3 +189,20 @@ test('Teamnamen: «Chambéry» der Tabelle und der Spielplan-Name gelten als das
   assert.equal(sameTeam('GC Amicitia Zürich', 'GC Amicitia Zurich'), true);
   assert.equal(sameTeam('BSV Bern', 'HC Izvidac'), false);
 });
+
+test('Spielort: Halle ohne Ort davor, BBC Arena mit Adresse, Kartenlink auf die Google-Maps-Suche', async () => {
+  const {venueInfo} = await import('../src/kadetten/js/views/parts.js');
+  const {spielort} = await import('../src/kadetten/js/views/spiel.js');
+  assert.deepEqual(venueInfo('Thun Lachen, Thun'), {name: 'Lachen', place: 'Thun', home: false, url: 'https://www.google.com/maps/search/?api=1&query=Thun%20Lachen%2C%20Thun'});
+  assert.equal(venueInfo('Le Phare, Chambéry').name, 'Le Phare');
+  assert.equal(venueInfo('St. Gallen Kreuzbleiche, St. Gallen').name, 'Kreuzbleiche');
+  const home = venueInfo('Schaffhausen BBC Arena A, Schaffhausen');
+  assert.equal(home.name, 'BBC Arena');
+  assert.equal(home.place, 'Schweizersbildstrasse 10, 8207 Schaffhausen');
+  assert.match(home.url, /query=BBC%20Arena%2C%20Schweizersbildstrasse%2010/);
+  assert.equal(venueInfo(''), null);
+  const out = String(spielort({venue: 'Thun Lachen, Thun'}));
+  assert.match(out, /In Karten öffnen/);
+  assert.match(out, /target="_blank" rel="noopener noreferrer"/);
+  assert.equal(String(spielort({})), '');
+});

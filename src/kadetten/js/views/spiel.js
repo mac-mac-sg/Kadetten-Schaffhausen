@@ -25,7 +25,8 @@ import {
   listRow,
   gameRow,
   segment,
-  crest
+  crest,
+  venueInfo
 } from './parts.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 
@@ -98,6 +99,17 @@ export function gegnerCheck({game, own, opp}) {
     }</section>`;
 }
 
+/** Zeile «Spielort» in der Vorschau: Halle, Ort oder Adresse und ein Link in die Karten-App (Google Maps, ohne Schlüssel). */
+export function spielort(game) {
+  const v = venueInfo(game?.venue);
+  if (!v) return '';
+  return html`<section class="sec" aria-labelledby="g-ort">${sectionHead('Spielort', '', '', 'g-ort')}
+    <div class="card ort">
+      <div class="ort-row"><span class="lead">${icon('pin')}</span><span class="grow"><span class="t">${v.name}${v.home ? html`<span class="tag-ink sm">Heim</span>` : ''}</span>${v.place ? html`<span class="s">${v.place}</span>` : ''}</span></div>
+      <a class="btn wide" href="${v.url}" target="_blank" rel="noopener noreferrer">${icon('ext')}In Karten öffnen</a>
+    </div></section>`;
+}
+
 function vorschau({game, data, load, api, now}) {
   const table = standings(data.tables?.[game.league === 'EHL' ? 'EHL' : 'QHL']);
   const own = table.find(r => r.team === OWN_TEAM),
@@ -120,6 +132,7 @@ function vorschau({game, data, load, api, now}) {
     .reverse()
     .slice(0, 3);
   return html`
+    ${spielort(game)}
     <section class="sec" aria-labelledby="g-lage">${sectionHead('Ausgangslage', '', '', 'g-lage')}
       <div class="card list">
         ${listRow({
