@@ -697,3 +697,13 @@ a.sk:active { transform: scale(.97); }
   .sk-gl, .btn.pulse, .prog-bar i, .sk-grid.enter > *, .sk-row.enter > *, .sk-flip.enter, .fan.deal .fan-c, .fan-c.is-open .sk-flip, .fan-c.is-open.r-legende .sk-face.rear > .sk { animation: none; }
   .sk-face, .fan-c, a.sk { transition: none; }
 }
+
+/* Spielort in der Vorschau */
+.ort { padding: var(--s-3) var(--s-4) var(--s-4); }
+.ort-row { display: flex; align-items: center; gap: var(--s-3); }
+.ort-row .t { display: flex; align-items: center; gap: var(--s-2); font: 600 var(--fs-body)/1.3 var(--f-text); }
+.ort-row .s { display: block; margin-top: 2px; font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-text-muted); }
+.ort .btn { margin-top: var(--s-3); }
+.tag-ink.sm { padding: 2px 7px; font-size: 11px; }
+.ort .lead { color: var(--c-accent-text); }
+.ort-img { flex: none; width: 96px; height: 72px; object-fit: cover; border-radius: 10px; background: var(--c-surface-2); clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }
