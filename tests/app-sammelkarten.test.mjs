@@ -118,6 +118,10 @@ test('Neue Karten als Fächer: verdeckt ausgeteilt, aufgedeckte Karten offen, am
   assert.equal((one.match(/ is-open/g) || []).length, 1);
   const all = String(renderNeu({state, ui: {newCards: cards, revealed: cards}}));
   assert.match(all, /class="fan fn-3 spread"/);
+  const top = String(renderNeu({state, ui: {newCards: cards, revealed: cards, fanTop: 'g-roots'}}));
+  assert.equal((top.match(/ is-top/g) || []).length, 1);
+  assert.match(top, /data-reveal="g-roots"[^>]*>|is-top" data-reveal="g-roots"/);
+  assert.match(top, /holt eine Karte nach vorne/);
   assert.doesNotMatch(all, /data-reveal-all/);
   assert.match(String(renderNeu({state, ui: {}})), /keine neuen Karten/);
 });

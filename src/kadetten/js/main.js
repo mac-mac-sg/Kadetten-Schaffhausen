@@ -317,6 +317,13 @@ async function shareSeason() {
 }
 
 /** Neue Karten aufdecken: nacheinander, damit jede ihre eigene Drehung bekommt. */
+/** Holt eine aufgedeckte Karte im Fächer nach vorne (nur Klassen, damit die Bewegung als Übergang läuft). */
+function fanTop(id) {
+  ui.fanTop = id;
+  for (const el of app.querySelectorAll('.fan-c'))
+    el.classList.toggle('is-top', el.dataset.reveal === id && el.classList.contains('is-open'));
+}
+
 function reveal(ids) {
   const slow = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   ids.forEach((id, i) =>
@@ -324,6 +331,7 @@ function reveal(ids) {
       () => {
         if (!(ui.revealed ||= []).includes(id)) ui.revealed.push(id);
         app.querySelector(`[data-reveal="${CSS.escape(id)}"]`)?.classList.add('is-open');
+        fanTop(id);
         if (i === ids.length - 1) setTimeout(render, slow ? 700 : 0);
       },
       slow ? i * 260 : 0
@@ -444,6 +452,7 @@ app.addEventListener('click', event => {
   } else if (t.hasAttribute('data-claim')) {
     ui.newCards = claim(sammelInput(store.state));
     ui.revealed = [];
+    ui.fanTop = '';
     announce(ui.newCards.length === 1 ? 'Eine neue Karte gesammelt.' : `${ui.newCards.length} neue Karten gesammelt.`);
     location.hash = href.neu();
   } else if (t.dataset.flip) {
@@ -457,8 +466,11 @@ app.addEventListener('click', event => {
     t.querySelector('span').textContent = back ? 'Vorderseite' : 'Umdrehen';
   } else if (t.dataset.reveal) {
     // Eine aufgedeckte Karte öffnet beim nächsten Antippen ihre Ansicht.
-    if ((ui.revealed || []).includes(t.dataset.reveal)) location.hash = href.karte(t.dataset.reveal);
-    else reveal([t.dataset.reveal]);
+    // Verdeckt: aufdecken. Offen, aber hinten: nach vorne holen. Offen und vorne: Karte öffnen.
+    const id = t.dataset.reveal;
+    if (!(ui.revealed || []).includes(id)) reveal([id]);
+    else if (ui.fanTop !== id) fanTop(id);
+    else location.hash = href.karte(id);
   } else if (t.hasAttribute('data-reveal-all')) {
     reveal((ui.newCards || []).filter(id => !(ui.revealed || []).includes(id)));
   } else if (t.dataset.quiz) {

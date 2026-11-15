@@ -201,10 +201,18 @@ export function renderNeu({state, ui}) {
         fresh.length
           ? html`<div class="fan fn-${n}${ui.enter ? ' deal' : ''}${all && n > 1 ? ' spread' : ''}">${fresh.map((c, i) => {
               const shown = open.has(c.id);
-              return html`<button type="button" class="fan-c fi-${Math.min(i, 11)} r-${rarityOf(c)}${shown ? ' is-open' : ''}" data-reveal="${c.id}" aria-label="${shown ? `${c.title}, ${ART_LABEL[c.art]}` : `Karte ${i + 1} aufdecken`}">
+              return html`<button type="button" class="fan-c fi-${Math.min(i, 11)} r-${rarityOf(c)}${shown ? ' is-open' : ''}${shown && ui.fanTop === c.id ? ' is-top' : ''}" data-reveal="${c.id}" aria-label="${shown ? `${c.title}, ${ART_LABEL[c.art]}` : `Karte ${i + 1} aufdecken`}">
                 <span class="sk-flip"><span class="sk-face">${cover()}</span><span class="sk-face rear">${cardFront(c, {link: false})}</span></span></button>`;
             })}</div>
-          <p class="fine fan-hint" role="status">${all ? (fresh.length === 1 ? 'Die Karte ist jetzt in deiner Sammlung.' : 'Alle Karten sind jetzt in deiner Sammlung.') : 'Antippen deckt eine Karte auf.'}</p>`
+          <p class="fine fan-hint" role="status">${
+            fresh.length === 1
+              ? all
+                ? 'Die Karte ist jetzt in deiner Sammlung. Antippen öffnet sie.'
+                : 'Antippen deckt die Karte auf.'
+              : all
+                ? 'Antippen holt eine Karte nach vorne, nochmals antippen öffnet sie.'
+                : 'Antippen deckt eine Karte auf oder holt sie nach vorne.'
+          }</p>`
           : notice('Im Moment gibt es keine neuen Karten. Sie warten im Quiz der Woche, bei Tipps und Heimspielen.', 'star')
       }
       <div class="acts${fresh.length && !all ? '' : ' single'}">${
