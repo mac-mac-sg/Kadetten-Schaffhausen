@@ -178,7 +178,7 @@ export function renderKarte({route, state, ui}) {
   // Beide Seiten liegen übereinander; «Umdrehen» dreht die Karte in 3D (main.js setzt nur die Klasse, ohne neu zu zeichnen).
   return html`${subBand(backLink('Sammlung', href.sammlung(), true), card.title, `${ART_LABEL[card.art]} · ${RARITY_LABEL[rarityOf(card)]}`)}
     <section class="sec sk-view">
-      <div class="sk-flip lg${back ? ' is-back' : ''}${ui.enter ? ' enter' : ''}" data-flipcard="${card.id}">
+      <div class="sk-flip lg${back ? ' is-back' : ''}${ui.enter ? ' enter' : ''}" data-flipcard="${card.id}" role="button" tabindex="0" aria-pressed="${String(back)}" aria-label="${`${card.title}: Karte umdrehen`}">
         <div class="sk-face" aria-hidden="${String(back)}">${cardFront(card, {size: 'lg', link: false})}</div>
         <div class="sk-face rear" aria-hidden="${String(!back)}">${cardBack(card, state.data)}</div>
       </div>

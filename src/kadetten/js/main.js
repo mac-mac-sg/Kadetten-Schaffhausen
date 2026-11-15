@@ -213,6 +213,7 @@ function focusSelector(el) {
     'data-vote-select',
     'data-vote-confirm',
     'data-flip',
+    'data-flipcard',
     'data-reveal'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
@@ -324,6 +325,25 @@ function fanTop(id) {
     el.classList.toggle('is-top', el.dataset.reveal === id && el.classList.contains('is-open'));
 }
 
+/** Karte umdrehen: nur Klassen wechseln, damit die Drehung als Übergang läuft; dazu ein kurzes Anheben. */
+function flipCard(id) {
+  const back = ui.flip !== id;
+  ui.flip = back ? id : '';
+  const card = app.querySelector(`[data-flipcard="${CSS.escape(id)}"]`);
+  if (card) {
+    card.classList.toggle('is-back', back);
+    card.setAttribute('aria-pressed', String(back));
+    card.querySelectorAll('.sk-face').forEach((face, i) => face.setAttribute('aria-hidden', String(i === 0 ? back : !back)));
+    card.classList.remove('bump');
+    void card.offsetWidth;
+    card.classList.add('bump');
+  }
+  const button = app.querySelector(`button[data-flip="${CSS.escape(id)}"]`);
+  button?.setAttribute('aria-pressed', String(back));
+  const label = button?.querySelector('span');
+  if (label) label.textContent = back ? 'Vorderseite' : 'Umdrehen';
+}
+
 function reveal(ids) {
   const slow = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   ids.forEach((id, i) =>
@@ -410,6 +430,11 @@ app.addEventListener('click', event => {
     history.go(-distance);
     return;
   }
+  const flipping = event.target.closest('[data-flipcard]');
+  if (flipping) {
+    flipCard(flipping.dataset.flipcard);
+    return;
+  }
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
   if (swiped && t.dataset.reveal) return;
@@ -457,14 +482,7 @@ app.addEventListener('click', event => {
     announce(ui.newCards.length === 1 ? 'Eine neue Karte gesammelt.' : `${ui.newCards.length} neue Karten gesammelt.`);
     location.hash = href.neu();
   } else if (t.dataset.flip) {
-    // Nur die Klasse wechseln: So läuft die Drehung als Übergang, statt die Seite neu zu zeichnen.
-    const back = ui.flip !== t.dataset.flip;
-    ui.flip = back ? t.dataset.flip : '';
-    const card = app.querySelector(`[data-flipcard="${CSS.escape(t.dataset.flip)}"]`);
-    card?.classList.toggle('is-back', back);
-    card?.querySelectorAll('.sk-face').forEach((face, i) => face.setAttribute('aria-hidden', String(i === 0 ? back : !back)));
-    t.setAttribute('aria-pressed', String(back));
-    t.querySelector('span').textContent = back ? 'Vorderseite' : 'Umdrehen';
+    flipCard(t.dataset.flip);
   } else if (t.dataset.reveal) {
     // Eine aufgedeckte Karte öffnet beim nächsten Antippen ihre Ansicht.
     // Verdeckt: aufdecken. Offen, aber hinten: nach vorne holen. Offen und vorne: Karte öffnen.
@@ -544,6 +562,12 @@ app.addEventListener('pointerup', event => {
 });
 app.addEventListener('pointercancel', () => (swipe = null));
 app.addEventListener('keydown', event => {
+  const flipping = event.target.closest?.('[data-flipcard]');
+  if (flipping && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    flipCard(flipping.dataset.flipcard);
+    return;
+  }
   if (!event.target.closest?.('.fan') || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
   event.preventDefault();
   fanStep(event.key === 'ArrowRight' ? 1 : -1);
