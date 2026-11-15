@@ -709,3 +709,10 @@ a.sk:active { transform: scale(.97); }
 .tag-ink.sm { padding: 2px 7px; font-size: 11px; }
 .ort .lead { color: var(--c-accent-text); }
 .ort-img { flex: none; width: 96px; height: 72px; object-fit: cover; border-radius: 10px; background: var(--c-surface-2); clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }
+
+/* Karte antippen dreht sie um: kurzes Anheben und Nachfedern während der Drehung */
+[data-flipcard] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+[data-flipcard]:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 4px; border-radius: 14px; }
+.sk-flip.bump { animation: sk-bump .7s cubic-bezier(.3, .7, .2, 1); }
+@keyframes sk-bump { 0% { transform: none; } 35% { transform: translateY(-10px) scale(1.04); } 70% { transform: translateY(2px) scale(.99); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sk-flip.bump { animation: none; } }

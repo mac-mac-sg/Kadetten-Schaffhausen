@@ -133,5 +133,6 @@ test('Kartenansicht: Vorder- und Rückseite liegen für die Drehung übereinande
   const out = String(renderKarte({route: {id: 'k-10'}, state: {data: {games: []}}, ui: {flip: 'k-10'}}));
   assert.match(out, /class="sk-flip lg is-back"/);
   assert.equal((out.match(/class="sk-face/g) || []).length, 2);
+  assert.match(out, /data-flipcard="k-10" role="button" tabindex="0" aria-pressed="true"/);
   delete globalThis.localStorage;
 });
