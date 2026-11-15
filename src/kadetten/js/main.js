@@ -149,6 +149,7 @@ function render() {
   const open = new Set([...app.querySelectorAll('details[open][id]')].map(d => d.id));
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   wissenSteuerung?.sync(route);
+  ui.enter = ui.enterHash !== location.hash;
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
   const tile = liveTile({state: store.state, route, now: context.now});
   app.innerHTML = String(
@@ -156,6 +157,7 @@ function render() {
   );
   document.documentElement.classList.toggle('has-tile', Boolean(tile));
   wissenSteuerung?.paint();
+  ui.enterHash = location.hash;
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -210,7 +212,8 @@ function focusSelector(el) {
     'data-my-game',
     'data-vote-select',
     'data-vote-confirm',
-    'data-flip'
+    'data-flip',
+    'data-reveal'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
@@ -311,6 +314,21 @@ async function shareSeason() {
   const summary = seasonSummary({games: store.state.data?.games || [], visited: myGames(), tips: tips(), now: Date.now()});
   announce('Bild wird erstellt …');
   await shareImage(await seasonCard(summary), 'kadetten-meine-saison.png', 'Meine Kadetten-Saison');
+}
+
+/** Neue Karten aufdecken: nacheinander, damit jede ihre eigene Drehung bekommt. */
+function reveal(ids) {
+  const slow = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  ids.forEach((id, i) =>
+    setTimeout(
+      () => {
+        if (!(ui.revealed ||= []).includes(id)) ui.revealed.push(id);
+        app.querySelector(`[data-reveal="${CSS.escape(id)}"]`)?.classList.add('is-open');
+        if (i === ids.length - 1) setTimeout(render, slow ? 700 : 0);
+      },
+      slow ? i * 260 : 0
+    )
+  );
 }
 
 function announce(text) {
@@ -425,11 +443,24 @@ app.addEventListener('click', event => {
     render();
   } else if (t.hasAttribute('data-claim')) {
     ui.newCards = claim(sammelInput(store.state));
+    ui.revealed = [];
     announce(ui.newCards.length === 1 ? 'Eine neue Karte gesammelt.' : `${ui.newCards.length} neue Karten gesammelt.`);
     location.hash = href.neu();
   } else if (t.dataset.flip) {
-    ui.flip = ui.flip === t.dataset.flip ? '' : t.dataset.flip;
-    render();
+    // Nur die Klasse wechseln: So läuft die Drehung als Übergang, statt die Seite neu zu zeichnen.
+    const back = ui.flip !== t.dataset.flip;
+    ui.flip = back ? t.dataset.flip : '';
+    const card = app.querySelector(`[data-flipcard="${CSS.escape(t.dataset.flip)}"]`);
+    card?.classList.toggle('is-back', back);
+    card?.querySelectorAll('.sk-face').forEach((face, i) => face.setAttribute('aria-hidden', String(i === 0 ? back : !back)));
+    t.setAttribute('aria-pressed', String(back));
+    t.querySelector('span').textContent = back ? 'Vorderseite' : 'Umdrehen';
+  } else if (t.dataset.reveal) {
+    // Eine aufgedeckte Karte öffnet beim nächsten Antippen ihre Ansicht.
+    if ((ui.revealed || []).includes(t.dataset.reveal)) location.hash = href.karte(t.dataset.reveal);
+    else reveal([t.dataset.reveal]);
+  } else if (t.hasAttribute('data-reveal-all')) {
+    reveal((ui.newCards || []).filter(id => !(ui.revealed || []).includes(id)));
   } else if (t.dataset.quiz) {
     const [week, index, choice] = t.dataset.quiz.split(':').map(Number);
     answerQuiz(week, index, choice);
