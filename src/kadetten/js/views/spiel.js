@@ -105,7 +105,11 @@ export function spielort(game) {
   if (!v) return '';
   return html`<section class="sec" aria-labelledby="g-ort">${sectionHead('Spielort', '', '', 'g-ort')}
     <div class="card ort">
-      <div class="ort-row"><span class="lead">${icon('pin')}</span><span class="grow"><span class="t">${v.name}${v.home ? html`<span class="tag-ink sm">Heim</span>` : ''}</span>${v.place ? html`<span class="s">${v.place}</span>` : ''}</span></div>
+      <div class="ort-row">${
+        v.image
+          ? html`<img class="ort-img" src="${v.image}" alt="" width="96" height="72" loading="lazy" decoding="async">`
+          : html`<span class="lead">${icon('pin')}</span>`
+      }<span class="grow"><span class="t">${v.name}${v.home ? html`<span class="tag-ink sm">Heim</span>` : ''}</span>${v.place ? html`<span class="s">${v.place}</span>` : ''}</span></div>
       <a class="btn wide" href="${v.url}" target="_blank" rel="noopener noreferrer">${icon('ext')}In Karten öffnen</a>
     </div></section>`;
 }

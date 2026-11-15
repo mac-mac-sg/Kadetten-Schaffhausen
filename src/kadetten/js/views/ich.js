@@ -7,6 +7,7 @@ import {OWN_TEAM, ownGames, shortTeam, dataFreshness} from '../logic.js';
 import {favourite, myGames, tips} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
 import {seasonSummary} from '../moments.js';
+import {HALLEN} from '../../data/hallen.js';
 import {backLink, subBand, sectionHead, listRow, playerByNumber} from './parts.js';
 
 function seasonBlock(state, now) {
@@ -136,5 +137,12 @@ export function renderIch({theme, state, ui, now}) {
         <p class="fine pad-top-s">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
       </details>
       <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.</p>
+      <details class="card more-card" id="i-bilder">
+        <summary><span class="grow"><span class="t">Bildnachweise</span><span class="s">Fotos der Spielhallen</span></span></summary>
+        <div class="list">${HALLEN.filter(h => h.author).map(h =>
+          listRow({title: h.title, sub: `${h.author} · ${h.license} · Wikimedia Commons`, end: icon('ext'), link: h.url, cls: 'compact'})
+        )}</div>
+        <p class="fine pad-top-s">Spielerfotos und Archivbilder: kadettensh.ch.</p>
+      </details>
     </section>`;
 }

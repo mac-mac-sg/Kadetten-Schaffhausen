@@ -706,3 +706,4 @@ a.sk:active { transform: scale(.97); }
 .ort .btn { margin-top: var(--s-3); }
 .tag-ink.sm { padding: 2px 7px; font-size: 11px; }
 .ort .lead { color: var(--c-accent-text); }
+.ort-img { flex: none; width: 96px; height: 72px; object-fit: cover; border-radius: 10px; background: var(--c-surface-2); clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }

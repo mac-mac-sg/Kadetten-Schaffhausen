@@ -193,7 +193,7 @@ test('Teamnamen: «Chambéry» der Tabelle und der Spielplan-Name gelten als das
 test('Spielort: Halle ohne Ort davor, BBC Arena mit Adresse, Kartenlink auf die Google-Maps-Suche', async () => {
   const {venueInfo} = await import('../src/kadetten/js/views/parts.js');
   const {spielort} = await import('../src/kadetten/js/views/spiel.js');
-  assert.deepEqual(venueInfo('Thun Lachen, Thun'), {name: 'Lachen', place: 'Thun', home: false, url: 'https://www.google.com/maps/search/?api=1&query=Thun%20Lachen%2C%20Thun'});
+  assert.deepEqual(venueInfo('Thun Lachen, Thun'), {name: 'Lachen', place: 'Thun', home: false, image: null, url: 'https://www.google.com/maps/search/?api=1&query=Thun%20Lachen%2C%20Thun'});
   assert.equal(venueInfo('Le Phare, Chambéry').name, 'Le Phare');
   assert.equal(venueInfo('St. Gallen Kreuzbleiche, St. Gallen').name, 'Kreuzbleiche');
   const home = venueInfo('Schaffhausen BBC Arena A, Schaffhausen');
@@ -201,6 +201,15 @@ test('Spielort: Halle ohne Ort davor, BBC Arena mit Adresse, Kartenlink auf die 
   assert.equal(home.place, 'Schweizersbildstrasse 10, 8207 Schaffhausen');
   assert.match(home.url, /query=BBC%20Arena%2C%20Schweizersbildstrasse%2010/);
   assert.equal(venueInfo(''), null);
+  assert.equal(home.image, 'assets/bbc-arena.webp');
+  assert.equal(venueInfo('Winterthur AXA Arena, Winterthur').image, 'assets/hallen/axa-arena.webp');
+  assert.match(String(spielort({venue: 'St. Gallen Kreuzbleiche, St. Gallen'})), /class="ort-img" src="assets\/hallen\/kreuzbleiche.webp"/);
+  const {HALLEN} = await import('../src/kadetten/data/hallen.js');
+  const {existsSync} = await import('node:fs');
+  for (const h of HALLEN) {
+    assert.ok(existsSync('src/kadetten/' + h.image), h.image);
+    if (h.image.startsWith('assets/hallen/')) assert.ok(h.author && h.license && h.url.startsWith('https://commons.wikimedia.org/'), h.image);
+  }
   const out = String(spielort({venue: 'Thun Lachen, Thun'}));
   assert.match(out, /In Karten öffnen/);
   assert.match(out, /target="_blank" rel="noopener noreferrer"/);

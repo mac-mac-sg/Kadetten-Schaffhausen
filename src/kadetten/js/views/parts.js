@@ -2,6 +2,7 @@
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {AREAS, href} from '../router.js';
+import {hallImage} from '../../data/hallen.js';
 import {OWN_TEAM, initials, shortTeam, outcome, dayLabel, hasScore} from '../logic.js';
 import {SQUAD} from '../../data/squad.js';
 import {SEASON} from '../season.js';
@@ -22,12 +23,19 @@ export function venueInfo(venue) {
       name: 'BBC Arena',
       place: BBC_ARENA_ADDRESS,
       home: true,
+      image: hallImage(text),
       url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query)
     };
   }
   const hall = parts[0],
     name = place && hall.startsWith(place + ' ') && hall.length > place.length + 1 ? hall.slice(place.length + 1) : hall;
-  return {name, place, home: false, url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(text)};
+  return {
+    name,
+    place,
+    home: false,
+    image: hallImage(text),
+    url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(text)
+  };
 }
 export const venueShort = venue =>
   /BBC Arena/i.test(venue || '')

@@ -241,6 +241,8 @@ Nicht gegen die Quelle geprüft: die Bezeichnung der Playoff-Spiele (im November
 
 Die Vorschau jedes Spiels zeigt unter dem Spielkopf die Zeile «Spielort»: Halle ohne vorangestellten Ort und den Ort aus dem Spielplan, bei der BBC Arena die Adresse Schweizersbildstrasse 10, 8207 Schaffhausen. «In Karten öffnen» führt zur Google-Maps-Suche nach der ganzen Spielortangabe (`venueInfo` in `views/parts.js`), ohne Schlüssel und ohne eingebettete Karte. Strassenadressen der Auswärtshallen liefert die Quelle nicht. ÖV, Parkplätze und Anreisezeiten bleiben bewusst weg.
 
+Ein kleines Hallenfoto steht links im Block, wo eines vorhanden ist: BBC Arena (App-Bild) sowie AXA Arena, Mobiliar Arena, Kreuzbleiche, Saalsporthalle und Sala Polivalentă von Wikimedia Commons (freie Lizenzen, verkleinert in `assets/hallen/`, Liste in `data/hallen.js`). Die Nachweise stehen gesammelt unter Einstellungen → «Bildnachweise». Ohne Foto bleibt das Ortssymbol. Neue Fotos nur mit freier Lizenz und Eintrag in `data/hallen.js`.
+
 Noch offen: Tippspiel mit Vergleich unter Fans (bräuchte einen weiteren Schreibweg), «An diesem Tag» mit Tagesdaten (die Geschichte enthält nur Jahre), Ticket-Link und Sender (Angaben vom Club).
 
 ## Bewusst nicht vorgesehen
