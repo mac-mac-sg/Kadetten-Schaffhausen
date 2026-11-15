@@ -412,6 +412,7 @@ app.addEventListener('click', event => {
   }
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
+  if (swiped && t.dataset.reveal) return;
   if (t.dataset.rule) {
     openRule(t.dataset.rule, t);
     return;
@@ -516,6 +517,37 @@ addEventListener('hashchange', () => {
   wissenSteuerung?.stop();
   enterRoute();
   render();
+});
+// Fächer: seitlich wischen holt die nächste oder vorherige Karte nach vorne (verdeckte werden dabei aufgedeckt).
+let swipe = null,
+  swiped = false;
+function fanStep(dir) {
+  const ids = ui.newCards || [];
+  if (!ids.length) return;
+  const at = ids.indexOf(ui.fanTop),
+    next = ids[(at < 0 ? (dir > 0 ? 0 : ids.length - 1) : at + dir + ids.length) % ids.length];
+  if ((ui.revealed || []).includes(next)) fanTop(next);
+  else reveal([next]);
+}
+app.addEventListener('pointerdown', event => {
+  if (event.target.closest('.fan')) swipe = {x: event.clientX, y: event.clientY};
+});
+app.addEventListener('pointerup', event => {
+  if (!swipe) return;
+  const dx = event.clientX - swipe.x,
+    dy = event.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+  swiped = true;
+  setTimeout(() => (swiped = false), 400);
+  fanStep(dx < 0 ? 1 : -1);
+});
+app.addEventListener('pointercancel', () => (swipe = null));
+app.addEventListener('keydown', event => {
+  if (!event.target.closest?.('.fan') || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  event.preventDefault();
+  fanStep(event.key === 'ArrowRight' ? 1 : -1);
+  app.querySelector(`[data-reveal="${CSS.escape(ui.fanTop || '')}"]`)?.focus();
 });
 app.addEventListener('input', event => {
   if (event.target.matches?.('.wk-scrub')) wissenSteuerung?.seek(Number(event.target.value));

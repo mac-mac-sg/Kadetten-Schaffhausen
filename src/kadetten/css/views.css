@@ -674,7 +674,7 @@ a.sk:active { transform: scale(.97); }
 .sk-cn { position: absolute; left: 0; right: 0; bottom: 14cqw; text-align: center; font: italic 600 11cqw/1 var(--f-display); color: var(--c-on-ink); letter-spacing: .02em; }
 
 /* Fächer */
-.fan { --n: 1; position: relative; height: min(104vw, 460px); margin: var(--s-2) calc(-1 * var(--s-4)) 0; overflow-x: clip; overflow-y: visible; }
+.fan { --n: 1; touch-action: pan-y; user-select: none; -webkit-user-select: none; position: relative; height: min(104vw, 460px); margin: var(--s-2) calc(-1 * var(--s-4)) 0; overflow-x: clip; overflow-y: visible; }
 .fan-c { --i: 0; --spread: min(9deg, calc(30deg / var(--n))); --step: min(24%, calc(80% / var(--n))); --a: calc((var(--i) - (var(--n) - 1) / 2) * var(--spread)); --x: calc(-50% + (var(--i) - (var(--n) - 1) / 2) * var(--step)); position: absolute; left: 50%; top: 6%; width: min(48%, 220px); padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 135%; transform: translateX(var(--x)) rotate(var(--a)); transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .3s; z-index: calc(1 + var(--i)); }
 .fan-c:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 4px; border-radius: 12px; }
 .fan-c:hover { transform: translateX(var(--x)) rotate(var(--a)) translateY(-3%); }

@@ -210,8 +210,8 @@ export function renderNeu({state, ui}) {
                 ? 'Die Karte ist jetzt in deiner Sammlung. Antippen öffnet sie.'
                 : 'Antippen deckt die Karte auf.'
               : all
-                ? 'Antippen holt eine Karte nach vorne, nochmals antippen öffnet sie.'
-                : 'Antippen deckt eine Karte auf oder holt sie nach vorne.'
+                ? 'Wischen oder antippen holt eine Karte nach vorne, nochmals antippen öffnet sie.'
+                : 'Antippen oder wischen deckt die nächste Karte auf.'
           }</p>`
           : notice('Im Moment gibt es keine neuen Karten. Sie warten im Quiz der Woche, bei Tipps und Heimspielen.', 'star')
       }
