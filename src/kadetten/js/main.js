@@ -317,6 +317,13 @@ async function shareSeason() {
 }
 
 /** Neue Karten aufdecken: nacheinander, damit jede ihre eigene Drehung bekommt. */
+/** Holt eine aufgedeckte Karte im Fächer nach vorne (nur Klassen, damit die Bewegung als Übergang läuft). */
+function fanTop(id) {
+  ui.fanTop = id;
+  for (const el of app.querySelectorAll('.fan-c'))
+    el.classList.toggle('is-top', el.dataset.reveal === id && el.classList.contains('is-open'));
+}
+
 function reveal(ids) {
   const slow = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   ids.forEach((id, i) =>
@@ -324,6 +331,7 @@ function reveal(ids) {
       () => {
         if (!(ui.revealed ||= []).includes(id)) ui.revealed.push(id);
         app.querySelector(`[data-reveal="${CSS.escape(id)}"]`)?.classList.add('is-open');
+        fanTop(id);
         if (i === ids.length - 1) setTimeout(render, slow ? 700 : 0);
       },
       slow ? i * 260 : 0
@@ -404,6 +412,7 @@ app.addEventListener('click', event => {
   }
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
+  if (swiped && t.dataset.reveal) return;
   if (t.dataset.rule) {
     openRule(t.dataset.rule, t);
     return;
@@ -444,6 +453,7 @@ app.addEventListener('click', event => {
   } else if (t.hasAttribute('data-claim')) {
     ui.newCards = claim(sammelInput(store.state));
     ui.revealed = [];
+    ui.fanTop = '';
     announce(ui.newCards.length === 1 ? 'Eine neue Karte gesammelt.' : `${ui.newCards.length} neue Karten gesammelt.`);
     location.hash = href.neu();
   } else if (t.dataset.flip) {
@@ -457,8 +467,11 @@ app.addEventListener('click', event => {
     t.querySelector('span').textContent = back ? 'Vorderseite' : 'Umdrehen';
   } else if (t.dataset.reveal) {
     // Eine aufgedeckte Karte öffnet beim nächsten Antippen ihre Ansicht.
-    if ((ui.revealed || []).includes(t.dataset.reveal)) location.hash = href.karte(t.dataset.reveal);
-    else reveal([t.dataset.reveal]);
+    // Verdeckt: aufdecken. Offen, aber hinten: nach vorne holen. Offen und vorne: Karte öffnen.
+    const id = t.dataset.reveal;
+    if (!(ui.revealed || []).includes(id)) reveal([id]);
+    else if (ui.fanTop !== id) fanTop(id);
+    else location.hash = href.karte(id);
   } else if (t.hasAttribute('data-reveal-all')) {
     reveal((ui.newCards || []).filter(id => !(ui.revealed || []).includes(id)));
   } else if (t.dataset.quiz) {
@@ -504,6 +517,37 @@ addEventListener('hashchange', () => {
   wissenSteuerung?.stop();
   enterRoute();
   render();
+});
+// Fächer: seitlich wischen holt die nächste oder vorherige Karte nach vorne (verdeckte werden dabei aufgedeckt).
+let swipe = null,
+  swiped = false;
+function fanStep(dir) {
+  const ids = ui.newCards || [];
+  if (!ids.length) return;
+  const at = ids.indexOf(ui.fanTop),
+    next = ids[(at < 0 ? (dir > 0 ? 0 : ids.length - 1) : at + dir + ids.length) % ids.length];
+  if ((ui.revealed || []).includes(next)) fanTop(next);
+  else reveal([next]);
+}
+app.addEventListener('pointerdown', event => {
+  if (event.target.closest('.fan')) swipe = {x: event.clientX, y: event.clientY};
+});
+app.addEventListener('pointerup', event => {
+  if (!swipe) return;
+  const dx = event.clientX - swipe.x,
+    dy = event.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+  swiped = true;
+  setTimeout(() => (swiped = false), 400);
+  fanStep(dx < 0 ? 1 : -1);
+});
+app.addEventListener('pointercancel', () => (swipe = null));
+app.addEventListener('keydown', event => {
+  if (!event.target.closest?.('.fan') || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  event.preventDefault();
+  fanStep(event.key === 'ArrowRight' ? 1 : -1);
+  app.querySelector(`[data-reveal="${CSS.escape(ui.fanTop || '')}"]`)?.focus();
 });
 app.addEventListener('input', event => {
   if (event.target.matches?.('.wk-scrub')) wissenSteuerung?.seek(Number(event.target.value));

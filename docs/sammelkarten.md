@@ -7,7 +7,7 @@ Stand 14. November 2026. Konzept und Skizzen: Design-Canvas, Bretter «Mein Bere
 - `#/ich` ist **Mein Bereich**: Quiz-Bilanz (Wochen in Folge, Anteil richtiger Antworten, Wochen mit 5 von 5), Fortschritt der Sammlung, die drei neuesten Karten, Lieblingsspieler. Die bisherigen Einstellungen stehen unter `#/ich/einstellungen` (Zahnrad oben rechts).
 - `#/sammlung` zeigt alle Karten (fehlende gestrichelt mit Nummer und Art) oder nur die eigenen, gefiltert nach Art.
 - `#/sammlung/<id>` zeigt eine Karte gross; «Umdrehen» zeigt die Rückseite mit Text, Fakten und Quelle.
-- `#/sammlung/neu` zeigt die eben abgeholten Karten als Fächer: verdeckt ausgeteilt, Antippen deckt eine Karte mit einer Drehung auf, «Alle aufdecken» deckt sie nacheinander auf; danach fächern sie sich weiter auf. Eine aufgedeckte Karte öffnet beim nächsten Antippen ihre Ansicht.
+- `#/sammlung/neu` zeigt die eben abgeholten Karten als Fächer: verdeckt ausgeteilt, Antippen deckt eine Karte mit einer Drehung auf, «Alle aufdecken» deckt sie nacheinander auf; danach fächern sie sich weiter auf. Seitlich wischen (oder Pfeiltasten) holt die nächste oder vorherige Karte nach vorne und deckt verdeckte dabei auf; Antippen einer hinteren Karte holt sie ebenfalls nach vorne. Die vordere Karte öffnet beim nächsten Antippen ihre Ansicht.
 - Bewegung: Spezial- und Legendenkarten tragen einen wandernden Glanz, Legenden leuchten beim Aufdecken, die Kartenansicht dreht sich in 3D, Raster und Vorschau erscheinen gestaffelt. Die Eintrittsbewegungen laufen nur beim Öffnen einer Seite, nicht beim Neuzeichnen. «Bewegung reduzieren» schaltet alles ab.
 
 ## Karten

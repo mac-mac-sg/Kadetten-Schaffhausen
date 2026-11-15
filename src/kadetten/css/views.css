@@ -674,11 +674,13 @@ a.sk:active { transform: scale(.97); }
 .sk-cn { position: absolute; left: 0; right: 0; bottom: 14cqw; text-align: center; font: italic 600 11cqw/1 var(--f-display); color: var(--c-on-ink); letter-spacing: .02em; }
 
 /* Fächer */
-.fan { --n: 1; position: relative; height: min(104vw, 460px); margin: var(--s-2) calc(-1 * var(--s-4)) 0; overflow-x: clip; overflow-y: visible; }
-.fan-c { --i: 0; --spread: min(7deg, calc(30deg / var(--n))); --a: calc((var(--i) - (var(--n) - 1) / 2) * var(--spread)); position: absolute; left: 50%; top: 6%; width: min(48%, 220px); padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 135%; transform: translateX(-50%) rotate(var(--a)); transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .3s; z-index: calc(1 + var(--i)); }
+.fan { --n: 1; touch-action: pan-y; user-select: none; -webkit-user-select: none; position: relative; height: min(104vw, 460px); margin: var(--s-2) calc(-1 * var(--s-4)) 0; overflow-x: clip; overflow-y: visible; }
+.fan-c { --i: 0; --spread: min(9deg, calc(30deg / var(--n))); --step: min(24%, calc(80% / var(--n))); --a: calc((var(--i) - (var(--n) - 1) / 2) * var(--spread)); --x: calc(-50% + (var(--i) - (var(--n) - 1) / 2) * var(--step)); position: absolute; left: 50%; top: 6%; width: min(48%, 220px); padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 135%; transform: translateX(var(--x)) rotate(var(--a)); transition: transform .5s cubic-bezier(.2, .8, .2, 1), filter .3s; z-index: calc(1 + var(--i)); }
 .fan-c:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 4px; border-radius: 12px; }
-.fan-c:hover { transform: translateX(-50%) rotate(var(--a)) translateY(-3%); }
-.fan-c.is-open { z-index: calc(20 + var(--i)); transform: translateX(-50%) rotate(calc(var(--a) * 1.15)) translateY(-5%); }
+.fan-c:hover { transform: translateX(var(--x)) rotate(var(--a)) translateY(-3%); }
+.fan-c.is-open { z-index: calc(20 + var(--i)); transform: translateX(var(--x)) rotate(calc(var(--a) * 1.15)) translateY(-5%); }
+/* Die gewählte Karte steht gerade und vorne; die anderen bleiben im Fächer sichtbar. */
+.fan-c.is-top { z-index: 60; transform: translateX(calc(-50% + (var(--i) - (var(--n) - 1) / 2) * var(--step) * .35)) rotate(0deg) translateY(-7%) scale(1.06); }
 .fan-c.is-open .sk-flip { animation: fan-pop .7s cubic-bezier(.2, .8, .2, 1); }
 .fan-c.is-open.r-spezial .sk-face.rear > .sk { box-shadow: 0 0 0 2px #ff5d00, 0 10px 30px #ff5d0066; }
 .fan-c.is-open.r-legende .sk-face.rear > .sk { animation: fan-glow 2.2s ease-in-out .7s infinite; }
@@ -686,7 +688,7 @@ a.sk:active { transform: scale(.97); }
 @keyframes fan-glow { 0%, 100% { box-shadow: 0 0 0 3px #ff5d00, 0 6px 22px #ff5d0055; } 50% { box-shadow: 0 0 0 3px #ff8a4d, 0 10px 40px #ff5d00aa; } }
 .fan.deal .fan-c { animation: fan-deal .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * 90ms); }
 @keyframes fan-deal { from { opacity: 0; transform: translateX(-50%) translateY(40%) rotate(0deg) scale(.9); } }
-.fan.spread .fan-c { --spread: min(10deg, calc(44deg / var(--n))); width: min(42%, 190px); }
+.fan.spread .fan-c { --spread: min(10deg, calc(44deg / var(--n))); --step: min(28%, calc(90% / var(--n))); width: min(42%, 190px); }
 .fan-hint { text-align: center; margin-top: var(--s-2); }
 .fi-0 { --i: 0; } .fi-1 { --i: 1; } .fi-2 { --i: 2; } .fi-3 { --i: 3; } .fi-4 { --i: 4; } .fi-5 { --i: 5; }
 .fi-6 { --i: 6; } .fi-7 { --i: 7; } .fi-8 { --i: 8; } .fi-9 { --i: 9; } .fi-10 { --i: 10; } .fi-11 { --i: 11; }
