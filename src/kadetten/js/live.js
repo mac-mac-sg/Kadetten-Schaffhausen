@@ -1,6 +1,6 @@
 // Live-Abfrage: alle 30 Sekunden, nur solange die App sichtbar ist und ein Kadetten-Spiel
 // läuft oder bald beginnt. Unsichtbare Seiten pausieren.
-import {kickoff, ownGames, hasScore, competitionOf} from './logic.js';
+import {kickoff, ownGames, hasScore, competitionOf, zurichParts} from './logic.js';
 
 export const LIVE_INTERVAL = 30000;
 const BEFORE = 15 * 60000,
@@ -23,13 +23,19 @@ export function startLive({
   clearTimer = globalThis.clearTimeout
 }) {
   let timer = null,
+    polling = false,
     stopped = false;
   const visible = () => !doc || doc.visibilityState !== 'hidden';
   async function tick() {
     timer = null;
-    if (stopped || !visible()) return;
+    if (stopped || polling || !visible()) return;
+    polling = true;
     const {data, live} = store.state;
-    if (liveWindow({games: data?.games, live, now: now()})) await store.refreshLive();
+    try {
+      if (liveWindow({games: data?.games, live, now: now()})) await store.refreshLive();
+    } finally {
+      polling = false;
+    }
     if (!stopped && visible()) timer = setTimer(tick, LIVE_INTERVAL);
   }
   const onVisibility = () => {
@@ -51,19 +57,22 @@ export function startLive({
 /** Welche Quelle ist für ein Spiel zuständig: EHL-Spiele die EHF, alle anderen (QHL, Cup, Test) der SHV. */
 export const sourceFor = game => (competitionOf(game) === 'EHL' ? 'EHF' : 'SHV');
 
-const clock = iso => new Date(iso).toLocaleTimeString('de-CH', {hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich'});
+/** Zeit des bestätigten Quellstands. Ein späterer Abruf eines veralteten Stands ändert diese Zeit nicht. */
+export function liveScoreTime({live, liveAt}, game) {
+  const source = live?.sources?.[sourceFor(game)];
+  const iso = source?.stale ? source.since : live?.checkedAt;
+  const time = iso ? Date.parse(iso) : liveAt;
+  return Number.isFinite(time) ? zurichParts(time).time : null;
+}
 
-/** Hinweistext zum Live-Stand oder null, wenn alles in Ordnung ist. Wertet auch die Quellen des Datendiensts aus:
- * Ein Ausfall der zuständigen Quelle ist etwas anderes als «kein Spiel» und wird so gemeldet. */
 export function liveNotice({live, liveError}, game) {
-  if (liveError)
-    return live
-      ? 'Live-Stand im Moment nicht erreichbar. Es gilt der letzte bekannte Stand.'
-      : 'Live-Stand im Moment nicht erreichbar. Der Abruf wird alle 30 Sekunden wiederholt.';
-  const name = sourceFor(game),
-    source = live?.sources?.[name];
-  if (!source || source.ok !== false) return null;
-  return source.stale
-    ? `Die Quelle ${name} antwortet nicht. Angezeigt wird der Stand von ${clock(source.since)} Uhr.`
-    : `Die Quelle ${name} antwortet im Moment nicht. Der Abruf wird alle 30 Sekunden wiederholt.`;
+  if (liveError) return 'Live-Daten derzeit nicht erreichbar';
+  const name = sourceFor(game);
+  return live?.sources?.[name]?.ok === false ? `Live-Daten von ${name} derzeit nicht erreichbar` : null;
+}
+
+export function waitingForLive(game, state, now) {
+  const start = kickoff(game);
+  if (start === null || start > now || now > start + AFTER) return null;
+  return liveNotice(state, game) || 'Wartet auf Live-Daten';
 }

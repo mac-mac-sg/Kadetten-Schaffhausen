@@ -29,9 +29,8 @@ export function findGame(games, match, now) {
 /** Zustand der Spielseite: 'vorschau', 'live' oder 'bericht'. */
 export function gamePhase(game, live, now) {
   if (!game) return 'vorschau';
+  if (hasScore(game) || (live?.finished && hasScore(live.finished) && findGame([game], live.finished, now))) return 'bericht';
   if (live?.match && findGame([game], live.match, now)) return 'live';
-  if (hasScore(game)) return 'bericht';
-  if (live?.finished && hasScore(live.finished) && findGame([game], live.finished, now)) return 'bericht';
   return 'vorschau';
 }
 

@@ -83,6 +83,42 @@ test('Live-Abfrage nur im Spielfenster und nur bei sichtbarer App', async () => 
   stop();
 });
 
+test('Ein bestätigtes Tagesresultat bleibt bei späteren Antworten ohne Endstand sichtbar', async () => {
+  let now = Date.parse('2026-11-11T20:00:00Z');
+  const finished = {id: 508393, date: '2026-11-11', score: [33, 27]};
+  let response = {ok: true, match: null, finished};
+  const store = createStore({api: {live: async () => response}, storage: null, now: () => now});
+  await store.refreshLive();
+  response = {ok: true, match: null, finished: null};
+  await store.refreshLive();
+  assert.deepEqual(store.state.live.finished, finished);
+  now = Date.parse('2026-11-11T23:00:00Z');
+  await store.refreshLive();
+  assert.equal(store.state.live.finished, null);
+});
+
+test('Mehrfacher Wechsel in die sichtbare App startet nur einen laufenden Live-Abruf', async () => {
+  let complete;
+  let calls = 0;
+  const games = [{date: '2026-10-24', time: '18:00', home: 'Kadetten Schaffhausen', away: 'GC Amicitia Zürich'}];
+  const doc = {visibilityState: 'visible', addEventListener(t, f) { this.listener = f; }, removeEventListener() {}};
+  const store = {state: {data: {games}, live: null}, refreshLive: () => {
+    calls++;
+    return new Promise(resolve => { complete = resolve; });
+  }};
+  const timers = [];
+  const stop = startLive({store, doc, now: () => Date.parse('2026-10-24T16:30:00Z'), setTimer: f => timers.push(f), clearTimer: () => {}});
+  for (const status of ['hidden', 'visible', 'hidden', 'visible']) {
+    doc.visibilityState = status;
+    doc.listener();
+  }
+  assert.equal(calls, 1);
+  complete();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(timers.length, 1);
+  stop();
+});
+
 test('Ausgabe wird maskiert, verschachtelte Vorlagen bleiben erhalten', () => {
   const name = decodeDeep('Perić &lt;script&gt;');
   assert.equal(name, 'Perić <script>');

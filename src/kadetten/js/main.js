@@ -137,6 +137,13 @@ const VIEWS = {
   wissen: renderWissenOderLaden
 };
 
+function jumpToNextGame() {
+  const next = app.querySelector('[data-next-game]');
+  if (!next) return;
+  next.scrollIntoView({block: 'center', behavior: 'instant'});
+  next.focus({preventScroll: true});
+}
+
 function render() {
   scheduled = false;
   const route = parseRoute(location.hash);
@@ -193,11 +200,7 @@ function render() {
   // Wait for the asynchronously loaded games before the initial jump. Never repeat on timer renders.
   if (entry?.autoNext && store.state.data) {
     entry.autoNext = false;
-    const next = app.querySelector('[data-next-game]');
-    if (next) {
-      next.scrollIntoView({block: 'center', behavior: 'instant'});
-      next.focus({preventScroll: true});
-    }
+    jumpToNextGame();
   }
   document.title = (document.querySelector('h1')?.textContent?.trim() || 'Jetzt') + ' · Kadetten';
 }
@@ -446,7 +449,9 @@ app.addEventListener('click', event => {
     wissenSteuerung?.click(t.dataset.wk);
     return;
   }
-  if (t.dataset.themeChoice) {
+  if (t.hasAttribute('data-jump-next')) {
+    jumpToNextGame();
+  } else if (t.dataset.themeChoice) {
     applyTheme(t.dataset.themeChoice);
     render();
   } else if (t.dataset.ui) {
@@ -590,7 +595,7 @@ store.refresh().then(() => startLive({store}));
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') store.refresh();
 });
-// Countdown und «Stand vor x s» aktuell halten, ohne Netzabfrage.
+// Countdown und Zeitgrenzen der Spielansicht ohne Netzabfrage aktualisieren.
 setInterval(() => {
   if (document.visibilityState !== 'hidden' && !document.activeElement?.matches?.('input, button')) schedule();
 }, 15000);

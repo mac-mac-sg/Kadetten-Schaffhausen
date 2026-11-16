@@ -2,6 +2,7 @@
 // Nicht auf der Titelseite und nicht in der Ansicht dieses Spiels, dort steht der Stand ohnehin gross.
 import {html} from '../text.js';
 import {OWN_TEAM, involves, shortTeam} from '../logic.js';
+import {liveNotice, liveScoreTime} from '../live.js';
 import {findGame} from '../match.js';
 import {href} from '../router.js';
 import {crest} from './parts.js';
@@ -22,8 +23,16 @@ export function liveTile({state, route, now}) {
   if (seen.id !== String(id)) seen = {id: String(id), own: ownScore, goalAt: 0};
   else if (ownScore !== null && seen.own !== null && ownScore > seen.own) seen = {...seen, own: ownScore, goalAt: now};
   else if (ownScore !== null) seen.own = ownScore;
-  const goal = now - seen.goalAt < GOAL_SHOWN;
-  const detail = goal ? 'Tor Kadetten' : [match.phase, match.clock].filter(Boolean).join(' · ') || 'Live';
+  const delayed = liveNotice(state, own || match);
+  const goal = !delayed && now - seen.goalAt < GOAL_SHOWN;
+  const time = delayed && score ? liveScoreTime(state, own || match) : null;
+  const detail = delayed
+    ? time
+      ? `Stand von ${time} Uhr`
+      : 'Stand verzögert'
+    : goal
+      ? 'Tor Kadetten'
+      : [match.phase, match.clock].filter(Boolean).join(' · ') || 'Live';
   return {match, id: String(id), score, goal, detail};
 }
 

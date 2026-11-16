@@ -29,6 +29,8 @@
 .rowcard { display: flex; align-items: center; gap: var(--s-4); }
 .thumb { width: 96px; height: 68px; flex: none; object-fit: cover; border-radius: 10px 10px 0 0; clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%); background: var(--c-surface-2); }
 .thumb-empty { display: grid; place-items: center; }
+.schedule-tools { position: sticky; top: env(safe-area-inset-top); z-index: 3; padding: 1px 0 var(--s-2); background: var(--c-bg); }
+.schedule-tools .sec { margin-top: var(--s-2); }
 .next-wrap { position: relative; margin: 0 calc(-1 * var(--s-4)); padding: var(--s-2) var(--s-4) 0 var(--s-5); background: var(--c-highlight); border-top: 1px solid var(--c-line); }
 .next-wrap::before, .tbl-real tr.me td:first-child::before, .stripe-edge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 3px, var(--c-ink) 3px 6px); }
 .next-wrap .rl { border-top: 0; }

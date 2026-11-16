@@ -29,8 +29,8 @@ test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte New
   const empty=doc(renderJetzt({...ctx,state:{data:{...data,stories:[]}}}));
   assert.ok(!empty.querySelector('.lead-story'),'ohne News keine erfundene Bildgeschichte');
 });
-test('Vier Tabs: News, Spiele, Tabelle, Kader; Verein über das Wappen, Persönliches über «Ich»',()=>{
-  assert.deepEqual(AREAS.map(a=>a.label),['News','Spiele','Tabelle','Kader']);
+test('Vier Tabs: Start, Spiele, Tabelle, Kader; Verein über das Wappen, Persönliches über «Ich»',()=>{
+  assert.deepEqual(AREAS.map(a=>a.label),['Start','Spiele','Tabelle','Kader']);
   const d=doc(nav('statistik'));
   assert.equal(d.querySelectorAll('a[aria-label]').length,4);
   assert.equal(d.querySelector('[aria-current="page"]').getAttribute('href'),'#/statistik');

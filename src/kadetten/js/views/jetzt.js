@@ -15,10 +15,11 @@ import {
   lastResult,
   nextGame,
   hasScore,
-  shortTeam
+  shortTeam,
+  competitionOf
 } from '../logic.js';
 import {findGame, liveTable, sameTeam, withFinished, isOwn, displayName} from '../match.js';
-import {liveNotice} from '../live.js';
+import {liveNotice, liveScoreTime, waitingForLive} from '../live.js';
 import {liveReport, liveVoteCard} from './bericht.js';
 import {tipPoints} from '../moments.js';
 import {tips, favourite} from '../personal.js';
@@ -52,17 +53,17 @@ export const shareText = game =>
         Array.isArray(game.half) && game.half.every(Number.isInteger) ? ` (${game.half[0]}:${game.half[1]})` : ''
       } · ${game.league}`
     : '';
-const ago = (at, now) => `Stand vor ${Math.max(0, Math.round((now - at) / 1000))} s`;
-
-export function liveFoot(game, state, now) {
+function liveFoot(game, state) {
+  const time = hasScore(game) ? liveScoreTime(state, game) : null;
+  const status = liveNotice(state, game);
   return html`<p class="fresh">${
     Array.isArray(game.half) && game.half.every(Number.isInteger)
       ? html`<span class="num">Halbzeit ${game.half[0]}:${game.half[1]}</span>`
       : ''
-  }${state.liveAt ? html`<span>${ago(state.liveAt, now)}</span>` : ''}</p>`;
+  }${time ? html`<span>Stand von ${time} Uhr</span>` : ''}${status || !hasScore(game) ? html`<span role="status">${status || 'Wartet auf Live-Daten'}</span>` : ''}</p>`;
 }
 
-export function liveHero(match, game, state, now, link = true) {
+export function liveHero(match, game, state, link = true) {
   return heroCard({
     meta: [match.league || game?.league, venueName(game)].filter(Boolean).join(' · '),
     pill: [match.phase, match.clock].filter(Boolean).join(' · ') || 'Live',
@@ -73,7 +74,7 @@ export function liveHero(match, game, state, now, link = true) {
       match.score,
       Array.isArray(match.score) ? `Spielstand ${match.score[0]} zu ${match.score[1]}` : 'Spielstand noch offen'
     ),
-    foot: liveFoot(match, state, now),
+    foot: liveFoot(match, state),
     link: link && game ? href.spiel(game.id) : '',
     label: 'Zum Spiel'
   });
@@ -88,23 +89,25 @@ export function resultHero(game, now, {link = true, actions = '', celebrate = fa
     home: game.home,
     away: game.away,
     middle: scoreLine(game.score, `Endresultat ${game.score[0]} zu ${game.score[1]}`),
-    foot:
+    foot: html`<p class="fresh"><span>Endresultat bestätigt</span>${
       Array.isArray(game.half) && game.half.every(Number.isInteger)
-        ? html`<p class="fresh"><span class="num">Halbzeit ${game.half[0]}:${game.half[1]}</span></p>`
-        : '',
+        ? html`<span class="num">Halbzeit ${game.half[0]}:${game.half[1]}</span>`
+        : ''
+    }</p>`,
     link: link && game.id ? href.spiel(game.id, 'bericht') : '',
     label: 'Zum Spielbericht',
     actions
   });
 }
 
-export function previewHero(game, now, {link = true, actions = ''} = {}) {
+export function previewHero(game, now, {link = true, actions = '', status = null} = {}) {
   return heroCard({
     meta: metaLine(game, now),
     pill: countdown(kickoff(game), now),
     home: game.home,
     away: game.away,
     middle: kickoffTime(game.time),
+    foot: status ? html`<p class="fresh" role="status">${status}</p>` : '',
     link: link ? href.spiel(game.id) : '',
     label: 'Zur Spielvorschau',
     actions
@@ -203,12 +206,35 @@ function liveTableTeaser(data, match) {
     <a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Bei diesem Stand ${own.rank === 1 ? 'Leader' : 'auf Platz ' + own.rank}</span><span class="s">${text}</span></span>${icon('go')}</a></section>`;
 }
 
-/** Läuft das Spiel schon, ist aber noch kein Live-Stand da: sagen, ob er lädt oder nicht erreichbar ist (statt wortlos die Vorschau zu zeigen). */
-function liveHint(game, state, now) {
-  if (kickoff(game) === null || kickoff(game) > now || state.live?.match) return '';
-  if (!state.live && !state.liveError) return html`<section class="sec tight">${loading('Live-Stand wird geladen …')}</section>`;
-  // Ist der Stand geladen, aber leer: entweder meldet die zuständige Quelle keinen Ausfall (dann läuft laut Quelle noch kein Spiel) oder sie antwortet nicht.
-  return html`<section class="sec tight">${notice(liveNotice(state, game) ?? 'Die Quelle meldet noch kein laufendes Spiel.')}</section>`;
+// Rundenkennungen aus dem Vereins-Spielplan für den Mobiliar Cup 2026/27.
+const CUP_ROUNDS_2026 = {84: 'Achtelfinal', 85: 'Viertelfinal'};
+
+function matchdayStats(game, data) {
+  const competition = competitionOf(game);
+  const league = competition === 'QHL' || competition === 'EHL';
+  const rows = league ? standings(data.tables?.[competition]) : [];
+  const own = rows.find(row => sameTeam(row.team, OWN_TEAM));
+  const opponent = rows.find(row => sameTeam(row.team, isOwn(game.home) ? game.away : game.home));
+  const recent = form(data.games, OWN_TEAM, 3, league ? game.league : undefined);
+  const items = [];
+  const formLabel = `Form · letzte ${recent.length} ${league ? competition : 'Spiele'}`;
+  if (competition === 'Cup') {
+    const round = String(game.round || '').trim();
+    const cupSeason = game.date >= '2026-07-01' && game.date < '2027-07-01' && /^Mobiliar-Cup M$/i.test(game.league);
+    const label = (cupSeason && CUP_ROUNDS_2026[round]) || (/\p{L}/u.test(round) ? round : null);
+    return html`<section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}
+      <div class="card list">${listRow({title: label || game.league, sub: label ? game.league : '', end: ''})}${
+        recent.length ? listRow({title: formLabel, end: formRow(recent, true)}) : ''
+      }</div></section>`;
+  }
+  if (own) {
+    items.push([opponent ? `${own.rank}. – ${opponent.rank}.` : own.rank + '.', competition === 'EHL' ? 'EHL-Gruppenrang' : 'QHL-Rang']);
+    if (competition === 'QHL' && own.points != null) items.push([own.points + 2, 'Punkte mit Sieg']);
+  }
+  if (recent.length) items.push([formRow(recent, true), formLabel]);
+  return items.length
+    ? html`<section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}${stats(items)}</section>`
+    : '';
 }
 
 export function renderJetzt({state, now, load, api, ui}) {
@@ -226,13 +252,7 @@ export function renderJetzt({state, now, load, api, ui}) {
     return html`${homeBand()}
       <section class="sec match-score match-live" aria-labelledby="j-live">
         <h2 class="sr" id="j-live">Live</h2>
-        ${liveHero(game, own, state, now)}</section>
-      ${
-        liveNotice(state, game)
-          ? html`<section class="sec">
-        ${notice(liveNotice(state, game))}</section>`
-          : ''
-      }
+        ${liveHero(game, own, state)}</section>
       ${own && ui?.votes ? liveVoteCard({game: own, vote: load('votes:' + own.id, () => ui.votes.status(own.id), 30000), mine: myVotes()[own.id]}) : ''}
       ${liveTableTeaser(data, {...game, league: game.league || own?.league})}
       ${liveScorers(game, own)}
@@ -240,25 +260,13 @@ export function renderJetzt({state, now, load, api, ui}) {
   }
 
   if (phase === 'spieltag') {
-    const actions = html`<div class="acts single"><a class="btn" href="${href.ich()}">${icon('bell')}Push zum Anpfiff</a></div>`;
-    const rows = standings(data.tables?.QHL),
-      own = rows.find(r => r.team === OWN_TEAM),
-      opp = rows.find(r => sameTeam(r.team, game.home === OWN_TEAM ? game.away : game.home));
-    const preview = game.league === 'QHL' ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
+    const actions = html`<div class="acts single"><a class="btn" href="${href.einstellungen()}">${icon('bell')}Push zum Anpfiff</a></div>`;
+    const preview = ['QHL', 'EHL'].includes(game.league) ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
     return html`${homeBand()}
       <section class="sec match-score" aria-labelledby="j-heute">
         <h2 class="sr" id="j-heute">Heute</h2>
-        ${previewHero(game, now, {actions})}</section>
-      ${liveHint(game, state, now)}
-      <section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}
-        ${stats([
-          [own && opp ? `${own.rank}. – ${opp.rank}.` : own ? own.rank + '.' : '–', own && opp ? 'Tabelle' : 'QHL-Platz'],
-          [
-            formRow(form(data.games, OWN_TEAM, 3, ['QHL', 'EHL'].includes(game.league) ? game.league : undefined)),
-            `Form · letzte 3 ${['QHL', 'EHL'].includes(game.league) ? game.league : 'Spiele'}`
-          ],
-          [own?.points != null && game.league === 'QHL' ? own.points + 2 : '–', 'Punkte mit Sieg']
-        ])}</section>
+        ${previewHero(game, now, {actions, status: waitingForLive(game, state, now)})}</section>
+      ${matchdayStats(game, data)}
       ${tipFor(game, now)}
       ${
         preview?.value?.paragraphs?.length
@@ -273,7 +281,10 @@ export function renderJetzt({state, now, load, api, ui}) {
   if (phase === 'nachspiel') {
     const result = withFinished(findGame(data.games, game, now) || game, live, now);
     const shown = hasScore(result) ? result : game;
-    const next = nextGame(data.games, now);
+    const next = nextGame(
+      data.games.filter(candidate => String(candidate.id) !== String(shown.id)),
+      now
+    );
     const actions = html`<div class="acts">
       <a class="btn pri" href="${href.spiel(shown.id)}">${icon('doc')}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share')}Teilen</button></div>`;
     const kurzLink = hasScore(shown)
@@ -314,7 +325,6 @@ export function renderJetzt({state, now, load, api, ui}) {
         : ''
     }
     ${newsBlock(data, 3)}
-    ${quizTeaser(now)}
     ${
       own
         ? html`<section class="sec" aria-labelledby="j-saison">
@@ -329,6 +339,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       </section>`
         : ''
     }
+    ${quizTeaser(now)}
     ${offline}`;
 }
 

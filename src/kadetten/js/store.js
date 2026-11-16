@@ -1,6 +1,8 @@
 // Datenstand der App. Der letzte gültige Stand bleibt bei Ausfällen erhalten und liegt lokal,
 // damit die App sofort etwas zeigen kann. Live-Stände werden nie gespeichert.
 
+import {zurichParts} from './logic.js';
+
 export const SNAPSHOT_KEY = 'v2:app-snapshot';
 
 export function validSnapshot(data) {
@@ -65,7 +67,10 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
       try {
         const live = await api.live();
         if (!live || live.ok === false) throw Error('Live-Quelle nicht verfügbar');
-        Object.assign(state, {live, liveAt: now(), liveError: null});
+        const at = now();
+        const previous = state.live?.finished;
+        const finished = live.finished || (previous?.date === zurichParts(at).date ? previous : null);
+        Object.assign(state, {live: {...live, finished}, liveAt: at, liveError: null});
       } catch (error) {
         // Letzten gültigen Live-Stand behalten und den Ausfall vermerken.
         state.liveError = error;
