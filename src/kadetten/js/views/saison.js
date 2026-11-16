@@ -60,7 +60,10 @@ function spielplan({state, now, ui}) {
     if (!months.has(key)) months.set(key, []);
     months.get(key).push(g);
   }
-  return html`${chips('comp', [['Alle', 'Alle'], ...present.map(c => [c, c])], filter, 'Wettbewerb')}
+  return html`<div class="schedule-tools">
+    ${chips('comp', [['Alle', 'Alle'], ...present.map(c => [c, c])], filter, 'Wettbewerb')}
+    ${next ? html`<div class="sec tight"><button type="button" class="btn" data-jump-next>Zum nächsten Spiel</button></div>` : ''}
+    </div>
     ${['Alle', 'QHL'].includes(filter) ? playoffBlock(state.data.games, now) : ''}
     ${[...months].map(
       ([key, items]) => html`<section class="sec" aria-labelledby="${'m-' + key}">

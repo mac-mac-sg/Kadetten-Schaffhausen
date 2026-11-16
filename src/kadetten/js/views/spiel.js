@@ -6,7 +6,7 @@ import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
 import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
-import {liveNotice} from '../live.js';
+import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
 import {shortCards} from '../kurz.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
@@ -212,12 +212,7 @@ const voteCard = (game, ui, load) =>
 function liveTab({game, data, state, ui, load, api}) {
   const oppForm = game.league === 'QHL' ? opponentForm(load, api, data, game) : null;
   const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
-  return html`${gewinnLive(pre, state.live.match, game)}${
-    liveNotice(state, game)
-      ? html`<section class="sec">
-    ${notice(liveNotice(state, game))}</section>`
-      : ''
-  }${voteCard(game, ui, load)}${renderTicker(state.live.match)}<section class="sec">
+  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${renderTicker(state.live.match)}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
 }
 
@@ -296,10 +291,10 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     : '';
   const hero =
     phase === 'live'
-      ? liveHero(live.match, game, state, now, false)
+      ? liveHero(live.match, game, state, false)
       : phase === 'bericht'
         ? resultHero(game, now, {link: false, celebrate: outcome(game) === 'S'})
-        : previewHero(game, now, {link: false});
+        : previewHero(game, now, {link: false, status: waitingForLive(game, state, now)});
   const visited = myGames().includes(String(game.id));
   const started = kickoff(game) !== null && kickoff(game) <= now;
   const tabs = (twoTabs ? FINISHED_TABS : GAME_TABS).map(([id, label]) => [
@@ -332,8 +327,11 @@ export function renderSpiel({route, state, now, load, api, ui}) {
             : html`<section class="sec">
               <a class="btn pri" href="${href.spiel(game.id, 'live')}">Zum Liveticker</a></section>
               ${voteCard(game, ui, load)}${renderLiveStats({match: live.match, data, ui})}`
-        : html`${vorschau({game, data, load, api, now, ui})}<section class="sec">
-          ${notice('Der Liveticker und die Spielwerte erscheinen ab Anpfiff.', 'jetzt')}</section>`;
+        : html`${vorschau({game, data, load, api, now, ui})}${
+            started
+              ? ''
+              : html`<section class="sec">${notice('Der Liveticker und die Spielwerte erscheinen ab Anpfiff.', 'jetzt')}</section>`
+          }`;
   return html`${matchBand(
     backLink('Zurück', ui.backTarget || href.jetzt(), true),
     share,

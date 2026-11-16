@@ -131,7 +131,7 @@ test('Kader: Karten zeigen Porträt, grosse Nummer, Name und Position', () => {
 
 test('Navigation: vier Tabs mit Symbol und sichtbarer Beschriftung, kein Verein-Tab', () => {
   const d = parseHTML('<html><body>' + String(nav('saison')) + '</body></html>').document;
-  assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent.trim()), ['News', 'Spiele', 'Tabelle', 'Kader']);
+  assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent.trim()), ['Start', 'Spiele', 'Tabelle', 'Kader']);
   assert.equal(d.querySelectorAll('a.on').length, 1);
 });
 
