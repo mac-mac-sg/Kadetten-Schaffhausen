@@ -1,0 +1,159 @@
+// Prüfrechnung für einen Kadetten-Gewinnscore: Wie gut sagt ein einfaches Modell aus Tabelle, Heimvorteil und Form
+// die Resultate vergangener QHL-Saisons voraus? Liest nur die öffentliche SHV-Schnittstelle, schreibt nichts.
+// Aufruf: node scripts/gewinnscore-backtest.mjs [Saisons, z. B. 2022,2023,2024,2025]
+const ENDPOINT = 'https://www.handball.ch/Umbraco/Api/MatchCenter/Query';
+const QUERY =
+  'query($clubId:Int,$seasonId:Int){games(clubId:$clubId,seasonId:$seasonId){objectId isLive gameStatusId seasonId gameDateTime homeTeamId homeTeamName homeTeamScore awayTeamId awayTeamName awayTeamScore leagueShortName}}';
+const CLUBS = [140364, 140561, 140570, 288821, 164406, 140576, 140566, 140684, 140558, 140492];
+const SEASONS = (process.argv[2] || '2021,2022,2023,2024,2025').split(',').map(Number);
+
+async function query(variables) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept-Language': 'de'}, body: JSON.stringify({query: QUERY, variables}), signal: AbortSignal.timeout(20000)});
+      if (r.ok) return (await r.json()).data;
+    } catch {}
+    await new Promise(res => setTimeout(res, 1500 * (i + 1)));
+  }
+  throw Error('SHV nicht erreichbar');
+}
+
+const norm = n => String(n || '').replace(/^TSV /, '').trim();
+async function season(seasonId) {
+  const all = new Map(),
+    leagues = new Map();
+  for (const clubId of CLUBS) {
+    const data = await query({clubId, seasonId});
+    for (const g of data?.games || []) {
+      leagues.set(g.leagueShortName, (leagues.get(g.leagueShortName) || 0) + 1);
+      if (g.seasonId !== seasonId || g.leagueShortName !== 'QHL' || g.isLive) continue;
+      if (![g.homeTeamScore, g.awayTeamScore].every(v => Number.isInteger(v) && v >= 0) || g.homeTeamScore + g.awayTeamScore === 0) continue;
+      all.set(g.objectId, {id: g.objectId, at: Date.parse(g.gameDateTime), home: norm(g.homeTeamName), away: norm(g.awayTeamName), hs: g.homeTeamScore, as: g.awayTeamScore});
+    }
+  }
+  return {games: [...all.values()].sort((a, b) => a.at - b.at), leagues: Object.fromEntries(leagues)};
+}
+
+// Normalverteilung
+const erf = x => {
+  const t = 1 / (1 + 0.3275911 * Math.abs(x)),
+    y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return Math.sign(x) * y;
+};
+const Phi = x => 0.5 * (1 + erf(x / Math.SQRT2));
+
+/** Vorhersagen in Spielreihenfolge. Stärke = Tordifferenz pro Spiel, geschrumpft (k) und mit Vorsaison gemischt; Form = letzte 5. */
+function predict(games, prior, {H, sigma, k = 3, w = 0.5, f = 1.5, minGames = 3}) {
+  const teams = new Map(),
+    out = [];
+  const t = name => teams.get(name) || teams.set(name, {n: 0, gd: 0, last: []}).get(name);
+  const strength = name => {
+    const s = t(name),
+      p = prior.get(name) ?? 0;
+    return (s.gd + k * w * p) / (s.n + k);
+  };
+  const form = name => {
+    const s = t(name);
+    if (s.last.length < 3) return 0;
+    const ppg = s.last.reduce((a, b) => a + b, 0) / s.last.length;
+    return ppg - 1; // −1 … +1
+  };
+  for (const g of games) {
+    const h = t(g.home),
+      a = t(g.away);
+    if (h.n >= minGames && a.n >= minGames) {
+      const m = (strength(g.home) - strength(g.away)) / 2 + H + f * (form(g.home) - form(g.away));
+      const pH = 1 - Phi((0.5 - m) / sigma),
+        pA = Phi((-0.5 - m) / sigma),
+        pD = 1 - pH - pA;
+      out.push({...g, m, pH, pD, pA, res: g.hs > g.as ? 'H' : g.hs < g.as ? 'A' : 'D'});
+    }
+    const d = g.hs - g.as;
+    for (const [s, sign] of [[h, 1], [a, -1]]) {
+      s.n++;
+      s.gd += sign * d;
+      s.last.push(sign * d > 0 ? 2 : sign * d < 0 ? 0 : 1);
+      if (s.last.length > 5) s.last.shift();
+    }
+  }
+  return {out, teams};
+}
+
+const score = preds => {
+  let brier = 0,
+    logloss = 0,
+    hits = 0;
+  for (const p of preds) {
+    const o = {H: p.res === 'H' ? 1 : 0, D: p.res === 'D' ? 1 : 0, A: p.res === 'A' ? 1 : 0};
+    brier += (p.pH - o.H) ** 2 + (p.pD - o.D) ** 2 + (p.pA - o.A) ** 2;
+    logloss -= Math.log(Math.max(1e-6, p.res === 'H' ? p.pH : p.res === 'A' ? p.pA : p.pD));
+    const pick = p.pH >= p.pA ? 'H' : 'A';
+    if (pick === p.res) hits++;
+  }
+  return {n: preds.length, brier: brier / preds.length, logloss: logloss / preds.length, accuracy: hits / preds.length};
+};
+
+const data = {};
+for (const s of SEASONS) {
+  data[s] = await season(s);
+  console.log(`Saison ${s}: ${data[s].games.length} QHL-Spiele; Ligen: ${JSON.stringify(data[s].leagues)}`);
+}
+const allGames = SEASONS.flatMap(s => data[s].games);
+const margins = allGames.map(g => g.hs - g.as);
+const meanH = margins.reduce((a, b) => a + b, 0) / margins.length;
+const draws = allGames.filter(g => g.hs === g.as).length / allGames.length;
+const homeWins = allGames.filter(g => g.hs > g.as).length / allGames.length;
+console.log(`Spiele gesamt ${allGames.length}; Heimvorteil Mittel ${meanH.toFixed(2)} Tore; Heimsiege ${(homeWins * 100).toFixed(1)} %; Unentschieden ${(draws * 100).toFixed(1)} %`);
+
+// Vorsaison-Stärken
+const priors = new Map();
+for (let i = 0; i < SEASONS.length; i++) {
+  const prev = i ? data[SEASONS[i - 1]].games : [];
+  const m = new Map();
+  for (const g of prev) {
+    for (const [n, d] of [[g.home, g.hs - g.as], [g.away, g.as - g.hs]]) {
+      const v = m.get(n) || {n: 0, gd: 0};
+      v.n++;
+      v.gd += d;
+      m.set(n, v);
+    }
+  }
+  priors.set(SEASONS[i], new Map([...m].map(([n, v]) => [n, v.gd / v.n])));
+}
+
+// Rasterprüfung: Parameter auf den ersten Saisons wählen, auf der letzten prüfen (keine Überanpassung an die Prüfsaison).
+const train = SEASONS.slice(1, -1),
+  test = SEASONS.slice(-1);
+const run = (seasons, p) => seasons.flatMap(s => predict(data[s].games, priors.get(s), p).out);
+let best = null;
+for (const H of [0, 1, 1.5, 2, 2.5, 3])
+  for (const sigma of [5, 6, 7, 8])
+    for (const f of [0, 1, 2])
+      for (const w of [0, 0.5, 1]) {
+        const sc = score(run(train, {H, sigma, f, w}));
+        if (!best || sc.logloss < best.sc.logloss) best = {p: {H, sigma, f, w}, sc};
+      }
+console.log('Bestes Modell (Training ' + train.join(',') + '):', JSON.stringify(best));
+const testPreds = run(test, best.p);
+const testScore = score(testPreds);
+// Vergleich: nur Grundquoten (immer gleiche Wahrscheinlichkeiten)
+const base = testPreds.map(p => ({...p, pH: homeWins, pD: draws, pA: 1 - homeWins - draws}));
+console.log('Prüfsaison ' + test.join(',') + ' Modell:', JSON.stringify(testScore));
+console.log('Prüfsaison ' + test.join(',') + ' Grundquoten:', JSON.stringify(score(base)));
+// Kalibrierung über alle Saisons ausser der ersten, mit den gewählten Parametern
+const allPreds = run(SEASONS.slice(1), best.p);
+const bins = [0, 0.2, 0.4, 0.6, 0.8, 1.01].slice(0, -1).map((lo, i, arr) => [lo, [0.2, 0.4, 0.6, 0.8, 1.01][i]]);
+console.log('Kalibrierung (vorhergesagte Heimsieg-Chance → tatsächliche Heimsiege):');
+for (const [lo, hi] of bins) {
+  const g = allPreds.filter(p => p.pH >= lo && p.pH < hi);
+  if (g.length) console.log(`  ${Math.round(lo * 100)}–${Math.round(Math.min(hi, 1) * 100)} %: ${g.length} Spiele, vorhergesagt Ø ${(g.reduce((a, p) => a + p.pH, 0) / g.length * 100).toFixed(0)} %, tatsächlich ${(g.filter(p => p.res === 'H').length / g.length * 100).toFixed(0)} %`);
+}
+const kad = allPreds.filter(p => p.home === 'Kadetten Schaffhausen' || p.away === 'Kadetten Schaffhausen');
+const kadScore = score(kad);
+const kadWinP = kad.map(p => (p.home === 'Kadetten Schaffhausen' ? p.pH : p.pA));
+const kadWon = kad.filter(p => (p.home === 'Kadetten Schaffhausen' ? p.res === 'H' : p.res === 'A')).length;
+console.log(`Kadetten-Spiele: ${kad.length}, Ø Gewinnscore ${(kadWinP.reduce((a, b) => a + b, 0) / kad.length * 100).toFixed(0)} %, tatsächlich gewonnen ${(kadWon / kad.length * 100).toFixed(0)} %, Treffer ${(kadScore.accuracy * 100).toFixed(0)} %`);
+// Restunsicherheit: Streuung der Tordifferenz um die Erwartung
+const res = allPreds.map(p => p.hs - p.as - p.m);
+console.log(`Streuung Resultat um Erwartung: ${Math.sqrt(res.reduce((a, b) => a + b * b, 0) / res.length).toFixed(2)} Tore`);
+console.log('JSON ' + JSON.stringify({best, testScore, base: score(base), n: allGames.length, meanH, draws, homeWins}));
