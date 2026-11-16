@@ -6,7 +6,7 @@ import {SQUAD} from '../data/squad.js';
 import {HISTORY} from '../data/club.js';
 import {OWN_TEAM, hasScore, shortTeam} from './logic.js';
 import {tipPoints} from './moments.js';
-import {weeklyQuiz, inWeek, QUIZ_SIZE} from './quiz.js';
+import {weekResult} from './quiz.js';
 
 export const CARDS_KEY = 'v2:app-cards';
 export const LIVE_KEY = 'v2:app-live-seen';
@@ -142,11 +142,11 @@ export function earned({games = [], answers = {}, visited = [], tips = {}, live 
     }
   ];
   for (const [week, given] of Object.entries(answers)) {
-    if (given.length < QUIZ_SIZE) continue;
+    const result = weekResult(week, given);
+    if (!result.done) continue;
     list.push({key: 'quiz:' + week, label: 'Quiz der Woche abgeschlossen', pick: 2, from: ['standard', 'spezial', 'legende']});
-    const quiz = weeklyQuiz(inWeek(week));
-    if (given.every((c, i) => quiz.questions[i]?.c === c))
-      list.push({key: 'quiz5:' + week, label: 'Quiz mit 5 von 5', pick: 1, from: ['spezial', 'legende']});
+    // Schlüssel «quiz5» bleibt, damit früher eingelöste Belohnungen nicht doppelt kommen.
+    if (result.right === result.size) list.push({key: 'quiz5:' + week, label: 'Quiz ohne Fehler', pick: 1, from: ['spezial', 'legende']});
   }
   const own = games.filter(g => (g.home === OWN_TEAM || g.away === OWN_TEAM) && hasScore(g));
   for (const g of own) {

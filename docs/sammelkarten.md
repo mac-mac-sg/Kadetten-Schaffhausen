@@ -4,7 +4,7 @@ Stand 14. November 2026. Konzept und Skizzen: Design-Canvas, Bretter «Mein Bere
 
 ## Was es gibt
 
-- `#/ich` ist **Mein Bereich**: Quiz-Bilanz (Wochen in Folge, Anteil richtiger Antworten, Wochen mit 5 von 5), Fortschritt der Sammlung, die drei neuesten Karten, Lieblingsspieler. Die bisherigen Einstellungen stehen unter `#/ich/einstellungen` (Zahnrad oben rechts).
+- `#/ich` ist **Mein Bereich**: Quiz-Bilanz (Wochen in Folge, Anteil richtiger Antworten, Wochen ohne Fehler), Fortschritt der Sammlung, die drei neuesten Karten, Lieblingsspieler. Die bisherigen Einstellungen stehen unter `#/ich/einstellungen` (Zahnrad oben rechts).
 - `#/sammlung` zeigt alle Karten (fehlende gestrichelt mit Nummer und Art) oder nur die eigenen, gefiltert nach Art.
 - `#/sammlung/<id>` zeigt eine Karte gross. Antippen der Karte (oder «Umdrehen», Enter, Leertaste) dreht sie in 3D mit kurzem Anheben und zeigt die Rückseite mit Text, Fakten und Quelle.
 - `#/sammlung/neu` zeigt die eben abgeholten Karten als Fächer: verdeckt ausgeteilt, Antippen deckt eine Karte mit einer Drehung auf, «Alle aufdecken» deckt sie nacheinander auf; danach fächern sie sich weiter auf. Seitlich wischen (oder Pfeiltasten) holt die nächste oder vorherige Karte nach vorne und deckt verdeckte dabei auf; Antippen einer hinteren Karte holt sie ebenfalls nach vorne. Die vordere Karte öffnet beim nächsten Antippen ihre Ansicht.
@@ -35,7 +35,7 @@ Alles bleibt auf dem Gerät (`v2:app-cards`, `v2:app-live-seen`). Jede Belohnung
 |---|---|---|
 | Erster Besuch in Mein Bereich | `willkommen` | Lieblingsspieler (oder eine zufällige Standardkarte), Kapitel 1791, BBC Arena |
 | Quiz der Woche abgeschlossen | `quiz:<Woche>` | 2 zufällige |
-| Quiz mit 5 von 5 | `quiz5:<Woche>` | 1 Spezial oder Legende |
+| Quiz ohne Fehler (3 von 3, früher 5 von 5) | `quiz5:<Woche>` | 1 Spezial oder Legende |
 | «Ich war in der Halle» bei einem gespielten Heimspiel | `halle:<Spiel>` | Momentkarte des Spiels und 1 zufällige |
 | Tipp mit mindestens 1 Punkt | `tipp:<Spiel>` | 1 Standard oder Spezial |
 | Tipp exakt | `exakt:<Spiel>` | 1 Spezial oder Legende |

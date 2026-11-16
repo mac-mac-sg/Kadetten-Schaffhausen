@@ -1,7 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {DECK, ARTS, rarityOf, earned, pending, claim, collection, progress, momentCard, cardById, noteLive, liveSeen} from '../src/kadetten/js/sammeln.js';
+import {
+  DECK,
+  ARTS,
+  rarityOf,
+  earned,
+  pending,
+  claim,
+  collection,
+  progress,
+  momentCard,
+  cardById,
+  noteLive,
+  liveSeen
+} from '../src/kadetten/js/sammeln.js';
 import {FIXED_CARDS} from '../src/kadetten/data/sammelkarten.js';
 import {weeklyQuiz, weekIndex, inWeek, QUIZ_SIZE} from '../src/kadetten/js/quiz.js';
 import {quizBilanz} from '../src/kadetten/js/views/sammlung.js';
@@ -32,8 +45,14 @@ test('Kartenstapel: über 100 Karten, eindeutige IDs, jede Art mit Seltenheit, P
 test('Kartentexte: Titeljahre wie im Trophäenschrank, keine erfundenen Superlative', async () => {
   const {TROPHIES} = await import('../src/kadetten/data/club.js');
   const years = id => TROPHIES.find(t => t.id === id).years.map(String);
-  assert.deepEqual(DECK.filter(c => c.id.startsWith('m-')).map(c => c.big), years('master'));
-  assert.deepEqual(DECK.filter(c => c.id.startsWith('c-')).map(c => c.big), years('cup'));
+  assert.deepEqual(
+    DECK.filter(c => c.id.startsWith('m-')).map(c => c.big),
+    years('master')
+  );
+  assert.deepEqual(
+    DECK.filter(c => c.id.startsWith('c-')).map(c => c.big),
+    years('cup')
+  );
   const text = readFileSync(new URL('../src/kadetten/data/sammelkarten.js', import.meta.url), 'utf8');
   assert.doesNotMatch(text, /Rekordmeister|bester Spieler aller Zeiten/);
 });
@@ -93,7 +112,7 @@ test('Live dabei: jedes Spiel einmal vermerkt', () => {
   assert.deepEqual(liveSeen(s), ['508393']);
 });
 
-test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen mit 5 von 5', () => {
+test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen ohne Fehler', () => {
   const now = Date.parse('2026-11-18T12:00:00+01:00'),
     w = weekIndex(now);
   const right = week => weeklyQuiz(inWeek(week)).questions.map(q => q.c);
@@ -102,7 +121,11 @@ test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen mit
   const b = quizBilanz({[w - 1]: right(w - 1), [w - 2]: wrong(w - 2), [w - 4]: right(w - 4)}, now);
   assert.equal(b.streak, 2);
   assert.equal(b.perfect, 2);
-  assert.equal(b.quote, Math.round((10 / (3 * QUIZ_SIZE)) * 100));
+  assert.equal(b.quote, Math.round((10 / 15) * 100), 'ältere Wochen zählen mit fünf Fragen');
+  // Ab dieser Woche drei Fragen; gemischt mit einer alten Woche.
+  const c = quizBilanz({[w]: right(w), [w - 1]: right(w - 1)}, now);
+  assert.equal(right(w).length, QUIZ_SIZE);
+  assert.deepEqual(c, {streak: 2, quote: 100, perfect: 2, weeks: 2});
 });
 
 test('Neue Karten als Fächer: verdeckt ausgeteilt, aufgedeckte Karten offen, am Ende aufgefächert', async () => {
