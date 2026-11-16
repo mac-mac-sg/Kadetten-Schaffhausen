@@ -129,10 +129,10 @@ const train = SEASONS.slice(1, -1),
   test = SEASONS.slice(-1);
 const run = (seasons, p) => seasons.flatMap(s => predict(data[s].games, priors.get(s), p).out);
 let best = null;
-for (const H of [0, 1, 1.5, 2, 2.5, 3])
-  for (const sigma of [5, 6, 7, 8])
-    for (const f of [0, 1, 2])
-      for (const w of [0, 0.5, 1]) {
+for (const H of [1, 1.5, 2])
+  for (const sigma of [3.5, 4, 4.5, 5, 5.5])
+    for (const f of [1, 2, 3, 4])
+      for (const w of [1, 1.5, 2, 3]) {
         const sc = score(run(train, {H, sigma, f, w}));
         if (!best || sc.logloss < best.sc.logloss) best = {p: {H, sigma, f, w}, sc};
       }
@@ -159,4 +159,6 @@ console.log(`Kadetten-Spiele: ${kad.length}, Ø Gewinnscore ${(kadWinP.reduce((a
 // Restunsicherheit: Streuung der Tordifferenz um die Erwartung
 const res = allPreds.map(p => p.hs - p.as - p.m);
 console.log(`Streuung Resultat um Erwartung: ${Math.sqrt(res.reduce((a, b) => a + b * b, 0) / res.length).toFixed(2)} Tore`);
+for (const p of allPreds.filter(p => p.home === 'Kadetten Schaffhausen' || p.away === 'Kadetten Schaffhausen').slice(-8))
+  console.log(`  Beispiel ${new Date(p.at).toISOString().slice(0, 10)} ${p.home} – ${p.away} ${p.hs}:${p.as}: Kadetten ${Math.round((p.home === 'Kadetten Schaffhausen' ? p.pH : p.pA) * 100)} %, erwartete Differenz ${(p.home === 'Kadetten Schaffhausen' ? p.m : -p.m).toFixed(1)}`);
 console.log('JSON ' + JSON.stringify({best, testScore, base: score(base), n: allGames.length, meanH, draws, homeWins}));
