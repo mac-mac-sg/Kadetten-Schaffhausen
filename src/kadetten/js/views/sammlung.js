@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {LOGO, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips} from './parts.js';
 import {favourite, myGames, tips} from '../personal.js';
-import {quizAnswers, weekIndex, inWeek, weeklyQuiz, QUIZ_SIZE} from '../quiz.js';
+import {quizAnswers, weekIndex, weekResult} from '../quiz.js';
 import {DECK, ARTS, RARITY_LABEL, rarityOf, collection, pending, progress, recent, cardById, liveSeen} from '../sammeln.js';
 import {SOURCES} from '../../data/sammelkarten.js';
 
@@ -22,16 +22,17 @@ export const sammelInput = state => ({
   favourite: favourite()
 });
 
-/** Quiz-Bilanz: Wochen in Folge, Anteil richtiger Antworten, Wochen mit 5 von 5. */
+/** Quiz-Bilanz: Wochen in Folge, Anteil richtiger Antworten, Wochen ohne Fehler. */
 export function quizBilanz(answers, now) {
-  const done = Object.entries(answers).filter(([, a]) => a.length >= QUIZ_SIZE);
+  const done = Object.entries(answers).filter(([w, a]) => weekResult(w, a).done);
   let right = 0,
+    total = 0,
     perfect = 0;
   for (const [week, given] of done) {
-    const quiz = weeklyQuiz(inWeek(week));
-    const r = given.filter((c, i) => quiz.questions[i]?.c === c).length;
-    right += r;
-    if (r === QUIZ_SIZE) perfect++;
+    const r = weekResult(week, given);
+    right += r.right;
+    total += r.size;
+    if (r.right === r.size) perfect++;
   }
   const weeks = new Set(done.map(([w]) => Number(w)));
   let w = weekIndex(now);
@@ -41,7 +42,7 @@ export function quizBilanz(answers, now) {
     streak++;
     w--;
   }
-  return {streak, quote: done.length ? Math.round((right / (done.length * QUIZ_SIZE)) * 100) : null, perfect, weeks: done.length};
+  return {streak, quote: total ? Math.round((right / total) * 100) : null, perfect, weeks: done.length};
 }
 
 /** Vorderseite einer Karte. size: '' (Raster), 'lg' (Ansicht), 'sm' (Vorschau). */
@@ -119,7 +120,7 @@ export function renderMein({state, now, ui = {}}) {
       <div class="card stats q3">
         <span class="stat"><span class="v num">${quiz.streak}</span><span class="k">${quiz.streak === 1 ? 'Woche' : 'Wochen'} in Folge</span></span>
         <span class="stat"><span class="v num">${quiz.quote === null ? '–' : quiz.quote + ' %'}</span><span class="k">richtig beantwortet</span></span>
-        <span class="stat"><span class="v num">${quiz.perfect}</span><span class="k">${quiz.perfect === 1 ? 'Woche' : 'Wochen'} mit 5 von 5</span></span>
+        <span class="stat"><span class="v num">${quiz.perfect}</span><span class="k">${quiz.perfect === 1 ? 'Woche' : 'Wochen'} ohne Fehler</span></span>
       </div></section>
     <section class="sec" aria-labelledby="m-karten">${sectionHead('Sammelkarten', 'Alle Karten', href.sammlung(), 'm-karten')}
       <a class="card prog" href="${href.sammlung()}">

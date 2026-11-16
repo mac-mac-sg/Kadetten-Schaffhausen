@@ -93,7 +93,7 @@ test('Live dabei: jedes Spiel einmal vermerkt', () => {
   assert.deepEqual(liveSeen(s), ['508393']);
 });
 
-test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen mit 5 von 5', () => {
+test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen ohne Fehler', () => {
   const now = Date.parse('2026-11-18T12:00:00+01:00'),
     w = weekIndex(now);
   const right = week => weeklyQuiz(inWeek(week)).questions.map(q => q.c);
@@ -102,7 +102,11 @@ test('Quiz-Bilanz: Serie bis zur aktuellen oder letzten Woche, Quote, Wochen mit
   const b = quizBilanz({[w - 1]: right(w - 1), [w - 2]: wrong(w - 2), [w - 4]: right(w - 4)}, now);
   assert.equal(b.streak, 2);
   assert.equal(b.perfect, 2);
-  assert.equal(b.quote, Math.round((10 / (3 * QUIZ_SIZE)) * 100));
+  assert.equal(b.quote, Math.round((10 / 15) * 100), 'ältere Wochen zählen mit fünf Fragen');
+  // Ab dieser Woche drei Fragen; gemischt mit einer alten Woche.
+  const c = quizBilanz({[w]: right(w), [w - 1]: right(w - 1)}, now);
+  assert.equal(right(w).length, QUIZ_SIZE);
+  assert.deepEqual(c, {streak: 2, quote: 100, perfect: 2, weeks: 2});
 });
 
 test('Neue Karten als Fächer: verdeckt ausgeteilt, aufgedeckte Karten offen, am Ende aufgefächert', async () => {

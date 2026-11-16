@@ -6,7 +6,7 @@ import {compareRows} from '../src/kadetten/js/views/team.js';
 import {pointsCurve, competitionOf} from '../src/kadetten/js/logic.js';
 import {seasonCurve, playoffBlock} from '../src/kadetten/js/views/saison.js';
 import {shortCards} from '../src/kadetten/js/kurz.js';
-import {weeklyQuiz, weekIndex, nextQuizAt, answerQuiz, quizAnswers, quizStats, QUIZ_SIZE} from '../src/kadetten/js/quiz.js';
+import {weeklyQuiz, weekIndex, nextQuizAt, answerQuiz, quizAnswers, quizStats, QUIZ_SIZE, quizSize, SHORT_FROM, weekResult, inWeek} from '../src/kadetten/js/quiz.js';
 import {QUESTIONS} from '../src/kadetten/data/quiz.js';
 import {needsWelcome, markWelcome, toggleFavourite} from '../src/kadetten/js/personal.js';
 import {gegnerCheck} from '../src/kadetten/js/views/spiel.js';
@@ -92,7 +92,7 @@ test('Spiel in 30 Sekunden: Karten nur mit vorhandenen Werten', () => {
   assert.equal(parseRoute('#/spiel/9/kurz').tab, 'kurz');
 });
 
-test('Quiz der Woche: fünf Fragen je Woche, Wechsel am Montag, gleiche Fragen für alle', () => {
+test('Quiz der Woche: drei Fragen je Woche (früher fünf), Wechsel am Montag, gleiche Fragen für alle', () => {
   assert.ok(QUESTIONS.length >= 40);
   for (const q of QUESTIONS) {
     assert.equal(q.a.length, 4);
@@ -123,6 +123,16 @@ test('Quiz der Woche: Antworten der Reihe nach, unveränderbar, Bilanz nur aus a
   assert.equal(answerQuiz(quiz.week, 0, quiz.questions[0].c, s).length, QUIZ_SIZE);
   answerQuiz(quiz.week + 1, 0, 1, s);
   assert.deepEqual(quizStats(quizAnswers(s)), {weeks: 1, right: QUIZ_SIZE - 1, total: QUIZ_SIZE});
+  // Wochen vor der Umstellung behalten fünf Fragen; Antworten aus dieser Zeit bleiben gültig.
+  assert.equal(quizSize(SHORT_FROM - 1), 5);
+  assert.equal(quizSize(SHORT_FROM), 3);
+  assert.equal(weeklyQuiz(inWeek(SHORT_FROM - 1)).questions.length, 5);
+  const old = memory();
+  old.setItem('v2:app-quiz', JSON.stringify({[SHORT_FROM]: [0, 1, 2, 3, 0], [SHORT_FROM - 1]: [0, 0, 0, 0, 0]}));
+  const r = weekResult(SHORT_FROM, quizAnswers(old)[SHORT_FROM]);
+  assert.equal(r.size, 3);
+  assert.equal(r.done, true);
+  assert.equal(quizStats(quizAnswers(old)).total, 8);
   s.setItem('v2:app-quiz', '{"x":[9]}');
   assert.deepEqual(quizAnswers(s), {});
 });
