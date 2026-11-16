@@ -29,6 +29,7 @@ import {
   venueInfo
 } from './parts.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
+import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
 
 const GAME_TABS = [
   ['vorschau', 'Übersicht'],
@@ -155,6 +156,7 @@ function vorschau({game, data, load, api, now}) {
 
     </section>
     ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
+    ${oppForm === undefined ? '' : gewinnCard(preScore({game, data, oppForm}))}
     ${tipFor(game, now)}
     ${
       p?.paragraphs?.length
@@ -207,8 +209,10 @@ const voteCard = (game, ui, load) =>
   ui.votes ? liveVoteCard({game, vote: load('votes:' + game.id, () => ui.votes.status(game.id), 30000), mine: myVotes()[game.id]}) : '';
 
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
-function liveTab({game, data, state, ui, load}) {
-  return html`${
+function liveTab({game, data, state, ui, load, api}) {
+  const oppForm = game.league === 'QHL' ? opponentForm(load, api, data, game) : null;
+  const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
+  return html`${gewinnLive(pre, state.live.match, game)}${
     liveNotice(state, game)
       ? html`<section class="sec">
     ${notice(liveNotice(state, game))}</section>`
@@ -322,7 +326,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
       ? report(tab === 'rueckblick' ? 'rueckblick' : 'statistik')
       : phase === 'live'
         ? tab === 'live'
-          ? liveTab({game, data, state, ui, load})
+          ? liveTab({game, data, state, ui, load, api})
           : tab === 'bericht'
             ? report()
             : html`<section class="sec">

@@ -266,3 +266,12 @@ Anreise- und Hallenführer, ÖV-Abfahrten, Tor-für-Tor-Ticker, Lärmmesser, Fan
 ## Navigation ab 6. November 2026
 
 Die Hauptnavigation umfasst Start (`#/`), Spiele (`#/saison`), Statistik (`#/statistik`, Spielerwerte `#/statistik/spieler`), Team und Verein. Die bisherigen Saison-Unteradressen bleiben als kompatible Routen bestehen. Die Spielansicht trennt Übersicht, Ticker und Statistik; `#/spiel/:id/wahl` öffnet die Fan-Wahl mit Auswahl und expliziter Bestätigung. Das backendseitige Wahlfenster bleibt nach Spielende. Der SHV-Ereignisticker verwendet ausschliesslich die gelieferten `details.events`; bei fehlender Quelle, insbesondere EHF, wird kein Ereignisverlauf erfunden.
+
+## Kadetten-Gewinnscore
+
+Vorschau und Live-Reiter jedes QHL-Spiels zeigen die Siegchance der Kadetten mit Balken für Sieg, Remis und Niederlage. Im Bericht erscheint er bewusst nicht.
+
+- Rechnung (`js/gewinnscore.js`): Stärke je Team ist die Tordifferenz pro Spiel aus der Tabelle, zu Saisonbeginn zur Vorsaison hin gezogen (`data/gewinnscore.js`, zählt wie 6 Spiele, geteilt durch Spiele + 3). Dazu Form aus den letzten 5 Spielen (Gewicht 2) und 1,5 Tore Heimvorteil. Die erwartete Tordifferenz streut mit 4,5 Toren (Normalverteilung); Remis heisst weniger als ein halbes Tor Abstand.
+- Live: Der aktuelle Vorsprung zählt voll, Erwartung und Streuung nur noch für die Restzeit laut Spieluhr. Ohne Spieluhr erscheint keine Live-Zahl.
+- Erst wenn beide Teams drei Spiele haben; nur QHL (für Europacup und Cup fehlen vergleichbare Daten). Alles im Gerät, kein neuer Dienst.
+- Geprüft mit `scripts/gewinnscore-backtest.mjs` an 809 QHL-Spielen 2021–2025: Prüfsaison 2025/26 74 % richtige Siegertipps (Grundquote Heimteam 57 %), Brier 0,35 (0,53). Nach jeder Saison die Vorsaison-Werte neu auszählen.
