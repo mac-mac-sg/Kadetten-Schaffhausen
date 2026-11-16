@@ -720,7 +720,9 @@ a.sk:active { transform: scale(.97); }
 .gs-bar .d { background: var(--c-graph-draw); }
 .gs-bar .l { background: var(--c-graph-loss); }
 .gs-leg { display: flex; justify-content: space-between; gap: var(--s-2); margin-top: 6px; font: 500 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
-.gs-why { margin: var(--s-3) 0 0; border-top: 1px solid var(--c-line); }
+.gs-more { margin-top: var(--s-2); padding: 0; border-top: 1px solid var(--c-line); }
+.gs-more summary { min-height: 44px; font: 500 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.gs-why { margin: 0; }
 .gs-why div { display: flex; justify-content: space-between; gap: var(--s-3); padding: 8px 0; border-top: 1px solid var(--c-line); font: 400 var(--fs-small)/1.35 var(--f-text); }
 .gs-why div:first-child { border-top: 0; }
 .gs-why dd { margin: 0; font-weight: 600; white-space: nowrap; }
