@@ -247,7 +247,7 @@ export function tipCard({game, tip, points, locked}) {
       }</div>`;
   return html`<section class="sec" aria-labelledby="${'tip-' + game.id}">
     <div class="sh">
-    <h2 class="h2" id="${'tip-' + game.id}">Dein Tipp</h2>
+    <h2 class="h2" id="${'tip-' + game.id}">Mein Tipp</h2>
     </div>
     <div class="card tip">${side(0, game.home)}${side(1, game.away)}
       ${locked ? html`<p class="fine">${tip ? 'Tipp abgegeben.' : 'Kein Tipp abgegeben.'}</p>` : ''}${pts}</div></section>`;

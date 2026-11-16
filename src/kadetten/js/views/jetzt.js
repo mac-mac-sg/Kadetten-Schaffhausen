@@ -268,7 +268,6 @@ export function renderJetzt({state, now, load, api, ui}) {
         <h2 class="sr" id="j-heute">Heute</h2>
         ${previewHero(game, now, {actions, status: waitingForLive(game, state, now)})}</section>
       ${matchdayStats(game, data)}
-      ${tipFor(game, now)}
       ${
         preview?.value?.paragraphs?.length
           ? html`<section class="sec" aria-labelledby="j-vor">
@@ -276,6 +275,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         </a></section>`
           : ''
       }
+      ${tipFor(game, now)}
       ${newsBlock(data, 2)}${offline}`;
   }
 

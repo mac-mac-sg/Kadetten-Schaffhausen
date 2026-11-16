@@ -157,7 +157,6 @@ function vorschau({game, data, load, api, now}) {
     </section>
     ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
     ${oppForm === undefined ? '' : gewinnCard(preScore({game, data, oppForm}))}
-    ${tipFor(game, now)}
     ${
       p?.paragraphs?.length
         ? html`<section class="sec" aria-labelledby="g-vor">
@@ -172,6 +171,7 @@ function vorschau({game, data, load, api, now}) {
           </section>`
         : ''
     }
+    ${tipFor(game, now)}
     ${
       duels?.value?.games?.length
         ? html`<section class="sec" aria-labelledby="g-duel">
