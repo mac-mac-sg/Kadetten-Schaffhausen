@@ -16,4 +16,8 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      # www.handball.ch liefert sein Zwischenzertifikat nicht mit; Node bekommt es zusätzlich, die Prüfung bleibt an.
+      - run: curl -fsS http://cert.ssl.com/SSL.com-TLS-I-RSA-R1.cer | openssl x509 -inform der -out "$RUNNER_TEMP/sslcom.pem"
       - run: node scripts/gewinnscore-backtest.mjs
+        env:
+          NODE_EXTRA_CA_CERTS: ${{ runner.temp }}/sslcom.pem

@@ -12,7 +12,10 @@ async function query(variables) {
     try {
       const r = await fetch(ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept-Language': 'de'}, body: JSON.stringify({query: QUERY, variables}), signal: AbortSignal.timeout(20000)});
       if (r.ok) return (await r.json()).data;
-    } catch {}
+      console.log('SHV HTTP ' + r.status);
+    } catch (e) {
+      console.log('SHV Fehler: ' + (e.cause?.code || e.message));
+    }
     await new Promise(res => setTimeout(res, 1500 * (i + 1)));
   }
   throw Error('SHV nicht erreichbar');
