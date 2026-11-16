@@ -228,7 +228,8 @@ function matchdayStats(game, data) {
       }</div></section>`;
   }
   if (own) {
-    items.push([opponent ? `${own.rank}. – ${opponent.rank}.` : own.rank + '.', competition === 'EHL' ? 'EHL-Gruppenrang' : 'QHL-Rang']);
+    const rank = opponent ? html`<span class="rank-comparison">${own.rank}. <small>vs.</small> ${opponent.rank}.</span>` : own.rank + '.';
+    items.push([rank, competition === 'EHL' ? 'EHL-Gruppenrang' : 'QHL-Rang']);
     if (competition === 'QHL' && own.points != null) items.push([own.points + 2, 'Punkte mit Sieg']);
   }
   if (recent.length) items.push([formRow(recent, true), formLabel]);
