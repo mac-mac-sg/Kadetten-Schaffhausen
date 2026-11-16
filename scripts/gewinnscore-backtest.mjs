@@ -198,3 +198,18 @@ for (const p of allPreds.filter(p => p.home === 'Kadetten Schaffhausen' || p.awa
     `  Beispiel ${new Date(p.at).toISOString().slice(0, 10)} ${p.home} – ${p.away} ${p.hs}:${p.as}: Kadetten ${Math.round((p.home === 'Kadetten Schaffhausen' ? p.pH : p.pA) * 100)} %, erwartete Differenz ${(p.home === 'Kadetten Schaffhausen' ? p.m : -p.m).toFixed(1)}`
   );
 console.log('JSON ' + JSON.stringify({best, testScore, base: score(base), n: allGames.length, meanH, draws, homeWins}));
+// Vorsaison-Werte für die App (Tordifferenz je Spiel der letzten Saison) und Vergleich ohne Vorsaison.
+const last = SEASONS.at(-1);
+const lastPrior = new Map();
+for (const g of data[last].games)
+  for (const [n, d] of [
+    [g.home, g.hs - g.as],
+    [g.away, g.as - g.hs]
+  ]) {
+    const v = lastPrior.get(n) || {n: 0, gd: 0};
+    v.n++;
+    v.gd += d;
+    lastPrior.set(n, v);
+  }
+console.log('PRIOR ' + JSON.stringify(Object.fromEntries([...lastPrior].map(([n, v]) => [n, Math.round((v.gd / v.n) * 10) / 10]))));
+console.log('Ohne Vorsaison (w=0):', JSON.stringify(score(run(test, {...best.p, w: 0}))));
