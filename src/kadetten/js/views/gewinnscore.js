@@ -38,6 +38,7 @@ export function gewinnCard(score) {
     <div class="card gscore">
       <p class="gs-big"><b class="num">${p[0]} %</b><span>Siegchance</span></p>
       ${bar(p)}
+      <details class="more-card gs-more" id="g-score-more"><summary>So gerechnet</summary>
       <dl class="gs-why">
         <div><dt>Heimvorteil</dt><dd>${score.home > 0 ? 'Kadetten' : opp} +1,5 Tore</dd></div>
         <div><dt>Stärke (Tordifferenz je Spiel)</dt><dd class="num">${signed(score.strength[0])} zu ${signed(score.strength[1])}</dd></div>
@@ -49,6 +50,7 @@ export function gewinnCard(score) {
         <div><dt>Erwartet</dt><dd class="num">Kadetten ${signed(score.margin)} Tore</dd></div>
       </dl>
       <p class="fine">Gerechnet aus Tabelle, Vorsaison, Form und Heimvorteil. In der Saison 2025/26 lag der Favorit so in 3 von 4 Spielen richtig. Verletzungen und Aufstellung kennt die Rechnung nicht.</p>
+      </details>
     </div></section>`;
 }
 
