@@ -708,6 +708,23 @@ a.sk:active { transform: scale(.97); }
 .ort .btn { margin-top: var(--s-3); }
 .tag-ink.sm { padding: 2px 7px; font-size: 11px; }
 .ort .lead { color: var(--c-accent-text); }
+.gscore { padding: var(--s-4); }
+.gs-big { display: flex; align-items: baseline; gap: var(--s-2); margin: 0; }
+.gs-big b { font: italic 600 52px/0.9 var(--f-display); color: var(--c-accent-text); }
+.gs-big span { font: 500 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.gs-big em { margin-left: auto; font: 600 var(--fs-small)/1.3 var(--f-text); font-style: normal; color: var(--c-text-muted); }
+.gs-big em.up { color: var(--c-accent-text); }
+.gs-bar { display: flex; gap: 3px; height: 12px; margin-top: var(--s-3); }
+.gs-bar i { display: block; min-width: 0; height: 100%; transform: skewX(-8deg); }
+.gs-bar .w { background: var(--c-win); }
+.gs-bar .d { background: var(--c-graph-draw); }
+.gs-bar .l { background: var(--c-graph-loss); }
+.gs-leg { display: flex; justify-content: space-between; gap: var(--s-2); margin-top: 6px; font: 500 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.gs-why { margin: var(--s-3) 0 0; border-top: 1px solid var(--c-line); }
+.gs-why div { display: flex; justify-content: space-between; gap: var(--s-3); padding: 8px 0; border-top: 1px solid var(--c-line); font: 400 var(--fs-small)/1.35 var(--f-text); }
+.gs-why div:first-child { border-top: 0; }
+.gs-why dd { margin: 0; font-weight: 600; white-space: nowrap; }
+.gscore .fine { margin: var(--s-3) 0 0; }
 .ort-img { flex: none; width: 96px; height: 72px; object-fit: cover; border-radius: 10px; background: var(--c-surface-2); clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }
 
 /* Karte antippen dreht sie um: kurzes Anheben und Nachfedern während der Drehung */
