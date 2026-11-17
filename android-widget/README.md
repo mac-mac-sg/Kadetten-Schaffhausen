@@ -20,3 +20,15 @@ Die GitHub Action «Android Widget» erzeugt die installierbare APK im Artefakt 
 Java 17, Android SDK 35, Gradle 8.9; Android Gradle Plugin 8.7.3. Mit installiertem Gradle: `gradle testDebugUnitTest lintDebug assembleDebug` im Ordner `android-widget`. Android Studio kann das Projekt direkt öffnen. Die getrennte GitHub Action bringt Gradle und Android SDK mit. Node- und Pages-Builds bleiben unverändert.
 
 Die erste APK ist eine Debug-signierte Testversion. Für dauerhaft kompatible APK-Updates/Play-Veröffentlichung benötigt das Projekt einen dauerhaft gesicherten privaten Signierschlüssel und entsprechend eingerichtete CI-Secrets. Schlüssel gehören niemals ins Repository. Bei neuem Debug-Signierschlüssel ist vor einer Folgeinstallation das Entfernen der bisherigen Begleitapp erforderlich; die Web-App ist davon nicht betroffen.
+
+## Spielkarte 0.2
+
+Die erste überarbeitete Variante orientiert sich an der aktuellen Kadetten-App: warme dunkle Fläche,
+oranger Spieltag-Rahmen, Originalwappen der Kadetten und dieselbe Barlow-Schrift für Anpfiff und Resultat.
+Links steht das Heimteam, rechts das Auswärtsteam. Der Anpfiff steht gross in der Mitte.
+Bei mindestens 200 dp Höhe erscheint zusätzlich das letzte bestätigte Resultat als eigener Link.
+
+Das Widget öffnet direkt `#/spiel/<id>`. Der Datenstand nennt das Datum des Quellsnapshots,
+auch wenn dieser später erneut abgerufen wird. Der automatische Abruf läuft etwa alle 30 Minuten.
+Während eines Spiels öffnet die Karte die Web-Spielseite für den Liveticker.
+Cup-, EHL- und QHL-Spiele verwenden dieselbe Spielauswahl.

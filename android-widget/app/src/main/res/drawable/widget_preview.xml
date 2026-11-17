@@ -1,1 +1,6 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android"><corners android:radius="24dp"/><gradient android:startColor="#263026" android:endColor="#111310" android:angle="0"/><stroke android:width="1dp" android:color="#88552B"/><padding android:left="16dp" android:top="10dp" android:right="16dp" android:bottom="10dp"/></shape>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="20dp"/>
+    <gradient android:startColor="#32241E" android:endColor="#1C1C1E" android:angle="270"/>
+    <stroke android:width="1dp" android:color="#55504C"/>
+    <padding android:left="12dp" android:top="4dp" android:right="12dp" android:bottom="10dp"/>
+</shape>

@@ -8,4 +8,5 @@
     <string name="versus">VS</string>
     <string name="loading">Spiel wird geladen …</string>
     <string name="state">Antippen öffnet die App</string>
+    <string name="kickoff">Anpfiff</string>
 </resources>
