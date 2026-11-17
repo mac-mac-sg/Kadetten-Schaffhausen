@@ -101,3 +101,20 @@ test('Artikel: Spielpaarung wird zur Karte mit Logos und Resultat, anderer Inhal
   assert.match(out, /Bericht bleibt/);
   assert.equal((out.match(/class="fixture"/g) || []).length, 1, 'zwei Bilder mit Text sind keine Paarung');
 });
+
+test('Artikel: Vorschau ohne Resultat verwendet dieselbe kompakte Paarungskarte wie der Spielbericht', () => {
+  const {DOMParser, document} = parseHTML('<html><body></body></html>');
+  const source = `<div class="x-row"><div class="x-col"><div class="x-div"><span><img src="/gast.png" width="300" height="300" alt="Gast"></span><div> VS. </div><span><img src="/kadetten.png" width="884" height="1280" alt="Kadetten"></span></div></div></div>
+    <div>Dienstag, 18.45 Uhr</div><p><img src="/foto.jpg" width="1500" height="1000" alt="Spielfoto"></p>
+    <div><img src="/a.png">VS.<img></div><div><img src="/b.png">VS.<img src="http://example.com/c.png"></div>`;
+  const out = sanitizeArticle(source, {parser: DOMParser, doc: document});
+  const parsed = new DOMParser().parseFromString(out, 'text/html');
+  const fixtures = [...parsed.querySelectorAll('.fixture')];
+  assert.equal(fixtures.length, 1);
+  assert.equal(fixtures[0].querySelector('.fixture-score strong').textContent, 'vs.');
+  assert.equal(fixtures[0].querySelector('small'), null);
+  assert.deepEqual([...fixtures[0].querySelectorAll('img')].map(i => i.getAttribute('alt')), ['Gast', 'Kadetten']);
+  assert.equal(fixtures[0].querySelector('[width], [height]'), null);
+  assert.match(out, /Dienstag, 18.45 Uhr/);
+  assert.equal(parsed.querySelector('img[alt="Spielfoto"]').getAttribute('width'), '1500');
+});
