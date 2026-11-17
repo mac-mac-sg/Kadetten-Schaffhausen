@@ -62,17 +62,25 @@ function httpsUrl(value, base) {
   }
 }
 
-// Spielpaarung aus dem Seitenbaukasten: zwei Logos mit «34 VS. (12:24) 45» dazwischen.
+// Spielpaarung aus dem Seitenbaukasten: zwei Logos mit «VS.» oder einem Spielresultat dazwischen.
 // Nur eindeutige Paare werden zur Karte; alles andere bleibt Artikeltext.
 const FIXTURE = /^(\d{1,3})\s*(?:VS\.?|:|[-–])\s*(?:\(\s*(\d{1,3})\s*:\s*(\d{1,3})\s*\)\s*)?(\d{1,3})$/i;
 function fixtureOf(el, base) {
   const images = el.querySelectorAll('img');
   if (images.length !== 2) return null;
-  const m = el.textContent.replace(/\s+/g, ' ').trim().match(FIXTURE);
-  const srcs = [...images].map(img => httpsUrl(img.getAttribute('src'), base));
-  return m && srcs.every(Boolean)
-    ? {home: m[1], away: m[4], half: m[2] ? `${m[2]}:${m[3]}` : '', srcs, alts: [...images].map(img => img.getAttribute('alt') || '')}
-    : null;
+  const text = el.textContent.replace(/\s+/g, ' ').trim();
+  const score = text.match(FIXTURE);
+  if (!score && !/^vs\.?$/i.test(text)) return null;
+  const logos = [...images].map(img => {
+    const src = img.getAttribute('src');
+    return {src: src && httpsUrl(src, base), alt: img.getAttribute('alt') || ''};
+  });
+  if (!logos.every(logo => logo.src)) return null;
+  return {
+    logos,
+    label: score ? `${score[1]} : ${score[4]}` : 'vs.',
+    half: score?.[2] ? `${score[2]}:${score[3]}` : ''
+  };
 }
 
 /** Gibt bereinigtes HTML zurück. doc: ein Document zum Erzeugen von Knoten (Browser: document). */
@@ -94,7 +102,7 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
         if (fx) {
           const box = doc.createElement('div');
           box.setAttribute('class', 'fixture');
-          const logo = (src, alt) => {
+          const logo = ({src, alt}) => {
             const i = doc.createElement('img');
             i.setAttribute('src', src);
             i.setAttribute('alt', alt);
@@ -105,16 +113,16 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
           const mid = doc.createElement('div');
           mid.setAttribute('class', 'fixture-score');
           const strong = doc.createElement('strong');
-          strong.textContent = `${fx.home} : ${fx.away}`;
+          strong.textContent = fx.label;
           mid.appendChild(strong);
           if (fx.half) {
             const small = doc.createElement('small');
             small.textContent = `Halbzeit ${fx.half}`;
             mid.appendChild(small);
           }
-          box.appendChild(logo(fx.srcs[0], fx.alts[0]));
+          box.appendChild(logo(fx.logos[0]));
           box.appendChild(mid);
-          box.appendChild(logo(fx.srcs[1], fx.alts[1]));
+          box.appendChild(logo(fx.logos[1]));
           target.appendChild(box);
           continue;
         }
