@@ -125,10 +125,13 @@ async function matchReports(request, env, u) {
   return json({ok: true, report: await stored.json()});
 }
 
-async function live(request) {
+async function live(request, env, url) {
   if (request.method !== 'GET') return getRequired();
   try {
-    return json(await getLiveMatch());
+    const source = url.searchParams.get('source') || undefined;
+    const details = url.searchParams.get('details');
+    if ((source && !['SHV', 'EHF'].includes(source)) || (details !== null && !['0', '1'].includes(details))) return json({error: 'Invalid live options'}, 400);
+    return json(await getLiveMatch({source, includeDetails: details !== '0'}));
   } catch (e) {
     // Die Meldungen der Quellen enthalten keine Zugangsdaten; sie zeigen, welche Quelle warum ausfiel.
     return json({ok: false, match: null, error: 'Live source unavailable', ...(e?.sources ? {sources: e.sources} : {})}, 503);
