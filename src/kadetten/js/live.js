@@ -1,8 +1,9 @@
-// Live-Abfrage: alle 30 Sekunden, nur solange die App sichtbar ist und ein Kadetten-Spiel
+// Live-Abfrage: alle 5 Sekunden, nur solange die App sichtbar ist und ein Kadetten-Spiel
 // läuft oder bald beginnt. Unsichtbare Seiten pausieren.
 import {kickoff, ownGames, hasScore, competitionOf, zurichParts} from './logic.js';
 
-export const LIVE_INTERVAL = 30000;
+export const LIVE_INTERVAL = 5000;
+const DETAILS_INTERVAL = 30000;
 const BEFORE = 15 * 60000,
   AFTER = 4 * 3600000;
 
@@ -24,19 +25,49 @@ export function startLive({
 }) {
   let timer = null,
     polling = false,
-    stopped = false;
+    stopped = false,
+    detailsPending = false,
+    detailsAt = -Infinity,
+    detailsSource = null;
   const visible = () => !doc || doc.visibilityState !== 'hidden';
   async function tick() {
     timer = null;
     if (stopped || polling || !visible()) return;
     polling = true;
+    const started = now();
     const {data, live} = store.state;
     try {
-      if (liveWindow({games: data?.games, live, now: now()})) await store.refreshLive();
+      if (liveWindow({games: data?.games, live, now: now()})) {
+        const game = ownGames(data?.games).find(g => {
+          const at = kickoff(g);
+          return at - BEFORE <= now() && now() <= at + AFTER;
+        });
+        const observed = live?.match || live?.finished;
+        const source = game ? sourceFor(game) : observed ? (/European|EHL/i.test(observed.league) ? 'EHF' : 'SHV') : undefined;
+        await store.refreshLive({source, includeDetails: false});
+        if (
+          !stopped &&
+          visible() &&
+          source &&
+          (store.state.live?.match || store.state.live?.finished) &&
+          !detailsPending &&
+          (source !== detailsSource || now() - detailsAt >= DETAILS_INTERVAL) &&
+          store.refreshLiveDetails
+        ) {
+          detailsPending = true;
+          detailsAt = now();
+          detailsSource = source;
+          Promise.resolve(store.refreshLiveDetails(source))
+            .catch(() => {})
+            .finally(() => {
+              detailsPending = false;
+            });
+        }
+      }
     } finally {
       polling = false;
     }
-    if (!stopped && visible()) timer = setTimer(tick, LIVE_INTERVAL);
+    if (!stopped && visible()) timer = setTimer(tick, Math.max(1000, LIVE_INTERVAL - (now() - started)));
   }
   const onVisibility = () => {
     if (visible() && !timer) tick();

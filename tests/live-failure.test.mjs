@@ -148,3 +148,54 @@ test('/api/live: fällt die EHF-Quelle aus, bleibt ein SHV-Spiel sichtbar; der A
     assert.equal(r.sources.SHV.ok, true);assert.equal(r.sources.EHF.ok, false);assert.match(r.sources.EHF.error, /EHF nicht erreichbar/);
   });
 });
+
+test('Schneller SHV-Pfad fragt weder EHF noch Statistiken ab, teilt laufende Abrufe und erneuert nach 3 s', async () => {
+  await withSources(async (setFetch, advance) => {
+    let calls = 0;
+    const fetchSource = sources({shv: 'live'});
+    globalThis.fetch = async (url, init) => {
+      assert.match(String(url), /handball.ch/);
+      assert.doesNotMatch(JSON.parse(init.body).query, /gameLog|gamePlayerStats/);
+      calls++;
+      return fetchSource(url, init);
+    };
+    const options = {source: 'SHV', includeDetails: false};
+    const [a, b] = await Promise.all([getLiveMatch(options), getLiveMatch(options)]);
+    assert.equal(a, b); assert.equal(calls, 2);
+    assert.deepEqual(a.match.score, [12, 10]); assert.equal(a.match.details, undefined);
+    advance(2000); assert.equal(await getLiveMatch(options), a);
+    advance(4000); assert.notEqual(await getLiveMatch(options), a); assert.equal(calls, 4);
+    setFetch({shv: 'aus'}); advance(8000);
+    const stale = await getLiveMatch(options);
+    assert.deepEqual(stale.match.score, [12, 10]); assert.equal(stale.sources.SHV.stale, true);
+  });
+});
+
+test('EHF-Resultat wartet nicht auf hängende Statistikantworten und ruft SHV nicht auf', async () => {
+  await withSources(async () => {
+    const releases = [];
+    const feed = {days: [{liveScoreMatches: [{match: {competitionShortName:'EHF EL - M',matchID:'202711020901029',url:'/men/2026-27/matches/details/202711020901029/test/',homeTeam:{id:'uyEpUicNjwv8hCX9B7A3sg',name:'Kadetten'},guestTeam:{id:'other',name:'Gegner'}},matchStats:{isLive:true,time:'21:14',phase:'1st half'},homeStats:{totalGoals:12},guestStats:{totalGoals:10}}]}]};
+    globalThis.fetch = async url => {
+      assert.doesNotMatch(String(url), /handball.ch/);
+      if (String(url).includes('GetLiveScoreMatches')) return Response.json(feed);
+      return new Promise(resolve => { releases.push(() => resolve(Response.json({}))); });
+    };
+    const details = getLiveMatch({source:'EHF'});
+    await new Promise(resolve => setImmediate(resolve));
+    // Zwei offene Statistikabfragen dürfen den separaten Resultatpfad nicht blockieren.
+    const score = await getLiveMatch({source:'EHF',includeDetails:false});
+    assert.deepEqual(score.match.score,[12,10]); assert.equal(score.match.clock,'21:14');
+    assert.equal(releases.length,2); releases.forEach(release => release());
+    await details;
+  });
+});
+
+test('Worker validiert Live-Optionen und reicht den schnellen Pfad durch', async () => {
+  await withSources(async setFetch => {
+    setFetch({shv:'live',ehf:'aus'});
+    const response = await worker.fetch(new Request('https://example.test/api/live?source=SHV&details=0'),{});
+    assert.equal(response.status,200);
+    const body = await response.json(); assert.deepEqual(body.match.score,[12,10]); assert.equal(body.match.details,undefined); assert.equal(body.sources.EHF,undefined);
+    for (const query of ['source=other','details=2']) assert.equal((await worker.fetch(new Request('https://example.test/api/live?'+query),{})).status,400);
+  });
+});

@@ -141,3 +141,50 @@ test('Routen: fünf Bereiche, Spielseite, Ich, Unbekanntes führt zu Jetzt', () 
   assert.equal(href.saison('spielplan'), '#/saison');
   assert.equal(href.spiel('5 6'), '#/spiel/5%206');
 });
+
+test('Fünfsekundentakt rechnet Abrufzeit an und bleibt unabhängig von offenen Statistiken', async () => {
+  assert.equal(LIVE_INTERVAL, 5000);
+  let now = Date.parse('2026-10-24T16:30:00Z'), calls = 0, detailCalls = 0, complete;
+  const timers = [];
+  const game = {date:'2026-10-24',time:'18:00',league:'EHL',home:'Kadetten Schaffhausen',away:'Gegner'};
+  const state = {data:{games:[game]},live:{match:{id:'ehf',league:'European League'}}};
+  const store = {state, refreshLive: async options => {
+    assert.deepEqual(options,{source:'EHF',includeDetails:false}); calls++; now += 1200;
+  }, refreshLiveDetails: () => { detailCalls++; return new Promise(resolve => { complete = resolve; }); }};
+  const doc = {visibilityState:'visible',addEventListener(t,f){this.listener=f;},removeEventListener(){}};
+  const stop = startLive({store,doc,now:()=>now,setTimer:(f,ms)=>{timers.push([f,ms]);return timers.length;},clearTimer:()=>{}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(timers[0][1],3800); assert.equal(detailCalls,1);
+  now+=3800; await timers[0][0](); assert.equal(calls,2); assert.equal(detailCalls,1);
+  complete(); await new Promise(resolve=>setImmediate(resolve));
+  now+=30000; await timers[1][0](); assert.equal(detailCalls,2); complete();
+  doc.visibilityState='hidden'; doc.listener();
+  doc.visibilityState='visible'; doc.listener();
+  await new Promise(resolve=>setImmediate(resolve)); assert.equal(calls,4,'Rückkehr prüft sofort');
+  stop();
+});
+
+test('Späte Statistiken überschreiben keinen neueren Spielstand und bleiben bei Resultatabfragen erhalten', async () => {
+  let response = {ok:true,checkedAt:'new',match:{id:1,score:[15,12],phase:'2. Halbzeit'}};
+  let complete;
+  const store = createStore({storage:null,api:{live: options => options?.includeDetails === true ? new Promise(resolve=>{complete=resolve;}) : Promise.resolve(response)}});
+  await store.refreshLive({includeDetails:false});
+  const details = store.refreshLiveDetails('SHV');
+  complete({ok:true,checkedAt:'old',match:{id:1,score:[10,8],phase:'1. Halbzeit',details:{ok:true,players:[]}}});
+  await details;
+  assert.deepEqual(store.state.live.match.score,[15,12]); assert.equal(store.state.live.checkedAt,'new');
+  assert.equal(store.state.live.match.phase,'2. Halbzeit');
+  await store.refreshLive({includeDetails:false}); assert.equal(store.state.live.match.details.ok,true);
+  const other = store.refreshLiveDetails('SHV');
+  response = {ok:true,match:{id:2,score:[1,0]}}; await store.refreshLive();
+  complete({ok:true,match:{id:1,details:{ok:true,players:[{id:7}]}}}); await other;
+  assert.equal(store.state.live.match.details,undefined,'keine Statistiken eines anderen Spiels');
+});
+
+test('API übergibt Quelle und Detailauswahl ohne Browsercache', async () => {
+  let request;
+  const api=createApi({fetchImpl:async(url,init)=>{request={url,init};return json({ok:true});}});
+  await api.live({source:'EHF',includeDetails:false});
+  assert.equal(request.url,'/api/live?source=EHF&details=0'); assert.equal(request.init.cache,'no-store');
+  await api.live({source:'SHV',includeDetails:true}); assert.equal(request.url,'/api/live?source=SHV&details=1');
+});

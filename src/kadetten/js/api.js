@@ -32,7 +32,11 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
     get,
     data: () => get('/api/data'),
     // Live-Antworten kommen nie aus einem Cache.
-    live: () => get('/api/live', {fresh: true, requestTimeout: LIVE_TIMEOUT}),
+    live: ({source, includeDetails = true} = {}) =>
+      get('/api/live' + (source ? '?source=' + id(source) + '&details=' + (includeDetails ? '1' : '0') : ''), {
+        fresh: true,
+        requestTimeout: LIVE_TIMEOUT
+      }),
     report: gameId => get('/api/reports/' + id(gameId)),
     ehfReport: gameId => get('/api/ehf-reports/' + id(gameId)),
     matchReport: gameId => get('/api/match-reports/' + id(gameId)),
