@@ -129,10 +129,15 @@ test('Die Spieltags-Ausgangslage nutzt den Wettbewerb der Partie', () => {
   const own = 'Kadetten Schaffhausen', away = 'HC Izvidac';
   const fixture = {id: 'test-matchday', date: '2026-11-17', time: '18:45', home: own, away};
   const tables = {QHL: [[away, 13, 300, 290, 26], [own, 13, 298, 290, 23]], EHL: [[own, 3, 110, 95, 6], [away, 3, 99, 90, 4]]};
-  const matchday = (league, round) => render('#/', {now, state: {data: {...data, tables, games: [{...fixture, league, round}]}}});
-  assert.match(matchday('EHL'), /1\. <small>vs\.<\/small> 2\.[\s\S]*EHL-Gruppenrang/);
+  const matchday = (league, round, isAway = false) => {
+    const teams = isAway ? {home: away, away: own} : {};
+    return render('#/', {now, state: {data: {...data, tables, games: [{...fixture, ...teams, league, round}]}}});
+  };
+  assert.match(matchday('EHL'), /<span class="rank-own">1\.<\/span> <small>vs\.<\/small> 2\.[\s\S]*EHL-Gruppenrang/);
+  assert.match(matchday('EHL', undefined, true), /2\. <small>vs\.<\/small> <span class="rank-own">1\.<\/span>/);
+  assert.match(matchday('QHL', undefined, true), /1\. <small>vs\.<\/small> <span class="rank-own">2\.<\/span>/);
   assert.doesNotMatch(matchday('EHL'), /QHL|Punkte mit Sieg/);
-  assert.match(matchday('QHL'), /2\. <small>vs\.<\/small> 1\.[\s\S]*QHL-Rang[\s\S]*25[\s\S]*Punkte mit Sieg/);
+  assert.match(matchday('QHL'), /<span class="rank-own">2\.<\/span> <small>vs\.<\/small> 1\.[\s\S]*QHL-Rang[\s\S]*25[\s\S]*Punkte mit Sieg/);
   assert.match(matchday('Mobiliar-Cup M', '85'), /Viertelfinal/);
   assert.match(matchday('Mobiliar-Cup M', '1\/2-Final'), /1\/2-Final/);
   assert.doesNotMatch(matchday('Mobiliar-Cup M', '85'), /QHL-Rang|Punkte mit Sieg/);

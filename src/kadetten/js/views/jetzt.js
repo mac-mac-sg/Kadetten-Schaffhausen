@@ -214,7 +214,8 @@ function matchdayStats(game, data) {
   const league = competition === 'QHL' || competition === 'EHL';
   const rows = league ? standings(data.tables?.[competition]) : [];
   const own = rows.find(row => sameTeam(row.team, OWN_TEAM));
-  const opponent = rows.find(row => sameTeam(row.team, isOwn(game.home) ? game.away : game.home));
+  const homeIsOwn = isOwn(game.home);
+  const opponent = rows.find(row => sameTeam(row.team, homeIsOwn ? game.away : game.home));
   const recent = form(data.games, OWN_TEAM, 3, league ? game.league : undefined);
   const items = [];
   const formLabel = `Form · letzte ${recent.length} ${league ? competition : 'Spiele'}`;
@@ -228,7 +229,11 @@ function matchdayStats(game, data) {
       }</div></section>`;
   }
   if (own) {
-    const rank = opponent ? html`<span class="rank-comparison">${own.rank}. <small>vs.</small> ${opponent.rank}.</span>` : own.rank + '.';
+    const ownRank = html`<span class="rank-own">${own.rank}.</span>`;
+    const opponentRank = opponent ? `${opponent.rank}.` : '';
+    const rank = opponent
+      ? html`<span class="rank-comparison">${homeIsOwn ? ownRank : opponentRank} <small>vs.</small> ${homeIsOwn ? opponentRank : ownRank}</span>`
+      : ownRank;
     items.push([rank, competition === 'EHL' ? 'EHL-Gruppenrang' : 'QHL-Rang']);
     if (competition === 'QHL' && own.points != null) items.push([own.points + 2, 'Punkte mit Sieg']);
   }
