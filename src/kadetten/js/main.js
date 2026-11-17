@@ -250,7 +250,7 @@ async function pushAction(action) {
       ui.pushMessage = 'Benachrichtigungen sind ausgeschaltet.';
     }
     if (action === 'test') {
-      await push.test();
+      await push.test(shv);
       ui.pushMessage = 'Test an den Push-Dienst übergeben. Bitte die Mitteilungen auf dem Gerät prüfen.';
     }
     if (action === 'update') {
@@ -591,7 +591,16 @@ store.subscribe(() => {
   schedule();
 });
 render();
-store.refresh().then(() => startLive({store}));
+store.refresh().then(() => {
+  startLive({store});
+  push
+    .restore(favouriteShv())
+    .then(schedule)
+    .catch(error => {
+      ui.pushMessage = error.message;
+      schedule();
+    });
+});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') store.refresh();
 });
