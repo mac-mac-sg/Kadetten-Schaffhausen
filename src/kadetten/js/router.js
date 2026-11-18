@@ -4,7 +4,8 @@ export const AREAS = [
   {id: 'jetzt', label: 'Start', href: '#/', icon: 'news'},
   {id: 'saison', label: 'Spiele', href: '#/saison', icon: 'saison'},
   {id: 'statistik', label: 'Tabelle', href: '#/statistik', icon: 'statistik'},
-  {id: 'team', label: 'Kader', href: '#/team', icon: 'team'}
+  {id: 'team', label: 'Kader', href: '#/team', icon: 'team'},
+  {id: 'ich', label: 'Ich', title: 'Mein Bereich', href: '#/ich', icon: 'ich'}
 ];
 
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
@@ -46,13 +47,13 @@ export function parseRoute(hash = '') {
     case 'verein':
       return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich':
-      return second === 'einstellungen' ? {area: null, view: 'ich'} : {area: null, view: 'mein'};
+      return second === 'einstellungen' ? {area: 'ich', view: 'ich'} : {area: 'ich', view: 'mein'};
     case 'sammlung':
       return second === 'neu'
         ? {area: null, view: 'neu'}
         : safeId(second)
-          ? {area: null, view: 'karte', id: second}
-          : {area: null, view: 'sammlung'};
+          ? {area: 'ich', view: 'karte', id: second}
+          : {area: 'ich', view: 'sammlung'};
     case 'start':
       return {area: null, view: 'start', step: /^[1-3]$/.test(second || '') ? Number(second) : 1};
     case 'quiz':
