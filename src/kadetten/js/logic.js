@@ -106,10 +106,12 @@ export function form(games, team = OWN_TEAM, count = 5, league) {
 export function jetztState({games, live, now}) {
   if (live?.match && involves(live.match)) return {state: 'live', game: live.match};
   const next = nextGame(games, now);
-  if (next && kickoff(next) - now <= MATCHDAY_WINDOW) return {state: 'spieltag', game: next};
-  const finished = live?.finished && involves(live.finished) && hasScore(live.finished) ? live.finished : null;
+  const finished =
+    live?.finished?.date === zurichParts(now).date && involves(live.finished) && hasScore(live.finished) ? live.finished : null;
   const last = lastResult(games, now);
-  if (finished) return {state: 'nachspiel', game: {...(last && last.date === finished.date ? last : {}), ...finished}};
+  if (finished) return {state: 'nachspiel', game: finished};
+  if (last?.date === zurichParts(now).date && (!next || kickoff(next) > now)) return {state: 'nachspiel', game: last};
+  if (next && kickoff(next) - now <= MATCHDAY_WINDOW) return {state: 'spieltag', game: next};
   if (last && now - (kickoff(last) + GAME_DURATION) <= AFTERMATH_WINDOW) return {state: 'nachspiel', game: last};
   return {state: 'alltag', game: next, last};
 }

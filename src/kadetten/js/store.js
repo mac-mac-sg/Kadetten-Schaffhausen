@@ -1,6 +1,8 @@
 // Datenstand der App. Der letzte gültige Stand bleibt bei Ausfällen erhalten und liegt lokal,
 // damit die App sofort etwas zeigen kann. Live-Stände werden nie gespeichert.
 
+import {zurichParts} from './logic.js';
+
 export const SNAPSHOT_KEY = 'v2:app-snapshot';
 
 export function validSnapshot(data) {
@@ -61,11 +63,36 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
       emit();
       return state;
     },
-    async refreshLive() {
+    async refreshLiveDetails(source) {
       try {
-        const live = await api.live();
+        const response = await api.live({source, includeDetails: true});
+        for (const field of ['match', 'finished']) {
+          const current = state.live?.[field];
+          const incoming = [response?.match, response?.finished].find(m => m && current && String(m.id) === String(current.id));
+          // Späte Statistikantworten dürfen weder Tore, Phase noch Quellenzeit zurücksetzen.
+          if (incoming?.details?.ok) current.details = incoming.details;
+        }
+        emit();
+      } catch {} // Statistikfehler beeinflussen den aktuellen Spielstand nicht.
+    },
+    async refreshLive(options) {
+      try {
+        const live = await api.live(options);
         if (!live || live.ok === false) throw Error('Live-Quelle nicht verfügbar');
-        Object.assign(state, {live, liveAt: now(), liveError: null});
+        const at = now();
+        const previous = state.live?.finished;
+        const finished = live.finished || (previous?.date === zurichParts(at).date ? previous : null);
+        // Schnelle Resultatantworten enthalten keine Statistik. Bekannte Werte derselben Partie behalten.
+        const retainDetails = match => {
+          if (!match || match.details) return match;
+          const previous = [state.live?.match, state.live?.finished].find(p => p && String(p.id) === String(match.id));
+          return previous?.details ? {...match, details: previous.details} : match;
+        };
+        Object.assign(state, {
+          live: {...live, match: retainDetails(live.match), finished: retainDetails(finished)},
+          liveAt: at,
+          liveError: null
+        });
       } catch (error) {
         // Letzten gültigen Live-Stand behalten und den Ausfall vermerken.
         state.liveError = error;

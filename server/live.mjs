@@ -102,42 +102,45 @@ export async function getEhfDetails(id,fetchFn=fetch){
  if(!teamStats&&!roster)return {ok:false,updatedAt:null,events:null,players:null,teamStats:null};
  return {ok:true,updatedAt:new Date().toISOString(),events:null,players:roster?roster.players:null,teamStats,spectators:roster?roster.spectators:null};
 }
-async function getEhfLiveMatch(){
+async function getEhfLiveMatch(includeDetails=true){
  const r=await fetch(ehfLiveEndpoint,{signal:AbortSignal.timeout(12000),headers:{Accept:'application/json'}});
  if(!r.ok)throw Error('EHF live source unavailable');
  const feed=await r.json();
  let match=parseEhfLiveMatch(feed);
  if(!match){try{match=parseEhfFinishedMatch(feed)}catch{match=null}}
- if(match)match.details=await getEhfDetails(match.id);
+ if(match&&includeDetails)match.details=await getEhfDetails(match.id);
  return match;
 }
-export async function getNationalLiveMatch(teamId=41473){const games=await liveQuery(liveGamesQuery,{teamId});const selected=selectLiveGame(games,teamId)||selectFinishedGame(games,undefined,teamId);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),getNationalLiveDetails({...selected,gameId:selected.objectId})]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0],teamId)||parseLiveMatch(detail.game[0],teamId);if(match)match.details=statistics;return match}
-let liveCache,livePending;
+export async function getNationalLiveMatch(teamId=41473,includeDetails=true){const games=await liveQuery(liveGamesQuery,{teamId});const selected=selectLiveGame(games,teamId)||selectFinishedGame(games,undefined,teamId);if(!selected)return null;if(!Number.isInteger(selected.objectId)||selected.objectId<=0)throw Error('Invalid game ID');const [detail,statistics]=await Promise.all([liveQuery(liveDetailQuery,{gameId:selected.objectId,isLive:selected.isLive}),includeDetails?getNationalLiveDetails({...selected,gameId:selected.objectId}):Promise.resolve(undefined)]);if(!Array.isArray(detail.game)||detail.game.length!==1||detail.game[0].gameId!==selected.objectId)throw Error('Missing live detail');const match=parseFinishedMatch(detail.game[0],teamId)||parseLiveMatch(detail.game[0],teamId);if(match&&includeDetails)match.details=statistics;return match}
+const liveCaches=new Map(),liveRequests=new Map();
 // Letzter gültiger Stand je Quelle: Fällt eine Quelle kurz aus, bleibt ihr letzter Stand als «veraltet» (markiert) nutzbar,
 // statt dass ein laufendes Spiel verschwindet. Danach gilt die Quelle als ausgefallen.
 const STALE_MS=10*60000,SOURCES=['SHV','EHF'],lastGood={};
-export function resetLiveState(){liveCache=undefined;livePending=undefined;for(const k of Object.keys(lastGood))delete lastGood[k]}
-export async function getLiveMatch(){
- if(liveCache&&Date.now()-liveCache.at<liveCache.ttl)return liveCache.value;if(livePending)return livePending;
- livePending=(async()=>{
-  const results=await Promise.allSettled([getNationalLiveMatch(),getEhfLiveMatch()]);
-  const failures=Object.fromEntries(results.map((r,i)=>[SOURCES[i],r.status==='rejected'?String(r.reason?.message||r.reason).slice(0,120):null]));
-  if(results.every(r=>r.status==='rejected')){const failure=Error('All live sources unavailable');failure.sources=Object.fromEntries(SOURCES.map(n=>[n,{ok:false,error:failures[n]}]));throw failure}
+export function resetLiveState(){liveCaches.clear();liveRequests.clear();for(const k of Object.keys(lastGood))delete lastGood[k]}
+export async function getLiveMatch({source,includeDetails=true}={}){
+ if(source!==undefined&&!SOURCES.includes(source))throw Error('Invalid live source');
+ const names=source?[source]:SOURCES,key=(source||'all')+':'+includeDetails;
+ const cached=liveCaches.get(key),pending=liveRequests.get(key);
+ if(cached&&Date.now()-cached.at<cached.ttl)return cached.value;if(pending)return pending;
+ const request=(async()=>{
+  const results=await Promise.allSettled(names.map(name=>name==='SHV'?getNationalLiveMatch(41473,includeDetails):getEhfLiveMatch(includeDetails)));
+  const failures=Object.fromEntries(results.map((r,i)=>[names[i],r.status==='rejected'?String(r.reason?.message||r.reason).slice(0,120):null]));
+  if(results.every(r=>r.status==='rejected')&&!names.some(n=>lastGood[key+':'+n]&&Date.now()-lastGood[key+':'+n].at<STALE_MS)){const failure=Error('All live sources unavailable');failure.sources=Object.fromEntries(names.map(n=>[n,{ok:false,error:failures[n]}]));throw failure}
   const now=Date.now(),sources={},values=[];
   results.forEach((r,i)=>{
-   const name=SOURCES[i];
-   if(r.status==='fulfilled'){lastGood[name]={at:now,value:r.value};sources[name]={ok:true};values.push(r.value);return}
-   const previous=lastGood[name];
+   const name=names[i],goodKey=key+':'+name;
+   if(r.status==='fulfilled'){lastGood[goodKey]={at:now,value:r.value};sources[name]={ok:true};values.push(r.value);return}
+   const previous=lastGood[goodKey];
    if(previous&&now-previous.at<STALE_MS){sources[name]={ok:false,error:failures[name],stale:true,since:new Date(previous.at).toISOString()};values.push(previous.value)}
    else{sources[name]={ok:false,error:failures[name]};values.push(null)}
   });
   const match=values.find(v=>v&&v.status!=='finished')||null;
   const finished=values.find(v=>v?.status==='finished')||null;
-  const degraded=SOURCES.some(n=>!sources[n].ok);
+  const degraded=names.some(n=>!sources[n].ok);
   const value={ok:true,checkedAt:new Date(now).toISOString(),degraded,sources,match,finished};
-  // Vollständige Antworten 20 s, Teilausfälle nur 5 s, damit die nächste Abfrage die ausgefallene Quelle bald wieder versucht.
-  liveCache={at:now,ttl:degraded?5000:20000,value};return value;
- })();try{return await livePending}finally{livePending=null}
+  // Resultate ohne Statistiken nur 3 s halten; Detailantworten pro Quelle 30 s. Alte Aufrufer behalten ihr 20-s-Intervall.
+  liveCaches.set(key,{at:now,ttl:!includeDetails?3000:degraded?5000:source?30000:20000,value});return value;
+ })();liveRequests.set(key,request);try{return await request}finally{liveRequests.delete(key)}
 }
 
 const recentServerCache=new Map();

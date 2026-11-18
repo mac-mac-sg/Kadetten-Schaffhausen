@@ -3,7 +3,7 @@ import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {THEMES} from '../theme.js';
-import {OWN_TEAM, ownGames, shortTeam, dataFreshness} from '../logic.js';
+import {dataFreshness} from '../logic.js';
 import {favourite, myGames, tips} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
 import {seasonSummary} from '../moments.js';
@@ -31,8 +31,6 @@ export function renderIch({theme, state, ui, now}) {
   const supported = pushSupported();
   const fav = playerByNumber(favourite());
   const favShv = fav ? state.data?.playerSeason?.players?.[fav.number]?.shvPlayerId : null;
-  const visited = myGames(),
-    games = ownGames(state.data?.games).filter(g => visited.includes(String(g.id)));
   const freshness = dataFreshness(state.data, now);
   const late = freshness.sources.filter(source => source.stale).map(source => source.name);
   const freshStatus = late.length
@@ -71,24 +69,11 @@ export function renderIch({theme, state, ui, now}) {
     <section class="sec" aria-labelledby="i-pers">${sectionHead('Persönlich', '', '', 'i-pers')}
       <div class="card list">
         ${listRow({
-          title: 'Meine Spiele',
-          sub: games.length
-            ? `${games.length} ${games.length === 1 ? 'Spiel' : 'Spiele'} in der Halle`
-            : 'Auf der Spielseite «Ich war in der Halle» antippen',
+          title: 'Meine Spiele und Tipps',
+          sub: 'Besuchte Spiele und gespeicherte Tipps',
           lead: html`<span class="lead">${icon('verein')}</span>`,
-          end: ''
+          link: href.ich()
         })}
-        ${games
-          .slice(-5)
-          .reverse()
-          .map(g =>
-            listRow({
-              title: `${shortTeam(g.home === OWN_TEAM ? g.away : g.home)}`,
-              sub: g.date.split('-').reverse().join('.'),
-              link: href.spiel(g.id),
-              cls: 'compact indent'
-            })
-          )}
         ${listRow({
           title: 'Lieblingsspieler',
           sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken',

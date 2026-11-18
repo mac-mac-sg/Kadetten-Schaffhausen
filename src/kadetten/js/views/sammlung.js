@@ -2,7 +2,10 @@
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {LOGO, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips} from './parts.js';
+import {LOGO, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips, gameRow} from './parts.js';
+import {hasScore, ownGames, kickoff} from '../logic.js';
+import {tipPoints} from '../moments.js';
+import {withFinished} from '../match.js';
 import {favourite, myGames, tips} from '../personal.js';
 import {quizAnswers, weekIndex, weekResult} from '../quiz.js';
 import {DECK, ARTS, RARITY_LABEL, rarityOf, collection, pending, progress, recent, cardById, liveSeen} from '../sammeln.js';
@@ -98,6 +101,48 @@ function cardBack(card, data) {
     </div><img class="sk-wap" src="${LOGO}" alt="" aria-hidden="true"></div>`;
 }
 
+function myMatchday({input, state, now}) {
+  const savedTips = input.tips;
+  const games = ownGames(input.games)
+    .reverse()
+    .map(game => withFinished(game, state.live, now));
+  const visited = games.filter(game => input.visited.includes(String(game.id)));
+  const tipped = games.filter(game => Object.hasOwn(savedTips, game.id));
+  const missingVisits = new Set(input.visited).size - visited.length;
+  const missingTips = Object.keys(savedTips).length - tipped.length;
+  return html`<section class="sec" aria-labelledby="m-spiele">
+    ${sectionHead('Spieltag', '', '', 'm-spiele')}
+    <details class="card more-card aktuell" id="m-meine-spiele">
+      <summary><span class="grow"><span class="t">Meine Spiele</span><span class="s">${input.visited.length} in der Halle</span></span></summary>
+      ${visited.length ? html`<div class="list">${visited.map(game => gameRow(game, now))}</div>` : ''}
+      ${missingVisits > 0 ? html`<p class="fine pad-top-s">${missingVisits} gespeicherte Besuche ohne Eintrag im aktuellen Spielplan.</p>` : ''}
+      ${input.visited.length ? '' : html`<p class="fine pad-top-s">Markiere auf der Spielseite «Ich war in der Halle».</p>`}
+    </details>
+    <details class="card more-card aktuell" id="m-meine-tipps">
+      <summary><span class="grow"><span class="t">Meine Tipps</span><span class="s">${Object.keys(savedTips).length} gespeichert</span></span></summary>
+      ${
+        tipped.length
+          ? html`<ul class="list" role="list">${tipped.map(game => {
+              const tip = savedTips[game.id];
+              const score = hasScore(game) ? tipPoints(tip, game.score) : null;
+              const status =
+                score !== null
+                  ? score === 1
+                    ? '1 Punkt'
+                    : `${score} Punkte`
+                  : kickoff(game) > now
+                    ? 'Bis Anpfiff änderbar'
+                    : 'Resultat offen';
+              return html`<li>${gameRow(game, now)}<p class="fine pad-top-s">Tipp <b class="num">${tip.join(':')}</b> · ${status}</p></li>`;
+            })}</ul>`
+          : ''
+      }
+      ${missingTips > 0 ? html`<p class="fine pad-top-s">${missingTips} gespeicherte Tipps ohne Eintrag im aktuellen Spielplan.</p>` : ''}
+      ${Object.keys(savedTips).length ? '' : html`<p class="fine pad-top-s">Deinen ersten Tipp kannst du vor Anpfiff auf der Spielseite abgeben.</p>`}
+    </details>
+  </section>`;
+}
+
 export function renderMein({state, now, ui = {}}) {
   const input = sammelInput(state),
     open = pending(input),
@@ -106,7 +151,7 @@ export function renderMein({state, now, ui = {}}) {
     fav = playerByNumber(favourite()),
     latest = recent(3, input.games);
   const gained = open.reduce((n, r) => n + (r.fixed?.length || 0) + (r.pick || 0), 0);
-  return html`${subBand(backLink('Zurück', href.jetzt()), 'Mein Bereich', 'Quiz, Sammlung, Einstellungen', html`<a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
+  return html`${subBand(backLink('Zurück', href.jetzt()), 'Mein Bereich', 'Spieltag, Quiz und Sammlung', html`<a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
     ${
       open.length
         ? html`<section class="sec"><div class="card claim">
@@ -135,6 +180,7 @@ export function renderMein({state, now, ui = {}}) {
       ${latest.length ? html`<div class="sk-row${ui.enter ? ' enter' : ''}">${latest.map(c => cardFront(c, {size: 'sm'}))}</div>` : ''}
       <p class="fine pad-top">Karten gibt es für das Quiz der Woche, für Tipps, für Heimspiele in der Halle und wenn du ein Spiel live in der App verfolgst.</p>
     </section>
+    ${myMatchday({input, state, now})}
     <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
       <div class="card list">
         ${listRow({title: 'Lieblingsspieler', sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken', link: fav ? href.spieler(fav.number) : href.team(), lead: html`<span class="lead">${icon('star')}</span>`})}

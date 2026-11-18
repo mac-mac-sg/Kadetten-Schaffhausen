@@ -3,6 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {MY_GAMES_KEY, TIPS_KEY} from '../src/kadetten/js/personal.js';
 import {parseRoute} from '../src/kadetten/js/router.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
 import {setLogos, nav} from '../src/kadetten/js/views/parts.js';
@@ -53,7 +54,7 @@ test('Jetzt zeigt je Zustand das Passende', () => {
   assert.match(render('#/', MOMENTS.alltag), /band-home[\s\S]*Nächstes Spiel[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat/);
   assert.match(render('#/', MOMENTS.spieltag), /noch 3:45 h[\s\S]*Push zum Anpfiff[\s\S]*Ausgangslage/);
   const live = render('#/', MOMENTS.live);
-  assert.match(live, /24:21[\s\S]*Halbzeit 13:11[\s\S]*Stand vor 5 s[\s\S]*Live-Tabelle[\s\S]*Bei diesem Stand Leader/);
+  assert.match(live, /24:21[\s\S]*Halbzeit 13:11[\s\S]*Stand von 20:09 Uhr[\s\S]*Live-Tabelle[\s\S]*Bei diesem Stand Leader/);
   assert.doesNotMatch(live, /Torschütze[^n]/, 'live keine Torschützen');
   assert.match(render('#/', MOMENTS.nachspiel), /S · Sieg[\s\S]*33:27[\s\S]*Spielbericht[\s\S]*Teilen/);
   assert.match(render('#/', MOMENTS.offline), /zuletzt gespeicherte Stand/);
@@ -76,35 +77,88 @@ test('Statistik und Spielerprofil nutzen die SHV-Saisonwerte', () => {
   assert.match(render('#/team/10', MOMENTS.alltag), /Josip Perić[\s\S]*>30<[\s\S]*Tore/);
 });
 
-test('Spieltag nach Anpfiff ohne Live-Stand: Hinweis «wird geladen» bzw. «nicht erreichbar» statt wortloser Vorschau', () => {
-  const after = Date.parse('2026-11-11T18:30:00Z'), before = MOMENTS.spieltag;
-  assert.match(render('#/', {now: after}), /Live-Stand wird geladen/);
-  assert.match(render('#/', {now: after, state: {liveError: Error('Zeitüberschreitung')}}), /Live-Stand im Moment nicht erreichbar[\s\S]*alle 30 Sekunden/);
-  assert.doesNotMatch(render('#/', before), /Live-Stand/, 'vor dem Anpfiff kein Hinweis');
-  assert.doesNotMatch(render('#/', MOMENTS.live), /Live-Stand wird geladen/, 'mit Live-Stand kein Ladehinweis');
-  check(render('#/', {now: after}), '#/');
+test('Live-Status steht beim Resultat auf Startseite und in allen Spielreitern', () => {
+  const after = Date.parse('2026-11-11T18:30:00Z');
+  const healthy = {ok: true, sources: {SHV: {ok: true}, EHF: {ok: true}}};
+  const shvDown = {...healthy, sources: {...healthy.sources, SHV: {ok: false}}};
+  const ehfDown = {...healthy, sources: {...healthy.sources, EHF: {ok: false}}};
+  for (const route of ['#/', '#/spiel/508393']) {
+    assert.match(render(route, {now: after, live: healthy}), /Wartet auf Live-Daten/);
+    assert.match(render(route, {now: after, live: shvDown}), /Live-Daten von SHV derzeit nicht erreichbar/);
+    assert.match(render(route, {now: after, live: ehfDown}), /Wartet auf Live-Daten/);
+    assert.match(render(route, {now: after, state: {liveError: Error('timeout')}}), /Live-Daten derzeit nicht erreichbar/);
+    assert.doesNotMatch(render(route, MOMENTS.spieltag), /Wartet auf Live-Daten/);
+    assert.match(render(route, MOMENTS.nachspiel), /33:27[\s\S]*Endresultat bestätigt/);
+  }
+  const checkedAt = '2026-11-11T19:09:10Z';
+  const stale = {...MOMENTS.live.live, checkedAt, sources: {SHV: {ok: false, stale: true, since: '2026-11-11T18:42:00Z'}}};
+  for (const route of ['#/', '#/spiel/508393/live', '#/spiel/508393/bericht']) {
+    assert.match(render(route, {now: MOMENTS.live.now, live: {...MOMENTS.live.live, checkedAt}}), /Stand von 20:09 Uhr/);
+    assert.match(render(route, {now: MOMENTS.live.now, live: stale}), /Stand von 19:42 Uhr[\s\S]*Live-Daten von SHV derzeit nicht erreichbar/);
+    assert.match(render(route, {...MOMENTS.live, state: {liveError: Error('offline')}}), /Stand von 20:09 Uhr[\s\S]*Live-Daten derzeit nicht erreichbar/);
+  }
 });
 
-test('Live-Hinweise werten die Quellen des Datendiensts aus: Ausfall der zuständigen Quelle ist nicht «kein Spiel»', () => {
-  const after = Date.parse('2026-11-11T18:30:00Z'), ok = {ok: true, match: null, finished: null, degraded: false, sources: {SHV: {ok: true}, EHF: {ok: true}}};
-  // Stand geladen, beide Quellen in Ordnung, aber kein Live-Spiel: die Quelle meldet noch nichts.
-  assert.match(render('#/', {now: after, live: ok}), /Die Quelle meldet noch kein laufendes Spiel/);
-  assert.doesNotMatch(render('#/', {now: after, live: ok}), /Live-Stand wird geladen/, 'geladen ist geladen');
-  // SHV (zuständig für die QHL) antwortet nicht: das steht da, nicht «kein Spiel» und nicht ewiges Laden.
-  const shvDown = {...ok, degraded: true, sources: {SHV: {ok: false, error: 'timeout'}, EHF: {ok: true}}};
-  const out = render('#/', {now: after, live: shvDown});
-  assert.match(out, /Die Quelle SHV antwortet im Moment nicht[\s\S]*alle 30 Sekunden/);
-  assert.doesNotMatch(out, /Die Quelle meldet noch kein laufendes Spiel|Live-Stand wird geladen/);
-  // Nur die EHF-Quelle fällt aus (für ein QHL-Spiel nicht zuständig): kein Alarm.
-  const ehfDown = {...ok, degraded: true, sources: {SHV: {ok: true}, EHF: {ok: false, error: 'x'}}};
-  assert.doesNotMatch(render('#/', {now: after, live: ehfDown}), /antwortet im Moment nicht/);
-  assert.match(render('#/', {now: after, live: ehfDown}), /Die Quelle meldet noch kein laufendes Spiel/);
-  // Laufendes Spiel mit veraltetem Stand der SHV-Quelle: Zeit des letzten gültigen Stands.
-  const stale = {...MOMENTS.live.live, degraded: true, sources: {SHV: {ok: false, error: 'timeout', stale: true, since: '2026-11-11T18:42:00Z'}, EHF: {ok: true}}};
-  assert.match(render('#/', {now: MOMENTS.live.now, live: stale}), /Die Quelle SHV antwortet nicht\. Angezeigt wird der Stand von 19:42 Uhr/);
-  assert.match(render('#/spiel/508393/live', {now: MOMENTS.live.now, live: stale}), /Angezeigt wird der Stand von 19:42 Uhr/);
-  assert.doesNotMatch(render('#/', MOMENTS.live), /antwortet nicht|antwortet im Moment nicht/, 'gesunde Quellen: kein Hinweis');
-  // Datendienst selbst nicht erreichbar: andere Meldung je nachdem, ob schon ein Stand da ist.
-  assert.match(render('#/', {now: after, state: {liveError: Error('x')}}), /nicht erreichbar\. Der Abruf wird alle 30 Sekunden wiederholt/);
-  assert.match(render('#/', {...MOMENTS.live, state: {liveError: Error('x')}}), /nicht erreichbar\. Es gilt der letzte bekannte Stand/);
+test('Bestätigter Abpfiff hat Vorrang vor dem geplanten Spielfenster und dem nächsten Anpfiff', () => {
+  const now = Date.parse('2026-11-11T19:45:00Z');
+  const next = {id: 'next-game', date: '2026-11-12', time: '18:00', home: 'Kadetten Schaffhausen', away: 'HC Kriens-Luzern', league: 'QHL'};
+  const out = render('#/', {...MOMENTS.nachspiel, now, state: {data: {...data, games: [...data.games, next]}}});
+  assert.match(out, /33:27[\s\S]*Endresultat bestätigt[\s\S]*Nächstes Spiel[\s\S]*#\/spiel\/next-game/);
+});
+
+test('QHL, Cup und EHL wechseln über den bestätigten Live-Stand zum Endresultat', () => {
+  const now = Date.parse('2026-11-11T19:05:00Z');
+  for (const [league, source] of [['QHL', 'SHV'], ['Mobiliar-Cup M', 'SHV'], ['EHL', 'EHF']]) {
+    const fixture = {id: 'phase-test', date: '2026-11-11', time: '19:15', home: 'Kadetten Schaffhausen', away: 'HC Kriens-Luzern', league};
+    const sources = {[source]: {ok: true}};
+    const state = {data: {...data, games: [fixture]}};
+    const route = '#/spiel/phase-test';
+    assert.match(render(route, {now, state, live: {sources}}), /Wartet auf Live-Daten/);
+    const match = {...fixture, score: [22, 19], phase: '2. Halbzeit', clock: '60:00'};
+    assert.match(render(route, {now, state, live: {sources, match}}), /22:19[\s\S]*Stand von/);
+    assert.doesNotMatch(render(route, {now, state, live: {sources, match}}), /Endresultat bestätigt/);
+    const finished = {...fixture, score: [23, 19], status: 'finished'};
+    const out = render(route, {now, state, live: {sources, match, finished}});
+    assert.match(out, /23:19[\s\S]*Endresultat bestätigt/);
+    assert.doesNotMatch(out, />Ticker</);
+  }
+});
+
+test('Die Spieltags-Ausgangslage nutzt den Wettbewerb der Partie', () => {
+  const now = Date.parse('2026-11-17T16:00:00Z');
+  const own = 'Kadetten Schaffhausen', away = 'HC Izvidac';
+  const fixture = {id: 'test-matchday', date: '2026-11-17', time: '18:45', home: own, away};
+  const tables = {QHL: [[away, 13, 300, 290, 26], [own, 13, 298, 290, 23]], EHL: [[own, 3, 110, 95, 6], [away, 3, 99, 90, 4]]};
+  const matchday = (league, round, isAway = false) => {
+    const teams = isAway ? {home: away, away: own} : {};
+    return render('#/', {now, state: {data: {...data, tables, games: [{...fixture, ...teams, league, round}]}}});
+  };
+  assert.match(matchday('EHL'), /<span class="rank-own">1\.<\/span> <small>vs\.<\/small> 2\.[\s\S]*EHL-Gruppenrang/);
+  assert.match(matchday('EHL', undefined, true), /2\. <small>vs\.<\/small> <span class="rank-own">1\.<\/span>/);
+  assert.match(matchday('QHL', undefined, true), /1\. <small>vs\.<\/small> <span class="rank-own">2\.<\/span>/);
+  assert.doesNotMatch(matchday('EHL'), /QHL|Punkte mit Sieg/);
+  assert.match(matchday('QHL'), /<span class="rank-own">2\.<\/span> <small>vs\.<\/small> 1\.[\s\S]*QHL-Rang[\s\S]*25[\s\S]*Punkte mit Sieg/);
+  assert.match(matchday('Mobiliar-Cup M', '85'), /Viertelfinal/);
+  assert.match(matchday('Mobiliar-Cup M', '1\/2-Final'), /1\/2-Final/);
+  assert.doesNotMatch(matchday('Mobiliar-Cup M', '85'), /QHL-Rang|Punkte mit Sieg/);
+});
+
+test('Startseite priorisiert das letzte Resultat vor dem Quiz und Spielplan bietet einen Sprung', () => {
+  assert.match(render('#/', {now: Date.parse('2026-11-16T12:00:00Z')}), /Letztes Resultat[\s\S]*Quiz der Woche/);
+  const schedule = render('#/saison', MOMENTS.alltag);
+  assert.match(schedule, /data-jump-next>Zum nächsten Spiel[\s\S]*data-next-game/);
+  assert.doesNotMatch(render('#/saison', {now: Date.parse('2027-06-30T12:00:00Z')}), /data-jump-next/);
+});
+
+test('Mein Bereich zeigt vorhandene Hallenbesuche sowie offene und gewertete Tipps', t => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  t.after(() => previous ? Object.defineProperty(globalThis, 'localStorage', previous) : delete globalThis.localStorage);
+  const stored = {[MY_GAMES_KEY]: ['508338'], [TIPS_KEY]: {'508338': [20, 28], '508393': [33, 27], old: [26, 29]}};
+  Object.defineProperty(globalThis, 'localStorage', {configurable: true, value: {getItem: k => JSON.stringify(stored[k] ?? null)}});
+  const upcoming = render('#/ich', MOMENTS.spieltag);
+  assert.match(upcoming, /Meine Spiele[\s\S]*1 in der Halle[\s\S]*#\/spiel\/508338/);
+  assert.match(upcoming, /Meine Tipps[\s\S]*3 gespeichert[\s\S]*33:27[\s\S]*Bis Anpfiff änderbar/);
+  assert.match(upcoming, /1 gespeicherte Tipps ohne Eintrag/);
+  const done = render('#/ich', MOMENTS.nachspiel);
+  assert.match(done, /33:27<\/b> · 3 Punkte/);
 });

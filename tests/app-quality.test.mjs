@@ -47,10 +47,16 @@ test('Zurück aus Spiel und Spiellaschen erreicht Ursprung mit Scrollposition; B
   assert.notEqual(direct.current.id, plan.id, 'keine Kollision mit History-Einträgen früherer Sitzungen');
 });
 
-test('Vorschau zeigt QHL-Form ohne Cup-Niederlage; Tipp folgt nach Ausgangslage und Zurück erhält Herkunft', () => {
-  const out = dom(renderSpiel({...ctx, route: {id: 'next'}, ui: {backTarget: '#/saison'}}));
-  const sections = [...out.querySelectorAll('section')];
-  assert.ok(sections.findIndex(s => s.textContent.includes('Ausgangslage')) < sections.findIndex(s => s.textContent.includes('Dein Tipp')));
+test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf Start- und Spielseite', () => {
+  const previewCtx = {...ctx, now: Date.parse('2026-11-11T14:30:00Z'), load: key => key === 'preview:next'
+    ? {status: 'ready', value: {generator: 'daten', paragraphs: ['Text zur Vorschau.']}}
+    : {status: 'error'}};
+  const out = dom(renderSpiel({...previewCtx, route: {id: 'next'}, ui: {backTarget: '#/saison'}}));
+  for (const page of [out, dom(renderJetzt(previewCtx))]) {
+    const headings = [...page.querySelectorAll('h2')].map(h => h.textContent);
+    assert.ok(headings.indexOf('Ausgangslage') < headings.indexOf('Vorschau'));
+    assert.ok(headings.indexOf('Vorschau') >= 0 && headings.indexOf('Vorschau') < headings.indexOf('Mein Tipp'));
+  }
   const form = out.querySelector('[aria-labelledby="g-lage"]');
   assert.equal(form.querySelector('[role="img"]').getAttribute('aria-label'), 'Form: Sieg');
   assert.doesNotMatch(form.textContent, /neuestes zuerst/, 'keine erklärenden Sätze');
