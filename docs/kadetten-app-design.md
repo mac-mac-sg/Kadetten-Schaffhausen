@@ -58,10 +58,10 @@ Alle Zahlen mit Tabellenziffern.
 
 | Baustein | Beschreibung |
 |---|---|
-| Kopfband `.band` | Orange Fläche, Unterkante um 8° geschnitten (`--cut` = Breite × tan 8°, gilt für jede Breite), Wappen-Anschnitt, Streifenband. Varianten: Titelseite (`band-home`, mit Wappen links, «Ich» rechts, Wortmarke), Hauptseite (Kicker, Titel, Knöpfe Verein und «Ich»), schmal (`band-slim`, Zurück und Aktion), Spielseite (`band-match`, Spielstand im Band) |
+| Kopfband `.band` | Orange Fläche, Unterkante um 8° geschnitten (`--cut` = Breite × tan 8°, gilt für jede Breite), Wappen-Anschnitt, Streifenband. Varianten: Titelseite (`band-home`, mit Wappen links, Wissen rechts, Wortmarke), Hauptseite (Kicker, Titel, Knöpfe Verein und Wissen; «Mein Bereich» zusätzlich mit Zahnrad zu den Einstellungen), schmal (`band-slim`, Zurück und Aktion), Spielseite (`band-match`, Spielstand im Band) |
 | Knopf, Chip, Segment, Etikett, Formkürzel | Parallelogramm: Fläche steht in `::before` schräg, Text bleibt aufrecht. Primär Orange mit Tinte, sonst Chip-Fläche. Knöpfe mindestens 48 px, Chips 40 px, Segmente 44 px |
 | Abschnittstitel `.h2` | kursiv, mit schrägem orangem Marker |
-| Navigation | vier Tabs: News, Spiele, Tabelle, Kader, alle mit Symbol und Beschriftung; aktiv in `accent-text` mit schrägem Balken am oberen Rand |
+| Navigation | fünf Tabs: Start, Spiele, Tabelle, Kader, Ich (aria-label «Mein Bereich»), alle mit Symbol und Beschriftung; aktiv in `accent-text` mit schrägem Balken am oberen Rand |
 | Spielkarte `.hero` | Karte mit Meta-Zeile (Etikett «in 6 Tagen», Live, Resultat), Wappen, grosse kursive Zeit oder Stand. Im Kopfband der Spielseite ohne eigene Fläche |
 | Nächstes Spiel, Kadetten in der Tabelle | Streifenrand links (`next-wrap`, `tr.me`) auf `highlight` |
 | Bilder | untere Kante um 8° geschnitten (Aufmacher, Vorschaubilder, Porträts, Spielerseite) |

@@ -2,7 +2,7 @@
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {LOGO, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips, gameRow} from './parts.js';
+import {LOGO, topBar, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips, gameRow} from './parts.js';
 import {hasScore, ownGames, kickoff} from '../logic.js';
 import {tipPoints} from '../moments.js';
 import {withFinished} from '../match.js';
@@ -151,7 +151,7 @@ export function renderMein({state, now, ui = {}}) {
     fav = playerByNumber(favourite()),
     latest = recent(3, input.games);
   const gained = open.reduce((n, r) => n + (r.fixed?.length || 0) + (r.pick || 0), 0);
-  return html`${subBand(backLink('Zurück', href.jetzt()), 'Mein Bereich', 'Spieltag, Quiz und Sammlung', html`<a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
+  return html`${topBar('Mein Bereich', 'Spieltag, Quiz und Sammlung', html`<a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
     ${
       open.length
         ? html`<section class="sec"><div class="card claim">

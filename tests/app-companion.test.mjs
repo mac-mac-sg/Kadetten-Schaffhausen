@@ -19,7 +19,7 @@ test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte New
   assert.equal(d.querySelector('h1').textContent,'Kadetten');
   assert.ok(d.querySelector('.band.band-home'),'Kopfband mit Schnittkante');
   assert.equal(d.querySelector('.band-crest').getAttribute('href'),'#/verein','Wappen führt zum Verein');
-  assert.equal(d.querySelector('.band-acts a[href="#/ich"]').getAttribute('href'),'#/ich');
+  assert.ok(!d.querySelector('.band-acts a[href="#/ich"]'),'Mein Bereich steht in der Navigation, nicht im Kopfband');
   assert.match(d.querySelector('.band-tag').textContent,/Tradition seit 1791/,'1791 ist die Gründung des Kadettencorps, nicht des Handballteams');
   assert.doesNotMatch(d.body.textContent,/Handball seit 1791/);
   assert.equal(d.querySelector('.match-score .hero-link').getAttribute('href'),'#/spiel/next','Nächstes Spiel als Karte');
@@ -29,13 +29,14 @@ test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte New
   const empty=doc(renderJetzt({...ctx,state:{data:{...data,stories:[]}}}));
   assert.ok(!empty.querySelector('.lead-story'),'ohne News keine erfundene Bildgeschichte');
 });
-test('Vier Tabs: Start, Spiele, Tabelle, Kader; Verein über das Wappen, Persönliches über «Ich»',()=>{
-  assert.deepEqual(AREAS.map(a=>a.label),['Start','Spiele','Tabelle','Kader']);
+test('Fünf Tabs: Start, Spiele, Tabelle, Kader, Ich; Verein über das Wappen',()=>{
+  assert.deepEqual(AREAS.map(a=>a.label),['Start','Spiele','Tabelle','Kader','Ich']);
   const d=doc(nav('statistik'));
-  assert.equal(d.querySelectorAll('a[aria-label]').length,4);
+  assert.equal(d.querySelectorAll('a[aria-label]').length,5);
+  assert.equal(d.querySelector('a[href="#/ich"]').getAttribute('aria-label'),'Mein Bereich');
   assert.equal(d.querySelector('[aria-current="page"]').getAttribute('href'),'#/statistik');
-  assert.equal(d.querySelectorAll('a svg').length,4,'jeder Tab hat ein Symbol und eine sichtbare Beschriftung');
-  assert.equal(d.querySelectorAll('a span').length,4);
+  assert.equal(d.querySelectorAll('a svg').length,5,'jeder Tab hat ein Symbol und eine sichtbare Beschriftung');
+  assert.equal(d.querySelectorAll('a span').length,5);
   assert.equal(parseRoute('#/statistik').view,'tabellen');
   assert.equal(parseRoute('#/verein').view,'verein');
   assert.equal(parseRoute('#/spiel/next/wahl').tab,'wahl');

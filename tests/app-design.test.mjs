@@ -96,13 +96,13 @@ test('Foto-Aufmacher: Datum steht im schrägen Tintenchip und ist bei jedem Foto
   assert.ok(contrast(light['c-on-ink'], light['c-ink']) >= 7, 'helle Schrift auf Tinte');
 });
 
-test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein, Wissen und «Ich»', () => {
+test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein und Wissen', () => {
   for (const hash of ['#/saison', '#/statistik', '#/statistik/spieler', '#/team', '#/verein', '#/news']) {
     const d = render(hash);
     assert.equal(d.querySelectorAll('h1').length, 1, hash);
     assert.ok(d.querySelector('header.band .band-t'), hash + ': Kopfband mit Titel');
     const links = [...d.querySelectorAll('.band-acts a')].map(a => a.getAttribute('href'));
-    assert.deepEqual(links, ['#/verein', '#/wissen', '#/ich'], hash);
+    assert.deepEqual(links, ['#/verein', '#/wissen'], hash);
     for (const a of d.querySelectorAll('.band-acts a')) assert.ok(a.getAttribute('aria-label'), 'Symbolknopf braucht einen Namen');
   }
   assert.equal(render('#/saison').querySelector('.band-t').textContent, 'Spiele');
@@ -129,9 +129,16 @@ test('Kader: Karten zeigen Porträt, grosse Nummer, Name und Position', () => {
   assert.match(card.textContent, /Rückraum/);
 });
 
-test('Navigation: vier Tabs mit Symbol und sichtbarer Beschriftung, kein Verein-Tab', () => {
+test('Navigation: fünf Tabs mit Symbol und sichtbarer Beschriftung, kein Verein-Tab', () => {
   const d = parseHTML('<html><body>' + String(nav('saison')) + '</body></html>').document;
-  assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent.trim()), ['Start', 'Spiele', 'Tabelle', 'Kader']);
+  assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent.trim()), ['Start', 'Spiele', 'Tabelle', 'Kader', 'Ich']);
+  for (const hash of ['#/ich', '#/ich/einstellungen', '#/sammlung', '#/sammlung/k-10']) assert.equal(parseRoute(hash).area, 'ich', hash);
+  const ich = parseHTML('<html><body>' + String(nav('ich')) + '</body></html>').document;
+  assert.equal(ich.querySelector('a.on').getAttribute('href'), '#/ich');
+  const mein = render('#/ich');
+  assert.equal(mein.querySelector('header.band .band-t').textContent, 'Mein Bereich');
+  assert.ok(!mein.querySelector('header.band a.back'), 'Hauptseite ohne Zurück');
+  assert.ok(mein.querySelector('.band-acts a[href="#/ich/einstellungen"]'), 'Einstellungen über das Zahnrad');
   assert.equal(d.querySelectorAll('a.on').length, 1);
 });
 
@@ -218,8 +225,8 @@ test('Spielerseite: Name und Position unter dem Porträt statt über dem Trikot'
   assert.equal(d.querySelector('.big-hero .no').textContent, '10');
 });
 
-test('Unterseiten mit Titel im Kopfband: Mein Bereich, Einstellungen, Sammlung, Geschichte, Trophäenschrank', () => {
-  for (const [hash, title, back] of [['#/ich', 'Mein Bereich', '#/'], ['#/ich/einstellungen', 'Einstellungen', '#/ich'], ['#/sammlung', 'Sammlung', '#/ich'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
+test('Unterseiten mit Titel im Kopfband: Einstellungen, Sammlung, Geschichte, Trophäenschrank', () => {
+  for (const [hash, title, back] of [['#/ich/einstellungen', 'Einstellungen', '#/ich'], ['#/sammlung', 'Sammlung', '#/ich'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
     const d = render(hash);
     assert.equal(d.querySelector('header.band-sub .band-t').textContent, title, hash);
     assert.equal(d.querySelector('header.band-sub a.back').getAttribute('href'), back, hash);

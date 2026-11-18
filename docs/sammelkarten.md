@@ -4,7 +4,7 @@ Stand 14. November 2026. Konzept und Skizzen: Design-Canvas, Bretter «Mein Bere
 
 ## Was es gibt
 
-- `#/ich` ist **Mein Bereich**: Quiz-Bilanz (Wochen in Folge, Anteil richtiger Antworten, Wochen ohne Fehler), Fortschritt der Sammlung, die drei neuesten Karten, Lieblingsspieler. Die bisherigen Einstellungen stehen unter `#/ich/einstellungen` (Zahnrad oben rechts).
+- `#/ich` ist **Mein Bereich**: Quiz-Bilanz (Wochen in Folge, Anteil richtiger Antworten, Wochen ohne Fehler), Fortschritt der Sammlung, die drei neuesten Karten, Lieblingsspieler. Erreichbar über den fünften Tab «Ich». Die Einstellungen stehen unter `#/ich/einstellungen` (Zahnrad oben rechts).
 - `#/sammlung` zeigt alle Karten (fehlende gestrichelt mit Nummer und Art) oder nur die eigenen, gefiltert nach Art.
 - `#/sammlung/<id>` zeigt eine Karte gross. Antippen der Karte (oder «Umdrehen», Enter, Leertaste) dreht sie in 3D mit kurzem Anheben und zeigt die Rückseite mit Text, Fakten und Quelle.
 - `#/sammlung/neu` zeigt die eben abgeholten Karten als Fächer: verdeckt ausgeteilt, Antippen deckt eine Karte mit einer Drehung auf, «Alle aufdecken» deckt sie nacheinander auf; danach fächern sie sich weiter auf. Seitlich wischen (oder Pfeiltasten) holt die nächste oder vorherige Karte nach vorne und deckt verdeckte dabei auf; Antippen einer hinteren Karte holt sie ebenfalls nach vorne. Die vordere Karte öffnet beim nächsten Antippen ihre Ansicht.

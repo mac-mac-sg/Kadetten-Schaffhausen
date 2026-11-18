@@ -133,9 +133,9 @@ test('Routen: fünf Bereiche, Spielseite, Ich, Unbekanntes führt zu Jetzt', () 
   assert.deepEqual(parseRoute('#/team/perić'), {area: 'team', view: 'team'});
   assert.deepEqual(parseRoute('#/team/peric-10'), {area: 'team', view: 'spieler', id: 'peric-10'});
   assert.deepEqual(parseRoute('#/spiel/508338'), {area: 'saison', view: 'spiel', id: '508338'});
-  assert.deepEqual(parseRoute('#/ich'), {area: null, view: 'mein'});
-  assert.deepEqual(parseRoute('#/ich/einstellungen'), {area: null, view: 'ich'});
-  assert.deepEqual(parseRoute('#/sammlung/k-10'), {area: null, view: 'karte', id: 'k-10'});
+  assert.deepEqual(parseRoute('#/ich'), {area: 'ich', view: 'mein'});
+  assert.deepEqual(parseRoute('#/ich/einstellungen'), {area: 'ich', view: 'ich'});
+  assert.deepEqual(parseRoute('#/sammlung/k-10'), {area: 'ich', view: 'karte', id: 'k-10'});
   assert.deepEqual(parseRoute('#/sammlung/neu'), {area: null, view: 'neu'});
   assert.deepEqual(parseRoute('#home'), {area: 'jetzt', view: 'jetzt'});
   assert.equal(href.saison('spielplan'), '#/saison');
