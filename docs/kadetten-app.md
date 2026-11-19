@@ -285,7 +285,7 @@ Bei Kadetten-Heimspielen vor Anpfiff steht in der Kopfzeile der Spieltagskarte (
 
 ## Saisonrückblick «Deine Saison»
 
-`#/rueckblick` zeigt die Saison als Geschichte aus Vollbild-Karten (Vorbild: Jahresrückblick von Spotify). Tippen rechts oder Wischen nach links: weiter; Tippen links oder Wischen nach rechts: zurück; Pfeiltasten ebenso. Keine Navigation, das × führt zu «Mein Bereich». Konzept: Design-Canvas, Brett «Saisonrückblick · Konzept».
+`#/rueckblick` zeigt die Saison als Geschichte aus Vollbild-Karten (Vorbild: Jahresrückblick von Spotify). Jede Karte läuft 5 Sekunden (oberer Balken füllt sich), dann folgt automatisch die nächste; die letzte Karte bleibt stehen. Gedrückt halten oder Leertaste hält an, ein verborgener Tab ebenfalls. Gilt auch für die Spiel-Story. Tippen rechts oder Wischen nach links: weiter; Tippen links oder Wischen nach rechts: zurück; Pfeiltasten ebenso. Keine Navigation, das × führt zu «Mein Bereich». Konzept: Design-Canvas, Brett «Saisonrückblick · Konzept».
 
 - Karten (`js/rueckblick.js`, Ansicht `js/views/rueckblick.js`): Auftakt, In der Halle (Besuche, Bilanz, gesehene Tore, Siegquote mit dir und über die Saison), Dein Spiel der Saison (höchster Sieg in der Halle), Tippspiel (Punkte, exakt, richtige Differenz, beste Serie, bester Tipp), Lieblingsspieler (QHL-Tore, Spiele, Siebenmeter aus `playerSeason`), Quiz und Sammlung (Wochen, ohne Fehler, Quote, Karten, seltenste Karte), Deine Kadetten (Platz, QHL-Bilanz, Tore, Rangkurve aus `rankHistory`), Fan-Typ mit Teilen-Bild (`recapCard`).
 - Karten ohne Daten fallen weg; Mannschaft und Fan-Typ erscheinen immer. Keine Vergleiche mit anderen Fans. Alles aus dem Gerät und dem Datenstand der App.

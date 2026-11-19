@@ -104,7 +104,9 @@ export function storyShell({slides, step = 0, enter = false, close, closeLabel, 
     at = Math.min(Math.max(0, Number(step) || 0), n - 1),
     s = slides[at];
   return html`<div class="rb rb-${THEMES[at % THEMES.length]}${enter ? ' enter' : ''}" data-rb-step="${at}">
-    <div class="rb-bars" aria-hidden="true">${slides.map((_, i) => html`<i class="${i <= at ? 'on' : ''}"></i>`)}</div>
+    <div class="rb-bars" aria-hidden="true">${slides.map(
+      (_, i) => html`<i class="${i < at || (i === at && at === n - 1) ? 'on' : i === at ? 'now' : ''}"></i>`
+    )}</div>
     <a class="rb-close" href="${close}" aria-label="${closeLabel}">${icon('close')}</a>
     <section class="rb-slide" aria-live="polite" aria-label="${`Karte ${at + 1} von ${n}`}" data-rb-id="${s.id}">${s.body}</section>
     ${at > 0 ? html`<button class="rb-prev" type="button" data-rb="prev" aria-label="Vorherige Karte"></button>` : ''}

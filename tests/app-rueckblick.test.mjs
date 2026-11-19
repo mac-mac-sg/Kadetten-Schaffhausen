@@ -91,13 +91,16 @@ test('Ansicht: Balken, eine Karte, Tippflächen, Teilen auf der letzten Karte, H
   const first = doc(0);
   const n = first.querySelectorAll('.rb-bars i').length;
   assert.ok(n >= 3);
-  assert.equal(first.querySelectorAll('.rb-bars i.on').length, 1);
+  assert.equal(first.querySelectorAll('.rb-bars i.on').length, 0);
+  assert.equal(first.querySelectorAll('.rb-bars i.now').length, 1, 'laufende Karte füllt ihren Balken');
   assert.ok(first.querySelector('[data-rb="next"]') && !first.querySelector('[data-rb="prev"]'));
   assert.equal(first.querySelector('.rb-close').getAttribute('href'), '#/ich');
   assert.match(first.querySelector('h1').textContent, /Deine/);
   const last = doc(99);
   assert.ok(last.querySelector('[data-rb-share]') && !last.querySelector('[data-rb="next"]'));
   assert.equal(last.querySelector('.rb-slide').getAttribute('data-rb-id'), 'fan');
+  assert.equal(last.querySelectorAll('.rb-bars i.now').length, 0, 'letzte Karte bleibt stehen');
+  assert.equal(last.querySelectorAll('.rb-bars i.on').length, n);
   assert.ok(String(recapTeaser(games, now)).includes('#/rueckblick'));
   assert.equal(String(recapTeaser([...games, g('6', '2026-10-20', OWN, 'HSC Suhr Aarau')], now)), '', 'kein Hinweis vor Saisonende');
 });

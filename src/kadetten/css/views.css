@@ -744,8 +744,12 @@ a.sk:active { transform: scale(.97); }
 .rb-bk { background: var(--c-ink); color: var(--c-on-ink); }
 .rb-cr { background: #f6f3ee; color: var(--c-ink); }
 .rb-bars { position: absolute; top: calc(max(env(safe-area-inset-top), 16px) + 4px); left: var(--s-4); right: var(--s-4); display: flex; gap: 4px; }
-.rb-bars i { flex: 1; height: 3px; border-radius: 2px; background: currentColor; opacity: 0.25; }
-.rb-bars i.on { opacity: 1; }
+.rb-bars i { position: relative; flex: 1; height: 3px; border-radius: 2px; overflow: hidden; background: color-mix(in srgb, currentColor 25%, transparent); }
+.rb-bars i.on { background: currentColor; }
+/* Laufende Karte: Balken füllt sich in 5 Sekunden, dann folgt die nächste Karte (Zeitsteuerung in main.js). */
+.rb-bars i.now::after { content: ''; position: absolute; inset: 0; background: currentColor; transform-origin: left; animation: rb-fill 5s linear var(--rb-elapsed, 0ms) both; }
+.rb.paused .rb-bars i.now::after { animation-play-state: paused; }
+@keyframes rb-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .rb-close { position: absolute; z-index: 3; top: calc(max(env(safe-area-inset-top), 16px) + 14px); right: var(--s-3); width: var(--tap); height: var(--tap); display: grid; place-items: center; color: inherit; }
 .rb-slide { position: relative; flex: 1; display: flex; flex-direction: column; max-width: 520px; width: 100%; margin: 0 auto; }
 .rb-k { margin: var(--s-4) 0 0; font: 600 13px/1.2 var(--f-text); letter-spacing: 0.08em; text-transform: uppercase; }
