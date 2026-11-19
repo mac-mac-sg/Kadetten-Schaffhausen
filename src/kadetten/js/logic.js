@@ -241,3 +241,17 @@ export function pointsCurve(games, team = OWN_TEAM) {
       return {round: i + 1, result, points, opponent: g.home === team ? g.away : g.home};
     });
 }
+
+const TICKET_HOSTS = ['ticketmaster.ch', 'www.ticketmaster.ch', 'ticketcorner.ch', 'www.ticketcorner.ch'];
+/** Ticket-Link eines Kadetten-Heimspiels vor Anpfiff (vom Datendienst aus tickets.json der Homepage); sonst null. */
+export function ticketUrl(game, now) {
+  if (!game || game.home !== OWN_TEAM || typeof game.tickets !== 'string' || game.tickets.length > 500) return null;
+  const at = kickoff(game);
+  if (at === null || at <= now) return null;
+  try {
+    const u = new URL(game.tickets);
+    return u.protocol === 'https:' && TICKET_HOSTS.includes(u.hostname) && !u.username && !u.password && !u.port ? u.href : null;
+  } catch {
+    return null;
+  }
+}

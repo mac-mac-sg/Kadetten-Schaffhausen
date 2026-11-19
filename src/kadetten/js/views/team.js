@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
-import {topBar, chips, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
+import {topBar, clubLink, chips, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
@@ -35,7 +35,7 @@ export function renderTeam({ui = {}} = {}) {
   const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
   const test = FILTERS.find(f => f[0] === current)[2];
   const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
-  return html`${topBar('Kader', `Saison ${SEASON}`)}
+  return html`${topBar('Kader', `Saison ${SEASON}`, clubLink)}
     ${chips(
       'pos',
       FILTERS.map(([id, label]) => [id, label]),

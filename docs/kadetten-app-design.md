@@ -58,7 +58,7 @@ Alle Zahlen mit Tabellenziffern.
 
 | Baustein | Beschreibung |
 |---|---|
-| Kopfband `.band` | Orange Fläche, Unterkante um 8° geschnitten (`--cut` = Breite × tan 8°, gilt für jede Breite), Wappen-Anschnitt, Streifenband. Varianten: Titelseite (`band-home`, mit Wappen links, Wissen rechts, Wortmarke), Hauptseite (Kicker, Titel, Knöpfe Verein und Wissen; «Mein Bereich» zusätzlich mit Zahnrad zu den Einstellungen), schmal (`band-slim`, Zurück und Aktion), Spielseite (`band-match`, Spielstand im Band) |
+| Kopfband `.band` | Orange Fläche, Unterkante um 8° geschnitten (`--cut` = Breite × tan 8°, gilt für jede Breite), Wappen-Anschnitt, Streifenband. Varianten: Titelseite (`band-home`, Wappen links ohne Link, Wortmarke), Hauptseite (Kicker, Titel; Symbolknopf oben rechts nur im Kader zum Verein und in «Mein Bereich» zu den Einstellungen; das Wissen ist ein Block in «Mein Bereich»), schmal (`band-slim`, Zurück und Aktion), Spielseite (`band-match`, Spielstand im Band) |
 | Knopf, Chip, Segment, Etikett, Formkürzel | Parallelogramm: Fläche steht in `::before` schräg, Text bleibt aufrecht. Primär Orange mit Tinte, sonst Chip-Fläche. Knöpfe mindestens 48 px, Chips 40 px, Segmente 44 px |
 | Abschnittstitel `.h2` | kursiv, mit schrägem orangem Marker |
 | Navigation | fünf Tabs: Start, Spiele, Tabelle, Kader, Ich (aria-label «Mein Bereich»), alle mit Symbol und Beschriftung; aktiv in `accent-text` mit schrägem Balken am oberen Rand |
@@ -116,7 +116,7 @@ Regeln:
 | Kader | Kopfband, Positions-Chips (Alle, Tor, Rückraum, Flügel, Kreis), ein Raster mit zwei Spalten nach Rückennummer |
 | Spieler | schmales Band, Porträt mit grosser Nummer, Name und Position darunter (nie über dem Trikot), Saisonwerte, Form, Steckbrief |
 | Verein | Kopfband, Titel als grosse Zahlen (ohne Karte), «1791»-Karte mit Streifenrand, Hallenfoto mit Schnitt, zwei Verweise: Geschichte (`#/verein/geschichte`, Zeitreise und Heimhalle) und Trophäenschrank (`#/verein/titel`, Titel und Jahre) |
-| Wissen | schmales Kopfband mit Zurück und Titel (`band-sub`, wie «Ich»; das Buch-Symbol sitzt auf den Hauptseiten neben Wappen und «Ich»), drei Kapitel als Reiter (Regeln, Aufstellungen, Spielzüge), Gruppen mit Zeilen; Artikel mit Feldbild, Kurzfassung, «In der App» und «Dazu passt». Adressen `#/wissen[/kapitel[/artikel[/schritt]]]`, siehe `docs/wissensbereich.md` |
+| Wissen | schmales Kopfband mit Zurück und Titel (`band-sub`, Zurück führt zu «Mein Bereich»; Eintritt über den Block «Wissen» in «Mein Bereich»), drei Kapitel als Reiter (Regeln, Aufstellungen, Spielzüge), Gruppen mit Zeilen; Artikel mit Feldbild, Kurzfassung, «In der App» und «Dazu passt». Adressen `#/wissen[/kapitel[/artikel[/schritt]]]`, siehe `docs/wissensbereich.md` |
 | Ich, Geschichte, Trophäenschrank, Spielerwahl | Kopfband mit Zurück und Titel (`band-sub`) |
 | Alle Unterseiten | Zurück als Pille im Band; Streifenband liegt unter den Knöpfen, nie dahinter |
 

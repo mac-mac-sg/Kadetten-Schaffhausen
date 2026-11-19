@@ -45,7 +45,7 @@ export function parseRoute(hash = '') {
       }
       return safeId(second) ? {area: 'team', view: 'spieler', id: second} : {area: 'team', view: 'team'};
     case 'verein':
-      return {area: 'verein', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
+      return {area: 'team', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich':
       return second === 'einstellungen' ? {area: 'ich', view: 'ich'} : {area: 'ich', view: 'mein'};
     case 'sammlung':

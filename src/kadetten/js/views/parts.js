@@ -60,22 +60,20 @@ function logoFor(team) {
   return file ? `assets/clubs/club-${file}.webp` : null;
 }
 
-const wissenLink = html`<a class="icb" href="${href.wissen()}" aria-label="Wissen: Regeln, Aufstellungen und Spielzüge">${icon('book', 22)}</a>`;
-const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="28" height="32"></a>`;
+/** Zugang zum Verein (Geschichte, Titel): nur im Kopfband des Kaders. */
+export const clubLink = html`<a class="icb club" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="28" height="32"></a>`;
 
-/** Kopfband einer Hauptseite: Kicker, Titel, Zugang zu Verein und Wissen, optional eine eigene Aktion. */
+/** Kopfband einer Hauptseite: Kicker, Titel, optional Symbolknöpfe oben rechts (Kader: Verein, Mein Bereich: Einstellungen). */
 export const topBar = (title, kicker = `Saison ${SEASON}`, action = '') =>
   html`<header class="band">
-    <div class="band-acts">
-    ${clubLink}${wissenLink}${action}</div>
+    ${action ? html`<div class="band-acts">${action}</div>` : ''}
     <p class="band-k">${kicker}</p>
     <h1 class="band-t">${title}</h1>
     </header>`;
-/** Kopfband der Titelseite: grosser Schriftzug, Wappen links, Wissen rechts. */
+/** Kopfband der Titelseite: grosser Schriftzug und Wappen links. Der Verein ist über das Kopfband des Kaders erreichbar. */
 export const homeBand = () =>
   html`<header class="band band-home">
-    <a class="band-crest" href="${href.verein()}" aria-label="Verein: Geschichte und Titel"><img src="${LOGO}" alt="" width="44" height="51"></a><div class="band-acts">
-    ${wissenLink}</div>
+    <span class="band-crest"><img src="${LOGO}" alt="" width="44" height="51"></span>
     <h1 class="band-t">Kadetten</h1>
     <p class="band-s">Schaffhausen</p>
     <p class="band-tag"><span class="tag-ink">Tradition seit 1791</span></p>
@@ -128,15 +126,39 @@ export function formRow(results, small = false) {
 export const formBadge = (result, small = true) => (result ? formRow([result], small) : '');
 
 /** Spielkarte (Hero) mit Hallenfoto. middle: Anpfiffzeit oder Spielstand. */
-export function heroCard({meta, pill, live = false, home, away, middle, foot = '', actions = '', link, label, celebrate = false}) {
-  const body = html`<div class="meta">
-    <span>${meta}</span>${pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : ''}</div>
+export function heroCard({
+  meta,
+  pill,
+  live = false,
+  home,
+  away,
+  middle,
+  foot = '',
+  actions = '',
+  link,
+  label,
+  celebrate = false,
+  ticket = null
+}) {
+  const pillHtml = pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : '';
+  // Ticket-Marke: eigener Link neben dem Countdown. Die Karte verlinkt dann über eine Fläche dahinter (kein Link im Link).
+  const ticketHtml = ticket
+    ? html`<a class="pill tk" href="${ticket.url}" target="_blank" rel="noopener noreferrer" aria-label="${ticket.label}">${icon('ticket', 16)}Tickets</a>`
+    : '';
+  const body = html`<div class="meta${ticket ? ' has-tk' : ''}">
+    <span>${meta}</span>${ticket ? html`<span class="pills">${pillHtml}${ticketHtml}</span>` : pillHtml}</div>
     <div class="vs">
       <span class="team">${crest(home)}${shortTeam(home)}</span>${middle}<span class="team">${crest(away)}${shortTeam(away)}</span></div>
       ${foot}`;
   return html`<div class="hero${celebrate ? ' celebrate' : ''}"${
     celebrate ? html` data-celebrate="${home + ':' + away + ':' + (meta || '')}"` : ''
-  }>${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
+  }>${
+    link && ticket
+      ? html`<a class="hero-link cover" href="${link}" aria-label="${label || ''}"></a>${body}`
+      : link
+        ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>`
+        : body
+  }${actions}</div>`;
 }
 
 export const kickoffTime = (time, label = 'Anpfiff') => html`<span class="kick num">${time || '–'}<small>${label}</small></span>`;

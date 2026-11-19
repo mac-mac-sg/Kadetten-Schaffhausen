@@ -18,7 +18,8 @@ test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte New
   assert.equal(d.querySelectorAll('h1').length,1);
   assert.equal(d.querySelector('h1').textContent,'Kadetten');
   assert.ok(d.querySelector('.band.band-home'),'Kopfband mit Schnittkante');
-  assert.equal(d.querySelector('.band-crest').getAttribute('href'),'#/verein','Wappen führt zum Verein');
+  assert.ok(d.querySelector('.band-crest img')&&!d.querySelector('a.band-crest'),'Wappen auf der Titelseite ohne Link; Verein über den Kader');
+  assert.ok(!d.querySelector('.band-acts'),'keine Symbolknöpfe auf der Titelseite');
   assert.ok(!d.querySelector('.band-acts a[href="#/ich"]'),'Mein Bereich steht in der Navigation, nicht im Kopfband');
   assert.match(d.querySelector('.band-tag').textContent,/Tradition seit 1791/,'1791 ist die Gründung des Kadettencorps, nicht des Handballteams');
   assert.doesNotMatch(d.body.textContent,/Handball seit 1791/);

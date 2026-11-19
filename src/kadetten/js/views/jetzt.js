@@ -16,7 +16,8 @@ import {
   nextGame,
   hasScore,
   shortTeam,
-  competitionOf
+  competitionOf,
+  ticketUrl
 } from '../logic.js';
 import {findGame, liveTable, sameTeam, withFinished, isOwn, displayName} from '../match.js';
 import {liveNotice, liveScoreTime, waitingForLive} from '../live.js';
@@ -101,8 +102,11 @@ export function resultHero(game, now, {link = true, actions = '', celebrate = fa
 }
 
 export function previewHero(game, now, {link = true, actions = '', status = null} = {}) {
+  const tickets = ticketUrl(game, now);
   return heroCard({
-    meta: metaLine(game, now),
+    ticket: tickets ? {url: tickets, label: `Tickets für ${shortTeam(game.home)} – ${shortTeam(game.away)} kaufen (externe Seite)`} : null,
+    // Mit Ticket-Marke ohne Halle: Heimspiele sind in der BBC Arena, und die Kopfzeile bleibt einzeilig.
+    meta: tickets ? [dayLabel(game, now) || 'Heute', game.league].filter(Boolean).join(' · ') : metaLine(game, now),
     pill: countdown(kickoff(game), now),
     home: game.home,
     away: game.away,

@@ -167,6 +167,14 @@ export function renderMein({state, now, ui = {}}) {
         <span class="stat"><span class="v num">${quiz.quote === null ? '–' : quiz.quote + ' %'}</span><span class="k">richtig beantwortet</span></span>
         <span class="stat"><span class="v num">${quiz.perfect}</span><span class="k">${quiz.perfect === 1 ? 'Woche' : 'Wochen'} ohne Fehler</span></span>
       </div></section>
+    <section class="sec" aria-labelledby="m-wissen">${sectionHead('Wissen', 'Alles', href.wissen(), 'm-wissen')}
+      <div class="card list">
+        ${[
+          ['regeln', 'Regeln', 'Spiel, Strafen und Statistik-Begriffe'],
+          ['aufstellungen', 'Aufstellungen', 'Abwehr, Angriff und Positionen im Feldbild'],
+          ['spielzuege', 'Spielzüge', 'Schritt für Schritt erklärt']
+        ].map(([id, title, sub]) => listRow({title, sub, link: href.wissen(id), lead: html`<span class="lead">${icon('book')}</span>`}))}
+      </div></section>
     <section class="sec" aria-labelledby="m-karten">${sectionHead('Sammelkarten', 'Alle Karten', href.sammlung(), 'm-karten')}
       <a class="card prog" href="${href.sammlung()}">
         <span class="prog-row"><b class="num">${prog.have}</b><span>von ${prog.total} Karten${prog.moments ? ` · ${prog.moments} ${prog.moments === 1 ? 'Moment' : 'Momente'}` : ''}</span><em class="num">${Math.round((prog.have / prog.total) * 100)} %</em></span>

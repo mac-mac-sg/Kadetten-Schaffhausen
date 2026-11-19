@@ -2,7 +2,7 @@
 
 **Seit 13. November 2026:** Die Kadetten-App ist die gültige App unter https://mac-mac-sg.github.io/Kadetten-Schaffhausen/ (Kopie unter `/v2/`); Matchday ist archiviert ([GitHub Pages](pages.md)).
 
-**Aktuell ab 7. November 2026:** Die App ist reine Kadetten-App in der [Designsprache «Schnitt»](kadetten-app-design.md) mit fünf Tabs (Start, Spiele, Tabelle, Kader, Ich); Verein erreicht man über das Wappen, Wissen über das Buch-Symbol. Der Tab «Ich» öffnet «Mein Bereich» (Quiz-Bilanz, Sammelkarten, Einstellungen über das Zahnrad; seit 18. November 2026, vorher Symbol oben rechts). Das [Matchday-Layout](v2-matchday-layout.md) ist abgelöst. Gestaltung und Seitenaufbau stehen im Designdokument; die Abschnitte «Struktur» und «Seitenaufbau» unten beschreiben die frühere Gliederung (Jetzt, Saison, Team, Verein) und gelten für Inhalte und Zustände weiter, nicht für Navigation und Gestaltung.
+**Aktuell ab 7. November 2026:** Die App ist reine Kadetten-App in der [Designsprache «Schnitt»](kadetten-app-design.md) mit fünf Tabs (Start, Spiele, Tabelle, Kader, Ich); Den Verein erreicht man über das Wappen oben rechts im Kader (seit 19.11.2026 nur dort). Der Tab «Ich» öffnet «Mein Bereich» (Quiz-Bilanz, Wissen mit Regeln, Aufstellungen und Spielzügen, Sammelkarten, Einstellungen über das Zahnrad; seit 18. November 2026, vorher Symbol oben rechts). Das [Matchday-Layout](v2-matchday-layout.md) ist abgelöst. Gestaltung und Seitenaufbau stehen im Designdokument; die Abschnitte «Struktur» und «Seitenaufbau» unten beschreiben die frühere Gliederung (Jetzt, Saison, Team, Verein) und gelten für Inhalte und Zustände weiter, nicht für Navigation und Gestaltung.
 
 Stand: 5. November 2026. Grundlage: [Recherche Vereins- und Fan-Apps](research/vereins-und-fan-apps.md) und [Designanalyse und Funktionskatalog](research/designanalyse-und-funktionen.md).
 
@@ -275,3 +275,10 @@ Vorschau und Live-Reiter jedes QHL-Spiels zeigen die Siegchance der Kadetten mit
 - Live: Der aktuelle Vorsprung zählt voll, Erwartung und Streuung nur noch für die Restzeit laut Spieluhr. Ohne Spieluhr erscheint keine Live-Zahl.
 - Erst wenn beide Teams drei Spiele haben; nur QHL (für Europacup und Cup fehlen vergleichbare Daten). Alles im Gerät, kein neuer Dienst.
 - Geprüft mit `scripts/gewinnscore-backtest.mjs` an 809 QHL-Spielen 2021–2025: Prüfsaison 2025/26 74 % richtige Siegertipps (Grundquote Heimteam 57 %), Brier 0,35 (0,53). Nach jeder Saison die Vorsaison-Werte neu auszählen.
+
+## Tickets in der Spieltagskarte
+
+Bei Kadetten-Heimspielen vor Anpfiff steht in der Kopfzeile der Spieltagskarte (Titelseite und Spielseite) neben dem Countdown die Marke «Tickets». Sie öffnet den Ticket-Shop in einem neuen Fenster; die Karte selbst führt weiter zur Vorschau. Mit Marke entfällt die Halle in der Kopfzeile (Heimspiele sind in der BBC Arena), die Karte bleibt gleich hoch.
+
+- Quelle: `https://kadettensh.ch/wp-content/uploads/tickets.json`, dieselbe Datei, aus der die Kadetten-Homepage ihre Ticket-Knöpfe füllt (Spiel-ID des Matchcenters → Link). Der Datendienst liest sie bei jeder Spielplan-Aktualisierung mit (`server/update.mjs`: `parseTickets`, `withTickets`) und schreibt den Link ins Feld `tickets` des Spiels; Status unter `status.tickets`.
+- Übernommen werden nur https-Links auf ticketmaster.ch und ticketcorner.ch (Datendienst und App prüfen beide). Fehlt die Datei, bleiben die bisherigen Links; fehlt ein Eintrag, wird ein alter Link entfernt. Kein Ersatzlink.
