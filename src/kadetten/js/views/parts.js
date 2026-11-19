@@ -128,15 +128,39 @@ export function formRow(results, small = false) {
 export const formBadge = (result, small = true) => (result ? formRow([result], small) : '');
 
 /** Spielkarte (Hero) mit Hallenfoto. middle: Anpfiffzeit oder Spielstand. */
-export function heroCard({meta, pill, live = false, home, away, middle, foot = '', actions = '', link, label, celebrate = false}) {
-  const body = html`<div class="meta">
-    <span>${meta}</span>${pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : ''}</div>
+export function heroCard({
+  meta,
+  pill,
+  live = false,
+  home,
+  away,
+  middle,
+  foot = '',
+  actions = '',
+  link,
+  label,
+  celebrate = false,
+  ticket = null
+}) {
+  const pillHtml = pill ? html`<span class="pill">${live ? html`<i class="dot"></i>` : ''}${pill}</span>` : '';
+  // Ticket-Marke: eigener Link neben dem Countdown. Die Karte verlinkt dann über eine Fläche dahinter (kein Link im Link).
+  const ticketHtml = ticket
+    ? html`<a class="pill tk" href="${ticket.url}" target="_blank" rel="noopener noreferrer" aria-label="${ticket.label}">${icon('ticket', 16)}Tickets</a>`
+    : '';
+  const body = html`<div class="meta${ticket ? ' has-tk' : ''}">
+    <span>${meta}</span>${ticket ? html`<span class="pills">${pillHtml}${ticketHtml}</span>` : pillHtml}</div>
     <div class="vs">
       <span class="team">${crest(home)}${shortTeam(home)}</span>${middle}<span class="team">${crest(away)}${shortTeam(away)}</span></div>
       ${foot}`;
   return html`<div class="hero${celebrate ? ' celebrate' : ''}"${
     celebrate ? html` data-celebrate="${home + ':' + away + ':' + (meta || '')}"` : ''
-  }>${link ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>` : body}${actions}</div>`;
+  }>${
+    link && ticket
+      ? html`<a class="hero-link cover" href="${link}" aria-label="${label || ''}"></a>${body}`
+      : link
+        ? html`<a class="hero-link" href="${link}" aria-label="${label || ''}">${body}</a>`
+        : body
+  }${actions}</div>`;
 }
 
 export const kickoffTime = (time, label = 'Anpfiff') => html`<span class="kick num">${time || '–'}<small>${label}</small></span>`;

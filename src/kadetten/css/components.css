@@ -132,3 +132,12 @@
 .live-tile.goal .lt-score { color: var(--c-tile-hot); }
 .live-tile:focus-visible { outline: 3px solid var(--c-accent); outline-offset: 2px; }
 html.has-tile main { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s-6) + 64px); }
+/* Ticket-Marke in der Spieltagskarte: gleiche Höhe wie der Countdown, die Karte wächst nicht. */
+.hero-link.cover { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.meta.has-tk > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta .pills { display: inline-flex; flex: none; align-items: center; gap: 4px; }
+.meta .pills .pill { margin: 0 2px; padding: 0 10px; }
+.pill.tk { position: relative; z-index: 2; gap: 6px; --fill: var(--c-ink); --edge: inset 0 0 0 1px var(--c-card-edge-strong); color: var(--c-on-ink-accent); }
+.pill.tk::after { content: ''; position: absolute; inset: -8px -2px; }
+.pill.tk .icon { width: 16px; height: 16px; }
+.band .hero .pill.tk { --fill: var(--c-on-ink); --edge: none; color: var(--c-ink); }
