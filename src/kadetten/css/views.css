@@ -798,3 +798,38 @@ a.sk:active { transform: scale(.97); }
 .rb-acts .rb-share:last-child { margin-bottom: 14px; }
 .rb-share.alt { background: var(--c-surface); color: var(--c-ink); }
 .rb-cr .rb-share.alt { background: var(--c-ink); color: var(--c-on-ink); }
+
+/* Sammlung mit gemischten Formaten: Orte, Titel, Spiele und Geschichte quer über die ganze Breite (3:2),
+   Personen und Momente hochkant in halber Breite. Die cqw-Masse beziehen sich auf die doppelte Breite, darum eigene Grössen. */
+.sk-grid > .sk.quer { grid-column: 1 / -1; }
+.sk.quer { aspect-ratio: 3 / 2; --sk-fade: var(--c-black); }
+.sk.quer.a-geschichte, .sk.quer.a-ort { --sk-fade: var(--c-paper); }
+.sk.quer.spezial { --sk-fade: var(--c-accent); }
+.sk.quer .sk-img { height: 100%; clip-path: none; }
+.sk.quer .sk-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 38%, var(--sk-fade) 94%); }
+.sk.quer .sk-stp { top: 44%; height: 7cqw; background-size: auto; }
+.sk.quer .sk-no { left: 3.5cqw; top: 2.5cqw; font-size: 11cqw; }
+.sk.quer .sk-big { left: 4cqw; right: 22cqw; top: 6cqw; font-size: 15cqw; }
+.sk.quer .sk-wap { right: 4cqw; bottom: 4cqw; width: 8cqw; }
+.sk.quer .sk-tag { right: 3.5cqw; top: 3.5cqw; padding: 1cqw 2.2cqw; font-size: 3cqw; }
+.sk.quer .sk-txt { left: 4cqw; right: 24cqw; bottom: 8cqw; gap: 0.8cqw; }
+.sk.quer .sk-k { font-size: 3.2cqw; }
+.sk.quer .sk-t { font-size: 7cqw; }
+.sk.quer .sk-f { left: 4cqw; right: 4cqw; bottom: 3cqw; font-size: 2.8cqw; }
+.sk.quer.typo .sk-f, .sk.quer.typo .sk-txt { right: 16cqw; }
+.sk.quer.legende::after { border-width: 2cqw; }
+.sk.lock.quer .sk-q { font-size: 20cqw; }
+.sk.lock.quer .sk-tag { font-size: 3cqw; padding: 1cqw 2.2cqw; }
+.sk.lock.quer .sk-t { font-size: 4.6cqw; }
+.sk.lock.quer .sk-k { font-size: 3cqw; }
+/* Kartenansicht: Querkarten bleiben gross und drehen sich quer um. */
+.sk-flip.quer { aspect-ratio: 3 / 2; }
+.sk-flip.lg.quer, .sk.lg.quer { max-width: 560px; }
+.sk.rueck.quer .sk-in { padding: 4.5cqw 5cqw 9cqw; gap: 1.4cqw; overflow-y: auto; }
+.sk.rueck.quer::before { height: 7cqw; }
+.sk.rueck.quer .sk-bt { font-size: 6cqw; }
+.sk.rueck.quer .sk-bk { font-size: 2.8cqw; }
+.sk.rueck.quer .sk-bx { font-size: 2.8cqw; }
+.sk.rueck.quer .sk-dl { font-size: 2.6cqw; gap: 0.8cqw; }
+.sk.rueck.quer .sk-dl div { padding-top: 0.8cqw; }
+.sk.rueck.quer .sk-src { font-size: 2.4cqw; }

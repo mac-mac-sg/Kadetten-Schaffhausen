@@ -51,7 +51,11 @@ export function quizBilanz(answers, now) {
 }
 
 /** Vorderseite einer Karte. size: '' (Raster), 'lg' (Ansicht), 'sm' (Vorschau). */
-export function cardFront(card, {size = '', link = true} = {}) {
+/** Arten im Querformat (Bild trägt: Ort, Titel, Spiel, Geschichte); Personen und Momente bleiben hochkant. */
+export const WIDE_ARTS = new Set(['ort', 'titel', 'spiel', 'geschichte']);
+export const isWide = card => WIDE_ARTS.has(card?.art);
+
+export function cardFront(card, {size = '', link = true, quer = false} = {}) {
   const rarity = rarityOf(card),
     no = NUMBER.get(card.id);
   const img = card.image
@@ -62,18 +66,18 @@ export function cardFront(card, {size = '', link = true} = {}) {
     <span class="sk-tag">${card.art === 'kader' ? 'Kader' : RARITY_LABEL[rarity]}</span>
     <span class="sk-txt"><span class="sk-k">${card.kicker}</span><span class="sk-t">${card.title}</span></span>
     <span class="sk-f"><span>${no ? '#' + pad(no) : 'Moment'}</span><span>${ART_LABEL[card.art]}</span></span>`;
-  const cls = `sk ${rarity} a-${card.art}${card.image ? '' : ' typo'}${size ? ' ' + size : ''}`;
+  const cls = `sk ${rarity} a-${card.art}${card.image ? '' : ' typo'}${size ? ' ' + size : ''}${quer ? ' quer' : ''}`;
   return link
     ? html`<a class="${cls}" href="${href.karte(card.id)}" aria-label="${`${card.title}, ${ART_LABEL[card.art]}, ${RARITY_LABEL[rarity]}`}">${body}</a>`
     : html`<span class="${cls}">${body}</span>`;
 }
 function cardLocked(card) {
-  return html`<div class="sk lock" aria-label="${`Karte ${pad(NUMBER.get(card.id))}, noch nicht gesammelt`}">
+  return html`<div class="sk lock${isWide(card) ? ' quer' : ''}" aria-label="${`Karte ${pad(NUMBER.get(card.id))}, noch nicht gesammelt`}">
     <span class="sk-q" aria-hidden="true">?</span>
     <span class="sk-tag">#${pad(NUMBER.get(card.id))}</span>
     <span class="sk-txt"><span class="sk-k">${ART_LABEL[card.art]} · ${RARITY_LABEL[rarityOf(card)]}</span><span class="sk-t">Noch nicht gesammelt</span></span></div>`;
 }
-function cardBack(card, data) {
+function cardBack(card, data, quer = false) {
   const season = card.art === 'kader' ? data?.playerSeason?.players?.[card.number] : null;
   const facts = [
     ...(card.facts || []),
@@ -84,7 +88,7 @@ function cardBack(card, data) {
         ]
       : [])
   ];
-  return html`<div class="sk rueck ${rarityOf(card)} lg"><div class="sk-in">
+  return html`<div class="sk rueck ${rarityOf(card)} lg${quer ? ' quer' : ''}"><div class="sk-in">
     <span class="sk-bt">${card.title}</span>
     <span class="sk-bk">${card.kicker}</span>
     ${card.text ? html`<span class="sk-bx">${card.text}</span>` : ''}
@@ -227,7 +231,7 @@ export function renderSammlung({state, ui}) {
     <section class="sec" aria-label="Karten">
       ${
         list.length
-          ? html`<div class="sk-grid${ui.enter ? ' enter' : ''}">${list.map(c => (cards[c.id] ? cardFront(c) : cardLocked(c)))}</div>`
+          ? html`<div class="sk-grid${ui.enter ? ' enter' : ''}">${list.map(c => (cards[c.id] ? cardFront(c, {quer: isWide(c)}) : cardLocked(c)))}</div>`
           : notice(mine ? 'In dieser Art hast du noch keine Karte.' : 'Keine Karten in dieser Art.', 'star')
       }</section>`;
 }
@@ -242,13 +246,14 @@ export function renderKarte({route, state, ui}) {
     owned = card && collection().cards[card.id];
   if (!card || !owned)
     return html`${subBand(backLink('Sammlung', href.sammlung()), 'Karte', '')}<section class="sec">${notice('Diese Karte ist noch nicht in deiner Sammlung.', 'star')}</section>`;
-  const back = ui.flip === card.id;
+  const back = ui.flip === card.id,
+    quer = isWide(card);
   // Beide Seiten liegen übereinander; «Umdrehen» dreht die Karte in 3D (main.js setzt nur die Klasse, ohne neu zu zeichnen).
   return html`${subBand(backLink('Sammlung', href.sammlung(), true), card.title, `${ART_LABEL[card.art]} · ${RARITY_LABEL[rarityOf(card)]}`)}
     <section class="sec sk-view">
-      <div class="sk-flip lg${back ? ' is-back' : ''}${ui.enter ? ' enter' : ''}" data-flipcard="${card.id}" role="button" tabindex="0" aria-pressed="${String(back)}" aria-label="${`${card.title}: Karte umdrehen`}">
-        <div class="sk-face" aria-hidden="${String(back)}">${cardFront(card, {size: 'lg', link: false})}</div>
-        <div class="sk-face rear" aria-hidden="${String(!back)}">${cardBack(card, state.data)}</div>
+      <div class="sk-flip lg${quer ? ' quer' : ''}${back ? ' is-back' : ''}${ui.enter ? ' enter' : ''}" data-flipcard="${card.id}" role="button" tabindex="0" aria-pressed="${String(back)}" aria-label="${`${card.title}: Karte umdrehen`}">
+        <div class="sk-face" aria-hidden="${String(back)}">${cardFront(card, {size: 'lg', link: false, quer})}</div>
+        <div class="sk-face rear" aria-hidden="${String(!back)}">${cardBack(card, state.data, quer)}</div>
       </div>
       <div class="acts single"><button class="btn" type="button" data-flip="${card.id}" aria-pressed="${String(back)}">${icon('share')}<span>${back ? 'Vorderseite' : 'Umdrehen'}</span></button></div>
       ${card.art === 'kader' ? html`<div class="card list pad-top">${listRow({title: 'Zum Spielerprofil', link: href.spieler(card.number)})}</div>` : ''}
