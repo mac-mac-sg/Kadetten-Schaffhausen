@@ -169,6 +169,7 @@ function render() {
   document.documentElement.classList.toggle('has-tile', Boolean(tile));
   wissenSteuerung?.paint();
   ui.enterHash = location.hash;
+  rbSync();
   for (const id of open) document.getElementById(id)?.setAttribute('open', '');
   // Siegmoment nur beim ersten Anzeigen eines Resultats.
   for (const hero of app.querySelectorAll('.hero.celebrate')) {
@@ -559,6 +560,37 @@ function rbStep(dir) {
   // Fokus nur weitergeben, wenn er schon auf einer Tippfläche lag (Tastatur mit Tab), sonst kein Rahmen über der Karte.
   if (focused) app.querySelector(dir > 0 ? '[data-rb="next"]' : '[data-rb="prev"]')?.focus({preventScroll: true});
 }
+// Zeitsteuerung: Jede Karte läuft 5 Sekunden, dann folgt die nächste. Gedrückt halten, Leertaste oder ein
+// verborgener Tab halten an; die letzte Karte bleibt stehen.
+const RB_MS = 5000;
+let rbTimer = null,
+  rbHold = null,
+  rbClock = {key: '', start: 0, done: 0, paused: false};
+function rbSync() {
+  clearTimeout(rbTimer);
+  const box = app.querySelector('.rb');
+  if (!box || !isStory(parseRoute(location.hash))) {
+    rbClock.key = '';
+    return;
+  }
+  const key = location.hash + ':' + box.dataset.rbStep;
+  if (key !== rbClock.key) rbClock = {key, start: performance.now(), done: 0, paused: false};
+  const bar = box.querySelector('.rb-bars i.now');
+  const elapsed = rbClock.done + (rbClock.paused ? 0 : performance.now() - rbClock.start);
+  // Nach einem Neuzeichnen (z. B. neue Daten) läuft der Balken dort weiter, wo er war.
+  if (bar) bar.style.setProperty('--rb-elapsed', `-${Math.round(elapsed)}ms`);
+  box.classList.toggle('paused', rbClock.paused || document.hidden);
+  if (!bar || rbClock.paused || document.hidden) return;
+  rbTimer = setTimeout(() => rbStep(1), Math.max(0, RB_MS - elapsed));
+}
+function rbPause(paused) {
+  if (!rbClock.key || rbClock.paused === paused) return;
+  const now = performance.now();
+  if (paused) rbClock.done += now - rbClock.start;
+  else rbClock.start = now;
+  rbClock.paused = paused;
+  rbSync();
+}
 async function shareRecap() {
   const r = recap(recapInput(store.state, Date.now()));
   const fan = r.slides.find(s => s.id === 'fan');
@@ -578,8 +610,23 @@ function fanStep(dir) {
 }
 app.addEventListener('pointerdown', event => {
   if (event.target.closest('.fan, .rb')) swipe = {x: event.clientX, y: event.clientY, rb: Boolean(event.target.closest('.rb'))};
+  // Geschichte: gedrückt halten pausiert; wer länger als 300 ms hält, blättert beim Loslassen nicht weiter.
+  if (event.target.closest('.rb') && !event.target.closest('a, .rb-share')) {
+    rbHold = {at: performance.now()};
+    rbPause(true);
+  }
 });
+const rbRelease = () => {
+  if (!rbHold) return;
+  if (performance.now() - rbHold.at > 300) {
+    swiped = true;
+    setTimeout(() => (swiped = false), 400);
+  }
+  rbHold = null;
+  rbPause(false);
+};
 app.addEventListener('pointerup', event => {
+  rbRelease();
   if (!swipe) return;
   const dx = event.clientX - swipe.x,
     dy = event.clientY - swipe.y,
@@ -591,7 +638,10 @@ app.addEventListener('pointerup', event => {
   if (rb) rbStep(dx < 0 ? 1 : -1);
   else fanStep(dx < 0 ? 1 : -1);
 });
-app.addEventListener('pointercancel', () => (swipe = null));
+app.addEventListener('pointercancel', () => {
+  swipe = null;
+  rbRelease();
+});
 app.addEventListener('keydown', event => {
   const flipping = event.target.closest?.('[data-flipcard]');
   if (flipping && (event.key === 'Enter' || event.key === ' ')) {
@@ -606,7 +656,13 @@ app.addEventListener('keydown', event => {
 });
 // Geschichten: Pfeiltasten wirken auf der ganzen Seite, auch ohne Fokus in der Karte.
 document.addEventListener('keydown', event => {
-  if (!isStory(parseRoute(location.hash)) || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  if (!isStory(parseRoute(location.hash))) return;
+  if (event.key === ' ' && !event.target.closest?.('a, input, .rb-share')) {
+    event.preventDefault();
+    rbPause(!rbClock.paused);
+    return;
+  }
+  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
   event.preventDefault();
   rbStep(event.key === 'ArrowRight' ? 1 : -1);
 });
@@ -615,6 +671,7 @@ app.addEventListener('input', event => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) wissenSteuerung?.stop();
+  rbPause(document.hidden);
 });
 // «Live dabei»: Ein laufendes Kadetten-Spiel, das die App gesehen hat, bringt eine Sammelkarte.
 store.subscribe(() => {
