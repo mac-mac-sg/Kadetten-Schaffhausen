@@ -292,3 +292,12 @@ Bei Kadetten-Heimspielen vor Anpfiff steht in der Kopfzeile der Spieltagskarte (
 - Fan-Typ nach festen Regeln, die am deutlichsten erfüllte Schwelle gewinnt: Hallen-Stammgast (mind. die Hälfte der Heimspiele), Orakel (mind. 3 exakte Tipps), Live-Begleiter (mind. die Hälfte der Spiele live), Wissensdurst (mind. 20 Quiz-Wochen), Sammler (mind. drei Viertel der Karten); sonst «Treuer Fan» oder «Kadetten-Fan».
 - Saisonende: kein Kadetten-Spiel ohne Resultat mehr im Spielplan. Dann erscheint der Hinweis «Deine Saison ist da» auf der Titelseite (ohne nächstes Spiel) und oben in «Mein Bereich». Vorher führt in «Mein Bereich» unter «Für dich» die Zeile «Saisonrückblick» zu einem Zwischenstand (unten vermerkt).
 - Der frühere Block «Deine Saison» in den Einstellungen entfällt (19.11.2026).
+
+## Spieltag in Karten
+
+`#/spiel/<id>/kurz` (früher «Spiel in 30 Sekunden») ist eine Geschichte im selben Rahmen wie der Saisonrückblick (`storyShell` in `views/rueckblick.js`): Vollbild, Balken, Tippen, Wischen, Pfeiltasten; das × führt zum Spielbericht.
+
+- Mannschaftskarten aus dem bestätigten Spielbericht (`shortCards` in `js/kurz.js`): Resultat, Wendepunkt, bester Werfer, Zahl des Spiels, Tabelle danach.
+- Persönliche Karten (`personalCards`), nur mit Daten auf dem Gerät: Lieblingsspieler in diesem Spiel, dein Tipp (Punkte, Saisonstand, verdiente Sammelkarte), «Du warst dabei» bei Heimspielen mit «Ich war in der Halle».
+- Letzte Karte: nächstes Kadetten-Spiel mit «Jetzt tippen» (öffnet die Vorschau) und «Resultat teilen» (Resultatbild); ohne nächstes Spiel «Ganze Statistik».
+- Einstieg «Dein Spieltag in Karten» auf der Titelseite nach dem Spiel und in der Spielseite (Reiter Bericht). Konzept: Design-Canvas, Brett «Spieltagsrückblick · Konzept».

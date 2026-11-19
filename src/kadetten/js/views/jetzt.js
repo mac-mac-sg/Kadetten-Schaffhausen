@@ -299,7 +299,7 @@ export function renderJetzt({state, now, load, api, ui}) {
     const actions = html`<div class="acts">
       <a class="btn pri" href="${href.spiel(shown.id)}">${icon('doc')}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share')}Teilen</button></div>`;
     const kurzLink = hasScore(shown)
-      ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(shown.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Spiel in 30 Sekunden</span><span class="s">Das Wichtigste in wenigen Karten</span></span>${icon('go')}</a></section>`
+      ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(shown.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Dein Spieltag in Karten</span><span class="s">Resultat, Wendepunkt, dein Tipp und mehr</span></span>${icon('go')}</a></section>`
       : '';
     const table = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
     return html`${homeBand()}

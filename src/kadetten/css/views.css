@@ -788,3 +788,9 @@ a.sk:active { transform: scale(.97); }
 .rb-teaser-t { font: italic 600 34px/1 var(--f-display); }
 .rb-teaser-s { font: 400 var(--fs-small)/1.35 var(--f-text); opacity: 0.8; }
 .rb-teaser .icon { position: absolute; right: var(--s-4); top: 50%; margin-top: -11px; }
+.rb-badge { margin-top: var(--s-4); }
+.rb-acts { position: relative; z-index: 2; margin-top: auto; display: grid; gap: var(--s-3); }
+.rb-acts .rb-share { margin: 0; text-decoration: none; }
+.rb-acts .rb-share:last-child { margin-bottom: 14px; }
+.rb-share.alt { background: var(--c-surface); color: var(--c-ink); }
+.rb-cr .rb-share.alt { background: var(--c-ink); color: var(--c-on-ink); }

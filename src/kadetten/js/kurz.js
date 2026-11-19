@@ -2,6 +2,7 @@
 import {OWN_TEAM, outcome, shortTeam, standings, ownGames, hasScore, kickoff} from './logic.js';
 import {isOwn, scorers, displayName} from './match.js';
 import {flow, pct} from './report.js';
+import {tipPoints} from './moments.js';
 
 const RESULT = {S: 'Sieg', U: 'Unentschieden', N: 'Niederlage'};
 
@@ -73,4 +74,63 @@ export function shortCards({game, report = null, goals = [], tables = null, game
       text: `${row.points} Punkte aus ${row.played} Spielen.`
     });
   return cards.slice(0, 5);
+}
+
+/**
+ * Persönliche Karten zum Spieltag, nur aus Daten auf dem Gerät: Lieblingsspieler im Bericht, Tipp, Hallenbesuch,
+ * dazu das nächste Spiel. Jede Karte nur, wenn es Daten gibt.
+ */
+export function personalCards({game, report = null, favourite = null, tips = {}, visited = [], games = [], now}) {
+  if (!hasScore(game)) return [];
+  const ownHome = isOwn(game.home),
+    id = String(game.id),
+    cards = [];
+  const team = report?.teams?.[ownHome ? 0 : 1];
+  const fav = Number.isInteger(favourite) ? (team?.players || []).find(p => p.number === favourite) : null;
+  if (fav && Number.isInteger(fav.goals))
+    cards.push({
+      id: 'spieler',
+      kicker: 'Dein Lieblingsspieler',
+      figure: String(fav.number),
+      title: displayName(fav.name),
+      text:
+        `${fav.goals} ${fav.goals === 1 ? 'Tor' : 'Tore'}` +
+        (Number.isInteger(fav.shots) && fav.shots >= fav.goals && fav.shots > 0 ? ` aus ${fav.shots} Würfen` : '') +
+        (Number.isInteger(fav.seven) && fav.seven > 0 ? `, davon ${fav.seven} vom 7-m-Punkt` : '') +
+        '.'
+    });
+  const tip = tips[id];
+  const points = tipPoints(tip, game.score);
+  if (points !== null) {
+    const done = ownGames(games).filter(g => hasScore(g) && Array.isArray(tips[g.id]) && kickoff(g) <= kickoff(game));
+    const season = done.reduce((n, g) => n + tipPoints(tips[g.id], g.score), 0);
+    cards.push({
+      id: 'tipp',
+      kicker: 'Dein Tipp',
+      figure: `${tip[0]}:${tip[1]}`,
+      title:
+        points === 3 ? 'Exakt getroffen!' : points === 2 ? 'Richtige Tordifferenz' : points === 1 ? 'Richtiger Sieger' : 'Diesmal daneben',
+      text: `${points} ${points === 1 ? 'Punkt' : 'Punkte'}. Saison bisher: ${season} ${season === 1 ? 'Punkt' : 'Punkte'}.`,
+      badge: points === 3 ? '+2 Sammelkarten' : points > 0 ? '+1 Sammelkarte' : ''
+    });
+  }
+  if (ownHome && visited.includes(id)) {
+    const seen = ownGames(games).filter(g => hasScore(g) && visited.includes(String(g.id)) && kickoff(g) <= kickoff(game));
+    const won = seen.filter(g => outcome(g) === 'S').length;
+    cards.push({
+      id: 'halle',
+      kicker: 'Du warst dabei',
+      figure: `${seen.length}.`,
+      title: 'Spiel in der Halle',
+      text: `Mit dir in der Halle: ${won} ${won === 1 ? 'Sieg' : 'Siege'} aus ${seen.length} ${seen.length === 1 ? 'Spiel' : 'Spielen'}. Die Momentkarte holst du in «Mein Bereich».`
+    });
+  }
+  return cards;
+}
+
+/** Nächstes Kadetten-Spiel nach diesem (für die letzte Karte der Geschichte). */
+export function nextAfter(games, game, now) {
+  return (
+    ownGames(games).find(g => !hasScore(g) && String(g.id) !== String(game.id) && kickoff(g) > Math.max(now, kickoff(game) ?? 0)) || null
+  );
 }

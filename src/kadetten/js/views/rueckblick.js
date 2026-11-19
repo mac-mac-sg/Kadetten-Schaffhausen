@@ -94,20 +94,33 @@ function slide(s) {
   }
 }
 
+/** Gemeinsamer Rahmen für Geschichten aus Karten (Saisonrückblick, Spieltag): Balken, Schliessen, Tippflächen.
+ * slides: [{id, body}]; step wird auf den gültigen Bereich begrenzt. */
+export function storyShell({slides, step = 0, enter = false, close, closeLabel, note = ''}) {
+  const n = slides.length,
+    at = Math.min(Math.max(0, Number(step) || 0), n - 1),
+    s = slides[at];
+  return html`<div class="rb rb-${THEMES[at % THEMES.length]}${enter ? ' enter' : ''}" data-rb-step="${at}">
+    <div class="rb-bars" aria-hidden="true">${slides.map((_, i) => html`<i class="${i <= at ? 'on' : ''}"></i>`)}</div>
+    <a class="rb-close" href="${close}" aria-label="${closeLabel}">${icon('close')}</a>
+    <section class="rb-slide" aria-live="polite" aria-label="${`Karte ${at + 1} von ${n}`}" data-rb-id="${s.id}">${s.body}</section>
+    ${at > 0 ? html`<button class="rb-prev" type="button" data-rb="prev" aria-label="Vorherige Karte"></button>` : ''}
+    ${at < n - 1 ? html`<button class="rb-next" type="button" data-rb="next" aria-label="Nächste Karte"></button>` : ''}
+    ${note ? html`<p class="rb-note">${note}</p>` : ''}
+  </div>`;
+}
+
 export function renderRueckblick({state, now, ui = {}}) {
   if (!state.data) return html`<section class="sec">${loading()}</section>`;
   const r = recap({...recapInput(state, now)});
-  const n = r.slides.length,
-    step = Math.min(Math.max(0, Number(ui.rbStep) || 0), n - 1),
-    s = r.slides[step];
-  return html`<div class="rb rb-${THEMES[step % THEMES.length]}${ui.enter ? ' enter' : ''}" data-rb-step="${step}">
-    <div class="rb-bars" aria-hidden="true">${r.slides.map((_, i) => html`<i class="${i <= step ? 'on' : ''}"></i>`)}</div>
-    <a class="rb-close" href="${href.ich()}" aria-label="Rückblick schliessen">${icon('close')}</a>
-    <section class="rb-slide" aria-live="polite" aria-label="${`Karte ${step + 1} von ${n}`}" data-rb-id="${s.id}">${slide(s)}</section>
-    ${step > 0 ? html`<button class="rb-prev" type="button" data-rb="prev" aria-label="Vorherige Karte"></button>` : ''}
-    ${step < n - 1 ? html`<button class="rb-next" type="button" data-rb="next" aria-label="Nächste Karte"></button>` : ''}
-    ${r.over ? '' : html`<p class="rb-note">Zwischenstand, die Saison läuft noch.</p>`}
-  </div>`;
+  return storyShell({
+    slides: r.slides.map(s => ({id: s.id, body: slide(s)})),
+    step: ui.rbStep,
+    enter: ui.enter,
+    close: href.ich(),
+    closeLabel: 'Rückblick schliessen',
+    note: r.over ? '' : 'Zwischenstand, die Saison läuft noch.'
+  });
 }
 
 /** Hinweis auf den Rückblick: nach Saisonende gross (Titelseite, Mein Bereich), sonst leer. */
