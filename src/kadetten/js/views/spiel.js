@@ -4,14 +4,15 @@ import {renderTicker} from '../ticker.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
-import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff} from '../logic.js';
+import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff, dayLabel} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
-import {shortCards} from '../kurz.js';
+import {shortCards, personalCards, nextAfter} from '../kurz.js';
+import {storyShell} from './rueckblick.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
-import {myGames, pickFor} from '../personal.js';
+import {myGames, pickFor, favourite, tips} from '../personal.js';
 import {
   backBar,
   backLink,
@@ -236,7 +237,8 @@ function bericht({game, phase, data, load, api, ui, state, now, part = 'alles'})
 }
 
 /** «Spiel in 30 Sekunden»: wischbare Karten aus Resultat und Spielbericht. */
-function kurz({game, data, load, api, title}) {
+/** Spieltag in Karten (#/spiel/<id>/kurz): Geschichte wie der Saisonrückblick, mit Mannschafts- und persönlichen Karten. */
+function kurz({game, data, load, api, ui, now}) {
   const supported = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '');
   const entry = supported ? loadReportFor(load, api, game) : null;
   let report = null,
@@ -246,22 +248,38 @@ function kurz({game, data, load, api, title}) {
     report = fitsGame(candidate, game) ? candidate : null;
     goals = goalTimeline(entry.value.archive, entry.value.shv);
   }
-  const cards = shortCards({game, report, goals, tables: data.tables, games: data.games});
-  return html`${subBand(backLink('Zum Spiel', href.spiel(game.id, 'bericht')), 'Spiel in 30 Sekunden', title)}
-    <section class="sec" aria-label="Zusammenfassung in Karten">
-      ${entry?.status === 'loading' ? loading('Spielbericht wird geladen …') : ''}
-      <ol class="kurz">${cards.map(
-        (c, i) => html`<li class="kurz-card${i === 0 ? ' first' : ''}">
-          <span class="tag-ink">${c.kicker}</span>
-          <b class="kurz-fig num">${c.figure}</b>
-          <span class="kurz-title">${c.title}</span>
-          <span class="kurz-text">${c.text}</span>
-          <span class="kurz-count num" aria-hidden="true">${i + 1}/${cards.length}</span></li>`
-      )}</ol>
-      ${cards.length > 1 ? html`<p class="fine pad-top">Zur Seite wischen für die nächste Karte.</p>` : ''}
-    </section>
-    <section class="sec"><div class="acts">
-      <a class="btn pri" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a><button class="btn" type="button" data-share-image="${game.id}">${icon('share')}Teilen</button></div></section>`;
+  const team = shortCards({game, report, goals, tables: data.tables, games: data.games});
+  const table = team.filter(c => c.kicker === 'Tabelle danach');
+  const mine = personalCards({game, report, favourite: favourite(), tips: tips(), visited: myGames(), games: data.games, now});
+  const next = nextAfter(data.games, game, now);
+  const cards = [...team.filter(c => c.kicker !== 'Tabelle danach'), ...mine, ...table];
+  const body = (
+    c,
+    i
+  ) => html`<p class="rb-k">${i === 0 ? [dayLabel(game, now), game.league].filter(Boolean).join(' · ') : c.kicker}</p><div class="rb-body">
+      ${i === 0 ? html`<span class="rb-tag">${c.kicker}</span><p class="rb-big md">${c.title}</p>` : ''}
+      <p class="rb-big xl${i > 0 ? ' acc' : ''}">${c.figure}</p>
+      ${i > 0 ? html`<p class="rb-big md">${c.title}</p>` : ''}
+      ${c.text ? html`<p>${c.text}</p>` : ''}
+      ${c.badge ? html`<span class="rb-tag rb-badge">${c.badge}</span>` : ''}</div>
+      ${i === 0 && entry?.status === 'loading' ? html`<p class="rb-hint">Spielbericht wird geladen …</p>` : i === 0 ? html`<p class="rb-hint">Tippen für weiter</p>` : ''}`;
+  const KIND = {Wendepunkt: 'wendepunkt', 'Bester Werfer': 'werfer', 'Zahl des Spiels': 'zahl', 'Tabelle danach': 'tabelle'};
+  const slides = cards.map((c, i) => ({
+    id: i === 0 ? 'ergebnis' : c.id || KIND[c.kicker] || 'karte-' + i,
+    body: body(c, i)
+  }));
+  slides.push({
+    id: 'weiter',
+    body: html`<p class="rb-k">${next ? 'Weiter geht’s' : 'Das war’s'}</p><div class="rb-body">${
+      next
+        ? html`<span class="rb-tag">${[dayLabel(next, now), next.time].filter(Boolean).join(' · ')}</span>
+      <p class="rb-big md">${shortTeam(next.home)} – ${shortTeam(next.away)}</p><p>${next.league || ''}</p>`
+        : html`<p class="rb-big md">Ganze Statistik und Rückblick im Spielbericht.</p>`
+    }</div>
+    <div class="rb-acts">${next ? html`<a class="rb-share alt" href="${href.spiel(next.id)}">Jetzt tippen</a>` : html`<a class="rb-share alt" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a>`}
+    <button class="rb-share" type="button" data-share-image="${game.id}">${icon('share')}Resultat teilen</button></div>`
+  });
+  return storyShell({slides, step: ui.rbStep, enter: ui.enter, close: href.spiel(game.id, 'bericht'), closeLabel: 'Zurück zum Spiel'});
 }
 
 export function renderSpiel({route, state, now, load, api, ui}) {
@@ -285,7 +303,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   const preOnly = phase === 'vorschau';
   if (preOnly && tab !== 'wahl') tab = 'vorschau';
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
-  if (tab === 'kurz') return kurz({game, data, load, api, title});
+  if (tab === 'kurz') return kurz({game, data, load, api, ui, now});
   const share = hasScore(game)
     ? html`<button class="icb" type="button" data-share-image="${game.id}" aria-label="Resultat als Bild teilen">${icon('share')}</button>`
     : '';
@@ -340,7 +358,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     ${hero}</section>`
   )}
     ${preOnly ? '' : segment(tabs, tab, 'Spielseite')}
-    ${twoTabs && tab === 'bericht' ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(game.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Spiel in 30 Sekunden</span><span class="s">Das Wichtigste in wenigen Karten</span></span>${icon('go')}</a></section>` : ''}
+    ${twoTabs && tab === 'bericht' ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(game.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Dein Spieltag in Karten</span><span class="s">Resultat, Wendepunkt, dein Tipp und mehr</span></span>${icon('go')}</a></section>` : ''}
     ${twoTabs && tab === 'bericht' ? tipFor(game, now) : ''}
     ${content}
     ${

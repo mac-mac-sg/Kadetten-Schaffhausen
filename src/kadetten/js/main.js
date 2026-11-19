@@ -105,8 +105,8 @@ function enterRoute() {
     history.replaceState({...history.state, kadettenEntry: entry.id}, '');
   }
   replacing = false;
-  // Der Rückblick beginnt beim Öffnen immer mit der ersten Karte.
-  if (!entry.restore && parseRoute(location.hash).view === 'rueckblick') ui.rbStep = 0;
+  // Eine Geschichte beginnt beim Öffnen immer mit der ersten Karte.
+  if (!entry.restore && isStory(parseRoute(location.hash))) ui.rbStep = 0;
   ui.backTarget = navigation.backTarget();
   // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
   const was = previous ? parseRoute(previous.hash) : null,
@@ -544,14 +544,20 @@ addEventListener('hashchange', () => {
   enterRoute();
   render();
 });
-// Saisonrückblick: eine Karte weiter oder zurück (Tippen, Wischen, Pfeiltasten).
+// Geschichten (Saisonrückblick, Spieltag in Karten): eine Karte weiter oder zurück (Tippen, Wischen, Pfeiltasten).
+function isStory(route) {
+  return route.view === 'rueckblick' || (route.view === 'spiel' && route.tab === 'kurz');
+}
 function rbStep(dir) {
-  const count = recap(recapInput(store.state, Date.now())).slides.length;
+  const count = app.querySelectorAll('.rb-bars i').length;
+  if (!count) return;
   const next = Math.min(Math.max(0, (ui.rbStep || 0) + dir), count - 1);
   if (next === (ui.rbStep || 0)) return;
+  const focused = document.activeElement?.matches?.('[data-rb]');
   ui.rbStep = next;
   render();
-  app.querySelector(dir > 0 ? '[data-rb="next"]' : '[data-rb="prev"]')?.focus({preventScroll: true});
+  // Fokus nur weitergeben, wenn er schon auf einer Tippfläche lag (Tastatur mit Tab), sonst kein Rahmen über der Karte.
+  if (focused) app.querySelector(dir > 0 ? '[data-rb="next"]' : '[data-rb="prev"]')?.focus({preventScroll: true});
 }
 async function shareRecap() {
   const r = recap(recapInput(store.state, Date.now()));
@@ -598,9 +604,9 @@ app.addEventListener('keydown', event => {
   fanStep(event.key === 'ArrowRight' ? 1 : -1);
   app.querySelector(`[data-reveal="${CSS.escape(ui.fanTop || '')}"]`)?.focus();
 });
-// Rückblick: Pfeiltasten wirken auf der ganzen Seite, auch ohne Fokus in der Karte.
+// Geschichten: Pfeiltasten wirken auf der ganzen Seite, auch ohne Fokus in der Karte.
 document.addEventListener('keydown', event => {
-  if (parseRoute(location.hash).view !== 'rueckblick' || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  if (!isStory(parseRoute(location.hash)) || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
   event.preventDefault();
   rbStep(event.key === 'ArrowRight' ? 1 : -1);
 });
