@@ -10,6 +10,7 @@ import {renderWissen} from '../src/kadetten/js/views/wissen.js';
 import {renderIch} from '../src/kadetten/js/views/ich.js';
 import {renderTeam, renderSpieler} from '../src/kadetten/js/views/team.js';
 import {renderJetzt} from '../src/kadetten/js/views/jetzt.js';
+import {renderMein} from '../src/kadetten/js/views/sammlung.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';
 import {setLogos} from '../src/kadetten/js/views/parts.js';
 
@@ -78,13 +79,13 @@ test('Feldbilder: Spieler liegen im Feld, Spielzüge haben drei Schritte mit Tex
   assert.equal(arrowPath([0, 0], [5, 0]), '', 'zu kurze Wege ergeben keinen Pfeil');
 });
 
-test('Übersicht: drei Kapitel als Reiter, Gruppen mit Verweisen, Buch-Symbol im Band markiert', () => {
+test('Übersicht: drei Kapitel als Reiter, Gruppen mit Verweisen, Zurück zu Mein Bereich', () => {
   const d = page('#/wissen');
   assert.equal(d.querySelectorAll('h1').length, 1);
   assert.equal(d.querySelector('h1').textContent, 'Wissen');
   assert.deepEqual([...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Regeln', 'Aufstellungen', 'Spielzüge']);
   assert.equal(d.querySelector('nav.seg a[aria-current="page"]').textContent.trim(), 'Regeln');
-  assert.ok(d.querySelector('.band-sub a.back[href="#/"]'), 'Zurück wie bei «Ich»');
+  assert.ok(d.querySelector('.band-sub a.back[href="#/ich"]'), 'Zurück zu Mein Bereich');
   assert.ok(d.querySelectorAll('.plain-list a').length >= 20);
   assert.ok(d.querySelector('a[href="#/wissen/regeln/7m"]'));
   assert.ok(page('#/wissen/aufstellungen').querySelector('a[href="#/wissen/aufstellungen/abwehr-6-0"]'));
@@ -131,13 +132,19 @@ test('Spielzug: Schritt aus der Adresse setzt die Zeit, Marken und Zurück/Weite
   assert.equal(page('#/wissen/spielzuege/kreuzen/2', {anim: {key: 'kreuzen:1', id: 'kreuzen', t: 3, playing: false, speed: 0.5}}).querySelector('[data-wk="speed"]').textContent, '0,5×');
 });
 
-test('«Ich» ohne Regelliste; Startseite und Spielerprofil führen ins Wissen', () => {
+test('Einstellungen ohne Regelliste; Mein Bereich führt ins Wissen, kein Buch-Symbol mehr', () => {
   const ich = dom(renderIch({theme: 'system', state: {data, live: null}, ui: {}, now}));
   assert.ok(!ich.querySelector('[data-rule]'), 'keine Regelliste mehr');
   assert.doesNotMatch(ich.body.textContent, /Regeln kurz erklärt/);
   setLogos(data.clubLogos);
   const home = dom(renderJetzt({route: parseRoute('#/'), state: {data, live: null}, now, load: () => ({status: 'loading'}), api: {}, ui: {}, theme: 'system'}));
-  assert.ok(home.querySelector('.band-acts a[href="#/wissen"]'), 'Buch-Symbol auf der Titelseite');
+  assert.ok(!home.querySelector('a[href="#/wissen"].icb'), 'kein Buch-Symbol auf der Titelseite');
+  const mein = dom(renderMein({state: {data, live: null}, now, ui: {}}));
+  assert.deepEqual(
+    [...mein.querySelectorAll('[aria-labelledby="m-wissen"] .rl')].map(a => a.getAttribute('href')),
+    [href.wissen('regeln'), '#/wissen/aufstellungen', '#/wissen/spielzuege']
+  );
+  assert.ok(mein.querySelector('[aria-labelledby="m-wissen"] a.more[href="#/wissen"]'));
   const kreis = data.players?.find?.(p => p.position === 'Kreis');
   assert.equal(positionArticle('Kreis').id, 'pos-kreis');
   assert.equal(positionArticle('Rückraum mitte').id, 'pos-rueckraum-mitte');

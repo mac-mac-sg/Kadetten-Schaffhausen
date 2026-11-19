@@ -10,7 +10,7 @@ import {subBand, backLink, sectionHead, listRow, segment} from './parts.js';
 const firstSentence = text => String(text).split(/(?<=[.!?])\s/)[0];
 const groupTitle = a => (GROUPS[a.chapter].find(([id]) => id === a.group) || [])[1] || '';
 const reduceMotion = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-const head = chapter => html`${subBand(backLink('Zurück', href.jetzt()), 'Wissen', 'Handball kurz erklärt')}
+const head = chapter => html`${subBand(backLink('Mein Bereich', href.ich()), 'Wissen', 'Handball kurz erklärt')}
     ${segment(
       CHAPTERS.map(([id, label]) => [id, label, href.wissen(id)]),
       chapter,

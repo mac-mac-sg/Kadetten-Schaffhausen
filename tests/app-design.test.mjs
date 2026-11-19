@@ -96,13 +96,13 @@ test('Foto-Aufmacher: Datum steht im schrägen Tintenchip und ist bei jedem Foto
   assert.ok(contrast(light['c-on-ink'], light['c-ink']) >= 7, 'helle Schrift auf Tinte');
 });
 
-test('Jede Hauptseite hat ein Kopfband mit genau einer h1 sowie Zugang zu Verein und Wissen', () => {
+test('Jede Hauptseite hat ein Kopfband mit genau einer h1; Verein nur über den Kader, kein Wissen-Symbol', () => {
   for (const hash of ['#/saison', '#/statistik', '#/statistik/spieler', '#/team', '#/verein', '#/news']) {
     const d = render(hash);
     assert.equal(d.querySelectorAll('h1').length, 1, hash);
     assert.ok(d.querySelector('header.band .band-t'), hash + ': Kopfband mit Titel');
     const links = [...d.querySelectorAll('.band-acts a')].map(a => a.getAttribute('href'));
-    assert.deepEqual(links, ['#/verein', '#/wissen'], hash);
+    assert.deepEqual(links, hash === '#/team' ? ['#/verein'] : [], hash);
     for (const a of d.querySelectorAll('.band-acts a')) assert.ok(a.getAttribute('aria-label'), 'Symbolknopf braucht einen Namen');
   }
   assert.equal(render('#/saison').querySelector('.band-t').textContent, 'Spiele');
