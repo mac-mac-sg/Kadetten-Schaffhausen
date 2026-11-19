@@ -1,4 +1,6 @@
 // «Mein Bereich» mit Quiz-Bilanz und Sammelkarten, die Sammlung, die Kartenansicht und neue Karten.
+import {recapTeaser} from './rueckblick.js';
+import {seasonOver} from '../rueckblick.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -161,6 +163,7 @@ export function renderMein({state, now, ui = {}}) {
       <button class="btn pri wide pulse" type="button" data-claim>Karten abholen</button></div></section>`
         : ''
     }
+    ${recapTeaser(state.data?.games, now)}
     <section class="sec" aria-labelledby="m-quiz">${sectionHead('Quiz der Woche', 'Zum Quiz', href.quiz(), 'm-quiz')}
       <div class="card stats q3">
         <span class="stat"><span class="v num">${quiz.streak}</span><span class="k">${quiz.streak === 1 ? 'Woche' : 'Wochen'} in Folge</span></span>
@@ -192,7 +195,17 @@ export function renderMein({state, now, ui = {}}) {
     <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
       <div class="card list">
         ${listRow({title: 'Lieblingsspieler', sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken', link: fav ? href.spieler(fav.number) : href.team(), lead: html`<span class="lead">${icon('star')}</span>`})}
-        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender, Deine Saison', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
+        ${
+          seasonOver(state.data?.games || [], now)
+            ? ''
+            : listRow({
+                title: 'Saisonrückblick',
+                sub: 'Kommt nach dem letzten Spiel. Zwischenstand ansehen',
+                link: href.rueckblick(),
+                lead: html`<span class="lead">${icon('star')}</span>`
+              })
+        }
+        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
       </div></section>`;
 }
 

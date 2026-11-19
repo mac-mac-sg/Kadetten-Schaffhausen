@@ -1,4 +1,4 @@
-// Teilen-Bild (1080 × 1350) auf dem Gerät zeichnen: Resultat oder «Deine Saison». Kein Dienst, kein Upload.
+// Teilen-Bild (1080 × 1350) auf dem Gerät zeichnen: Resultat oder Saisonrückblick. Kein Dienst, kein Upload.
 import {SEASON} from './season.js';
 const W = 1080,
   H = 1350;
@@ -84,20 +84,17 @@ export function resultImage({game, label, crests}) {
   });
 }
 
-/** «Deine Saison» als Bild. */
-export function seasonCard(summary, season = SEASON) {
+/** Saisonrückblick als Bild: Fan-Typ und bis zu vier Kennzahlen. tiles: [[Wert, Beschriftung], …]. */
+export function recapCard({fan, tiles}, season = SEASON) {
   return canvasWith(async ctx => {
-    text(ctx, 'Meine Saison', W / 2, 230, "600 120px 'Barlow Condensed', sans-serif");
-    text(ctx, `Kadetten Schaffhausen · ${season}`, W / 2, 310, '400 42px Inter, sans-serif', '#d4d4d8');
-    const tiles = [
-      [summary.visits, summary.visits === 1 ? 'Spiel in der Halle' : 'Spiele in der Halle'],
-      [`${summary.record.S}-${summary.record.U}-${summary.record.N}`, 'Siege · Remis · Niederlagen'],
-      [summary.goals, 'Kadetten-Tore gesehen'],
-      [summary.tipped ? summary.points : '–', summary.tipped ? `Tipp-Punkte aus ${summary.tipped} Tipps` : 'noch keine Tipps']
-    ];
-    tiles.forEach(([value, label], i) => {
-      const x = i % 2 ? 810 : 270,
-        y = 520 + Math.floor(i / 2) * 330;
+    text(ctx, 'Meine Saison', W / 2, 200, "600 120px 'Barlow Condensed', sans-serif");
+    text(ctx, `Kadetten Schaffhausen · ${season}`, W / 2, 275, '400 40px Inter, sans-serif', '#d4d4d8');
+    pill(ctx, fan.toUpperCase(), W / 2, 395);
+    const shown = tiles.slice(0, 4);
+    shown.forEach(([value, label], i) => {
+      // Eine einzelne Kachel in der letzten Reihe steht mittig.
+      const x = i === shown.length - 1 && i % 2 === 0 ? W / 2 : i % 2 ? 810 : 270,
+        y = 610 + Math.floor(i / 2) * 320;
       ctx.fillStyle = 'rgba(255,255,255,.06)';
       ctx.beginPath();
       ctx.roundRect(x - 230, y - 160, 460, 280, 32);

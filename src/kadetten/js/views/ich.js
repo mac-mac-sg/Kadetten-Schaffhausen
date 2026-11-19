@@ -1,28 +1,13 @@
-// Einstellungen (unter «Mein Bereich»): Mitteilungen, Kalender, Darstellung, Deine Saison. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
+// Einstellungen (unter «Mein Bereich»): Mitteilungen, Kalender, Darstellung. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {THEMES} from '../theme.js';
 import {dataFreshness} from '../logic.js';
-import {favourite, myGames, tips} from '../personal.js';
+import {favourite} from '../personal.js';
 import {PUSH_TYPES, readDevice, pushSupported} from '../push.js';
-import {seasonSummary} from '../moments.js';
 import {HALLEN} from '../../data/hallen.js';
 import {backLink, subBand, sectionHead, listRow, playerByNumber} from './parts.js';
-
-function seasonBlock(state, now) {
-  if (!state.data) return '';
-  const sum = seasonSummary({games: state.data.games, visited: myGames(), tips: tips(), now});
-  if (!sum.visits && !sum.tipped) return '';
-  return html`<section class="sec" aria-labelledby="i-saison">${sectionHead('Deine Saison', '', '', 'i-saison')}
-    <div class="card stats">
-      <span class="stat"><span class="v num">${sum.visits}</span><span class="k">in der Halle</span></span>
-      <span class="stat"><span class="v num">${sum.record.S}-${sum.record.U}-${sum.record.N}</span><span class="k">S-U-N live erlebt</span></span>
-      <span class="stat"><span class="v num">${sum.tipped ? sum.points : '–'}</span><span class="k">${sum.tipped ? `Tipp-Punkte (${sum.exact} exakt)` : 'Tipp-Punkte'}</span></span>
-    </div>
-    <div class="acts single"><button class="btn" type="button" data-season-image>${icon('share')}Als Bild teilen</button></div>
-  </section>`;
-}
 
 export function renderIch({theme, state, ui, now}) {
   const device = readDevice(),
@@ -88,7 +73,6 @@ export function renderIch({theme, state, ui, now}) {
         <button class="rl" type="button" data-calendar>${html`<span class="lead">${icon('cal')}</span>`}<span class="grow"><span class="t">Spielplan in den Kalender</span><span class="s">Alle kommenden Kadetten-Spiele als Kalenderdatei</span></span>${icon('go')}</button>
       </div>
     </section>
-    ${seasonBlock(state, now)}
     <section class="sec" aria-labelledby="i-dar">${sectionHead('Darstellung', '', '', 'i-dar')}
       <div class="seg flush" role="radiogroup" aria-labelledby="i-dar">
         ${THEMES.map(
