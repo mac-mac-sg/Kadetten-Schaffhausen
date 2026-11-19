@@ -1,5 +1,5 @@
 // «Jetzt»: richtet sich nach dem Spieltag (Alltag, Spieltag, Live, Nachspiel).
-import {recapTeaser} from './rueckblick.js';
+import {recapTeaser, storyTeaser} from './rueckblick.js';
 import {html} from '../text.js';
 import {quizTeaser} from './quiz.js';
 import {icon} from '../icons.js';
@@ -298,9 +298,7 @@ export function renderJetzt({state, now, load, api, ui}) {
     );
     const actions = html`<div class="acts">
       <a class="btn pri" href="${href.spiel(shown.id)}">${icon('doc')}Spielbericht</a><button class="btn" type="button" data-share-image="${shown.id}">${icon('share')}Teilen</button></div>`;
-    const kurzLink = hasScore(shown)
-      ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(shown.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Dein Spieltag in Karten</span><span class="s">Resultat, Wendepunkt, dein Tipp und mehr</span></span>${icon('go')}</a></section>`
-      : '';
+    const kurzLink = hasScore(shown) ? storyTeaser(shown) : '';
     const table = standings(data.tables?.QHL).find(r => r.team === OWN_TEAM);
     return html`${homeBand()}
       <section class="sec match-score" aria-labelledby="j-end">

@@ -52,3 +52,16 @@ test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Ka
   assert.ok(last.querySelector('a[href="#/spiel/3"]'), 'Jetzt tippen fürs nächste Spiel');
   assert.ok(last.querySelector('[data-share-image="2"]'));
 });
+
+test('Spiel-Story: Schlagzeile nach Resultat und Ort, Tipp-Punkte in der Unterzeile', async () => {
+  const {storyHeadline, storyTeaser} = await import('../src/kadetten/js/views/rueckblick.js');
+  assert.equal(storyHeadline(games[1]), 'Der Sieg in der BBC Arena');
+  assert.equal(storyHeadline({...games[1], home: 'HC Izvidac', away: OWN, score: [29, 34], venue: 'Sportska Dvorana Ljubuski, Ljubuski'}), 'Der Sieg in Ljubuski');
+  assert.equal(storyHeadline({...games[1], home: 'Wacker Thun', away: OWN, score: [30, 28], venue: 'Lachen, Thun'}), 'Die Niederlage in Thun');
+  assert.equal(storyHeadline({...games[1], score: [28, 28]}), 'Das Remis gegen Kriens-Luzern');
+  const d = parseHTML('<html><body>' + String(storyTeaser(games[1], [33, 29])) + '</body></html>').document;
+  assert.equal(d.querySelector('a.rb-teaser').getAttribute('href'), '#/spiel/2/kurz');
+  assert.equal(d.querySelector('.rb-teaser-k').textContent, 'Spiel-Story');
+  assert.match(d.querySelector('.rb-teaser-s').textContent, /^Dein Tipp: 1 Punkt$/);
+  assert.equal(String(storyTeaser(games[2])), '', 'ohne Resultat keine Kachel');
+});
