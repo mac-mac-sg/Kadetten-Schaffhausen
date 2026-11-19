@@ -782,8 +782,8 @@ a.sk:active { transform: scale(.97); }
 @keyframes rb-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 @keyframes rb-rise { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .rb .rb-slide, .rb .rb-big { animation: none; } }
-.rb-teaser { position: relative; display: grid; gap: 4px; padding: var(--s-4) var(--s-5); padding-right: 56px; background: var(--c-ink); color: var(--c-on-ink); overflow: hidden; }
-.rb-teaser::before { content: ''; position: absolute; right: -20px; top: 0; bottom: 0; width: 120px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 6px, transparent 6px 15px); opacity: 0.5; }
+.rb-teaser { position: relative; display: grid; gap: 4px; padding: var(--s-4) var(--s-5); padding-right: 96px; background: var(--c-ink); color: var(--c-on-ink); overflow: hidden; }
+.rb-teaser::before { content: ''; position: absolute; right: -20px; top: 0; bottom: 0; width: 84px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 6px, transparent 6px 15px); opacity: 0.5; }
 .rb-teaser-k { font: 600 12px/1.2 var(--f-text); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-on-ink-accent); }
 .rb-teaser-t { font: italic 600 34px/1 var(--f-display); }
 .rb-teaser-s { font: 400 var(--fs-small)/1.35 var(--f-text); opacity: 0.8; }

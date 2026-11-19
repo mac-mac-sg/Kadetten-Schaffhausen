@@ -7,7 +7,10 @@ import {myGames, tips, favourite} from '../personal.js';
 import {liveSeen} from '../sammeln.js';
 import {quizAnswers} from '../quiz.js';
 import {recap, seasonOver} from '../rueckblick.js';
-import {loading} from './parts.js';
+import {loading, venueInfo} from './parts.js';
+import {outcome, shortTeam, hasScore} from '../logic.js';
+import {isOwn} from '../match.js';
+import {tipPoints} from '../moments.js';
 
 const THEMES = ['or', 'bk', 'cr'];
 const day = date => (date ? String(date).split('-').reverse().slice(0, 2).join('.') + '.' : '');
@@ -129,4 +132,25 @@ export function recapTeaser(games, now, after = false) {
   return html`<section class="sec${after ? ' after-band' : ''}"><a class="card rb-teaser" href="${href.rueckblick()}">
     <span class="rb-teaser-k">Saisonrückblick</span><span class="rb-teaser-t">Deine Saison ist da.</span>
     <span class="rb-teaser-s">Halle, Tipps, Quiz, Karten und dein Fan-Typ</span>${icon('go')}</a></section>`;
+}
+
+/** Schlagzeile der Spiel-Story nach Resultat und Ort: «Der Sieg in der BBC Arena», «Die Niederlage in Thun», «Das Remis gegen Pfadi». */
+export function storyHeadline(game) {
+  const result = outcome(game);
+  const v = venueInfo(game?.venue);
+  const where = v?.home ? 'in der BBC Arena' : v?.place || v?.name ? `in ${v.place || v.name}` : '';
+  const opp = shortTeam(isOwn(game.home) ? game.away : game.home);
+  if (result === 'U') return `Das Remis gegen ${opp}`;
+  const what = result === 'S' ? 'Der Sieg' : 'Die Niederlage';
+  return where ? `${what} ${where}` : `${what} gegen ${opp}`;
+}
+
+/** Kachel «Spiel-Story» (Spielseite und Titelseite nach dem Spiel), gestaltet wie der Hinweis zum Saisonrückblick. */
+export function storyTeaser(game, tip = tips()[String(game?.id)]) {
+  if (!hasScore(game)) return '';
+  const points = tipPoints(tip, game.score);
+  const sub = points === null ? 'Resultat, Wendepunkt, bester Werfer' : `Dein Tipp: ${points} ${points === 1 ? 'Punkt' : 'Punkte'}`;
+  return html`<section class="sec tight"><a class="card rb-teaser" href="${href.spiel(game.id, 'kurz')}">
+    <span class="rb-teaser-k">Spiel-Story</span><span class="rb-teaser-t">${storyHeadline(game)}</span>
+    <span class="rb-teaser-s">${sub}</span>${icon('go')}</a></section>`;
 }

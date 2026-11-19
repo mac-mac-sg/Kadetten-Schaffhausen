@@ -9,7 +9,7 @@ import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
 import {shortCards, personalCards, nextAfter} from '../kurz.js';
-import {storyShell} from './rueckblick.js';
+import {storyShell, storyTeaser} from './rueckblick.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor, favourite, tips} from '../personal.js';
@@ -358,7 +358,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     ${hero}</section>`
   )}
     ${preOnly ? '' : segment(tabs, tab, 'Spielseite')}
-    ${twoTabs && tab === 'bericht' ? html`<section class="sec tight"><a class="card rowcard" href="${href.spiel(game.id, 'kurz')}"><span class="lead">${icon('jetzt')}</span><span class="grow"><span class="t">Dein Spieltag in Karten</span><span class="s">Resultat, Wendepunkt, dein Tipp und mehr</span></span>${icon('go')}</a></section>` : ''}
+    ${twoTabs && tab === 'bericht' ? storyTeaser(game) : ''}
     ${twoTabs && tab === 'bericht' ? tipFor(game, now) : ''}
     ${content}
     ${
