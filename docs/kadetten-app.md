@@ -282,3 +282,13 @@ Bei Kadetten-Heimspielen vor Anpfiff steht in der Kopfzeile der Spieltagskarte (
 
 - Quelle: `https://kadettensh.ch/wp-content/uploads/tickets.json`, dieselbe Datei, aus der die Kadetten-Homepage ihre Ticket-Knöpfe füllt (Spiel-ID des Matchcenters → Link). Der Datendienst liest sie bei jeder Spielplan-Aktualisierung mit (`server/update.mjs`: `parseTickets`, `withTickets`) und schreibt den Link ins Feld `tickets` des Spiels; Status unter `status.tickets`.
 - Übernommen werden nur https-Links auf ticketmaster.ch und ticketcorner.ch (Datendienst und App prüfen beide). Fehlt die Datei, bleiben die bisherigen Links; fehlt ein Eintrag, wird ein alter Link entfernt. Kein Ersatzlink.
+
+## Saisonrückblick «Deine Saison»
+
+`#/rueckblick` zeigt die Saison als Geschichte aus Vollbild-Karten (Vorbild: Jahresrückblick von Spotify). Tippen rechts oder Wischen nach links: weiter; Tippen links oder Wischen nach rechts: zurück; Pfeiltasten ebenso. Keine Navigation, das × führt zu «Mein Bereich». Konzept: Design-Canvas, Brett «Saisonrückblick · Konzept».
+
+- Karten (`js/rueckblick.js`, Ansicht `js/views/rueckblick.js`): Auftakt, In der Halle (Besuche, Bilanz, gesehene Tore, Siegquote mit dir und über die Saison), Dein Spiel der Saison (höchster Sieg in der Halle), Tippspiel (Punkte, exakt, richtige Differenz, beste Serie, bester Tipp), Lieblingsspieler (QHL-Tore, Spiele, Siebenmeter aus `playerSeason`), Quiz und Sammlung (Wochen, ohne Fehler, Quote, Karten, seltenste Karte), Deine Kadetten (Platz, QHL-Bilanz, Tore, Rangkurve aus `rankHistory`), Fan-Typ mit Teilen-Bild (`recapCard`).
+- Karten ohne Daten fallen weg; Mannschaft und Fan-Typ erscheinen immer. Keine Vergleiche mit anderen Fans. Alles aus dem Gerät und dem Datenstand der App.
+- Fan-Typ nach festen Regeln, die am deutlichsten erfüllte Schwelle gewinnt: Hallen-Stammgast (mind. die Hälfte der Heimspiele), Orakel (mind. 3 exakte Tipps), Live-Begleiter (mind. die Hälfte der Spiele live), Wissensdurst (mind. 20 Quiz-Wochen), Sammler (mind. drei Viertel der Karten); sonst «Treuer Fan» oder «Kadetten-Fan».
+- Saisonende: kein Kadetten-Spiel ohne Resultat mehr im Spielplan. Dann erscheint der Hinweis «Deine Saison ist da» auf der Titelseite (ohne nächstes Spiel) und oben in «Mein Bereich». Vorher führt in «Mein Bereich» unter «Für dich» die Zeile «Saisonrückblick» zu einem Zwischenstand (unten vermerkt).
+- Der frühere Block «Deine Saison» in den Einstellungen entfällt (19.11.2026).

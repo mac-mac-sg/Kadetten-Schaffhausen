@@ -58,6 +58,8 @@ export function parseRoute(hash = '') {
       return {area: null, view: 'start', step: /^[1-3]$/.test(second || '') ? Number(second) : 1};
     case 'quiz':
       return {area: null, view: 'quiz'};
+    case 'rueckblick':
+      return {area: null, view: 'rueckblick'};
     case 'wissen':
       return {
         area: null,
@@ -111,6 +113,7 @@ export const href = {
   karte: id => '#/sammlung/' + encodeURIComponent(id),
   neu: () => '#/sammlung/neu',
   quiz: () => '#/quiz',
+  rueckblick: () => '#/rueckblick',
   start: step => '#/start' + (step && step > 1 ? '/' + step : ''),
   wissen: (chapter, id, step) =>
     '#/wissen' +

@@ -7,7 +7,7 @@ import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
 import {toggleFavourite, toggleMyGame, changeTip, needsWelcome, markWelcome} from './personal.js';
-import {resultImage, shareImage} from './share-image.js';
+import {resultImage, shareImage, recapCard} from './share-image.js';
 import {outcome, shortTeam} from './logic.js';
 import {withFinished} from './match.js';
 import {crestSrc, RESULT_TEXT} from './views/parts.js';
@@ -26,6 +26,8 @@ import {renderIch} from './views/ich.js';
 import {renderArtikel} from './views/artikel.js';
 import {renderQuiz} from './views/quiz.js';
 import {renderStart} from './views/start.js';
+import {renderRueckblick, recapInput, recapTiles} from './views/rueckblick.js';
+import {recap} from './rueckblick.js';
 import {renderMein, renderSammlung, renderKarte, renderNeu, sammelInput} from './views/sammlung.js';
 import {claim, noteLive} from './sammeln.js';
 import {involves} from './logic.js';
@@ -103,6 +105,8 @@ function enterRoute() {
     history.replaceState({...history.state, kadettenEntry: entry.id}, '');
   }
   replacing = false;
+  // Der Rückblick beginnt beim Öffnen immer mit der ersten Karte.
+  if (!entry.restore && parseRoute(location.hash).view === 'rueckblick') ui.rbStep = 0;
   ui.backTarget = navigation.backTarget();
   // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
   const was = previous ? parseRoute(previous.hash) : null,
@@ -133,7 +137,8 @@ const VIEWS = {
   karte: renderKarte,
   neu: renderNeu,
   start: renderStart,
-  wissen: renderWissenOderLaden
+  wissen: renderWissenOderLaden,
+  rueckblick: renderRueckblick
 };
 
 function jumpToNextGame() {
@@ -216,7 +221,8 @@ function focusSelector(el) {
     'data-vote-confirm',
     'data-flip',
     'data-flipcard',
-    'data-reveal'
+    'data-reveal',
+    'data-rb'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
@@ -434,7 +440,7 @@ app.addEventListener('click', event => {
   }
   const t = event.target.closest('button, [data-ui]');
   if (!t) return;
-  if (swiped && t.dataset.reveal) return;
+  if (swiped && (t.dataset.reveal || t.dataset.rb)) return;
   if (t.dataset.rule) {
     openRule(t.dataset.rule, t);
     return;
@@ -474,6 +480,10 @@ app.addEventListener('click', event => {
   } else if (t.dataset.myGame) {
     toggleMyGame(t.dataset.myGame);
     render();
+  } else if (t.dataset.rb) {
+    rbStep(t.dataset.rb === 'next' ? 1 : -1);
+  } else if (t.hasAttribute('data-rb-share')) {
+    shareRecap();
   } else if (t.hasAttribute('data-claim')) {
     ui.newCards = claim(sammelInput(store.state));
     ui.revealed = [];
@@ -534,6 +544,21 @@ addEventListener('hashchange', () => {
   enterRoute();
   render();
 });
+// Saisonrückblick: eine Karte weiter oder zurück (Tippen, Wischen, Pfeiltasten).
+function rbStep(dir) {
+  const count = recap(recapInput(store.state, Date.now())).slides.length;
+  const next = Math.min(Math.max(0, (ui.rbStep || 0) + dir), count - 1);
+  if (next === (ui.rbStep || 0)) return;
+  ui.rbStep = next;
+  render();
+  app.querySelector(dir > 0 ? '[data-rb="next"]' : '[data-rb="prev"]')?.focus({preventScroll: true});
+}
+async function shareRecap() {
+  const r = recap(recapInput(store.state, Date.now()));
+  const fan = r.slides.find(s => s.id === 'fan');
+  announce('Bild wird erstellt …');
+  await shareImage(await recapCard({fan: fan.name, tiles: recapTiles(r)}), 'kadetten-saisonrueckblick.png', 'Meine Kadetten-Saison');
+}
 // Fächer: seitlich wischen holt die nächste oder vorherige Karte nach vorne (verdeckte werden dabei aufgedeckt).
 let swipe = null,
   swiped = false;
@@ -546,17 +571,19 @@ function fanStep(dir) {
   else reveal([next]);
 }
 app.addEventListener('pointerdown', event => {
-  if (event.target.closest('.fan')) swipe = {x: event.clientX, y: event.clientY};
+  if (event.target.closest('.fan, .rb')) swipe = {x: event.clientX, y: event.clientY, rb: Boolean(event.target.closest('.rb'))};
 });
 app.addEventListener('pointerup', event => {
   if (!swipe) return;
   const dx = event.clientX - swipe.x,
-    dy = event.clientY - swipe.y;
+    dy = event.clientY - swipe.y,
+    rb = swipe.rb;
   swipe = null;
   if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
   swiped = true;
   setTimeout(() => (swiped = false), 400);
-  fanStep(dx < 0 ? 1 : -1);
+  if (rb) rbStep(dx < 0 ? 1 : -1);
+  else fanStep(dx < 0 ? 1 : -1);
 });
 app.addEventListener('pointercancel', () => (swipe = null));
 app.addEventListener('keydown', event => {
@@ -570,6 +597,12 @@ app.addEventListener('keydown', event => {
   event.preventDefault();
   fanStep(event.key === 'ArrowRight' ? 1 : -1);
   app.querySelector(`[data-reveal="${CSS.escape(ui.fanTop || '')}"]`)?.focus();
+});
+// Rückblick: Pfeiltasten wirken auf der ganzen Seite, auch ohne Fokus in der Karte.
+document.addEventListener('keydown', event => {
+  if (parseRoute(location.hash).view !== 'rueckblick' || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  event.preventDefault();
+  rbStep(event.key === 'ArrowRight' ? 1 : -1);
 });
 app.addEventListener('input', event => {
   if (event.target.matches?.('.wk-scrub')) wissenSteuerung?.seek(Number(event.target.value));

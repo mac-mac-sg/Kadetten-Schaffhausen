@@ -1,4 +1,5 @@
 // «Jetzt»: richtet sich nach dem Spieltag (Alltag, Spieltag, Live, Nachspiel).
+import {recapTeaser} from './rueckblick.js';
 import {html} from '../text.js';
 import {quizTeaser} from './quiz.js';
 import {icon} from '../icons.js';
@@ -334,6 +335,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       ${previewHero(game, now)}</section>`
         : ''
     }
+    ${game ? '' : recapTeaser(data.games, now, true)}
     ${newsBlock(data, 3)}
     ${
       own
