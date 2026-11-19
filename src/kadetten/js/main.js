@@ -6,9 +6,8 @@ import {startLive} from './live.js';
 import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
 import {readTheme, applyTheme} from './theme.js';
 import {html} from './text.js';
-import {toggleFavourite, toggleMyGame, changeTip, myGames, tips, needsWelcome, markWelcome} from './personal.js';
-import {resultImage, seasonCard, shareImage} from './share-image.js';
-import {seasonSummary} from './moments.js';
+import {toggleFavourite, toggleMyGame, changeTip, needsWelcome, markWelcome} from './personal.js';
+import {resultImage, shareImage} from './share-image.js';
 import {outcome, shortTeam} from './logic.js';
 import {withFinished} from './match.js';
 import {crestSrc, RESULT_TEXT} from './views/parts.js';
@@ -314,11 +313,6 @@ async function shareResult(id) {
   });
   await shareImage(blob, `kadetten-${game.date}.png`, shareText(game));
 }
-async function shareSeason() {
-  const summary = seasonSummary({games: store.state.data?.games || [], visited: myGames(), tips: tips(), now: Date.now()});
-  announce('Bild wird erstellt …');
-  await shareImage(await seasonCard(summary), 'kadetten-meine-saison.png', 'Meine Kadetten-Saison');
-}
 
 /** Neue Karten aufdecken: nacheinander, damit jede ihre eigene Drehung bekommt. */
 /** Holt eine aufgedeckte Karte im Fächer nach vorne (nur Klassen, damit die Bewegung als Übergang läuft). */
@@ -508,7 +502,6 @@ app.addEventListener('click', event => {
     changeTip(id, Number(team), Number(delta));
     render();
   } else if (t.dataset.shareImage) shareResult(t.dataset.shareImage);
-  else if (t.hasAttribute('data-season-image')) shareSeason();
   else if (t.dataset.push) pushAction(t.dataset.push);
   else if (t.hasAttribute('data-calendar')) downloadCalendar();
   else if (t.hasAttribute('data-install') && installPrompt) {

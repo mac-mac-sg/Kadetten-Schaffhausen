@@ -192,7 +192,7 @@ export function renderMein({state, now, ui = {}}) {
     <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
       <div class="card list">
         ${listRow({title: 'Lieblingsspieler', sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken', link: fav ? href.spieler(fav.number) : href.team(), lead: html`<span class="lead">${icon('star')}</span>`})}
-        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender, Deine Saison', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
+        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
       </div></section>`;
 }
 
