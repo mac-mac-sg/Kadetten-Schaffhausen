@@ -146,6 +146,19 @@ Richtung «Abend» (Spielkarte mit Hallenfoto, schmale Anzeigetafel-Ziffern, ruh
 
 `npm run build:pages` legt die neue App unter `dist/client/v2` ab; nach dem Merge auf `main` ersetzt sie die bisherige V2 unter `/v2/`.
 
+**Aufbau der Oberfläche** (seit 20. November 2026, vorher ein einziges `main.js` mit 700 Zeilen):
+
+| Datei | Aufgabe |
+|---|---|
+| `js/main.js` | setzt nur zusammen: Datendienst, Speicher, Ansichten, Steuermodule |
+| `js/shell.js` | Hülle: Navigation (Verlauf, Scrollposition, Fokus), Zeichnen, Klick-Verteiler |
+| `js/controllers/*.js` | je ein Steuermodul pro Bereich: `story` (Geschichten mit Zeitsteuerung), `cards` (Karten abholen, Fächer, Umdrehen), `wissen` (Nachladen, Regel-Blatt), `personal` (Darstellung, Lieblingsspieler, Tipp, Quiz, Installieren), `push`, `votes`, `sharing`, `gestures` (Halten und Wischen) |
+| `js/views/*.js` | Ansichten, reine Funktionen ohne Seitenzugriff |
+
+Ein Steuermodul meldet seine Klick-Aktionen als `[data-Attribut, Funktion]` an (`actions`) und kann `beforeRender`, `afterRender`, `onEnter` und `beforeNavigate` nutzen; Details im Kopf von `shell.js`. Neue Bedienung kommt als Aktion in das passende Steuermodul, nicht in `main.js`.
+
+**Browser-Test:** `npm run test:browser` (nach `npm run build:pages`; Chromium einmalig mit `npx playwright install chromium`) prüft die Bedienung in echtem Chromium gegen `dist/client` mit nachgebildetem Datendienst und festem Datum: Navigation, Tickets-Marke, Filter, Lieblingsspieler, Tipp, Hallenbesuch, Quiz, Sammelkarten, Wissen, Geschichten mit Pause und «Bewegung reduzieren». In CI läuft er als eigener Auftrag «browser».
+
 | Teil | Umsetzung |
 |---|---|
 | Quellen | `src/kadetten/`: `index.html`, `theme-init.js`, `manifest.webmanifest`, `sw.js`, `css/` (Layer `reset, tokens, base, components, views`; Tokens aus dem [Designsystem](kadetten-app-design.md)), `js/` (ES-Module), `assets/` (eigene Kopien von Wappen, Hallenfoto, App-Symbolen) |

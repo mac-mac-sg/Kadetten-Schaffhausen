@@ -16,6 +16,8 @@ const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 
 const data = JSON.parse(fs.readFileSync('server/seed.json', 'utf8'));
 data.games = data.games.map(g => (g.id === CHAMBERY ? {...g, tickets: TICKET} : g));
+// Spielerwerte für das Profil von Nr. 10 (das Regel-Blatt hängt an den Strafen-Werten).
+data.playerSeason = {players: {10: {shvPlayerId: 1, games: 8, goals: 31, fieldGoals: 22, sevenMeterGoals: 9, goalsPerGame: 3.9, yellowCards: 1, twoMinutes: 2, disqualifications: 0}}};
 data.checkedAt = NOW.toISOString();
 data.status = Object.fromEntries(['games', 'table', 'news', 'players'].map(k => [k, {ok: true, updatedAt: NOW.toISOString()}]));
 
@@ -61,7 +63,9 @@ const step = page => page.getAttribute('.rb', 'data-rb-step').then(Number);
 const hash = page => page.evaluate(() => location.hash);
 
 const tests = [];
-const test = (name, fn) => tests.push({name, fn});
+// BROWSER_TEST=<Teil des Namens> führt nur passende Tests aus (zum Eingrenzen eines Fehlers).
+const only = process.env.BROWSER_TEST;
+const test = (name, fn) => (!only || name.includes(only)) && tests.push({name, fn});
 
 test('Titelseite: fünf Tabs, Spieltagskarte mit Tickets-Marke als eigener Link', async () => {
   const page = await open('/');
@@ -79,11 +83,11 @@ test('Titelseite: fünf Tabs, Spieltagskarte mit Tickets-Marke als eigener Link'
 test('Navigation: Tab «Ich» und Wissen in Mein Bereich', async () => {
   const page = await open('/');
   await page.click('nav.nav a[href="#/ich"]');
-  assert.equal(await page.locator('h1').textContent(), 'Mein Bereich');
+  await page.waitForSelector('h1:has-text("Mein Bereich")');
   assert.equal(await page.locator('nav.nav a.on').getAttribute('href'), '#/ich');
   await page.click('[aria-labelledby="m-wissen"] a[href="#/wissen/aufstellungen"]');
   assert.equal(await hash(page), '#/wissen/aufstellungen');
-  await page.waitForSelector('h1:has-text("Wissen")');
+  await page.waitForSelector('nav.seg'); // Kapitel-Reiter: der Wissensbereich ist geladen
   assert.equal(await page.locator('.band-sub a.back').getAttribute('href'), '#/ich');
   assert.deepEqual(page.errors, []);
   await page.close();
@@ -168,6 +172,28 @@ test('Karte umdrehen: Querkarte, Antippen, Enter-Taste', async () => {
   await karte.focus();
   await page.keyboard.press('Enter');
   assert.ok(!(await karte.getAttribute('class')).includes('is-back'));
+  assert.deepEqual(page.errors, []);
+  await page.close();
+});
+
+test('Wissen: wird beim Öffnen nachgeladen, Spielzug abspielen, Regel-Blatt', async () => {
+  const page = await open('/wissen/spielzuege/kreuzen');
+  await page.waitForSelector('[data-wk="play"]', {timeout: 8000});
+  await page.click('[data-wk="play"]');
+  assert.equal(await page.getAttribute('[data-wk="play"]', 'aria-pressed'), 'true', 'Wiedergabe läuft');
+  await page.click('[data-wk="speed"]');
+  assert.equal(await page.getAttribute('[data-wk="speed"]', 'aria-pressed'), 'true', 'halbes Tempo');
+  await page.goto(origin + '/#/wissen/regeln/7m');
+  await page.waitForSelector('h1:has-text("Siebenmeter")');
+  // Regel-Blatt: «?» bei den Spielerwerten im Kader-Profil (laden das Wissen bei Bedarf nach)
+  await page.goto(origin + '/#/team/10');
+  const frage = page.locator('[data-rule]').first();
+  await frage.waitFor();
+  await frage.click();
+  await page.waitForSelector('dialog#rule-dialog[open]');
+  assert.ok(await page.locator('#rule-dialog h2').textContent());
+  await page.click('#rule-dialog button[data-close]');
+  assert.equal(await page.locator('dialog#rule-dialog[open]').count(), 0);
   assert.deepEqual(page.errors, []);
   await page.close();
 });
