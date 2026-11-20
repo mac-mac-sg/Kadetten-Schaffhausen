@@ -18,6 +18,7 @@ import {createStory} from './controllers/story.js';
 import {createCards} from './controllers/cards.js';
 import {createSharing} from './controllers/sharing.js';
 import {createPushController} from './controllers/push.js';
+import {createShop} from './controllers/shop.js';
 import {renderJetzt, renderNews} from './views/jetzt.js';
 import {renderSpiel} from './views/spiel.js';
 import {renderSaison} from './views/saison.js';
@@ -29,6 +30,7 @@ import {renderQuiz} from './views/quiz.js';
 import {renderStart} from './views/start.js';
 import {renderRueckblick} from './views/rueckblick.js';
 import {renderMein, renderSammlung, renderKarte, renderNeu} from './views/sammlung.js';
+import {renderShop, renderProdukt, renderWarenkorb, renderKasse} from './views/shop.js';
 
 const api = createApi({origin: API_ORIGIN});
 const store = createStore({api});
@@ -69,6 +71,7 @@ const controllers = [
   createStory(ctx, gestures),
   createCards(ctx, gestures),
   createSharing(ctx),
+  createShop(ctx),
   pushController
 ];
 
@@ -92,6 +95,10 @@ const VIEWS = {
   neu: renderNeu,
   start: renderStart,
   rueckblick: renderRueckblick,
+  shop: renderShop,
+  produkt: renderProdukt,
+  warenkorb: renderWarenkorb,
+  kasse: renderKasse,
   ...wissen.views
 };
 const shell = createShell({app, ui, store, api, views: VIEWS, controllers, gestures});

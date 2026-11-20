@@ -47,7 +47,7 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
   writeFileSync(join(outDir, 'index.html'), html);
 
   // Die 512-px-Symbole braucht nur das Betriebssystem beim Installieren; sie werden nicht vorgeladen.
-  const shell = ['./', 'index.html', ...files.filter(f => f !== 'index.html' && !f.startsWith('fonts/LICENSE') && !f.includes('-512') && !f.startsWith('assets/players/') && !f.startsWith('assets/clubs/') && f !== 'assets/squad.webp' && f !== 'assets/team.webp')];
+  const shell = ['./', 'index.html', ...files.filter(f => f !== 'index.html' && !f.startsWith('fonts/LICENSE') && !f.includes('-512') && !f.startsWith('assets/players/') && !f.startsWith('assets/clubs/') && !f.startsWith('assets/shop/') && f !== 'assets/squad.webp' && f !== 'assets/team.webp')];
   const sw = readFileSync(join(src, 'sw.js'), 'utf8')
     .replace("'__VERSION__'", JSON.stringify(version)).replace('__SHELL__', JSON.stringify(shell)).replace("'__API_ORIGIN__'", JSON.stringify(apiOrigin));
   if (/__[A-Z_]+__/.test(sw)) throw Error('Platzhalter im Service Worker nicht ersetzt');

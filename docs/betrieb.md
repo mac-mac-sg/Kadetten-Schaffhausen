@@ -41,6 +41,10 @@ Eine neue Saison ändert mehrere Werte an verschiedenen Orten. Vergisst man eine
 
 Nicht archivierte Module für andere Vereine (FC St. Gallen, St. Otmar) werden nicht mehr aktualisiert und gehören nicht zur Liste.
 
+## Fanshop
+
+Der Produktkatalog kommt bei jedem Datenlauf aus der öffentlichen Store-API des Online-Shops (`server/shop.mjs`, Status `status.shop` in `GET /api/data`). Neue Produkte, Preise und Lagerstand erscheinen damit ohne Zutun in der App. Nach neuen Produktbildern einmal `NODE_USE_ENV_PROXY=1 node scripts/shop-bilder.mjs` (ohne Proxy einfach `node scripts/shop-bilder.mjs`) ausführen und die neuen Dateien unter `src/kadetten/assets/shop/` sowie `src/kadetten/data/shop-bilder.js` committen; bis dahin lädt die App die grossen Originalbilder. Versandregeln stehen in `src/kadetten/js/shop.js` (`SHIPPING`, `FREE_FROM`). Die App bestellt nichts.
+
 ## Regelbetrieb und Störungen
 - **Läuft die Aktualisierung?** Actions → «Cloudflare-Datenaktualisierung»: Läufe mit Auslöser «workflow_dispatch» (Akteur: Inhaber des Tokens) zu den Schweizer Zeiten 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20. Der GitHub-eigene Zeitplan wurde entfernt (er löste nicht zuverlässig aus); der Cron-Trigger des Workers ist der einzige automatische Auslöser. Fehlen Läufe: Worker-Protokoll in Cloudflare (Workers → kadetten-api → Logs) auf «Zeitplan: Aktualisierung nicht ausgelöst» prüfen (401/403: Token abgelaufen oder ohne Recht), sonst genügt «Run workflow» mit `schreiben`.
 - **Wie frisch sind die Daten?** `checkedAt` in `GET /api/data` des Datendienstes. Die App kennzeichnet veraltete Stände.

@@ -11,6 +11,7 @@ export const AREAS = [
 const SAISON_TABS = ['spielplan', 'tabellen', 'statistik'];
 const VEREIN_TABS = ['geschichte', 'titel'];
 export const WISSEN_CHAPTERS = ['regeln', 'aufstellungen', 'spielzuege'];
+export const KASSE_STEPS = ['lieferung', 'adresse', 'uebersicht'];
 export const GAME_TABS = ['vorschau', 'live', 'bericht', 'rueckblick', 'wahl', 'kurz'];
 
 /** Zerlegt einen Hash in Bereich, Ansicht und Parameter. Unbekanntes führt zu «Jetzt». */
@@ -58,6 +59,12 @@ export function parseRoute(hash = '') {
       return {area: null, view: 'start', step: /^[1-3]$/.test(second || '') ? Number(second) : 1};
     case 'quiz':
       return {area: null, view: 'quiz'};
+    case 'shop':
+      return /^\d{1,10}$/.test(second || '') ? {area: 'ich', view: 'produkt', id: second} : {area: 'ich', view: 'shop'};
+    case 'warenkorb':
+      return {area: 'ich', view: 'warenkorb'};
+    case 'kasse':
+      return {area: null, view: 'kasse', step: KASSE_STEPS.includes(second) ? second : 'lieferung'};
     case 'rueckblick':
       return {area: null, view: 'rueckblick'};
     case 'wissen':
@@ -113,6 +120,10 @@ export const href = {
   karte: id => '#/sammlung/' + encodeURIComponent(id),
   neu: () => '#/sammlung/neu',
   quiz: () => '#/quiz',
+  shop: () => '#/shop',
+  produkt: id => '#/shop/' + encodeURIComponent(id),
+  warenkorb: () => '#/warenkorb',
+  kasse: step => '#/kasse' + (step && step !== 'lieferung' ? '/' + step : ''),
   rueckblick: () => '#/rueckblick',
   start: step => '#/start' + (step && step > 1 ? '/' + step : ''),
   wissen: (chapter, id, step) =>
