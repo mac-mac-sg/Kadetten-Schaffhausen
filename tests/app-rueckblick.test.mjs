@@ -11,7 +11,16 @@ const memory = (init = {}) => {
   const m = new Map(Object.entries(init));
   return {getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v))};
 };
-const g = (id, date, home, away, score, league = 'QHL') => ({id, date, time: '18:00', home, away, league, venue: 'BBC Arena, Schaffhausen', ...(score ? {score} : {})});
+const g = (id, date, home, away, score, league = 'QHL') => ({
+  id,
+  date,
+  time: '18:00',
+  home,
+  away,
+  league,
+  venue: 'BBC Arena, Schaffhausen',
+  ...(score ? {score} : {})
+});
 const games = [
   g('1', '2026-09-05', OWN, 'Pfadi Winterthur', [31, 27]),
   g('2', '2026-09-12', 'BSV Bern', OWN, [30, 29]),
@@ -19,8 +28,22 @@ const games = [
   g('4', '2026-09-26', OWN, 'Wacker Thun', [25, 25]),
   g('5', '2026-10-03', 'TSV St. Otmar St. Gallen', OWN, [24, 33])
 ];
-const tables = {QHL: [[OWN, 5, 154, 132, 7], ['BSV Bern', 5, 150, 140, 6]]};
-const data = {games, tables, rankHistory: [{played: 1, rank: 3}, {played: 3, rank: 2}, {played: 5, rank: 1}], playerSeason: {players: {10: {games: 5, goals: 31, goalsPerGame: 6.2, sevenMeterGoals: 9}}}};
+const tables = {
+  QHL: [
+    [OWN, 5, 154, 132, 7],
+    ['BSV Bern', 5, 150, 140, 6]
+  ]
+};
+const data = {
+  games,
+  tables,
+  rankHistory: [
+    {played: 1, rank: 3},
+    {played: 3, rank: 2},
+    {played: 5, rank: 1}
+  ],
+  playerSeason: {players: {10: {games: 5, goals: 31, goalsPerGame: 6.2, sevenMeterGoals: 9}}}
+};
 const now = Date.parse('2026-10-10T12:00:00+02:00');
 
 test('Saisonende: erst wenn kein Kadetten-Spiel mehr aussteht', () => {
@@ -87,13 +110,27 @@ test('Rückblick: persönliche Karten nur mit Daten, Mannschaft und Fan-Typ imme
 test('Ansicht: Balken, eine Karte, Tippflächen, Teilen auf der letzten Karte, Hinweis', () => {
   assert.deepEqual(parseRoute('#/rueckblick'), {area: null, view: 'rueckblick'});
   assert.equal(href.rueckblick(), '#/rueckblick');
-  const doc = step => parseHTML('<html><body>' + String(renderRueckblick({state: {data}, now, ui: {rbStep: step}})) + '</body></html>').document;
+  const doc = step =>
+    parseHTML('<html><body>' + String(renderRueckblick({state: {data}, now, ui: {rbStep: step}})) + '</body></html>').document;
   const first = doc(0);
   const n = first.querySelectorAll('.rb-bars i').length;
   assert.ok(n >= 3);
   assert.equal(first.querySelectorAll('.rb-bars i.on').length, 0);
   assert.equal(first.querySelectorAll('.rb-bars i.now').length, 1, 'laufende Karte füllt ihren Balken');
   assert.ok(first.querySelector('[data-rb="next"]') && !first.querySelector('[data-rb="prev"]'));
+  assert.equal(first.querySelector('[data-rb-pause]').getAttribute('aria-label'), 'Pause', 'sichtbarer Pause-Knopf');
+  assert.equal(first.querySelector('.rb-slide').getAttribute('aria-live'), 'off', 'automatische Wechsel werden nicht vorgelesen');
+  const manual = parseHTML(
+    '<html><body>' + String(renderRueckblick({state: {data}, now, ui: {rbStep: 1, rbManual: true, rbPaused: true}})) + '</body></html>'
+  ).document;
+  assert.equal(manual.querySelector('.rb-slide').getAttribute('aria-live'), 'polite', 'Wechsel von Hand werden vorgelesen');
+  assert.equal(manual.querySelector('[data-rb-pause]').getAttribute('aria-pressed'), 'true');
+  assert.ok(manual.querySelector('.rb.paused'));
+  const still = parseHTML(
+    '<html><body>' + String(renderRueckblick({state: {data}, now, ui: {rbStep: 1, rbAuto: false}})) + '</body></html>'
+  ).document;
+  assert.ok(!still.querySelector('[data-rb-pause]') && !still.querySelector('.rb-bars i.now'), 'bei «Bewegung reduzieren» keine Automatik');
+  assert.equal(still.querySelector('.rb-slide').getAttribute('aria-live'), 'polite');
   assert.equal(first.querySelector('.rb-close').getAttribute('href'), '#/ich');
   assert.match(first.querySelector('h1').textContent, /Deine/);
   const last = doc(99);

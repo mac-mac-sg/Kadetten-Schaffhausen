@@ -212,12 +212,6 @@
 .sheet-body p { font: 400 var(--fs-body)/1.55 var(--f-text); }
 
 /* Momente, Tippspiel */
-.moments { list-style: none; margin: 0 calc(-1 * var(--s-4)); padding: 0 var(--s-4) var(--s-1); display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 72%); gap: var(--s-2); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.moments::-webkit-scrollbar { display: none; }
-.moment { scroll-snap-align: start; }
-.moment > a, .moment > div { display: grid; align-content: start; gap: var(--s-2); height: 100%; padding: var(--s-4); border-radius: var(--r-card); background: var(--c-surface); border: 1px solid var(--c-line); color: inherit; }
-.moment b { font: italic 600 var(--fs-figure)/1.05 var(--f-display); font-variant-numeric: tabular-nums; }
-.moment span:last-child { font: 400 var(--fs-small)/1.4 var(--f-text); color: var(--c-text-muted); }
 .tip { display: grid; gap: var(--s-3); }
 .tip-side { display: grid; grid-template-columns: 1fr 44px 56px 44px; align-items: center; gap: var(--s-2); }
 .tip-side span { font: 500 var(--fs-body)/1.3 var(--f-text); }
@@ -740,9 +734,9 @@ a.sk:active { transform: scale(.97); }
 
 /* Saisonrückblick (#/rueckblick): Vollbild-Karten wie eine Geschichte. */
 .rb { position: fixed; inset: 0; z-index: 30; overflow: hidden; display: flex; flex-direction: column; padding: calc(max(env(safe-area-inset-top), 16px) + 34px) var(--s-5) calc(env(safe-area-inset-bottom) + var(--s-5)); }
-.rb-or { background: linear-gradient(165deg, #ff7d26, var(--c-accent) 50%, #e85200); color: var(--c-ink); }
+.rb-or { background: var(--band-bg); color: var(--c-ink); }
 .rb-bk { background: var(--c-ink); color: var(--c-on-ink); }
-.rb-cr { background: #f6f3ee; color: var(--c-ink); }
+.rb-cr { background: var(--c-cream); color: var(--c-ink); }
 .rb-bars { position: absolute; top: calc(max(env(safe-area-inset-top), 16px) + 4px); left: var(--s-4); right: var(--s-4); display: flex; gap: 4px; }
 .rb-bars i { position: relative; flex: 1; height: 3px; border-radius: 2px; overflow: hidden; background: color-mix(in srgb, currentColor 25%, transparent); }
 .rb-bars i.on { background: currentColor; }
@@ -833,3 +827,5 @@ a.sk:active { transform: scale(.97); }
 .sk.rueck.quer .sk-dl { font-size: 2.6cqw; gap: 0.8cqw; }
 .sk.rueck.quer .sk-dl div { padding-top: 0.8cqw; }
 .sk.rueck.quer .sk-src { font-size: 2.4cqw; }
+.rb-pause { position: absolute; z-index: 3; top: calc(max(env(safe-area-inset-top), 16px) + 14px); right: calc(var(--s-3) + var(--tap)); width: var(--tap); height: var(--tap); display: grid; place-items: center; border: 0; background: none; color: inherit; cursor: pointer; }
+.rb-pause:focus-visible, .rb-close:focus-visible { outline: 3px solid currentColor; outline-offset: -6px; border-radius: 50%; }

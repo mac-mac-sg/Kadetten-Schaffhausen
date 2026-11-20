@@ -1,6 +1,7 @@
 // Push-Mitteilungen zu Kadetten-Spielen über den bestehenden Dienst /api/push (server/push-subscriptions.mjs).
 // Das ist der einzige Schreibweg der App; er gehört dem Gerät (zufälliger Schlüssel) und enthält keine Personendaten.
 // Gleicher Geräteeintrag wie in der bisherigen V2, damit bestehende Abos weiterlaufen.
+import {storage} from './storage.js';
 export const PUSH_DEVICE_KEY = 'match-push-device-v1';
 export const PUSH_TYPES = [
   ['reminder', '30 Minuten vor Anpfiff'],
@@ -9,14 +10,6 @@ export const PUSH_TYPES = [
   ['final', 'Endresultat'],
   ['favourite', 'Tore deines Lieblingsspielers (QHL)']
 ];
-
-const storage = () => {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
-};
 
 export function readDevice(s = storage()) {
   try {

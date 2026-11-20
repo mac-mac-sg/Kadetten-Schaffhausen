@@ -181,6 +181,3 @@ export function storiesForGame(stories, game) {
 }
 
 /** Letzte Resultate eines Gegners aus dem Kadetten-Spielplan (falls keine eigene Quelle vorliegt). */
-export function lastGamesOf(games, team, count = 5) {
-  return ownGames(games, team).filter(hasScore).reverse().slice(0, count);
-}

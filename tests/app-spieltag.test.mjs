@@ -6,7 +6,16 @@ import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {parseRoute} from '../src/kadetten/js/router.js';
 
 const OWN = 'Kadetten Schaffhausen';
-const g = (id, date, home, away, score) => ({id, date, time: '18:00', home, away, league: 'QHL', venue: 'BBC Arena, Schaffhausen', ...(score ? {score} : {})});
+const g = (id, date, home, away, score) => ({
+  id,
+  date,
+  time: '18:00',
+  home,
+  away,
+  league: 'QHL',
+  venue: 'BBC Arena, Schaffhausen',
+  ...(score ? {score} : {})
+});
 const games = [
   g('1', '2027-03-07', OWN, 'Pfadi Winterthur', [30, 28]),
   g('2', '2027-03-14', OWN, 'HC Kriens-Luzern', [34, 29]),
@@ -40,7 +49,16 @@ test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Ka
   const render = step =>
     parseHTML(
       '<html><body>' +
-        String(renderSpiel({route, state: {data: {games, tables: {}}, live: null}, now, load: () => ({status: 'loading'}), api: {}, ui: {rbStep: step}})) +
+        String(
+          renderSpiel({
+            route,
+            state: {data: {games, tables: {}}, live: null},
+            now,
+            load: () => ({status: 'loading'}),
+            api: {},
+            ui: {rbStep: step}
+          })
+        ) +
         '</body></html>'
     ).document;
   const first = render(0);
@@ -54,10 +72,16 @@ test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Ka
 });
 
 test('Spiel-Story: Schlagzeile nach Resultat und Ort, Tipp-Punkte in der Unterzeile', async () => {
-  const {storyHeadline, storyTeaser} = await import('../src/kadetten/js/views/rueckblick.js');
+  const {storyHeadline, storyTeaser} = await import('../src/kadetten/js/views/story.js');
   assert.equal(storyHeadline(games[1]), 'Der Sieg in der BBC Arena');
-  assert.equal(storyHeadline({...games[1], home: 'HC Izvidac', away: OWN, score: [29, 34], venue: 'Sportska Dvorana Ljubuski, Ljubuski'}), 'Der Sieg in Ljubuski');
-  assert.equal(storyHeadline({...games[1], home: 'Wacker Thun', away: OWN, score: [30, 28], venue: 'Lachen, Thun'}), 'Die Niederlage in Thun');
+  assert.equal(
+    storyHeadline({...games[1], home: 'HC Izvidac', away: OWN, score: [29, 34], venue: 'Sportska Dvorana Ljubuski, Ljubuski'}),
+    'Der Sieg in Ljubuski'
+  );
+  assert.equal(
+    storyHeadline({...games[1], home: 'Wacker Thun', away: OWN, score: [30, 28], venue: 'Lachen, Thun'}),
+    'Die Niederlage in Thun'
+  );
   assert.equal(storyHeadline({...games[1], score: [28, 28]}), 'Das Remis gegen Kriens-Luzern');
   const d = parseHTML('<html><body>' + String(storyTeaser(games[1], [33, 29])) + '</body></html>').document;
   assert.equal(d.querySelector('a.rb-teaser').getAttribute('href'), '#/spiel/2/kurz');

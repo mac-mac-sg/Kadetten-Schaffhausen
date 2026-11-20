@@ -4,9 +4,10 @@
 import {FIXED_CARDS} from '../data/sammelkarten.js';
 import {SQUAD} from '../data/squad.js';
 import {HISTORY} from '../data/club.js';
-import {OWN_TEAM, hasScore, shortTeam} from './logic.js';
+import {OWN_TEAM, hasScore, shortTeam, shortDate} from './logic.js';
 import {tipPoints} from './moments.js';
 import {weekResult} from './quiz.js';
+import {storage} from './storage.js';
 
 export const CARDS_KEY = 'v2:app-cards';
 export const LIVE_KEY = 'v2:app-live-seen';
@@ -71,7 +72,7 @@ export function momentCard(game) {
     title: `${shortTeam(game.home)} – ${shortTeam(game.away)}`,
     kicker: `${game.league || ''} · ${home ? 'Heim' : 'auswärts'}`.replace(/^ · /, ''),
     big: `${game.score[0]}:${game.score[1]}`,
-    text: `Du warst am ${String(game.date).split('-').reverse().join('.')} in der Halle.`,
+    text: `Du warst am ${shortDate(game.date)} in der Halle.`,
     image: 'assets/team.webp',
     game: String(game.id)
   };
@@ -82,13 +83,6 @@ export function cardById(id, games = []) {
   return null;
 }
 
-const storage = () => {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
-};
 /** Sammlung: Karten-IDs mit Zeitpunkt und bereits eingelöste Belohnungen. */
 export function collection(s = storage()) {
   try {

@@ -1,5 +1,6 @@
 // Quiz der Woche: jede Kalenderwoche drei Fragen (bis 15.11.2026 fünf), für alle Geräte dieselben. Antworten bleiben nur auf diesem Gerät.
 import {QUESTIONS} from '../data/quiz.js';
+import {storage} from './storage.js';
 
 export const QUIZ_KEY = 'v2:app-quiz';
 export const QUIZ_SIZE = 3;
@@ -36,13 +37,6 @@ export function weeklyQuiz(now, questions = QUESTIONS) {
   return {week, questions: [...Array(quizSize(week)).keys()].map(i => questions[ord[(start + i) % ord.length]])};
 }
 
-const storage = () => {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
-};
 export function quizAnswers(s = storage()) {
   try {
     const v = JSON.parse(s?.getItem(QUIZ_KEY) ?? 'null');

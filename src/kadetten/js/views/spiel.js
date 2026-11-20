@@ -4,12 +4,12 @@ import {renderTicker} from '../ticker.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
-import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff, dayLabel} from '../logic.js';
+import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff, dayLabel, shortDate} from '../logic.js';
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
 import {shortCards, personalCards, nextAfter} from '../kurz.js';
-import {storyShell, storyTeaser} from './rueckblick.js';
+import {storyShell, storyTeaser, storyState} from './story.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor, favourite, tips} from '../personal.js';
@@ -180,7 +180,7 @@ function vorschau({game, data, load, api, now}) {
       ${duels.value.games.slice(0, 3).map(d =>
         listRow({
           title: `${shortTeam(d.home)} – ${shortTeam(d.away)}`,
-          sub: d.date.split('-').reverse().join('.'),
+          sub: shortDate(d.date),
           end: html`<span class="res num">${d.score[0]}:${d.score[1]}${formBadge(outcomeByName(d, OWN_TEAM))}</span>`
         })
       )}</div>
@@ -236,8 +236,8 @@ function bericht({game, phase, data, load, api, ui, state, now, part = 'alles'})
   return renderBericht({game, data, entry, ui, normalized, voting, part, supported});
 }
 
-/** «Spiel in 30 Sekunden»: wischbare Karten aus Resultat und Spielbericht. */
-/** Spieltag in Karten (#/spiel/<id>/kurz): Geschichte wie der Saisonrückblick, mit Mannschafts- und persönlichen Karten. */
+/** Spiel-Story (#/spiel/<id>/kurz): Geschichte aus Mannschafts- und persönlichen Karten, im Rahmen von views/story.js. */
+/** Spiel-Story (#/spiel/<id>/kurz): Geschichte wie der Saisonrückblick, mit Mannschafts- und persönlichen Karten. */
 function kurz({game, data, load, api, ui, now}) {
   const supported = ['QHL', 'EHL'].includes(game.league) || /cup/i.test(game.league || '');
   const entry = supported ? loadReportFor(load, api, game) : null;
@@ -279,7 +279,7 @@ function kurz({game, data, load, api, ui, now}) {
     <div class="rb-acts">${next ? html`<a class="rb-share alt" href="${href.spiel(next.id)}">Jetzt tippen</a>` : html`<a class="rb-share alt" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a>`}
     <button class="rb-share" type="button" data-share-image="${game.id}">${icon('share')}Resultat teilen</button></div>`
   });
-  return storyShell({slides, step: ui.rbStep, enter: ui.enter, close: href.spiel(game.id, 'bericht'), closeLabel: 'Zurück zum Spiel'});
+  return storyShell({slides, ...storyState(ui), close: href.spiel(game.id, 'bericht'), closeLabel: 'Zurück zum Spiel'});
 }
 
 export function renderSpiel({route, state, now, load, api, ui}) {

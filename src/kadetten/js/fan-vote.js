@@ -1,14 +1,8 @@
 // Fan-Wahl «Spieler des Matchs» über /api/app/votes (server/app-fan.mjs). Eine Stimme pro Gerät und Spiel.
 // Der Geräteschlüssel ist zufällig, bleibt auf dem Gerät und wird im Datendienst nur gehasht gespeichert.
+import {storage} from './storage.js';
 export const DEVICE_KEY = 'v2:app-device';
 export const MY_VOTES_KEY = 'v2:app-votes';
-const storage = () => {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
-};
 
 export function deviceToken(s = storage()) {
   let token = null;
