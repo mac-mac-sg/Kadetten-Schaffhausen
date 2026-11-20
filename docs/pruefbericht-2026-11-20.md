@@ -29,7 +29,7 @@ Die grösseren Punkte sind am selben Tag umgesetzt (zweiter PR):
 
 Das CSS wurde mit Bildschirmfotos von 18 Seiten in Hell und Dunkel vorher und nachher verglichen: Die Token-Umstellung ist pixelgleich, Unterschiede gibt es nur an den Marken (gerader statt schräger Text).
 
-Offen bleibt S2 (Einbetten in fremde Seiten auf GitHub Pages, geringes Risiko).
+S2 (Einbetten in fremde Seiten) ist behoben: `theme-init.js` bricht aus fremden Rahmen aus und blendet die Seite sonst aus (Test `tests/einbettung.test.mjs`). Damit ist der Bericht vollständig abgearbeitet.
 
 ## Gesamturteil
 
@@ -77,7 +77,7 @@ Die App ist in gutem Zustand. Sicherheit und Datenschutz sind solide gebaut: Aus
 **Hinweise (niedrig)**
 
 1. **S1 · SVG-Beschriftungen:** In `views/bericht.js:135` und `views/saison.js:109` gelangt `aria-label` ohne `escapeHtml` in `raw()`. Heute stehen dort nur Zahlen, aber eine spätere Textänderung wäre ungeschützt. Vorschlag: wie in `bericht.js:95` immer `escapeHtml(label)` verwenden.
-2. **S2 · Einbettung in fremde Seiten:** GitHub Pages kann keine Kopfzeilen setzen, und `frame-ancestors` wirkt im Meta-Tag nicht. Die App liesse sich also theoretisch in fremde Seiten einbetten. Weil sie keine Konten und keine heiklen Aktionen hat, ist das Risiko gering. Mit einem späteren Wechsel auf Cloudflare Pages liesse sich das per Kopfzeile schliessen.
+2. **S2 · Einbettung in fremde Seiten:** GitHub Pages kann keine Kopfzeilen setzen, und `frame-ancestors` wirkt im Meta-Tag nicht. Die App liesse sich also theoretisch in fremde Seiten einbetten. Weil sie keine Konten und keine heiklen Aktionen hat, ist das Risiko gering. Behoben mit einem kleinen Ausbruchsschutz in `theme-init.js`; mit einem späteren Wechsel auf Cloudflare Pages liesse sich zusätzlich eine Kopfzeile setzen.
 
 ## 2. Architektur
 
