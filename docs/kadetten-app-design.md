@@ -82,6 +82,15 @@ Alle Zahlen mit Tabellenziffern.
 - **Marken** (`.pill`, `.tag-ink`, `.rb-tag` der Geschichten, `.sk-tag` der Sammelkarten) teilen eine Basis: Die Form steht schräg in `::before` (Farbe über `--fill`), der Text bleibt gerade, wie bei Knöpfen und Chips.
 - **Hinweis-Kachel `.teaser`**: dunkle Kachel mit orangem Streifen, grosser kursiver Schlagzeile und Pfeil. Sie führt in Saisonrückblick und Spiel-Story (`views/story.js`, `views/rueckblick.js`); `.rowcard` bleibt die ruhige Listenkachel.
 
+## Kennzahl-Kacheln, Formkurve und Story-Fotokarte (Stand 20. November 2026)
+
+Aus einer Stilvorlage übernommen und in den Schnitt übersetzt (Entwürfe im Design-Canvas «Stil aus der Vorlage»):
+
+- **Kennzahl-Kacheln** (`kpis()` in `views/parts.js`, Klassen `.kz`, `.kz-t`): Spielerwerte als Kacheln mit 8°-Schnitt statt gleicher Zahlenkästen. Die erste Kachel ist orange (Bandverlauf, Tinte als Schrift), die übrigen Tinte (`--c-tile` mit schwachem Orange-Schein) und Papier (`--c-surface-2`). Bei drei Werten geht die erste über die ganze Breite. Eine Unterzeile nur mit echten Daten (zum Beispiel «davon 9 vom 7-m-Punkt»), keine erfundenen Trends.
+- **Formkurve** (`formCurve()` in `views/team.js`, `.fc`): Tore bzw. Paraden der letzten QHL-Spiele als weiche Linie, darunter die Spiele als schräge Knöpfe (`data-ui="formGame:<id>"`). Das gewählte Spiel ist orange markiert und steht ausgeschrieben darunter mit Link zum Spielbericht. Spiele ohne Bericht sind nicht wählbar.
+- **Story-Fotokarte** (`storyShell`, Option `photo`, Klasse `.rb-ph`): Die erste Karte der Spiel-Story zeigt das Bild des besten Werfers stark verwischt, mit feinem Korn (`assets/korn.svg`) und Tinte darüber; Text steht immer auf dunklem Grund. Die Schlagzeile mischt normal und fett, der Wettbewerb steht als schräge Marke im Satz (`storyHeadlineMixed`).
+- Nicht übernommen: Kapseln, Pastellverläufe, Glas auf Fotos, dünne Schrift, Punktziffern.
+
 ## Regeln
 
 - Flächen sind ruhig und neutral (Papier, Graphit). Orange gehört dem Kopfband, der Auswahl, den Siegen, der Hauptaktion und dem Kadetten-Anteil in Grafiken.
