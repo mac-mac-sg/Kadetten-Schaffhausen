@@ -27,6 +27,20 @@ Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([
 - Pages-Quelle: Settings → Pages → Source → GitHub Actions.
 - Projektbezug des alten Hostings: `.openai/hosting.json` (nur Dokumentation, keine portable Konfiguration).
 
+## Saisonwechsel (Checkliste)
+
+Eine neue Saison ändert mehrere Werte an verschiedenen Orten. Vergisst man einen, fallen Live-Daten, Spielplan oder Rückblick still aus. `tests/saison-konfiguration.test.mjs` prüft, dass App und Datendienst zueinander passen; die übrigen Punkte stehen hier.
+
+1. **Datendienst** `server/season.mjs`: `SEASON_ID` (SHV-seasonId), `SEASON_LABEL`, `SEASON_YEARS`, `PREVIOUS_SEASON_IDS`, `EHF_SEASON_PATH`, `EHF_MATCH_ID_PREFIX`, `NEWS_FROM`.
+2. **App** `src/kadetten/js/season.js`: `SEASON`.
+3. **Gewinnscore** `src/kadetten/data/gewinnscore.js`: Vorsaison-Werte neu auszählen (`scripts/gewinnscore-backtest.mjs`, Anleitung im Kopf der Datei); Aufsteiger erhalten 0.
+4. **Quiz** `src/kadetten/js/quiz.js`: nichts ändern; die Fragen laufen wochenweise weiter (`SHORT_FROM` ist nur die einmalige Umstellung auf drei Fragen).
+5. **Spielplan-Zuordnung** `server/update.mjs`: `ids` (Matchcenter-ID → App-ID für Spiele mit eigener Kennung) für die neue Saison prüfen.
+6. **Kader** `src/kadetten/data/squad.js`, Spielerfotos und `docs/sammelkarten.md` (Kaderkarten) nachführen.
+7. **Prüfen:** `npm run verify`, danach Datenaktualisierung auslösen und in der App Spielplan, Tabelle, Live-Kachel und Spielerwerte ansehen.
+
+Nicht archivierte Module für andere Vereine (FC St. Gallen, St. Otmar) werden nicht mehr aktualisiert und gehören nicht zur Liste.
+
 ## Regelbetrieb und Störungen
 - **Läuft die Aktualisierung?** Actions → «Cloudflare-Datenaktualisierung»: Läufe mit Auslöser «workflow_dispatch» (Akteur: Inhaber des Tokens) zu den Schweizer Zeiten 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20. Der GitHub-eigene Zeitplan wurde entfernt (er löste nicht zuverlässig aus); der Cron-Trigger des Workers ist der einzige automatische Auslöser. Fehlen Läufe: Worker-Protokoll in Cloudflare (Workers → kadetten-api → Logs) auf «Zeitplan: Aktualisierung nicht ausgelöst» prüfen (401/403: Token abgelaufen oder ohne Recht), sonst genügt «Run workflow» mit `schreiben`.
 - **Wie frisch sind die Daten?** `checkedAt` in `GET /api/data` des Datendienstes. Die App kennzeichnet veraltete Stände.

@@ -845,8 +845,6 @@ export const ARTICLES = [...REGELN, ...POSITIONSARTIKEL, ...ABWEHR, ...ANGRIFF, 
 /** Kurze Beschriftung für den Wahlknopf: «6-0», «3-3», «Kreis» … */
 export const chipLabel = a => CHIPS[a.id] || a.title.replace(/^(Abwehr|Angriff) /, '');
 export const article = id => ARTICLES.find(a => a.id === id) || null;
-export const inChapter = chapter => ARTICLES.filter(a => a.chapter === chapter);
-
 /** Spielzug und Schritt (ab 0) einer Wissens-Adresse; Unbekanntes führt zu «Kreuzen», Schritt 1. */
 export function spielzugOf(route) {
   const zug = ARTICLES.find(a => a.chapter === 'spielzuege' && a.id === route.id) || article('kreuzen');

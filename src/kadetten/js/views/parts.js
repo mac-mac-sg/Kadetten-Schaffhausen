@@ -226,26 +226,6 @@ export function segment(items, current, label) {
     ${items.map(([id, text, target, extra]) => html`<a href="${target}"${id === current ? html` class="on" aria-current="page"` : ''}>${extra || ''}${text}</a>`)}</nav>`;
 }
 
-/** Momente als waagrecht scrollbare Karten. */
-export function momentCards(list) {
-  if (!list.length) return '';
-  return html`<section class="sec" aria-labelledby="j-mom"><div class="sh"><h2 class="h2" id="j-mom">Momente</h2></div>
-    <ul class="moments" role="list">
-      ${list.map(
-        m =>
-          html`<li class="moment">${
-            m.link
-              ? html`<a href="${href.spiel(m.link)}">${momentBody(m)}</a>`
-              : m.player
-                ? html`<a href="${href.spieler(m.player)}">${momentBody(m)}</a>`
-                : html`<div>
-      ${momentBody(m)}</div>`
-          }</li>`
-      )}</ul>
-      </section>`;
-}
-const momentBody = m => html`<span class="tag">${m.tag}</span><b>${m.title}</b><span>${m.text}</span>`;
-
 /** Tippspiel-Karte: vor Anpfiff veränderbar, danach gesperrt; nach dem Spiel mit Punkten. */
 export function tipCard({game, tip, points, locked}) {
   const value = tip || [28, 26];

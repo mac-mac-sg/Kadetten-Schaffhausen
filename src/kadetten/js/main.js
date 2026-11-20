@@ -106,7 +106,7 @@ function enterRoute() {
   }
   replacing = false;
   // Eine Geschichte beginnt beim Öffnen immer mit der ersten Karte.
-  if (!entry.restore && isStory(parseRoute(location.hash))) ui.rbStep = 0;
+  if (!entry.restore && isStory(parseRoute(location.hash))) Object.assign(ui, {rbStep: 0, rbPaused: false, rbManual: false});
   ui.backTarget = navigation.backTarget();
   // Wer in einem Spielzug von Schritt zu Schritt geht, bleibt an derselben Stelle der Seite.
   const was = previous ? parseRoute(previous.hash) : null,
@@ -161,6 +161,7 @@ function render() {
   const focusKey = document.activeElement?.closest?.('#app') ? focusSelector(document.activeElement) : null;
   wissenSteuerung?.sync(route);
   ui.enter = ui.enterHash !== location.hash;
+  ui.rbAuto = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const context = {route, state: store.state, now: Date.now(), load: store.load, api, ui, theme: readTheme()};
   const tile = liveTile({state: store.state, route, now: context.now});
   app.innerHTML = String(
@@ -223,7 +224,8 @@ function focusSelector(el) {
     'data-flip',
     'data-flipcard',
     'data-reveal',
-    'data-rb'
+    'data-rb',
+    'data-rb-pause'
   ])
     if (el.hasAttribute?.(attr)) return `[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;
   return el.getAttribute?.('href') ? `a[href="${CSS.escape(el.getAttribute('href'))}"]` : null;
@@ -481,6 +483,8 @@ app.addEventListener('click', event => {
   } else if (t.dataset.myGame) {
     toggleMyGame(t.dataset.myGame);
     render();
+  } else if (t.hasAttribute('data-rb-pause')) {
+    rbPauseToggle();
   } else if (t.dataset.rb) {
     rbStep(t.dataset.rb === 'next' ? 1 : -1);
   } else if (t.hasAttribute('data-rb-share')) {
@@ -549,23 +553,28 @@ addEventListener('hashchange', () => {
 function isStory(route) {
   return route.view === 'rueckblick' || (route.view === 'spiel' && route.tab === 'kurz');
 }
-function rbStep(dir) {
+function rbStep(dir, manual = true) {
   const count = app.querySelectorAll('.rb-bars i').length;
   if (!count) return;
   const next = Math.min(Math.max(0, (ui.rbStep || 0) + dir), count - 1);
   if (next === (ui.rbStep || 0)) return;
   const focused = document.activeElement?.matches?.('[data-rb]');
   ui.rbStep = next;
+  // Nur ein Wechsel von Hand wird vom Screenreader vorgelesen, nicht jeder automatische.
+  ui.rbManual = manual;
   render();
   // Fokus nur weitergeben, wenn er schon auf einer Tippfläche lag (Tastatur mit Tab), sonst kein Rahmen über der Karte.
   if (focused) app.querySelector(dir > 0 ? '[data-rb="next"]' : '[data-rb="prev"]')?.focus({preventScroll: true});
 }
-// Zeitsteuerung: Jede Karte läuft 5 Sekunden, dann folgt die nächste. Gedrückt halten, Leertaste oder ein
-// verborgener Tab halten an; die letzte Karte bleibt stehen.
+// Zeitsteuerung: Jede Karte läuft 5 Sekunden, dann folgt die nächste; die letzte bleibt stehen. Angehalten wird
+// durch den Pause-Knopf, die Leertaste, Halten mit dem Finger oder einen verborgenen Tab. Bei «Bewegung reduzieren»
+// gibt es keine Automatik, dann blättert man nur von Hand.
 const RB_MS = 5000;
 let rbTimer = null,
   rbHold = null,
-  rbClock = {key: '', start: 0, done: 0, paused: false};
+  rbHeld = false,
+  rbClock = {key: '', start: 0, done: 0, running: false};
+const rbWantsPause = () => Boolean(ui.rbPaused) || rbHeld || document.hidden;
 function rbSync() {
   clearTimeout(rbTimer);
   const box = app.querySelector('.rb');
@@ -573,23 +582,28 @@ function rbSync() {
     rbClock.key = '';
     return;
   }
-  const key = location.hash + ':' + box.dataset.rbStep;
-  if (key !== rbClock.key) rbClock = {key, start: performance.now(), done: 0, paused: false};
+  const key = location.hash + ':' + box.dataset.rbStep,
+    now = performance.now();
+  if (key !== rbClock.key) rbClock = {key, start: now, done: 0, running: true};
+  const pause = rbWantsPause();
+  if (rbClock.running && pause) {
+    rbClock.done += now - rbClock.start;
+    rbClock.running = false;
+  } else if (!rbClock.running && !pause) {
+    rbClock.start = now;
+    rbClock.running = true;
+  }
   const bar = box.querySelector('.rb-bars i.now');
-  const elapsed = rbClock.done + (rbClock.paused ? 0 : performance.now() - rbClock.start);
+  const elapsed = rbClock.done + (rbClock.running ? now - rbClock.start : 0);
   // Nach einem Neuzeichnen (z. B. neue Daten) läuft der Balken dort weiter, wo er war.
   if (bar) bar.style.setProperty('--rb-elapsed', `-${Math.round(elapsed)}ms`);
-  box.classList.toggle('paused', rbClock.paused || document.hidden);
-  if (!bar || rbClock.paused || document.hidden) return;
-  rbTimer = setTimeout(() => rbStep(1), Math.max(0, RB_MS - elapsed));
+  box.classList.toggle('paused', pause);
+  if (!bar || !rbClock.running) return;
+  rbTimer = setTimeout(() => rbStep(1, false), Math.max(0, RB_MS - elapsed));
 }
-function rbPause(paused) {
-  if (!rbClock.key || rbClock.paused === paused) return;
-  const now = performance.now();
-  if (paused) rbClock.done += now - rbClock.start;
-  else rbClock.start = now;
-  rbClock.paused = paused;
-  rbSync();
+function rbPauseToggle() {
+  ui.rbPaused = !ui.rbPaused;
+  render();
 }
 async function shareRecap() {
   const r = recap(recapInput(store.state, Date.now()));
@@ -611,9 +625,10 @@ function fanStep(dir) {
 app.addEventListener('pointerdown', event => {
   if (event.target.closest('.fan, .rb')) swipe = {x: event.clientX, y: event.clientY, rb: Boolean(event.target.closest('.rb'))};
   // Geschichte: gedrückt halten pausiert; wer länger als 300 ms hält, blättert beim Loslassen nicht weiter.
-  if (event.target.closest('.rb') && !event.target.closest('a, .rb-share')) {
+  if (event.target.closest('.rb') && !event.target.closest('a, .rb-share, .rb-pause')) {
     rbHold = {at: performance.now()};
-    rbPause(true);
+    rbHeld = true;
+    rbSync();
   }
 });
 const rbRelease = () => {
@@ -623,7 +638,8 @@ const rbRelease = () => {
     setTimeout(() => (swiped = false), 400);
   }
   rbHold = null;
-  rbPause(false);
+  rbHeld = false;
+  rbSync();
 };
 app.addEventListener('pointerup', event => {
   rbRelease();
@@ -657,9 +673,9 @@ app.addEventListener('keydown', event => {
 // Geschichten: Pfeiltasten wirken auf der ganzen Seite, auch ohne Fokus in der Karte.
 document.addEventListener('keydown', event => {
   if (!isStory(parseRoute(location.hash))) return;
-  if (event.key === ' ' && !event.target.closest?.('a, input, .rb-share')) {
+  if (event.key === ' ' && !event.target.closest?.('a, input, .rb-share, .rb-pause')) {
     event.preventDefault();
-    rbPause(!rbClock.paused);
+    rbPauseToggle();
     return;
   }
   if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
@@ -671,7 +687,7 @@ app.addEventListener('input', event => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) wissenSteuerung?.stop();
-  rbPause(document.hidden);
+  rbSync();
 });
 // «Live dabei»: Ein laufendes Kadetten-Spiel, das die App gesehen hat, bringt eine Sammelkarte.
 store.subscribe(() => {

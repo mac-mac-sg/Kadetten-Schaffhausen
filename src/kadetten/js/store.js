@@ -2,6 +2,7 @@
 // damit die App sofort etwas zeigen kann. Live-Stände werden nie gespeichert.
 
 import {zurichParts} from './logic.js';
+import {storage as safeStorage} from './storage.js';
 
 export const SNAPSHOT_KEY = 'v2:app-snapshot';
 
@@ -101,12 +102,4 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
       return state;
     }
   };
-}
-
-function safeStorage() {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
 }

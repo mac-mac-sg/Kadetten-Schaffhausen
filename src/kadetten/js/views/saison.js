@@ -1,5 +1,5 @@
 // «Saison»: Spielplan & Resultate, Tabellen, Statistik.
-import {html, raw} from '../text.js';
+import {html, raw, escapeHtml} from '../text.js';
 import {href} from '../router.js';
 import {
   OWN_TEAM,
@@ -106,7 +106,7 @@ export function seasonCurve(data) {
   const label = `Saisonkurve: ${last.points} von ${max} möglichen Punkten nach ${n} Runden.`;
   return html`<section class="sec" aria-labelledby="t-kurve">${sectionHead('Saisonkurve', '', '', 't-kurve')}
     <div class="card">
-      <div class="chart-wrap">${raw(`<svg class="chart season" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}" preserveAspectRatio="none">
+      <div class="chart-wrap">${raw(`<svg class="chart season" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(label)}" preserveAspectRatio="none">
         <line x1="0" y1="${y(0)}" x2="${W}" y2="${y(max)}" class="c-half"/>
         <path d="${path} L${W} ${y(0)} L0 ${y(0)} Z" class="c-up"/>
         <path d="${path}" class="c-line"/>

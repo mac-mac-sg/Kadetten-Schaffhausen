@@ -3,11 +3,16 @@
 import {OWN_TEAM, ownGames, hasScore, kickoff, outcome, standings, shortTeam} from './logic.js';
 import {seasonSummary, tipPoints} from './moments.js';
 import {weekResult} from './quiz.js';
+import {pct as reportPct} from './report.js';
 import {progress, collection, cardById, rarityOf} from './sammeln.js';
 import {SQUAD} from '../data/squad.js';
 import {SEASON} from './season.js';
 
-const pct = (a, b) => (b ? Math.round((a / b) * 100) : null);
+/** Ganze Prozent (null ohne Grundlage); rechnet mit der gemeinsamen Funktion aus report.js. */
+const pct = (part, whole) => {
+  const v = reportPct(part, whole);
+  return v === null ? null : Math.round(v);
+};
 const played = (games, now) => ownGames(games).filter(g => hasScore(g) && kickoff(g) <= now);
 
 /** Ist die Saison vorbei? Es gibt gespielte Kadetten-Spiele und keines steht mehr aus. */

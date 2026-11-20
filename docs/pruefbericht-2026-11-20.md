@@ -2,6 +2,23 @@
 
 Stand: `main` nach PR #378 (Sammlung in gemischten Formaten). Geprüft wurden App (`src/kadetten`), Datendienst (`server/`), Build und Tests.
 
+## Umsetzungsstand (20. November 2026)
+
+Die schnellen und mittleren Vorschläge sind umgesetzt (PR zu diesem Bericht):
+
+| Punkt | Stand |
+|---|---|
+| A3 toter Code | entfernt: `lastGamesOf`, `momentCards` samt CSS, `inChapter` |
+| S1 SVG-Beschriftungen | maskiert mit `escapeHtml` |
+| A6, D5 Doku und Kommentare | Spiel-Story in Kommentaren und `docs/kadetten-app.md` angeglichen |
+| D1 Tokens (Geschichten) | Bandverlauf über `--band-bg`, helle Fläche über neues `--c-cream` |
+| D4 Barrierefreiheit der Geschichten | sichtbarer Pause-Knopf; keine Automatik bei «Bewegung reduzieren»; `aria-live` nur bei Wechseln von Hand |
+| A2 Geschichten-Rahmen | eigenes Modul `views/story.js` (Rahmen, Schlagzeile, Kachel) |
+| A4 doppelte Hilfen | `storage.js` (sechs Kopien ersetzt), `shortDate()` (fünf Stellen), eine Prozentfunktion |
+| A5 Saisonwerte | `server/season.mjs` für den Datendienst, Test zwischen App und Datendienst, Checkliste «Saisonwechsel» in `docs/betrieb.md` |
+
+Offen bleiben die grösseren Punkte: A1 (`main.js` aufteilen), D1 bis D3 im Rest der Oberfläche (Marken und Kacheln vereinheitlichen, übrige Pixel-Schriftgrössen), der Browser-Test in CI und S2.
+
 ## Gesamturteil
 
 Die App ist in gutem Zustand. Sicherheit und Datenschutz sind solide gebaut: Ausgaben werden standardmässig maskiert, die CSP ist streng, Schreibzugriffe sind eng begrenzt. Es gibt keine bekannten Schwachstellen in Abhängigkeiten, und alle 473 Tests sind grün. Die grössten Baustellen sind nicht Fehler, sondern Wachstumsspuren der letzten Wochen:

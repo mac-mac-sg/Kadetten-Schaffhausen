@@ -1,6 +1,6 @@
 // «Momente»: kleine Überraschungen aus vorhandenen Daten (Serien, Meilensteine, Rekorde, Geschichte des Tages).
 // Nichts wird erfunden: Jeder Moment entsteht nur, wenn die Daten ihn belegen. Getestet in tests/app-fan.test.mjs.
-import {OWN_TEAM, ownGames, hasScore, outcome, kickoff, standings, shortTeam, nextGame, zurichParts} from './logic.js';
+import {OWN_TEAM, ownGames, hasScore, outcome, kickoff, standings, shortTeam, nextGame, zurichParts, shortDate} from './logic.js';
 import {sameTeam} from './match.js';
 
 const played = (games, now) => ownGames(games).filter(g => hasScore(g) && kickoff(g) <= now);
@@ -141,7 +141,7 @@ export function moments({data, now, squad, history, favourite}) {
       id: 'duel',
       tag: 'Letztes Duell',
       title: `${d.prev.score[0]}:${d.prev.score[1]}`,
-      text: `${shortTeam(d.prev.home)} – ${shortTeam(d.prev.away)}. Nächstes Wiedersehen: ${d.next.date.split('-').reverse().slice(0, 2).join('.')}.`,
+      text: `${shortTeam(d.prev.home)} – ${shortTeam(d.prev.away)}. Nächstes Wiedersehen: ${shortDate(d.next.date, false)}`,
       link: d.prev.id
     });
   const big = biggestWin(data.games, now);

@@ -1,5 +1,6 @@
 // «Jetzt»: richtet sich nach dem Spieltag (Alltag, Spieltag, Live, Nachspiel).
-import {recapTeaser, storyTeaser} from './rueckblick.js';
+import {recapTeaser} from './rueckblick.js';
+import {storyTeaser} from './story.js';
 import {html} from '../text.js';
 import {quizTeaser} from './quiz.js';
 import {icon} from '../icons.js';

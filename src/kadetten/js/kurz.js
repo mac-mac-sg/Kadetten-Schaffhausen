@@ -1,4 +1,5 @@
-// «Spiel in 30 Sekunden»: höchstens fünf Karten aus dem bestätigten Spielbericht. Eine Karte entfällt, wenn ihre Werte fehlen.
+// Spiel-Story: Karten aus dem bestätigten Spielbericht (shortCards) und persönliche Karten vom Gerät (personalCards).
+// Eine Karte entfällt, wenn ihre Werte fehlen. Die Darstellung steht in views/spiel.js, der Rahmen in views/story.js.
 import {OWN_TEAM, outcome, shortTeam, standings, ownGames, hasScore, kickoff} from './logic.js';
 import {isOwn, scorers, displayName} from './match.js';
 import {flow, pct} from './report.js';

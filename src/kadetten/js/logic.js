@@ -255,3 +255,9 @@ export function ticketUrl(game, now) {
     return null;
   }
 }
+
+/** «2027-03-14» → «14.03.2027», ohne Jahr «14.03.»; leer bei ungültigem Datum. */
+export function shortDate(date, withYear = true) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(date || ''));
+  return m ? `${m[3]}.${m[2]}.${withYear ? m[1] : ''}` : '';
+}

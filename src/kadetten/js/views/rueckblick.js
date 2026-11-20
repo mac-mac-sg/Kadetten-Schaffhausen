@@ -7,13 +7,10 @@ import {myGames, tips, favourite} from '../personal.js';
 import {liveSeen} from '../sammeln.js';
 import {quizAnswers} from '../quiz.js';
 import {recap, seasonOver} from '../rueckblick.js';
-import {loading, venueInfo} from './parts.js';
-import {outcome, shortTeam, hasScore} from '../logic.js';
-import {isOwn} from '../match.js';
-import {tipPoints} from '../moments.js';
+import {loading} from './parts.js';
+import {shortDate} from '../logic.js';
+import {storyShell, storyState} from './story.js';
 
-const THEMES = ['or', 'bk', 'cr'];
-const day = date => (date ? String(date).split('-').reverse().slice(0, 2).join('.') + '.' : '');
 const word = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 export function recapInput(state, now) {
@@ -59,7 +56,7 @@ function slide(s) {
         <p>${word(s.record.S, 'Sieg', 'Siege')}, ${word(s.record.U, 'Unentschieden', 'Unentschieden')}, ${word(s.record.N, 'Niederlage', 'Niederlagen')}. ${s.goals} Kadetten-Tore hast du gesehen.</p>
         ${s.withYou !== null && s.overall !== null ? html`<p class="fine">Mit dir in der Halle gewinnen die Kadetten ${s.withYou} % ihrer Spiele, über die ganze Saison ${s.overall} %.</p>` : ''}</div>`;
     case 'spiel':
-      return html`<p class="rb-k">Dein Spiel der Saison</p><div class="rb-body"><span class="rb-tag">${[day(s.date), s.league].filter(Boolean).join(' · ')}</span>
+      return html`<p class="rb-k">Dein Spiel der Saison</p><div class="rb-body"><span class="rb-tag">${[shortDate(s.date, false), s.league].filter(Boolean).join(' · ')}</span>
         <p class="rb-big md">${s.home} – ${s.away}</p><p class="rb-big xl acc">${s.score[0]}:${s.score[1]}</p>
         <p>Dein höchster Sieg in der Halle: ${word(s.margin, 'Tor', 'Tore')} Vorsprung.</p></div>`;
     case 'tipps':
@@ -97,31 +94,12 @@ function slide(s) {
   }
 }
 
-/** Gemeinsamer Rahmen für Geschichten aus Karten (Saisonrückblick, Spieltag): Balken, Schliessen, Tippflächen.
- * slides: [{id, body}]; step wird auf den gültigen Bereich begrenzt. */
-export function storyShell({slides, step = 0, enter = false, close, closeLabel, note = ''}) {
-  const n = slides.length,
-    at = Math.min(Math.max(0, Number(step) || 0), n - 1),
-    s = slides[at];
-  return html`<div class="rb rb-${THEMES[at % THEMES.length]}${enter ? ' enter' : ''}" data-rb-step="${at}">
-    <div class="rb-bars" aria-hidden="true">${slides.map(
-      (_, i) => html`<i class="${i < at || (i === at && at === n - 1) ? 'on' : i === at ? 'now' : ''}"></i>`
-    )}</div>
-    <a class="rb-close" href="${close}" aria-label="${closeLabel}">${icon('close')}</a>
-    <section class="rb-slide" aria-live="polite" aria-label="${`Karte ${at + 1} von ${n}`}" data-rb-id="${s.id}">${s.body}</section>
-    ${at > 0 ? html`<button class="rb-prev" type="button" data-rb="prev" aria-label="Vorherige Karte"></button>` : ''}
-    ${at < n - 1 ? html`<button class="rb-next" type="button" data-rb="next" aria-label="Nächste Karte"></button>` : ''}
-    ${note ? html`<p class="rb-note">${note}</p>` : ''}
-  </div>`;
-}
-
 export function renderRueckblick({state, now, ui = {}}) {
   if (!state.data) return html`<section class="sec">${loading()}</section>`;
   const r = recap({...recapInput(state, now)});
   return storyShell({
     slides: r.slides.map(s => ({id: s.id, body: slide(s)})),
-    step: ui.rbStep,
-    enter: ui.enter,
+    ...storyState(ui),
     close: href.ich(),
     closeLabel: 'Rückblick schliessen',
     note: r.over ? '' : 'Zwischenstand, die Saison läuft noch.'
@@ -134,25 +112,4 @@ export function recapTeaser(games, now, after = false) {
   return html`<section class="sec${after ? ' after-band' : ''}"><a class="card rb-teaser" href="${href.rueckblick()}">
     <span class="rb-teaser-k">Saisonrückblick</span><span class="rb-teaser-t">Deine Saison ist da.</span>
     <span class="rb-teaser-s">Halle, Tipps, Quiz, Karten und dein Fan-Typ</span>${icon('go')}</a></section>`;
-}
-
-/** Schlagzeile der Spiel-Story nach Resultat und Ort: «Der Sieg in der BBC Arena», «Die Niederlage in Thun», «Das Remis gegen Pfadi». */
-export function storyHeadline(game) {
-  const result = outcome(game);
-  const v = venueInfo(game?.venue);
-  const where = v?.home ? 'in der BBC Arena' : v?.place || v?.name ? `in ${v.place || v.name}` : '';
-  const opp = shortTeam(isOwn(game.home) ? game.away : game.home);
-  if (result === 'U') return `Das Remis gegen ${opp}`;
-  const what = result === 'S' ? 'Der Sieg' : 'Die Niederlage';
-  return where ? `${what} ${where}` : `${what} gegen ${opp}`;
-}
-
-/** Kachel «Spiel-Story» (Spielseite und Titelseite nach dem Spiel), gestaltet wie der Hinweis zum Saisonrückblick. */
-export function storyTeaser(game, tip = tips()[String(game?.id)]) {
-  if (!hasScore(game)) return '';
-  const points = tipPoints(tip, game.score);
-  const sub = points === null ? 'Resultat, Wendepunkt, bester Werfer' : `Dein Tipp: ${points} ${points === 1 ? 'Punkt' : 'Punkte'}`;
-  return html`<section class="sec tight"><a class="card rb-teaser" href="${href.spiel(game.id, 'kurz')}">
-    <span class="rb-teaser-k">Spiel-Story</span><span class="rb-teaser-t">${storyHeadline(game)}</span>
-    <span class="rb-teaser-s">${sub}</span>${icon('go')}</a></section>`;
 }

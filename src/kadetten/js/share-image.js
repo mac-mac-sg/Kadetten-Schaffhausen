@@ -1,5 +1,6 @@
 // Teilen-Bild (1080 × 1350) auf dem Gerät zeichnen: Resultat oder Saisonrückblick. Kein Dienst, kein Upload.
 import {SEASON} from './season.js';
+import {shortDate} from './logic.js';
 const W = 1080,
   H = 1350;
 const load = src =>
@@ -61,7 +62,7 @@ async function canvasWith(draw) {
 /** Resultatbild. game: {home, away, score, half, league, date}; label: z. B. «S · Sieg». */
 export function resultImage({game, label, crests}) {
   return canvasWith(async ctx => {
-    text(ctx, `${game.league} · ${game.date.split('-').reverse().join('.')}`, W / 2, 190, '400 40px Inter, sans-serif', '#d4d4d8');
+    text(ctx, `${game.league} · ${shortDate(game.date)}`, W / 2, 190, '400 40px Inter, sans-serif', '#d4d4d8');
     if (label) pill(ctx, label, W / 2, 300);
     const [home, away] = await Promise.all(crests.map(src => (src ? load(src) : null)));
     for (const [img, x, name] of [

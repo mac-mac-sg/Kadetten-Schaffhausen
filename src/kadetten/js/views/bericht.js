@@ -132,7 +132,7 @@ export function scoreChart(goals, ownHome, {timeouts = [], suspensions = []} = {
     ...timeouts.map(t => [t.sec, t.home === ownHome ? 'own' : 'opp', 'T']),
     ...suspensions.map(s => [s.sec, s.home === ownHome ? 'own' : 'opp', '2'])
   ];
-  return raw(`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}" preserveAspectRatio="none">
+  return raw(`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(label)}" preserveAspectRatio="none">
     <defs><clipPath id="c-up"><rect x="0" y="0" width="${W}" height="${mid}"/></clipPath><clipPath id="c-down"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath></defs>
     <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" class="c-zero"/>
     <line x1="${x(1800)}" y1="0" x2="${x(1800)}" y2="${H}" class="c-half"/>
