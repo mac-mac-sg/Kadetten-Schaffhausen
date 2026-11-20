@@ -18,6 +18,8 @@ const data = JSON.parse(fs.readFileSync('server/seed.json', 'utf8'));
 data.games = data.games.map(g => (g.id === CHAMBERY ? {...g, tickets: TICKET} : g));
 // Spielerwerte für das Profil von Nr. 10 (das Regel-Blatt hängt an den Strafen-Werten).
 data.playerSeason = {players: {10: {shvPlayerId: 1, games: 8, goals: 31, fieldGoals: 22, sevenMeterGoals: 9, goalsPerGame: 3.9, yellowCards: 1, twoMinutes: 2, disqualifications: 0}}};
+// Fanshop-Katalog (Auszug aus der Store-API der Kadetten-Seite).
+data.shop = JSON.parse(fs.readFileSync('tests/fixtures/shop.json', 'utf8'));
 data.checkedAt = NOW.toISOString();
 data.status = Object.fromEntries(['games', 'table', 'news', 'players'].map(k => [k, {ok: true, updatedAt: NOW.toISOString()}]));
 
@@ -237,6 +239,45 @@ test('Saisonrückblick bei «Bewegung reduzieren»: keine Automatik, kein Pause-
   for (let i = 1; i < n; i++) await page.keyboard.press('ArrowRight');
   assert.equal(await page.getAttribute('.rb-slide', 'data-rb-id'), 'fan', 'letzte Karte: Fan-Typ');
   assert.ok(await page.locator('[data-rb-share]').count());
+  assert.deepEqual(page.errors, []);
+  await page.close();
+});
+
+test('Fanshop: Grösse wählen, in den Warenkorb, Menge ändern, Kasse bis vor die Zahlung', async () => {
+  const page = await open('/ich');
+  await page.click('a[href="#/shop"] >> nth=0');
+  await page.waitForSelector('.pt');
+  await page.click('.chip[data-ui="shopKind:trikot"]');
+  await page.click('.pt:has-text("Trikot Auswärts")');
+  const add = page.locator('[data-shop-add]');
+  assert.equal(await add.isDisabled(), true, 'ohne Grösse gesperrt');
+  assert.equal(await page.locator('[data-shop-opt="Grösse|L"]').getAttribute('aria-label'), 'L, ausverkauft');
+  await page.click('[data-shop-opt="Grösse|M"]');
+  assert.match(await add.textContent(), /In den Warenkorb · CHF 74\.–/);
+  await add.click();
+  await page.waitForSelector('.buy-ok');
+  assert.equal(await page.locator('.shop-cart i').textContent(), '1');
+  await page.click('.buy-ok a[href="#/warenkorb"]');
+  await page.waitForSelector('.cl');
+  await page.click('[data-shop-qty="0:1"]');
+  assert.match(await page.locator('.sum .tot').textContent(), /CHF 148\.–/);
+  assert.match(await page.locator('.free-t').textContent(), /Gratisversand erreicht/);
+  await page.click('a[href="#/kasse"]');
+  await page.click('[data-shop-delivery="abholung"]');
+  assert.equal(await page.getAttribute('[data-shop-delivery="abholung"]', 'aria-pressed'), 'true');
+  await page.click('a[href="#/kasse/adresse"]');
+  await page.click('[data-shop-address-next]');
+  assert.equal(await page.locator('[aria-invalid="true"]').count(), 3, 'Abholung: Name und E-Mail');
+  await page.fill('[data-shop-field="first"]', 'Kim');
+  await page.fill('[data-shop-field="last"]', 'Muster');
+  await page.fill('[data-shop-field="email"]', 'kim@example.ch');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.shop-stop');
+  assert.equal(await hash(page), '#/kasse/uebersicht');
+  assert.equal(await page.locator('.buy button').isDisabled(), true, 'Zahlung gesperrt');
+  assert.deepEqual(await stored(page, 'v2:shop-checkout'), {delivery: 'abholung', address: {first: 'Kim', last: 'Muster', email: 'kim@example.ch'}});
+  await page.click('[data-shop-forget]');
+  assert.equal(await stored(page, 'v2:shop-checkout'), null);
   assert.deepEqual(page.errors, []);
   await page.close();
 });

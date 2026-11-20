@@ -1,6 +1,7 @@
 // «Mein Bereich» mit Quiz-Bilanz und Sammelkarten, die Sammlung, die Kartenansicht und neue Karten.
 import {recapTeaser} from './rueckblick.js';
 import {seasonOver} from '../rueckblick.js';
+import {cartCount} from '../shop.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -188,6 +189,11 @@ export function renderMein({state, now, ui = {}}) {
       <p class="fine pad-top">Karten gibt es für das Quiz der Woche, für Tipps, für Heimspiele in der Halle und wenn du ein Spiel live in der App verfolgst.</p>
     </section>
     ${myMatchday({input, state, now})}
+    <section class="sec" aria-labelledby="m-shop">${sectionHead('Fanshop', 'Zum Shop', href.shop(), 'm-shop')}
+      <div class="card list">
+        ${listRow({title: 'Trikots, Bekleidung, Fanartikel', sub: 'Aus dem Online-Shop der Kadetten', link: href.shop(), lead: html`<span class="lead">${icon('bag')}</span>`})}
+        ${cartCount() ? listRow({title: 'Warenkorb', sub: `${cartCount()} Artikel`, link: href.warenkorb(), lead: html`<span class="lead">${icon('bag')}</span>`}) : ''}
+      </div></section>
     <section class="sec" aria-labelledby="m-wissen">${sectionHead('Wissen', 'Alles', href.wissen(), 'm-wissen')}
       <div class="card list">
         ${[
