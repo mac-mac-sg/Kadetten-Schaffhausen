@@ -193,3 +193,20 @@ test('Ansichten: Shop mit Filtern, Produkt mit Auswahl und gesperrtem Knopf, Kas
   const empty = doc(V.renderShop({state: {data: {games: []}}, ui: {}}));
   assert.match(empty.body.textContent, /nicht erreichbar/);
 });
+
+test('Mein Bereich: Fanshop-Kachel mit Trikotbild, Zähler und Knopf; ohne Katalog ohne Bild', () => {
+  const tile = doc(V.shopTile(data));
+  assert.equal(tile.querySelector('a.shop-tile').getAttribute('href'), '#/shop');
+  assert.match(tile.querySelector('.ft-img img').getAttribute('src'), /^assets\/shop\/\d+\.webp$/);
+  assert.equal(tile.querySelector('.ft-btn').textContent.trim(), 'Zum Shop');
+  assert.equal(tile.querySelector('.ft-num'), null);
+  S.addToCart('30146');
+  S.addToCart('30146');
+  const full = doc(V.shopTile(data));
+  assert.equal(full.querySelector('.ft-num').textContent, '2');
+  assert.match(full.querySelector('.ft-sub').textContent, /2 Artikel im Warenkorb/);
+  assert.equal(full.querySelector('.ft-btn').textContent.trim(), 'Zum Warenkorb');
+  const none = doc(V.shopTile({games: []}));
+  assert.ok(none.querySelector('.ft-ph'), 'Platzhalter statt Bild');
+  assert.equal(none.querySelector('a.shop-tile').getAttribute('href'), '#/shop');
+});

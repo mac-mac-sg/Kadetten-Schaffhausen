@@ -51,6 +51,20 @@ function tile(p) {
     <span class="pt-p num">${p.options.length && new Set(p.variants.map(v => v.price)).size > 1 ? 'ab ' : ''}${CHF(p.price)}</span></a>`;
 }
 
+/** Kachel für «Mein Bereich»: dunkel mit Streifenrand wie Spiel-Story und Rückblick, links ein Produktbild, rechts Knopf. */
+export function shopTile(data) {
+  const products = catalog(data);
+  const pick = products.find(p => p.kind === 'trikot' && p.stock && p.images[0]) || products.find(p => p.stock && p.images[0]);
+  const n = cartCount();
+  const names = ['Trikots', 'Bekleidung', 'Fanartikel'].join(', ');
+  return html`<section class="sec" aria-labelledby="m-shop"><a class="card shop-tile" href="${href.shop()}">
+    ${pick ? html`<span class="ft-img">${img(pick.images[0])}</span>` : html`<span class="ft-img ft-ph">${icon('bag', 36)}</span>`}
+    <span class="ft-txt"><span class="ft-kick" id="m-shop">Kadetten Fanshop</span><b>${names}</b>
+    <span class="ft-sub">${n ? `${n} ${n === 1 ? 'Artikel' : 'Artikel'} im Warenkorb` : products.length ? 'Direkt aus dem Online-Shop' : 'Online-Shop der Kadetten'}</span>
+    <span class="ft-btn">${n ? 'Zum Warenkorb' : 'Zum Shop'}${icon('go', 16)}</span></span>
+    ${n ? html`<i class="ft-num num" aria-hidden="true">${n}</i>` : ''}</a></section>`;
+}
+
 /** Hinweis, dass die App nicht bestellt; mit Link in den Online-Shop. */
 const previewNote = () =>
   html`<section class="sec"><div class="shop-stop"><b>Bestellen über den Online-Shop</b><span>In der App stellst du den Warenkorb zusammen und gehst die Kasse bis vor die Zahlung durch. Bezahlen und bestellen kannst du im Online-Shop der Kadetten.</span>
