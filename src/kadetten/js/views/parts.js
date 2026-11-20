@@ -172,6 +172,20 @@ export function stats(items) {
     ${items.map(([value, label]) => html`<span class="stat"><span class="v num">${value ?? '–'}</span><span class="k">${label}</span></span>`)}</div>`;
 }
 
+/**
+ * Kennzahl-Kacheln mit Schnitt: die erste Kachel orange (wichtigster Wert), die übrigen in Tinte oder Papier.
+ * items: [[wert, beschriftung, unterzeile?], …]; drei Werte = erste Kachel über die ganze Breite.
+ */
+export function kpis(items) {
+  const tones = ['hot', 'ink', 'paper', 'ink'];
+  return html`<div class="${'kz' + (items.length % 2 ? ' odd' : '')}">${items.map(
+    ([value, label, sub], i) =>
+      html`<div class="${'kz-t ' + tones[i % tones.length]}"><span class="k">${label}</span><span class="v num">${value ?? '–'}</span>${
+        sub ? html`<span class="s">${sub}</span>` : ''
+      }</div>`
+  )}</div>`;
+}
+
 export function listRow({title, sub, end = icon('go'), lead = '', link, cls = ''}) {
   const inner = html`${lead}<span class="grow"><span class="t">${title}</span>${sub ? html`<span class="s">${sub}</span>` : ''}</span>${end}`;
   return link ? html`<a class="rl ${cls}" href="${link}">${inner}</a>` : html`<div class="rl ${cls}">${inner}</div>`;

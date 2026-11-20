@@ -21,7 +21,7 @@ export const storyState = ui => ({
 });
 
 /**
- * slides: [{id, body}]; step wird auf den gültigen Bereich begrenzt.
+ * slides: [{id, body, photo?}]; step wird auf den gültigen Bereich begrenzt. photo: Spielerbild als verwischter Hintergrund mit Korn.
  * auto: Karten laufen von selbst weiter (aus bei «Bewegung reduzieren»): dann füllt sich der Balken und es gibt einen Pause-Knopf.
  * manual: der letzte Wechsel kam vom Nutzer; nur dann liest ein Screenreader die neue Karte vor, nicht bei jedem automatischen Wechsel.
  */
@@ -31,7 +31,9 @@ export function storyShell({slides, step = 0, enter = false, close, closeLabel, 
     s = slides[at],
     last = at === n - 1,
     running = auto && !last;
-  return html`<div class="rb rb-${THEMES[at % THEMES.length]}${enter ? ' enter' : ''}${paused ? ' paused' : ''}" data-rb-step="${at}">
+  const theme = s.photo ? 'ph' : THEMES[at % THEMES.length];
+  return html`<div class="rb rb-${theme}${enter ? ' enter' : ''}${paused ? ' paused' : ''}" data-rb-step="${at}">
+    ${s.photo ? html`<img class="rb-photo" src="${s.photo}" alt="" decoding="async"><i class="rb-grain" aria-hidden="true"></i>` : ''}
     <div class="rb-bars" aria-hidden="true">${slides.map(
       (_, i) => html`<i class="${i < at || (i === at && !running) ? 'on' : i === at ? 'now' : ''}"></i>`
     )}</div>
@@ -48,15 +50,27 @@ export function storyShell({slides, step = 0, enter = false, close, closeLabel, 
   </div>`;
 }
 
-/** Schlagzeile der Spiel-Story nach Resultat und Ort: «Der Sieg in der BBC Arena», «Die Niederlage in Thun», «Das Remis gegen Pfadi». */
-export function storyHeadline(game) {
+/** Teile der Schlagzeile: Artikel, Wort, Verbindung, Ort oder Gegner («Der» «Sieg» «in der» «BBC Arena»). */
+export function storyHeadlineParts(game) {
   const result = outcome(game);
   const v = venueInfo(game?.venue);
-  const where = v?.home ? 'in der BBC Arena' : v?.place || v?.name ? `in ${v.place || v.name}` : '';
   const opp = shortTeam(isOwn(game.home) ? game.away : game.home);
-  if (result === 'U') return `Das Remis gegen ${opp}`;
-  const what = result === 'S' ? 'Der Sieg' : 'Die Niederlage';
-  return where ? `${what} ${where}` : `${what} gegen ${opp}`;
+  if (result === 'U') return ['Das', 'Remis', 'gegen', opp];
+  const what = result === 'S' ? ['Der', 'Sieg'] : ['Die', 'Niederlage'];
+  if (v?.home) return [...what, 'in der', 'BBC Arena'];
+  if (v?.place || v?.name) return [...what, 'in', v.place || v.name];
+  return [...what, 'gegen', opp];
+}
+
+/** Schlagzeile der Spiel-Story nach Resultat und Ort: «Der Sieg in der BBC Arena», «Die Niederlage in Thun», «Das Remis gegen Pfadi». */
+export function storyHeadline(game) {
+  return storyHeadlineParts(game).join(' ');
+}
+
+/** Dieselbe Schlagzeile gesetzt: leicht und fett gemischt, der Wettbewerb als schräge Marke im Satz. */
+export function storyHeadlineMixed(game) {
+  const [art, word, join, where] = storyHeadlineParts(game);
+  return html`<p class="rb-head">${art} <b>${word}</b> ${game.league ? html`<span class="rb-tag">${game.league}</span> ` : ''}${join} <b>${where}</b></p>`;
 }
 
 /** Kachel «Spiel-Story» (Spielseite und Titelseite nach dem Spiel), gestaltet wie der Hinweis zum Saisonrückblick. */

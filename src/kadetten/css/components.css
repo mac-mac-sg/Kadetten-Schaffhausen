@@ -90,6 +90,19 @@
 .rank-own { color: var(--c-accent-text); }
 .stat .k { font: 400 var(--fs-meta)/1.3 var(--f-text); color: var(--c-text-muted); }
 
+/* Kennzahl-Kacheln (Spielerwerte): Schnitt-Kacheln, die erste orange, die übrigen Tinte oder Papier. */
+.kz { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+.kz.odd .kz-t:first-child { grid-column: 1 / -1; }
+.kz-t { display: grid; align-content: start; gap: 2px; min-width: 0; min-height: 92px; padding: var(--s-3) var(--s-4) var(--s-3) calc(var(--s-4) + 6px); clip-path: polygon(13px 0, 100% 0, calc(100% - 13px) 100%, 0 100%); }
+.kz-t .k { font: 600 var(--fs-micro)/1.3 var(--f-text); letter-spacing: 0.06em; text-transform: uppercase; }
+.kz-t .v { font: italic 600 var(--fs-xl)/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.kz-t .s { font: 500 var(--fs-caption)/1.35 var(--f-text); }
+.kz-t.hot { background: var(--band-bg); color: var(--c-ink); }
+.kz-t.ink { background: radial-gradient(circle at 92% 0%, var(--c-accent-25), transparent 55%), var(--c-tile); color: var(--c-on-tile); }
+.kz-t.ink .k, .kz-t.ink .s { color: var(--c-tile-muted); }
+.kz-t.paper { background: var(--c-surface-2); color: var(--c-text); }
+.kz-t.paper .k, .kz-t.paper .s { color: var(--c-text-muted); }
+
 .form { display: inline-flex; gap: 6px; }
 .f { width: 28px; height: 24px; display: grid; place-items: center; margin: 0 2px; font: 600 var(--fs-meta)/1 var(--f-text); }
 .form.sm .f { width: 24px; height: 20px; font-size: var(--fs-micro); }

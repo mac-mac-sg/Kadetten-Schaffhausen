@@ -9,7 +9,7 @@ import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
 import {shortCards, personalCards, nextAfter} from '../kurz.js';
-import {storyShell, storyTeaser, storyState} from './story.js';
+import {storyShell, storyTeaser, storyState, storyHeadlineMixed} from './story.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor, favourite, tips} from '../personal.js';
@@ -27,8 +27,10 @@ import {
   gameRow,
   segment,
   crest,
-  venueInfo
+  venueInfo,
+  playerPhoto
 } from './parts.js';
+import {SQUAD} from '../../data/squad.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
 
@@ -256,17 +258,20 @@ function kurz({game, data, load, api, ui, now}) {
   const body = (
     c,
     i
-  ) => html`<p class="rb-k">${i === 0 ? [dayLabel(game, now), game.league].filter(Boolean).join(' · ') : c.kicker}</p><div class="rb-body">
-      ${i === 0 ? html`<span class="rb-tag">${c.kicker}</span><p class="rb-big md">${c.title}</p>` : ''}
+  ) => html`<p class="rb-k">${i === 0 ? ['Spiel-Story', dayLabel(game, now)].filter(Boolean).join(' · ') : c.kicker}</p><div class="rb-body">
+      ${i === 0 ? storyHeadlineMixed(game) : ''}
       <p class="rb-big xl${i > 0 ? ' acc' : ''}">${c.figure}</p>
-      ${i > 0 ? html`<p class="rb-big md">${c.title}</p>` : ''}
+      <p class="${i === 0 ? 'rb-sub' : 'rb-big md'}">${c.title}</p>
       ${c.text ? html`<p>${c.text}</p>` : ''}
       ${c.badge ? html`<span class="rb-tag rb-badge">${c.badge}</span>` : ''}</div>
       ${i === 0 && entry?.status === 'loading' ? html`<p class="rb-hint">Spielbericht wird geladen …</p>` : i === 0 ? html`<p class="rb-hint">Tippen für weiter</p>` : ''}`;
   const KIND = {Wendepunkt: 'wendepunkt', 'Bester Werfer': 'werfer', 'Zahl des Spiels': 'zahl', 'Tabelle danach': 'tabelle'};
+  // Erste Karte: Bild des besten Werfers als verwischter Hintergrund, sobald der Spielbericht ihn nennt.
+  const scorer = SQUAD.find(p => p.number === team.find(c => c.kicker === 'Bester Werfer')?.number);
   const slides = cards.map((c, i) => ({
     id: i === 0 ? 'ergebnis' : c.id || KIND[c.kicker] || 'karte-' + i,
-    body: body(c, i)
+    body: body(c, i),
+    ...(i === 0 && scorer ? {photo: playerPhoto(scorer.number)} : {})
   }));
   slides.push({
     id: 'weiter',

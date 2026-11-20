@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {SQUAD} from '../../data/squad.js';
 import {favourite} from '../personal.js';
-import {topBar, clubLink, chips, backBar, sectionHead, notice, loading, stats, listRow, playerPhoto} from './parts.js';
+import {topBar, clubLink, chips, backBar, sectionHead, notice, loading, kpis, listRow, playerPhoto} from './parts.js';
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
 import {normalizeReport, fitsGame, playerInReport, pct, fmtPct} from '../report.js';
 import {loadReportFor, ruleButton} from './bericht.js';
@@ -65,7 +65,69 @@ export function recentForm({games, number, data, load, api, now, count = 5}) {
   return {rows, pending, played: played.length};
 }
 
-function formSection({form, keeper, now}) {
+const r1 = n => Math.round(n * 10) / 10;
+
+/** Kurzname für die Spiel-Chips: erstes Wort mit mehr als drei Zeichen («St. Otmar» → «Otmar»). */
+const chipName = name => {
+  const words = name.split(/[\s-]+/);
+  return (words.find(w => w.length > 3) || words[0]).slice(0, 8);
+};
+
+/** Glatte Linie durch die Punkte (Catmull-Rom als kubische Bézier-Kurven). */
+export function smoothPath(points) {
+  if (!points.length) return '';
+  const p = i => points[Math.max(0, Math.min(points.length - 1, i))];
+  let d = `M${r1(points[0][0])} ${r1(points[0][1])}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const [a, b, c, e] = [p(i - 1), p(i), p(i + 1), p(i + 2)];
+    d += ` C${r1(b[0] + (c[0] - a[0]) / 6)} ${r1(b[1] + (c[1] - a[1]) / 6)} ${r1(c[0] - (e[0] - b[0]) / 6)} ${r1(c[1] - (e[1] - b[1]) / 6)} ${r1(c[0])} ${r1(c[1])}`;
+  }
+  return d;
+}
+
+/**
+ * Formkurve der letzten Spiele (Tore bzw. Paraden je Spiel), darunter die Spiele zum Antippen.
+ * Das gewählte Spiel (ui.formGame, sonst das jüngste mit Wert) ist markiert und steht ausgeschrieben darunter.
+ */
+export function formCurve({rows, num, den, keeper, sel, now}) {
+  const W = 320,
+    TOP = 16,
+    BASE = 84;
+  const list = [...rows].reverse();
+  const ok = r => Boolean(r.value && Number.isInteger(r.value[den]));
+  const opp = g => shortTeam(g.home === OWN_TEAM ? g.away : g.home);
+  const x = i => (list.length > 1 ? 18 + (i * (W - 36)) / (list.length - 1) : W / 2);
+  const max = Math.max(1, ...list.filter(ok).map(r => r.value[num] || 0));
+  const y = v => BASE - ((v || 0) / max) * (BASE - TOP);
+  const pts = list.map((r, i) => (ok(r) ? {r, x: x(i), y: y(r.value[num])} : null)).filter(Boolean);
+  if (!pts.length) return '';
+  const cur = pts.find(p => String(p.r.game.id) === String(sel)) || pts[pts.length - 1];
+  const unit = keeper ? ['Parade', 'Paraden'] : ['Tor', 'Tore'];
+  const word = n => (n === 1 ? unit[0] : unit[1]);
+  const label = `${keeper ? 'Paraden' : 'Tore'} je Spiel: ` + pts.map(p => `${opp(p.r.game)} ${p.r.value[num] ?? 0}`).join(', ');
+  const v = cur.r.value;
+  return html`<div class="card fc">
+    <svg class="fc-svg" viewBox="${`0 0 ${W} 100`}" role="img" aria-label="${label}">
+      <line class="fc-base" x1="0" x2="${W}" y1="${BASE}" y2="${BASE}"></line>
+      ${pts.length > 1 ? html`<path class="fc-line" d="${smoothPath(pts.map(p => [p.x, p.y]))}"></path>` : ''}
+      ${pts.map(p => html`<circle class="fc-pt" cx="${r1(p.x)}" cy="${r1(p.y)}" r="3"></circle>`)}
+      <line class="fc-mark" x1="${r1(cur.x)}" x2="${r1(cur.x)}" y1="${r1(cur.y)}" y2="${BASE}"></line>
+      <circle class="fc-sel" cx="${r1(cur.x)}" cy="${r1(cur.y)}" r="7"></circle>
+    </svg>
+    <div class="fc-games" role="group" aria-label="Spiel wählen">${list.map(r => {
+      const on = r === cur.r;
+      const name = opp(r.game);
+      return html`<button type="button" class="${on ? 'on' : ''}" data-ui="${'formGame:' + r.game.id}" aria-pressed="${String(on)}" aria-label="${`${name}, ${dayLabel(r.game, now)}`}"${
+        ok(r) ? '' : html` disabled`
+      }>${chipName(name)}</button>`;
+    })}</div>
+    <p class="fc-d"><b class="num">${v[num] ?? 0}</b> ${word(v[num] ?? 0)} gegen ${opp(cur.r.game)} · ${v[num] ?? 0} von ${v[den]} ${
+      keeper ? 'Würfen aufs Tor' : 'Würfen'
+    } <a href="${href.spiel(cur.r.game.id, 'bericht')}">Spielbericht</a></p>
+  </div>`;
+}
+
+function formSection({form, keeper, now, sel}) {
   const valid = form.rows.filter(r => r.value && (keeper ? Number.isInteger(r.value.keeperShots) : Number.isInteger(r.value.shots)));
   if (!form.rows.length)
     return keeper
@@ -86,36 +148,19 @@ function formSection({form, keeper, now}) {
     den = keeper ? 'keeperShots' : 'shots';
   const a = valid.reduce((n, r) => n + (r.value[num] || 0), 0),
     b = valid.reduce((n, r) => n + (r.value[den] || 0), 0);
-  const max = Math.max(1, ...valid.map(r => r.value[den] || 0));
   return html`<section class="sec" aria-labelledby="sp-form">
     ${sectionHead(keeper ? 'Fangquote · letzte QHL-Spiele' : 'Abschluss · letzte QHL-Spiele', '', '', 'sp-form')}
-    ${stats([
+    ${kpis([
       [fmtPct(pct(a, b)), keeper ? 'Fangquote' : 'Trefferquote'],
       [a, keeper ? 'Paraden' : 'Tore'],
       [b, keeper ? 'Würfe aufs Tor' : 'Würfe']
     ])}
-    <div class="card list pad-top-s">${form.rows.map(({game, value}) => {
-      const opp = shortTeam(game.home === OWN_TEAM ? game.away : game.home);
-      const ok = value && Number.isInteger(value[den]);
-      return listRow({
-        title: opp,
-        sub: dayLabel(game, now),
-        link: href.spiel(game.id, 'bericht'),
-        cls: 'compact',
-        end: ok
-          ? html`<span class="mini"><i aria-hidden="true"><b data-style="${
-              'width:' + Math.round(((value[den] || 0) / max) * 100) + '%'
-            }"></b><u data-style="${
-              'width:' + Math.round(((value[num] || 0) / max) * 100) + '%'
-            }"></u></i><span class="res num">${value[num] ?? 0}<small>/${value[den]}</small></span></span>`
-          : html`<span class="muted">–</span>`
-      });
-    })}</div>
+    ${formCurve({rows: form.rows, num, den, keeper, sel, now})}
     <p class="fine pad-top">Aus ${valid.length} von ${form.played} Spielberichten. ${keeper ? 'Paraden/Würfe aufs Tor.' : 'Tore/Würfe.'}</p>
       </section>`;
 }
 
-export function renderSpieler({route, state, load, api, now}) {
+export function renderSpieler({route, state, load, api, now, ui = {}}) {
   const p = SQUAD.find(x => String(x.number) === route.id);
   if (!p)
     return html`${backBar('Kader', href.team())}<h1 class="h1 pad">Spieler</h1>
@@ -139,16 +184,16 @@ export function renderSpieler({route, state, load, api, now}) {
         <p>${POSITION(p.position)} · <span class="num">#${p.number}</span></p>
         </div>
         </section>
-    ${keeper ? formSection({form, keeper, now}) : ''}
+    ${keeper ? formSection({form, keeper, now, sel: ui.formGame}) : ''}
     <section class="sec" aria-labelledby="sp-saison">${sectionHead(`Saison ${SEASON} · QHL`, '', '', 'sp-saison')}
       ${
         season
-          ? stats(
+          ? kpis(
               keeper
                 ? [[season.games, 'Spiele']]
                 : [
+                    [season.goals, 'Tore', known && season.sevenMeterGoals > 0 ? `davon ${season.sevenMeterGoals} vom 7-m-Punkt` : ''],
                     [season.games, 'Spiele'],
-                    [season.goals, 'Tore'],
                     [season.goalsPerGame != null ? String(season.goalsPerGame).replace('.', ',') : '–', 'Tore pro Spiel']
                   ]
             )
@@ -175,10 +220,10 @@ export function renderSpieler({route, state, load, api, now}) {
           : ''
       }
     </section>
-    ${!keeper ? formSection({form, keeper, now}) : ''}
+    ${!keeper ? formSection({form, keeper, now, sel: ui.formGame}) : ''}
     ${
       ehl
-        ? html`<section class="sec" aria-labelledby="sp-ehl">${sectionHead('European League', '', '', 'sp-ehl')}${stats([
+        ? html`<section class="sec" aria-labelledby="sp-ehl">${sectionHead('European League', '', '', 'sp-ehl')}${kpis([
             [ehl.goals, 'Tore'],
             [ehl.twoMinutes, 'Zeitstrafen'],
             [ehl.yellowCards, 'Verwarnungen']
