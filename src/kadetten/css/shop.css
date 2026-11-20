@@ -84,3 +84,16 @@
 .shop-stop b { font: 600 var(--fs-body)/1.3 var(--f-text); }
 .shop-stop span { font: 400 var(--fs-small)/1.5 var(--f-text); color: var(--c-tile-muted); }
 .shop-stop a { display: inline-flex; align-items: center; gap: var(--s-1); min-height: 40px; color: var(--c-tile-hot); }
+/* Kachel «Fanshop» in «Mein Bereich»: dunkel mit orangem Streifenrand, Produktbild links. */
+.shop-tile { position: relative; display: flex; align-items: stretch; gap: var(--s-4); padding: 0; min-height: 132px; overflow: hidden; background: var(--c-tile); color: var(--c-on-tile); border-color: transparent; }
+.shop-tile::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; z-index: 1; background: repeating-linear-gradient(120deg, var(--c-accent) 0 4px, transparent 4px 9px); }
+.ft-img { position: relative; flex: none; width: 132px; background: var(--c-white); clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 100%, 0 100%); }
+.ft-img img { width: 100%; height: 100%; object-fit: cover; }
+.ft-ph { display: grid; place-items: center; background: var(--c-accent); color: var(--c-ink); }
+.ft-txt { display: grid; align-content: center; gap: 2px; min-width: 0; padding: var(--s-3) var(--s-4) var(--s-3) 0; }
+.ft-kick { font: 600 var(--fs-caption)/1.2 var(--f-text); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-tile-hot); }
+.ft-txt b { font: italic 600 var(--fs-h3)/1 var(--f-display); }
+.ft-sub { font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-tile-muted); }
+.ft-btn { position: relative; isolation: isolate; justify-self: start; display: inline-flex; align-items: center; gap: var(--s-1); margin: var(--s-2) 0 0 6px; padding: 8px 16px; font: 600 var(--fs-small)/1 var(--f-text); color: var(--c-on-accent); }
+.ft-btn::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--c-accent); transform: skewX(var(--skew)); }
+.ft-num { position: absolute; top: var(--s-2); right: var(--s-2); min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--c-accent); color: var(--c-on-accent); font: 600 var(--fs-caption)/22px var(--f-text); font-style: normal; text-align: center; }
