@@ -75,6 +75,13 @@ Alle Zahlen mit Tabellenziffern.
 | Zeitleiste im Ticker | Minute kursiv, schräger Marker, Stand rechts |
 | Schalter | 48 × 28 px, eckig, an = Orange |
 
+## Schriftgrössen, Farben, Marken (Stand 20. November 2026)
+
+- **Schriftgrössen** stehen als Token in `css/tokens.css`: `--fs-micro` 11, `--fs-caption` 12, `--fs-meta` und `--fs-small` 13 (meta für Angaben und Beschriftungen, small für Nebentext), `--fs-body` 15, `--fs-lead` 17, `--fs-title` 20, `--fs-h2` 22, `--fs-h3` 26, `--fs-figure` 28, `--fs-h1` 34, `--fs-xl` 40, `--fs-kick` 56, `--fs-score` 88. Fest geschrieben bleiben nur layoutspezifische Zahlen (Spielstand im Kopfband, Diagramm-Beschriftungen, grosse Zahlen der Geschichten mit `clamp()`); `tests/designsystem.test.mjs` hält das fest.
+- **Farben** nur über Tokens. Überlagerungen der Sammelkarten (Tinte und Akzent mit Alpha) stehen als `--c-ink-*`, `--c-accent-*`, `--c-sheen*` in `tokens.css`; Geschichten nutzen `--band-bg` und `--c-cream`. Erlaubt als Literal sind nur Schwarz und Weiss mit Alpha für Schatten und Masken.
+- **Marken** (`.pill`, `.tag-ink`, `.rb-tag` der Geschichten, `.sk-tag` der Sammelkarten) teilen eine Basis: Die Form steht schräg in `::before` (Farbe über `--fill`), der Text bleibt gerade, wie bei Knöpfen und Chips.
+- **Hinweis-Kachel `.teaser`**: dunkle Kachel mit orangem Streifen, grosser kursiver Schlagzeile und Pfeil. Sie führt in Saisonrückblick und Spiel-Story (`views/story.js`, `views/rueckblick.js`); `.rowcard` bleibt die ruhige Listenkachel.
+
 ## Regeln
 
 - Flächen sind ruhig und neutral (Papier, Graphit). Orange gehört dem Kopfband, der Auswahl, den Siegen, der Hauptaktion und dem Kadetten-Anteil in Grafiken.

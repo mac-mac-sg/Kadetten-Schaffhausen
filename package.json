@@ -17,6 +17,7 @@
     "format:check": "prettier --check src/kadetten/js",
     "build:pages": "node scripts/build-pages.mjs",
     "verify": "npm run check && npm test && npm run build:pages && node scripts/check-pages.mjs",
+    "test:browser": "node scripts/browser-test.mjs",
     "test:archiv": "node --test \"archive/matchday/tests/*.test.mjs\""
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "esbuild": "^0.28.2",
     "linkedom": "^0.18.13",
     "pdfjs-dist": "^5.4.149",
+    "playwright": "1.63.0",
     "prettier": "3.6.2"
   }
 }

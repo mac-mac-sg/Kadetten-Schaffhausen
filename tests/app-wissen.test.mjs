@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync, readdirSync} from 'node:fs';
 import {parseHTML} from 'linkedom';
 import {parseRoute, href} from '../src/kadetten/js/router.js';
 import {ARTICLES, GROUPS, CHAPTERS, article, positionArticle} from '../src/kadetten/js/wissen/inhalt.js';
@@ -154,14 +154,17 @@ test('Einstellungen ohne Regelliste; Mein Bereich führt ins Wissen, kein Buch-S
   void kreis;
 });
 
-test('Quellcode: Buch-Symbol, Wissen-Ansicht und Blatt «Mehr dazu» sind eingebunden', () => {
+test('Quellcode: Wissen-Ansicht und Blatt «Mehr dazu» sind eingebunden, der Bereich wird nachgeladen', () => {
   const main = readFileSync('src/kadetten/js/main.js', 'utf8');
-  assert.match(main, /wissen: renderWissenOderLaden/);
-  assert.match(main, /import\('\.\/wissen\/modul\.js'\)/, 'Wissen wird nachgeladen');
-  assert.doesNotMatch(main, /^import .*(wissen\/|views\/wissen|rules\.js)/m, 'kein statischer Import des Wissensbereichs');
-  assert.match(main, /Mehr dazu/);
-  assert.match(main, /wissenSteuerung/);
-  assert.match(main, /\.wk-scrub/);
+  const wissen = readFileSync('src/kadetten/js/controllers/wissen.js', 'utf8');
+  assert.match(main, /\.\.\.wissen\.views/, 'die Ansicht kommt vom Wissen-Steuermodul');
+  assert.match(wissen, /wissen: renderView/);
+  assert.match(wissen, /import\('\.\.\/wissen\/modul\.js'\)/, 'Wissen wird nachgeladen');
+  for (const file of ['main.js', 'shell.js', ...readdirSync('src/kadetten/js/controllers').map(f => 'controllers/' + f)])
+    assert.doesNotMatch(readFileSync('src/kadetten/js/' + file, 'utf8'), /^import .*(\/wissen\/|views\/wissen|rules\.js)/m, 'kein statischer Import des Wissensbereichs: ' + file);
+  assert.match(wissen, /Mehr dazu/);
+  assert.match(wissen, /steuerung/);
+  assert.match(wissen, /\.wk-scrub/);
   const bericht = readFileSync('src/kadetten/js/views/bericht.js', 'utf8');
   assert.match(bericht, /ruleButton\('wurfzonen'\)/);
 });

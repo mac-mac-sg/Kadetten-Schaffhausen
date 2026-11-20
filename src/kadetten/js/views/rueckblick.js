@@ -109,7 +109,7 @@ export function renderRueckblick({state, now, ui = {}}) {
 /** Hinweis auf den Rückblick: nach Saisonende gross (Titelseite, Mein Bereich), sonst leer. */
 export function recapTeaser(games, now, after = false) {
   if (!seasonOver(games, now)) return '';
-  return html`<section class="sec${after ? ' after-band' : ''}"><a class="card rb-teaser" href="${href.rueckblick()}">
-    <span class="rb-teaser-k">Saisonrückblick</span><span class="rb-teaser-t">Deine Saison ist da.</span>
-    <span class="rb-teaser-s">Halle, Tipps, Quiz, Karten und dein Fan-Typ</span>${icon('go')}</a></section>`;
+  return html`<section class="sec${after ? ' after-band' : ''}"><a class="card teaser" href="${href.rueckblick()}">
+    <span class="teaser-k">Saisonrückblick</span><span class="teaser-t">Deine Saison ist da.</span>
+    <span class="teaser-s">Halle, Tipps, Quiz, Karten und dein Fan-Typ</span>${icon('go')}</a></section>`;
 }
