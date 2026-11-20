@@ -17,7 +17,19 @@ Die schnellen und mittleren Vorschläge sind umgesetzt (PR zu diesem Bericht):
 | A4 doppelte Hilfen | `storage.js` (sechs Kopien ersetzt), `shortDate()` (fünf Stellen), eine Prozentfunktion |
 | A5 Saisonwerte | `server/season.mjs` für den Datendienst, Test zwischen App und Datendienst, Checkliste «Saisonwechsel» in `docs/betrieb.md` |
 
-Offen bleiben die grösseren Punkte: A1 (`main.js` aufteilen), D1 bis D3 im Rest der Oberfläche (Marken und Kacheln vereinheitlichen, übrige Pixel-Schriftgrössen), der Browser-Test in CI und S2.
+Die grösseren Punkte sind am selben Tag umgesetzt (zweiter PR):
+
+| Punkt | Stand |
+|---|---|
+| A1 `main.js` | von 703 auf 121 Zeilen; `shell.js` (Navigation, Zeichnen, Klick-Verteiler) und `controllers/*` (story, cards, wissen, personal, push, votes, sharing, gestures); Aktionen melden sich als `[data-Attribut, Funktion]` an |
+| Browser-Test | `npm run test:browser` mit 10 Szenarien in echtem Chromium, in CI als eigener Auftrag; fand schon beim Umbau einen echten Fehler (Zurück-Knopf des Wissen-Platzhalters) |
+| D1 Tokens | Schriftgrössen-Skala als Token (38 Stellen umgestellt), Karten-Überlagerungen als Farb-Token; Test `designsystem.test.mjs` bewacht beides |
+| D2 | `--fs-meta` und `--fs-small` bleiben bewusst getrennt (Angaben und Beschriftungen gegen Nebentext), in der Design-Doku erklärt |
+| D3 Marken und Kacheln | `.rb-tag` und `.sk-tag` teilen die schräge Basis mit Pill und Tag (Text bleibt gerade); eine Hinweis-Kachel `.teaser` statt `rb-teaser`; toter Karussell-CSS (`.kurz*`) entfernt |
+
+Das CSS wurde mit Bildschirmfotos von 18 Seiten in Hell und Dunkel vorher und nachher verglichen: Die Token-Umstellung ist pixelgleich, Unterschiede gibt es nur an den Marken (gerader statt schräger Text).
+
+Offen bleibt S2 (Einbetten in fremde Seiten auf GitHub Pages, geringes Risiko).
 
 ## Gesamturteil
 

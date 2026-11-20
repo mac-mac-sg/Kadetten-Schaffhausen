@@ -64,7 +64,7 @@ export function storyTeaser(game, tip = tips()[String(game?.id)]) {
   if (!hasScore(game)) return '';
   const points = tipPoints(tip, game.score);
   const sub = points === null ? 'Resultat, Wendepunkt, bester Werfer' : `Dein Tipp: ${points} ${points === 1 ? 'Punkt' : 'Punkte'}`;
-  return html`<section class="sec tight"><a class="card rb-teaser" href="${href.spiel(game.id, 'kurz')}">
-    <span class="rb-teaser-k">Spiel-Story</span><span class="rb-teaser-t">${storyHeadline(game)}</span>
-    <span class="rb-teaser-s">${sub}</span>${icon('go')}</a></section>`;
+  return html`<section class="sec tight"><a class="card teaser" href="${href.spiel(game.id, 'kurz')}">
+    <span class="teaser-k">Spiel-Story</span><span class="teaser-t">${storyHeadline(game)}</span>
+    <span class="teaser-s">${sub}</span>${icon('go')}</a></section>`;
 }
