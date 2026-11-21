@@ -2,6 +2,7 @@
 // damit die App sofort etwas zeigen kann. Live-Stände werden nie gespeichert.
 
 import {zurichParts} from './logic.js';
+import {cleanTeam} from './match.js';
 import {storage as safeStorage} from './storage.js';
 
 export const SNAPSHOT_KEY = 'v2:app-snapshot';
@@ -89,8 +90,12 @@ export function createStore({api, storage = safeStorage(), now = () => Date.now(
           const previous = [state.live?.match, state.live?.finished].find(p => p && String(p.id) === String(match.id));
           return previous?.details ? {...match, details: previous.details} : match;
         };
+        // Cup-Spiele melden die Teams mit Liga-Zusatz; für alle Vergleiche der App ohne.
+        const name = v => (typeof v === 'string' ? cleanTeam(v) : v);
+        const clean = m =>
+          m ? {...m, ...(m.home !== undefined && {home: name(m.home)}), ...(m.away !== undefined && {away: name(m.away)})} : m;
         Object.assign(state, {
-          live: {...live, match: retainDetails(live.match), finished: retainDetails(finished)},
+          live: {...live, match: clean(retainDetails(live.match)), finished: clean(retainDetails(finished))},
           liveAt: at,
           liveError: null
         });

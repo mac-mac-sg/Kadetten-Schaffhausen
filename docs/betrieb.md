@@ -67,6 +67,10 @@ Der Schreiblauf von `cloudflare-update.yml` sichert am Spieltag und am Folgetag 
 ## Verfügbarkeit und Rückfall
 Fällt der Datendienst aus, zeigt die App den zuletzt gespeicherten Stand (Service Worker, lokaler Snapshot) und kennzeichnet ihn als «Letzter gültiger Stand». Live-Antworten kommen nie aus dem Offline-Cache. Eine fehlerhafte Oberflächenversion wird durch einen Revert-Commit auf `main` zurückgenommen; die Pipeline veröffentlicht diesen Stand. Quellenfehler beim Aktualisieren behalten den letzten gültigen Stand je Quelle.
 
+## Live-Abfrage im Schweizer Cup
+
+Die SHV nennt im Mobiliar-Cup die Liga hinter den Teams («Kadetten Schaffhausen (QHL)», «Handball Emmen (MNLB)»). Der Datendienst entfernt den Zusatz (`cleanTeamName` in `server/live.mjs`), die App zusätzlich (`cleanTeam` in `js/match.js`, beim Speichern des Live-Stands in `js/store.js`). Ohne das wäre das Spiel nie als Kadetten-Spiel erkannt worden (keine Live-Kachel, kein «Live dabei»). Der Datenpfad für Ticker und Spielerwerte ist derselbe wie in der QHL (`gameLog`, `gamePlayerStats`; geprüft am Emmen-Spiel vom 31.10.2026: 160 Ereignisse). Test: `tests/live-cup.test.mjs` und ein Browser-Test mit laufendem Cup-Spiel.
+
 ## Live-Abfrage: Ausfall einer Quelle
 
 `/api/live` ohne Parameter fragt zwei Quellen parallel ab: SHV (handball.ch, zuständig für QHL, Cup und Tests) und EHF (European League). Stand 11. November 2026:
