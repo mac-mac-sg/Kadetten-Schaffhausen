@@ -12,12 +12,36 @@ const root = path.resolve('dist/client');
 const NOW = new Date('2026-11-19T07:00:00+01:00');
 const CHAMBERY = 'extra-ehl-20261124-kadetten-chambery';
 const TICKET = 'https://www.ticketmaster.ch/event/kadetten-vs-chambery-tickets/761426654';
-const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.webmanifest': 'application/manifest+json'};
+const TYPES = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.woff2': 'font/woff2',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json'
+};
 
 const data = JSON.parse(fs.readFileSync('server/seed.json', 'utf8'));
 data.games = data.games.map(g => (g.id === CHAMBERY ? {...g, tickets: TICKET} : g));
 // Spielerwerte für das Profil von Nr. 10 (das Regel-Blatt hängt an den Strafen-Werten).
-data.playerSeason = {players: {10: {shvPlayerId: 1, games: 8, goals: 31, fieldGoals: 22, sevenMeterGoals: 9, goalsPerGame: 3.9, yellowCards: 1, twoMinutes: 2, disqualifications: 0}}};
+data.playerSeason = {
+  players: {
+    10: {
+      shvPlayerId: 1,
+      games: 8,
+      goals: 31,
+      fieldGoals: 22,
+      sevenMeterGoals: 9,
+      goalsPerGame: 3.9,
+      yellowCards: 1,
+      twoMinutes: 2,
+      disqualifications: 0
+    }
+  }
+};
 // Fanshop-Katalog (Auszug aus der Store-API der Kadetten-Seite).
 data.shop = JSON.parse(fs.readFileSync('tests/fixtures/shop.json', 'utf8'));
 data.checkedAt = NOW.toISOString();
@@ -40,14 +64,23 @@ const origin = 'http://127.0.0.1:' + server.address().port;
 const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
 
 /** Neue Seite mit festem Datum, nachgebildetem Datendienst und gesperrtem Netz; storage füllt den Gerätespeicher. */
-async function open(hash, {storage = {}, reduced = false} = {}) {
-  const context = await browser.newContext({viewport: {width: 390, height: 844}, serviceWorkers: 'block', reducedMotion: reduced ? 'reduce' : 'no-preference'});
+async function open(hash, {storage = {}, reduced = false, live = null, extraGames = []} = {}) {
+  const context = await browser.newContext({
+    viewport: {width: 390, height: 844},
+    serviceWorkers: 'block',
+    reducedMotion: reduced ? 'reduce' : 'no-preference'
+  });
   await context.clock.setFixedTime(NOW);
   await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.abort());
   await context.route('**/api/**', route => {
-    const json = route.request().url().includes('/api/data') ? data : {};
+    const json = route.request().url().includes('/api/data')
+      ? extraGames.length
+        ? {...data, games: [...data.games, ...extraGames]}
+        : data
+      : {};
     return route.fulfill({json, headers: {'access-control-allow-origin': '*'}});
   });
+  if (live) await context.route(/\/api\/live/, route => route.fulfill({json: live, headers: {'access-control-allow-origin': '*'}}));
   await context.addInitScript(values => {
     localStorage.setItem('v2:app-welcome', '1');
     for (const [k, v] of Object.entries(values)) localStorage.setItem(k, JSON.stringify(v));
@@ -275,7 +308,10 @@ test('Fanshop: Grösse wählen, in den Warenkorb, Menge ändern, Kasse bis vor d
   await page.waitForSelector('.shop-stop');
   assert.equal(await hash(page), '#/kasse/uebersicht');
   assert.equal(await page.locator('.buy button').isDisabled(), true, 'Zahlung gesperrt');
-  assert.deepEqual(await stored(page, 'v2:shop-checkout'), {delivery: 'abholung', address: {first: 'Kim', last: 'Muster', email: 'kim@example.ch'}});
+  assert.deepEqual(await stored(page, 'v2:shop-checkout'), {
+    delivery: 'abholung',
+    address: {first: 'Kim', last: 'Muster', email: 'kim@example.ch'}
+  });
   await page.click('[data-shop-forget]');
   assert.equal(await stored(page, 'v2:shop-checkout'), null);
   assert.deepEqual(page.errors, []);
@@ -283,6 +319,58 @@ test('Fanshop: Grösse wählen, in den Warenkorb, Menge ändern, Kasse bis vor d
 });
 
 const failures = [];
+test('Liveticker im Cup: Teams mit Liga-Zusatz «(QHL)» werden erkannt, Live-Kachel, Ticker und Spielstand', async () => {
+  // Die SHV nennt im Mobiliar-Cup die Liga hinter den Teams. Der Datendienst bereinigt die Namen; die App tut es zusätzlich.
+  const match = {
+    id: 517411,
+    home: 'HC Kriens-Luzern (QHL)',
+    away: 'Kadetten Schaffhausen (QHL)',
+    score: [3, 2],
+    league: 'Mobiliar-Cup M',
+    clock: '05:12',
+    phase: '1. Halbzeit',
+    url: 'https://www.handball.ch/de/matchcenter/spiele/517411',
+    details: {
+      ok: true,
+      events: [
+        {id: 2, seconds: 300, time: '05:00', score: [3, 2], action: 'Tor', homePlayer: 'MAURER Jan', awayPlayer: null},
+        {id: 1, seconds: 120, time: '02:00', score: [1, 2], action: 'Tor', homePlayer: null, awayPlayer: 'OLSEN Mikkel'}
+      ],
+      players: []
+    }
+  };
+  const live = {ok: true, checkedAt: NOW.toISOString(), degraded: false, sources: {SHV: {ok: true}}, match, finished: null};
+  const game = {
+    id: 'cup-live',
+    date: '2026-11-19',
+    time: '07:10',
+    home: 'HC Kriens-Luzern',
+    away: 'Kadetten Schaffhausen',
+    league: 'Mobiliar-Cup M',
+    venue: 'Kriens Pilatus Arena, Kriens'
+  };
+  {
+    const kachel = await open('/saison', {live, extraGames: [game]});
+    await kachel.waitForSelector('.live-tile');
+    assert.match(
+      await kachel.locator('.live-tile').getAttribute('aria-label'),
+      /Live: HC Kriens-Luzern gegen Kadetten Schaffhausen, 3 zu 2/
+    );
+    assert.equal(await kachel.locator('.live-tile').getAttribute('href'), '#/spiel/cup-live/live');
+    await kachel.close();
+    const seite = await open('/spiel/cup-live', {live, extraGames: [game]});
+    await seite.waitForSelector('.event-list');
+    const tabs = await seite.locator('.seg a.on, .seg button.on').allTextContents();
+    assert.ok(tabs.length, 'Reiter gewählt: ' + tabs);
+    assert.match(await seite.locator('.event-list').textContent(), /Olsen Mikkel|OLSEN Mikkel|Mikkel Olsen/i);
+    assert.match(await seite.locator('.event-list').textContent(), /3:2/);
+    assert.ok(await seite.locator('.gscore').count(), 'Gewinnscore live im Cup (beide Teams in der QHL)');
+    assert.match(await seite.locator('.gscore').textContent(), /Weiterkommen/);
+    assert.deepEqual(seite.errors, []);
+    await seite.close();
+  }
+});
+
 // Die langen Geschichten-Tests laufen parallel zu den kurzen.
 await Promise.all(
   tests.map(async ({name, fn}) => {
@@ -298,5 +386,9 @@ await Promise.all(
 );
 await browser.close();
 server.close();
-console.log(failures.length ? `\n${failures.length} von ${tests.length} Browser-Tests fehlgeschlagen.` : `\nAlle ${tests.length} Browser-Tests bestanden.`);
+console.log(
+  failures.length
+    ? `\n${failures.length} von ${tests.length} Browser-Tests fehlgeschlagen.`
+    : `\nAlle ${tests.length} Browser-Tests bestanden.`
+);
 process.exit(failures.length ? 1 : 0);

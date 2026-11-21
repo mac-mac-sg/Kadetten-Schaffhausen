@@ -2,10 +2,16 @@
 // Getestet in tests/app-match.test.mjs.
 import {OWN_TEAM, hasScore, zurichParts, ownGames, standings} from './logic.js';
 
+/** Liga-Zusatz der SHV im Cup entfernen: «Kadetten Schaffhausen (QHL)» → «Kadetten Schaffhausen». */
+export const cleanTeam = name =>
+  String(name ?? '')
+    .replace(/\s*\([^()]{1,10}\)\s*$/, '')
+    .trim();
+
 /** Vereinsnamen vergleichbar machen (Quellen schreiben «TSV St. Otmar» oder «RTV 1879 Basel» unterschiedlich). */
 export function normTeam(name) {
   return (
-    String(name || '')
+    cleanTeam(name)
       .toLowerCase()
       .normalize('NFD')
       .replace(/\p{M}/gu, '')
