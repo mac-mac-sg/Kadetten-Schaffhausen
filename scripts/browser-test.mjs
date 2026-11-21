@@ -371,6 +371,37 @@ test('Liveticker im Cup: Teams mit Liga-Zusatz «(QHL)» werden erkannt, Live-Ka
   }
 });
 
+test('Spielvorschau im Cup auswärts: Aufmacher, Weiter oder Aus, Anreise, Gewinnscore «Weiterkommen»', async () => {
+  const game = {
+    id: 'cup-away',
+    date: '2026-11-21',
+    time: '20:00',
+    home: 'HC Kriens-Luzern',
+    away: 'Kadetten Schaffhausen',
+    league: 'Mobiliar-Cup M',
+    venue: 'Kriens Pilatus Arena, Kriens'
+  };
+  const page = await open('/spiel/cup-away', {extraGames: [game]});
+  await page.waitForSelector('.lead-h');
+  assert.equal(await page.locator('.lead-h').textContent(), 'Wer gewinnt, steht in der nächsten Runde.');
+  assert.ok((await page.locator('.lead-fact').allTextContents()).some(t => /^Heim: Kriens-Luzern$/.test(t.trim())));
+  assert.deepEqual(await page.locator('section[aria-labelledby="g-stake"] .kz-t .v').allTextContents(), ['Weiter', 'Aus']);
+  const links = page.locator('section[aria-labelledby="g-anreise"] .anr a');
+  assert.equal(await links.count(), 2);
+  assert.match(await links.nth(0).getAttribute('href'), /travelmode=driving$/);
+  assert.match(await links.nth(1).getAttribute('href'), /travelmode=transit$/);
+  await page.waitForSelector('.gscore');
+  assert.match(await page.locator('.gscore').textContent(), /Weiterkommen/);
+  assert.deepEqual(page.errors, []);
+  await page.close();
+  // Heimspiel in der QHL: Aufmacher aus den Daten, keine Anreise, kein Cup-Einsatz
+  const league = await open('/spiel/508403');
+  await league.waitForSelector('.lead-h');
+  assert.equal(await league.locator('#g-anreise').count(), 0);
+  assert.equal(await league.locator('#g-stake').count(), 0);
+  await league.close();
+});
+
 // Die langen Geschichten-Tests laufen parallel zu den kurzen.
 await Promise.all(
   tests.map(async ({name, fn}) => {

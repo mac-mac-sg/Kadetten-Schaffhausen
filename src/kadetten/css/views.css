@@ -847,3 +847,18 @@ a.sk:active { transform: scale(.97); }
 .rb-body .rb-head { font-size: clamp(var(--fs-h3), 7.4vw, var(--fs-h1)); }
 .rb-body .rb-head + .rb-big { margin-top: var(--s-4); }
 .rb-body p.rb-sub { margin-top: var(--s-3); font: 600 var(--fs-body)/1.3 var(--f-text); }
+
+/* Spielvorschau: Aufmacher mit Fakten, Anreise (views/vorschau.js). */
+.lead-sec { margin-top: var(--s-5); }
+.lead-k { margin: 0; font: 600 var(--fs-caption)/1.2 var(--f-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-accent-text); }
+.lead-h { margin: var(--s-1) 0 var(--s-3); font: italic 600 var(--fs-xl)/0.98 var(--f-display); letter-spacing: -0.005em; text-wrap: balance; }
+.lead-facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lead-fact { position: relative; isolation: isolate; padding: 0 14px; min-height: 30px; display: flex; align-items: center; font: 500 var(--fs-small)/1.2 var(--f-text); color: var(--c-text); }
+.lead-fact::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--c-chip); transform: skewX(var(--skew)); }
+.lead-fact.hot { font-weight: 600; color: var(--c-on-accent); }
+.lead-fact.hot::before { background: var(--c-accent); }
+.anr-t { margin: 0 0 var(--s-3); display: grid; gap: 2px; }
+.anr-t b { font: 600 var(--fs-body)/1.3 var(--f-text); }
+.anr-t span { font: 400 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.anr-b { display: flex; gap: var(--s-2); margin-bottom: var(--s-3); }
+.anr-b .btn { flex: 1; margin: 0; padding: 0 var(--s-2); }

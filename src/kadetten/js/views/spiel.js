@@ -33,7 +33,9 @@ import {
 import {SQUAD} from '../../data/squad.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
-import {isScored} from '../gewinnscore.js';
+import {isScored, isSwissCup} from '../gewinnscore.js';
+import {leadStory, travelInfo} from '../vorschau.js';
+import {leadBlock, cupStakes, anreiseBlock} from './vorschau.js';
 
 const GAME_TABS = [
   ['vorschau', 'Übersicht'],
@@ -140,14 +142,28 @@ function vorschau({game, data, load, api, now}) {
     .filter(g => hasScore(g) && kickoff(g) < kickoff(game))
     .reverse()
     .slice(0, 3);
+  const ownForm = form(data.games, OWN_TEAM, 5, formLeague);
+  const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
+  const lead = leadStory({
+    game,
+    table,
+    own,
+    opp,
+    ownForm,
+    score: pre,
+    duels: duels?.value?.games || []
+  });
   return html`
+    ${leadBlock(lead)}
+    ${isSwissCup(game) ? cupStakes() : ''}
     ${spielort(game)}
+    ${anreiseBlock(travelInfo(game))}
     <section class="sec" aria-labelledby="g-lage">${sectionHead('Ausgangslage', '', '', 'g-lage')}
       <div class="card list">
         ${listRow({
           title: 'Kadetten',
           sub: own ? `${own.rank}. · ${own.points} Punkte` : game.league,
-          end: formRow(form(data.games, OWN_TEAM, 5, formLeague)),
+          end: formRow(ownForm),
           lead: crest(OWN_TEAM, 'xs')
         })}
         ${listRow({
@@ -160,7 +176,7 @@ function vorschau({game, data, load, api, now}) {
 
     </section>
     ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
-    ${oppForm === undefined ? '' : gewinnCard(preScore({game, data, oppForm}))}
+    ${gewinnCard(pre)}
     ${
       p?.paragraphs?.length
         ? html`<section class="sec" aria-labelledby="g-vor">
