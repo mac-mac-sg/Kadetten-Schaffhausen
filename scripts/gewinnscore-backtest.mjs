@@ -4,6 +4,8 @@
 // www.handball.ch liefert sein Zwischenzertifikat nicht mit. Vorher holen und Node zusätzlich geben (Prüfung bleibt an):
 //   curl -fsS http://cert.ssl.com/SSL.com-TLS-I-RSA-R1.cer | openssl x509 -inform der -out sslcom.pem
 //   NODE_EXTRA_CA_CERTS=sslcom.pem node scripts/gewinnscore-backtest.mjs
+// Mit dem dritten Argument «cup» prüft es zusätzlich Mobiliar-Cup-Spiele zwischen zwei QHL-Teams (Heimvorteil 1,5 und 2 Tore, ohne Remis):
+//   node scripts/gewinnscore-backtest.mjs 2021,2022,2023,2024,2025 cup
 // Ergebnis vom 16.11.2026 (QHL 2021–2025, 809 Spiele): Heimvorteil 1,5 Tore, Streuung 4,5 Tore, Form 2, Vorsaison-Gewicht 2;
 // Prüfsaison 2025: 74 % richtige Siegertipps (Grundquote 57 %), Brier 0,35 (Grundquote 0,53).
 const ENDPOINT = 'https://www.handball.ch/Umbraco/Api/MatchCenter/Query';
@@ -213,3 +215,48 @@ for (const g of data[last].games)
   }
 console.log('PRIOR ' + JSON.stringify(Object.fromEntries([...lastPrior].map(([n, v]) => [n, Math.round((v.gd / v.n) * 10) / 10]))));
 console.log('Ohne Vorsaison (w=0):', JSON.stringify(score(run(test, {...best.p, w: 0}))));
+
+// Schweizer Cup zwischen zwei QHL-Teams: dieselbe Rechnung (nur QHL-Tabelle, Vorsaison, Form), kein Remis (Verlängerung).
+if (process.argv[3] === 'cup') {
+  const cupGames = async seasonId => {
+    const found = new Map();
+    for (const clubId of CLUBS) {
+      for (const g of (await query({clubId, seasonId}))?.games || []) {
+        const qhl = n => /\(QHL\)\s*$/.test(n || '');
+        if (g.seasonId !== seasonId || g.leagueShortName !== 'Mobiliar-Cup M' || g.isLive || !qhl(g.homeTeamName) || !qhl(g.awayTeamName))
+          continue;
+        if (![g.homeTeamScore, g.awayTeamScore].every(v => Number.isInteger(v) && v >= 0)) continue;
+        found.set(g.objectId, {
+          at: Date.parse(g.gameDateTime),
+          home: norm(g.homeTeamName.replace(/\s*\(QHL\)\s*$/, '')),
+          away: norm(g.awayTeamName.replace(/\s*\(QHL\)\s*$/, '')),
+          hs: g.homeTeamScore,
+          as: g.awayTeamScore
+        });
+      }
+    }
+    return [...found.values()].sort((a, b) => a.at - b.at);
+  };
+  const cups = {};
+  for (const sid of SEASONS.slice(1)) cups[sid] = await cupGames(sid);
+  for (const H of [1.5, 2, 2.5]) {
+    const rows = [];
+    for (const sid of SEASONS.slice(1)) {
+      const prior = priors.get(sid);
+      for (const g of cups[sid]) {
+        const before = data[sid].games.filter(x => x.at < g.at);
+        const {out} = predict([...before, {...g, id: 'cup', at: g.at, cup: true}], prior, {H, sigma: 4.5, f: 2, w: 2});
+        const hit = out.find(o => o.id === 'cup');
+        if (hit) rows.push(hit);
+      }
+    }
+    // Ohne Remis: Gleichstand nach 60 Minuten geht je zur Hälfte an Sieg und Niederlage.
+    const dec = rows.map(r => ({...r, pH: r.pH + r.pD / 2, pA: r.pA + r.pD / 2, pD: 0}));
+    const right = dec.filter(r => (r.pH >= r.pA ? 'H' : 'A') === r.res).length;
+    const brier = dec.reduce((a, r) => a + (r.pH - (r.res === 'H' ? 1 : 0)) ** 2 + (r.pA - (r.res === 'A' ? 1 : 0)) ** 2, 0) / dec.length;
+    const resid = rows.map(r => r.hs - r.as - r.m);
+    console.log(
+      `Cup QHL gegen QHL, Heimvorteil ${H}: ${rows.length} Spiele, richtiger Sieger ${right} (${Math.round((right / rows.length) * 100)} %), Brier (Weiterkommen) ${brier.toFixed(3)}, Streuung ${Math.sqrt(resid.reduce((a, b) => a + b * b, 0) / resid.length).toFixed(2)} Tore, Mittel ${(resid.reduce((a, b) => a + b, 0) / resid.length).toFixed(2)}`
+    );
+  }
+}

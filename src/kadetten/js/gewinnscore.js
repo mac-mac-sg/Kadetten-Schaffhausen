@@ -4,8 +4,13 @@
 import {PRIOR} from '../data/gewinnscore.js';
 import {normTeam, isOwn} from './match.js';
 
-/** Werte aus der Prüfrechnung (Training 2022–2024). */
-export const MODEL = {home: 1.5, sigma: 4.5, form: 2, k: 3, w: 2, minGames: 3, length: 60};
+/** Schweizer Cup (Mobiliar-Cup): kein Remis, Gleichstand nach 60 Minuten geht in die Verlängerung. */
+export const isSwissCup = game => /mobiliar-?cup|schweizer\s*cup/i.test(game?.league || '');
+/** Spiele, für die es einen Gewinnscore geben kann: QHL und Schweizer Cup (dann nur, wenn beide Teams in der QHL-Tabelle stehen). */
+export const isScored = game => game?.league === 'QHL' || isSwissCup(game);
+
+/** Werte aus der Prüfrechnung (Training 2022–2024). cupHome: Heimvorteil im Schweizer Cup (31 Cup-Spiele zwischen QHL-Teams 2022–2025). */
+export const MODEL = {home: 1.5, cupHome: 2, sigma: 4.5, form: 2, k: 3, w: 2, minGames: 3, length: 60};
 
 const erf = x => {
   const t = 1 / (1 + 0.3275911 * Math.abs(x)),
@@ -38,21 +43,28 @@ export function chances(margin, sigma = MODEL.sigma) {
   return {win, draw: Math.max(0, 1 - win - loss), loss};
 }
 
+/** Im Cup gibt es kein Remis: Die Chance auf Gleichstand nach 60 Minuten geht je zur Hälfte an Sieg und Niederlage (Verlängerung). */
+export const advance = ({win, draw, loss}) => ({win: win + draw / 2, draw: 0, loss: loss + draw / 2});
+
 /**
  * Gewinnscore vor dem Spiel aus Kadetten-Sicht. own/opp: Tabellenzeilen (standings), ownForm/oppForm: Resultate S/U/N.
- * null, wenn das Spiel nicht in der QHL ist oder ein Team weniger als drei Spiele hat.
+ * null, wenn das Spiel nicht in der QHL oder im Schweizer Cup ist, ein Team nicht in der QHL-Tabelle steht oder weniger als drei Spiele hat.
+ * Im Cup mit grösserem Heimvorteil und ohne Remis (cup: true).
  */
 export function gewinnscore({game, own, opp, ownForm = [], oppForm = []}) {
-  if (!game || game.league !== 'QHL' || !own || !opp) return null;
+  if (!isScored(game) || !own || !opp) return null;
   if (!(own.played >= MODEL.minGames && opp.played >= MODEL.minGames)) return null;
   const sOwn = strength(own),
     sOpp = strength(opp);
   if (sOwn === null || sOpp === null) return null;
-  const home = isOwn(game.home) ? MODEL.home : -MODEL.home;
+  const cup = isSwissCup(game);
+  const base = cup ? MODEL.cupHome : MODEL.home;
+  const home = isOwn(game.home) ? base : -base;
   const fOwn = formValue(ownForm),
     fOpp = formValue(oppForm);
   const margin = (sOwn - sOpp) / 2 + home + MODEL.form * (fOwn - fOpp);
-  return {...chances(margin), margin, home, strength: [sOwn, sOpp], form: [fOwn, fOpp]};
+  const result = cup ? advance(chances(margin)) : chances(margin);
+  return {...result, cup, margin, home, strength: [sOwn, sOpp], form: [fOwn, fOpp]};
 }
 
 /** Gespielte Minuten aus Spieluhr («42:13») oder Phase («Halbzeit»); null, wenn unbekannt. */
@@ -74,7 +86,8 @@ export function liveScore(pre, match, game) {
   const ownHome = isOwn(game?.home ?? match.home);
   const lead = ownHome ? match.score[0] - match.score[1] : match.score[1] - match.score[0];
   const rest = Math.max(0, MODEL.length - minute) / MODEL.length;
-  return {...chances(lead + pre.margin * rest, MODEL.sigma * Math.sqrt(rest)), lead, minute};
+  const live = chances(lead + pre.margin * rest, MODEL.sigma * Math.sqrt(rest));
+  return {...(pre.cup ? advance(live) : live), cup: Boolean(pre.cup), lead, minute};
 }
 
 /** Prozent ganzzahlig, so gerundet, dass Sieg, Remis und Niederlage zusammen 100 ergeben. */

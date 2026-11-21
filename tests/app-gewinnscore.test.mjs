@@ -88,3 +88,54 @@ test('Karten zeigen Siegchance, Gründe und Veränderung seit Anpfiff', () => {
   assert.match(live, /seit Anpfiff/);
   assert.equal(String(gewinnLive(score, {score: [21, 18]}, home)), '');
 });
+
+test('Schweizer Cup zwischen QHL-Teams: Heimvorteil 2 Tore, kein Remis, Weiterkommen', async () => {
+  const {isSwissCup, isScored, advance, MODEL} = await import('../src/kadetten/js/gewinnscore.js');
+  const own = row('Kadetten Schaffhausen', 10, 320, 280),
+    opp = row('HC Kriens-Luzern', 10, 310, 290);
+  const cup = {id: 2, league: 'Mobiliar-Cup M', home: 'Kadetten Schaffhausen', away: 'HC Kriens-Luzern'};
+  assert.equal(isSwissCup(cup), true);
+  assert.equal(isSwissCup({league: 'Falkencup'}), false, 'andere Turniere nicht');
+  assert.equal(isScored(cup) && isScored(home), true);
+  assert.equal(isScored({league: 'EHL'}), false);
+  const c = gewinnscore({game: cup, own, opp}),
+    q = gewinnscore({game: home, own, opp});
+  assert.equal(c.cup, true);
+  assert.equal(c.home, MODEL.cupHome);
+  assert.equal(c.draw, 0);
+  assert.ok(Math.abs(c.win + c.loss - 1) < 1e-9);
+  assert.ok(c.win > q.win, 'grösserer Heimvorteil, Remis-Anteil kommt dazu');
+  assert.deepEqual(percents(c).map(Number).length, 3);
+  assert.equal(percents(c)[1], 0);
+  const away = gewinnscore({game: {...cup, home: cup.away, away: cup.home}, own, opp});
+  assert.equal(away.home, -MODEL.cupHome);
+  assert.deepEqual(advance({win: 0.5, draw: 0.2, loss: 0.3}), {win: 0.6, draw: 0, loss: 0.4});
+  // Ohne QHL-Tabellenzeile des Gegners (Team aus tieferer Liga) kein Score.
+  assert.equal(gewinnscore({game: cup, own, opp: null}), null);
+  // Live: nach 60 Minuten Gleichstand = je 50 %, Vorsprung entscheidet.
+  const live = liveScore(c, {score: [30, 30], clock: '60:00'}, cup);
+  assert.equal(live.cup, true);
+  assert.equal(Math.round(live.win * 100), 50);
+  assert.equal(liveScore(c, {score: [31, 30], clock: '60:00'}, cup).win, 1);
+});
+
+test('Cup-Karte: «Weiterkommen» ohne Remis, Heimvorteil und Verlängerung erklärt', () => {
+  const own = row('Kadetten Schaffhausen', 10, 320, 280),
+    opp = row('HC Kriens-Luzern', 10, 310, 290);
+  const cup = {id: 2, league: 'Mobiliar-Cup M', home: 'HC Kriens-Luzern', away: 'Kadetten Schaffhausen'};
+  const score = {...gewinnscore({game: cup, own, opp}), opponent: 'HC Kriens-Luzern', ownForm: [], oppForm: []};
+  const html = String(gewinnCard(score));
+  assert.match(html, /Weiterkommen/);
+  assert.doesNotMatch(html, /Remis \d+ %/);
+  assert.doesNotMatch(html, /Siegchance/);
+  assert.match(html, /Kriens-Luzern \+2 Tore/);
+  assert.match(html, /Verlängerung/);
+  assert.match(html, /Weiterkommen \d+ %, Ausscheiden \d+ %/);
+  const pre = {...score};
+  const live = String(gewinnLive(pre, {score: [10, 12], clock: '30:00'}, cup));
+  assert.match(live, /Weiterkommen/);
+  assert.doesNotMatch(live, /Siegchance/);
+  const league = String(gewinnCard({...gewinnscore({game: home, own, opp}), opponent: 'HC Kriens-Luzern', ownForm: [], oppForm: []}));
+  assert.match(league, /Siegchance/);
+  assert.match(league, /Remis \d+ %/);
+});
