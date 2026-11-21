@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
-import {personalCards, nextAfter} from '../src/kadetten/js/kurz.js';
+import {personalCards} from '../src/kadetten/js/kurz.js';
 import {renderSpiel} from '../src/kadetten/js/views/spiel.js';
 import {parseRoute} from '../src/kadetten/js/router.js';
 
@@ -34,17 +34,17 @@ test('Spieltag: persönliche Karten nur mit Daten', () => {
   assert.match(cards[0].text, /4 Tore aus 6 Würfen, davon 1 vom 7-m-Punkt/);
   assert.equal(cards[1].figure, '33:29');
   assert.equal(cards[1].title, 'Richtiger Sieger');
-  assert.match(cards[1].text, /1 Punkt\. Saison bisher: 4 Punkte/);
+  assert.match(cards[1].text, /Endstand 34:29\. 1 Punkt im Tippspiel\. Saison bisher: 4 Punkte/);
+  assert.equal(cards[1].kicker, 'Tippspiel');
+  assert.equal(cards[1].label, 'Dein Tipp');
   assert.equal(cards[1].badge, '+1 Sammelkarte');
   assert.equal(cards[2].figure, '2.');
   assert.match(cards[2].text, /2 Siege aus 2 Spielen/);
   const away = personalCards({game: {...games[1], home: 'HC Kriens-Luzern', away: OWN, score: [29, 34]}, visited: ['2'], games, now});
   assert.equal(away.length, 0, 'Hallenbesuch nur bei Heimspielen');
-  assert.equal(nextAfter(games, games[1], now).id, '3');
-  assert.equal(nextAfter(games.slice(0, 2), games[1], now), null);
 });
 
-test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Karte mit Tipp und Teilen', () => {
+test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Karte mit Statistik und Teilen, ohne Vorschau', () => {
   const route = parseRoute('#/spiel/2/kurz');
   const render = step =>
     parseHTML(
@@ -67,8 +67,15 @@ test('Spieltag in Karten: Geschichte mit Balken, Schliessen zum Spiel, letzte Ka
   assert.match(first.querySelector('.rb-slide').textContent, /34:29/);
   const last = render(99);
   assert.equal(last.querySelector('.rb-slide').getAttribute('data-rb-id'), 'weiter');
-  assert.ok(last.querySelector('a[href="#/spiel/3"]'), 'Jetzt tippen fürs nächste Spiel');
+  assert.equal(last.querySelector('a[href="#/spiel/3"]'), null, 'keine Vorschau auf das nächste Spiel');
+  assert.doesNotMatch(last.querySelector('.rb-slide').textContent, /Jetzt tippen|Weiter geht/);
+  assert.equal(last.querySelector('.rb-acts a[href="#/spiel/2/bericht"]').textContent.trim(), 'Ganze Statistik');
   assert.ok(last.querySelector('[data-share-image="2"]'));
+  // Sieg: erste Karte mit Stempel, Strahlen und Konfetti (nur Schmuck), Zahl gross
+  assert.equal(first.querySelector('.rb-stamp').textContent, 'Sieg!');
+  assert.ok(first.querySelector('.rb-burst[aria-hidden="true"]') && first.querySelector('.rb-confetti'));
+  assert.ok(first.querySelector('.rb-body.rb-win'));
+  assert.match(first.querySelector('.rb-head .rb-tag').textContent, /QHL/, 'kurzer Wettbewerb bleibt als Marke im Satz');
 });
 
 test('Spiel-Story: Schlagzeile nach Resultat und Ort, Tipp-Punkte in der Unterzeile', async () => {
@@ -88,4 +95,47 @@ test('Spiel-Story: Schlagzeile nach Resultat und Ort, Tipp-Punkte in der Unterze
   assert.equal(d.querySelector('.teaser-k').textContent, 'Spiel-Story');
   assert.match(d.querySelector('.teaser-s').textContent, /^Dein Tipp: 1 Punkt$/);
   assert.equal(String(storyTeaser(games[2])), '', 'ohne Resultat keine Kachel');
+});
+
+test('Spiel-Story im Cup: Wettbewerb steht in der Kopfzeile statt im Satz, «Weiter im Cup!», keine Siegerkarte bei Niederlage', () => {
+  const cup = {
+    id: 'c',
+    date: '2027-03-14',
+    time: '20:00',
+    home: 'HC Kriens-Luzern',
+    away: OWN,
+    league: 'Mobiliar-Cup M',
+    venue: 'Pilatus Arena, Kriens',
+    score: [26, 33]
+  };
+  const render = game =>
+    parseHTML(
+      '<html><body>' +
+        String(
+          renderSpiel({
+            route: parseRoute('#/spiel/c/kurz'),
+            state: {data: {games: [game], tables: {}}, live: null},
+            now,
+            load: () => ({status: 'loading'}),
+            api: {},
+            ui: {rbStep: 0}
+          })
+        ) +
+        '</body></html>'
+    ).document;
+  const won = render(cup);
+  assert.match(won.querySelector('.rb-k').textContent, /Spiel-Story · .*Mobiliar-Cup$/);
+  assert.equal(won.querySelector('.rb-head .rb-tag'), null, 'kein langer Name mitten im Satz');
+  assert.equal(won.querySelector('.rb-stamp').textContent, 'Weiter im Cup!');
+  const lost = render({...cup, score: [30, 28]});
+  assert.equal(lost.querySelector('.rb-stamp'), null);
+  assert.equal(lost.querySelector('.rb-body.rb-win'), null);
+});
+
+test('Spiel-Story: Tippkarte nennt das Tippspiel, den Tipp und den Endstand', () => {
+  const cards = personalCards({game: games[1], report, favourite: 22, tips: {1: [30, 28], 2: [33, 29]}, visited: [], games, now});
+  const tipp = cards.find(c => c.id === 'tipp');
+  assert.equal(tipp.kicker, 'Tippspiel');
+  assert.equal(tipp.label, 'Dein Tipp');
+  assert.match(tipp.text, /^Endstand 34:29\. 1 Punkt im Tippspiel\./);
 });

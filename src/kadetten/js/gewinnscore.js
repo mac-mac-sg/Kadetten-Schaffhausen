@@ -90,9 +90,16 @@ export function liveScore(pre, match, game) {
   return {...(pre.cup ? advance(live) : live), cup: Boolean(pre.cup), lead, minute};
 }
 
-/** Prozent ganzzahlig, so gerundet, dass Sieg, Remis und Niederlage zusammen 100 ergeben. */
+/**
+ * Prozent ganzzahlig, so gerundet, dass Sieg, Remis und Niederlage zusammen 100 ergeben.
+ * Sieg und Niederlage zeigen nie 0 oder 100 %, ein mögliches Remis nie 0 %: Es gibt immer Überraschungen.
+ * Ein Remis, das es nicht gibt (Cup: draw = 0), bleibt 0.
+ */
 export function percents({win, draw, loss}) {
-  const raw = [win, draw, loss].map(v => v * 100),
+  const min = [1, draw > 0 ? 1 : 0, 1];
+  const clamped = [win, draw, loss].map((v, i) => Math.min(99, Math.max(min[i], v * 100)));
+  const total = clamped.reduce((a, b) => a + b, 0);
+  const raw = clamped.map(v => (v * 100) / total),
     out = raw.map(Math.floor);
   let rest = 100 - out.reduce((a, b) => a + b, 0);
   raw
@@ -101,5 +108,13 @@ export function percents({win, draw, loss}) {
     .forEach(([, i]) => {
       if (rest-- > 0) out[i]++;
     });
+  // Rundung darf die Grenzen nicht wieder reissen: fehlende Prozent kommen vom grössten Wert.
+  for (let i = 0; i < 3; i++) {
+    while (out[i] < min[i]) {
+      const big = out.indexOf(Math.max(...out.filter((_, j) => j !== i && out[j] > min[j])));
+      out[big]--;
+      out[i]++;
+    }
+  }
   return out;
 }

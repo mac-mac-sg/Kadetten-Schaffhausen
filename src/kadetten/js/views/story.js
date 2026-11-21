@@ -67,10 +67,21 @@ export function storyHeadline(game) {
   return storyHeadlineParts(game).join(' ');
 }
 
-/** Dieselbe Schlagzeile gesetzt: leicht und fett gemischt, der Wettbewerb als schräge Marke im Satz. */
+/** Kurzer Wettbewerb (QHL, EHL) steht als Marke im Satz; lange Namen wie «Mobiliar-Cup M» stehen stattdessen in der Kopfzeile. */
+const inlineLeague = game => (game?.league || '').length <= 4;
+/** Wettbewerb für die Kopfzeile der ersten Karte, nur wenn er nicht als Marke im Satz steht («Mobiliar-Cup M» → «Mobiliar-Cup»). */
+export const competitionKicker = game => (game?.league && !inlineLeague(game) ? game.league.replace(/\s+[MF]$/, '') : '');
+
+/** Dieselbe Schlagzeile gesetzt: leicht und fett gemischt, ein kurzer Wettbewerb als schräge Marke im Satz. */
 export function storyHeadlineMixed(game) {
   const [art, word, join, where] = storyHeadlineParts(game);
-  return html`<p class="rb-head">${art} <b>${word}</b> ${game.league ? html`<span class="rb-tag">${game.league}</span> ` : ''}${join} <b>${where}</b></p>`;
+  return html`<p class="rb-head">${art} <b>${word}</b> ${game.league && inlineLeague(game) ? html`<span class="rb-tag">${game.league}</span> ` : ''}${join} <b>${where}</b></p>`;
+}
+
+/** Siegerkarte: Strahlen, Konfetti und Stempel («Weiter im Cup!» bei einem Cup-Sieg). Reiner Schmuck, für Screenreader verborgen. */
+export function storyWinDecor(game) {
+  const cup = /cup/i.test(game?.league || '');
+  return html`<i class="rb-burst" aria-hidden="true"></i><i class="rb-confetti" aria-hidden="true"></i><span class="rb-stamp" aria-hidden="true">${cup ? 'Weiter im Cup!' : 'Sieg!'}</span><i class="rb-stripe" aria-hidden="true"></i>`;
 }
 
 /** Kachel «Spiel-Story» (Spielseite und Titelseite nach dem Spiel), gestaltet wie der Hinweis zum Saisonrückblick. */

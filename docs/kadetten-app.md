@@ -338,3 +338,13 @@ Die Vorschau eines kommenden Spiels (QHL und Mobiliar-Cup) beginnt mit einem Auf
 - **Worum geht es? im Cup** (`cupStakes`): zwei Kacheln «Sieg: Weiter» und «Niederlage: Aus» mit dem Hinweis, dass Gleichstand nach 60 Minuten in die Verlängerung geht. Der Rundenname fehlt, weil die Quelle ihn nicht liefert.
 - **Anreise** (`travelInfo`, `anreiseBlock`): nur bei Auswärtsspielen in der Schweiz (nicht Europacup): Halle, Ort und zwei Knöpfe, «Route planen» (Google Maps, Auto) und «ÖV-Verbindung» (Google Maps, öffentlicher Verkehr). Die App kennt keinen Standort und rechnet keine Fahrzeit. Heimspiele haben noch keinen Anreise-Block (Parkplatz- und Türöffnungstexte stehen beim Verein aus).
 - Nicht umgesetzt aus dem Konzept: «Worum geht es?» mit Punkten und Plätzen in der QHL, Kopf an Kopf mit gefährlichsten Werfern, Anreise bei Heimspielen.
+
+## Gewinnchance, Liveticker und Spiel-Story (22. November 2026)
+
+- **Gewinnchance nie 0 oder 100 %** (`percents` in `js/gewinnscore.js`): Sieg und Niederlage liegen immer zwischen 1 und 99 %, ein mögliches Remis nie bei 0 %. Im Cup, wo es kein Remis gibt, bleibt dieses bei 0. Es gibt immer Überraschungen; auch in den letzten Minuten bei hohem Vorsprung steht «99 %».
+- **Liveticker mit Fokus** (`js/ticker.js`): Standard sind nur Tore (inkl. Siebenmeter), Zeitstrafen, Disqualifikationen und der Schlusspfiff; Paraden, Fehlwürfe, technische Fehler, Time-outs, Verwarnungen und «Empty Goal» erscheinen unter «Alle Ereignisse (n)» (`ui.tickerAll`). Erkannt über die Aktionskürzel der SHV (`bFeldTor`, `b7mTor`, `b2Min`, `bDoB`, `bSchlussPfiff`) und über den Text. Jede Zeile nennt die Mannschaft; Tor der Kadetten orange, Tor des Gegners mit hohlem Marker, Strafe mit dunklem Marker und «2′» statt Spielstand. Liefert die Quelle nichts Erkennbares (EHF), erscheint immer die ganze Liste ohne Umschalter.
+- **Spiel-Story:**
+  - Ein langer Wettbewerbsname («Mobiliar-Cup M») steht in der Kopfzeile statt als Marke mitten im Satz; kurze (QHL, EHL) bleiben als Marke im Satz (`competitionKicker`).
+  - Bei einem Sieg ist die erste Karte euphorischer: Strahlen, Konfetti, Stempel («Sieg!» bzw. «Weiter im Cup!») und grössere Zahl (`storyWinDecor`). Nur Schmuck, für Screenreader verborgen, bei «Bewegung reduzieren» ohne Bewegung.
+  - Die letzte Karte zeigt keine Vorschau auf das nächste Spiel mehr, nur «Ganze Statistik» und «Resultat teilen». Das Spiel bleibt im Fokus.
+  - Die Tippkarte heisst «Tippspiel», nennt «Dein Tipp», den Endstand und die Punkte im Tippspiel.
