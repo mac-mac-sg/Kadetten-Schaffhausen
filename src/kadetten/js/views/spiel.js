@@ -33,6 +33,7 @@ import {
 import {SQUAD} from '../../data/squad.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
+import {isScored} from '../gewinnscore.js';
 
 const GAME_TABS = [
   ['vorschau', 'Übersicht'],
@@ -213,7 +214,7 @@ const voteCard = (game, ui, load) =>
 
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
 function liveTab({game, data, state, ui, load, api}) {
-  const oppForm = game.league === 'QHL' ? opponentForm(load, api, data, game) : null;
+  const oppForm = isScored(game) ? opponentForm(load, api, data, game) : null;
   const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
   return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${renderTicker(state.live.match)}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
