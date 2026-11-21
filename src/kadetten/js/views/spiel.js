@@ -8,8 +8,8 @@ import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kicko
 import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
-import {shortCards, personalCards, nextAfter} from '../kurz.js';
-import {storyShell, storyTeaser, storyState, storyHeadlineMixed} from './story.js';
+import {shortCards, personalCards} from '../kurz.js';
+import {storyShell, storyTeaser, storyState, storyHeadlineMixed, storyWinDecor, competitionKicker} from './story.js';
 import {renderBericht, renderLiveStats, loadReportFor, voteSection, liveVoteCard} from './bericht.js';
 import {myVotes} from '../fan-vote.js';
 import {myGames, pickFor, favourite, tips} from '../personal.js';
@@ -232,7 +232,7 @@ const voteCard = (game, ui, load) =>
 function liveTab({game, data, state, ui, load, api}) {
   const oppForm = isScored(game) ? opponentForm(load, api, data, game) : null;
   const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
-  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${renderTicker(state.live.match)}<section class="sec">
+  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${renderTicker(state.live.match, {all: ui.tickerAll === '1'})}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
 }
 
@@ -270,14 +270,14 @@ function kurz({game, data, load, api, ui, now}) {
   const team = shortCards({game, report, goals, tables: data.tables, games: data.games});
   const table = team.filter(c => c.kicker === 'Tabelle danach');
   const mine = personalCards({game, report, favourite: favourite(), tips: tips(), visited: myGames(), games: data.games, now});
-  const next = nextAfter(data.games, game, now);
   const cards = [...team.filter(c => c.kicker !== 'Tabelle danach'), ...mine, ...table];
+  const win = outcome(game) === 'S';
   const body = (
     c,
     i
-  ) => html`<p class="rb-k">${i === 0 ? ['Spiel-Story', dayLabel(game, now)].filter(Boolean).join(' · ') : c.kicker}</p><div class="rb-body">
+  ) => html`${i === 0 && win ? storyWinDecor(game) : ''}<p class="rb-k">${i === 0 ? ['Spiel-Story', dayLabel(game, now), competitionKicker(game)].filter(Boolean).join(' · ') : c.kicker}</p><div class="${i === 0 && win ? 'rb-body rb-win' : 'rb-body'}">
       ${i === 0 ? storyHeadlineMixed(game) : ''}
-      <p class="rb-big xl${i > 0 ? ' acc' : ''}">${c.figure}</p>
+      ${c.label ? html`<p class="rb-label">${c.label}</p>` : ''}<p class="rb-big xl${i > 0 ? ' acc' : ''}">${c.figure}</p>
       <p class="${i === 0 ? 'rb-sub' : 'rb-big md'}">${c.title}</p>
       ${c.text ? html`<p>${c.text}</p>` : ''}
       ${c.badge ? html`<span class="rb-tag rb-badge">${c.badge}</span>` : ''}</div>
@@ -290,15 +290,11 @@ function kurz({game, data, load, api, ui, now}) {
     body: body(c, i),
     ...(i === 0 && scorer ? {photo: playerPhoto(scorer.number)} : {})
   }));
+  // Letzte Karte: das Spiel bleibt im Fokus, keine Vorschau auf das nächste Spiel.
   slides.push({
     id: 'weiter',
-    body: html`<p class="rb-k">${next ? 'Weiter geht’s' : 'Das war’s'}</p><div class="rb-body">${
-      next
-        ? html`<span class="rb-tag">${[dayLabel(next, now), next.time].filter(Boolean).join(' · ')}</span>
-      <p class="rb-big md">${shortTeam(next.home)} – ${shortTeam(next.away)}</p><p>${next.league || ''}</p>`
-        : html`<p class="rb-big md">Ganze Statistik und Rückblick im Spielbericht.</p>`
-    }</div>
-    <div class="rb-acts">${next ? html`<a class="rb-share alt" href="${href.spiel(next.id)}">Jetzt tippen</a>` : html`<a class="rb-share alt" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a>`}
+    body: html`<p class="rb-k">Das war’s</p><div class="rb-body"><p class="rb-big md">Ganze Statistik und Rückblick im Spielbericht.</p></div>
+    <div class="rb-acts"><a class="rb-share alt" href="${href.spiel(game.id, 'bericht')}">${icon('doc')}Ganze Statistik</a>
     <button class="rb-share" type="button" data-share-image="${game.id}">${icon('share')}Resultat teilen</button></div>`
   });
   return storyShell({slides, ...storyState(ui), close: href.spiel(game.id, 'bericht'), closeLabel: 'Zurück zum Spiel'});

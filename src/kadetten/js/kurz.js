@@ -107,11 +107,12 @@ export function personalCards({game, report = null, favourite = null, tips = {},
     const season = done.reduce((n, g) => n + tipPoints(tips[g.id], g.score), 0);
     cards.push({
       id: 'tipp',
-      kicker: 'Dein Tipp',
+      kicker: 'Tippspiel',
+      label: 'Dein Tipp',
       figure: `${tip[0]}:${tip[1]}`,
       title:
         points === 3 ? 'Exakt getroffen!' : points === 2 ? 'Richtige Tordifferenz' : points === 1 ? 'Richtiger Sieger' : 'Diesmal daneben',
-      text: `${points} ${points === 1 ? 'Punkt' : 'Punkte'}. Saison bisher: ${season} ${season === 1 ? 'Punkt' : 'Punkte'}.`,
+      text: `Endstand ${game.score[0]}:${game.score[1]}. ${points} ${points === 1 ? 'Punkt' : 'Punkte'} im Tippspiel. Saison bisher: ${season} ${season === 1 ? 'Punkt' : 'Punkte'}.`,
       badge: points === 3 ? '+2 Sammelkarten' : points > 0 ? '+1 Sammelkarte' : ''
     });
   }
@@ -127,11 +128,4 @@ export function personalCards({game, report = null, favourite = null, tips = {},
     });
   }
   return cards;
-}
-
-/** Nächstes Kadetten-Spiel nach diesem (für die letzte Karte der Geschichte). */
-export function nextAfter(games, game, now) {
-  return (
-    ownGames(games).find(g => !hasScore(g) && String(g.id) !== String(game.id) && kickoff(g) > Math.max(now, kickoff(game) ?? 0)) || null
-  );
 }

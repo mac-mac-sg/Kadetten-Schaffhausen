@@ -45,10 +45,11 @@ test('Fünf Tabs: Start, Spiele, Tabelle, Kader, Ich; Verein über das Wappen',(
 test('Ticker nutzt nur bestätigte, gültige Ereignisse, sortiert und entfernt Duplikate',()=>{
  const match={details:{events:[{id:1,seconds:45,action:'Tor',score:[1,0]},{id:2,seconds:50,action:'<script>schlecht</script>',homePlayer:'<b>Name</b>'},{id:1,seconds:45,action:'Tor',score:[1,0]},{id:3,seconds:-1,action:'ungültig'},{id:4,seconds:55,action:''}]}};
  assert.deepEqual(tickerEvents(match).map(e=>e.id),[2,1]);
- const out=String(renderTicker(match));
+ const out=String(renderTicker(match,{all:true}));
  assert.doesNotMatch(out,/<script>|<b>Name/);
  assert.match(out,/&lt;script&gt;/);
  assert.equal(doc(out).querySelectorAll('[data-event-id]').length,2);
+ assert.equal(doc(String(renderTicker(match))).querySelectorAll('[data-event-id]').length,1,'Standard: nur Tore und Strafen');
  assert.match(String(renderTicker({league:'European League',details:{events:null}})),/noch keine einzelnen Ereignisse/);
  assert.match(String(renderTicker({...match,details:{...match.details,ok:false}})),/verzögert/);
 });
