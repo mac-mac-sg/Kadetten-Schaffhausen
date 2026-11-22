@@ -264,8 +264,19 @@ export function tipCard({game, tip, points, locked}) {
     <div class="sh">
     <h2 class="h2" id="${'tip-' + game.id}">Mein Tipp</h2>
     </div>
-    <div class="card tip">${side(0, game.home)}${side(1, game.away)}
-      ${locked ? html`<p class="fine">${tip ? 'Tipp abgegeben.' : 'Kein Tipp abgegeben.'}</p>` : ''}${pts}</div></section>`;
+    ${
+      locked && tip
+        ? html`<div class="card tip-done" role="group" aria-label="${`Tipp abgegeben: ${shortTeam(game.home)} ${tip[0]}, ${shortTeam(game.away)} ${tip[1]}`}">
+      <b class="num" aria-hidden="true">${tip[0]} : ${tip[1]}</b>${
+        points === null || points === undefined
+          ? html`<span class="pill q">Tipp abgegeben</span>`
+          : html`<span class="pill${points ? '' : ' q'}">${points} ${points === 1 ? 'Punkt' : 'Punkte'} · ${
+              ['daneben', 'richtige Tendenz', 'richtige Differenz', 'exakt getippt'][points]
+            }</span>`
+      }</div>`
+        : html`<div class="card tip">${side(0, game.home)}${side(1, game.away)}
+      ${locked ? html`<p class="fine">Kein Tipp abgegeben.</p>` : ''}${pts}</div>`
+    }</section>`;
 }
 
 /** Filter-Chips (schräg). data-ui="<name>:<wert>" wird in main.js in den UI-Zustand übernommen. */
