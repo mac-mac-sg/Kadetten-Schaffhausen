@@ -313,7 +313,7 @@ Bei Kadetten-Heimspielen vor Anpfiff steht in der Kopfzeile der Spieltagskarte (
 
 - Mannschaftskarten aus dem bestätigten Spielbericht (`shortCards` in `js/kurz.js`): Resultat, Wendepunkt, bester Werfer, Zahl des Spiels, Tabelle danach.
 - Persönliche Karten (`personalCards`), nur mit Daten auf dem Gerät: Lieblingsspieler in diesem Spiel, dein Tipp (Punkte, Saisonstand, verdiente Sammelkarte), «Du warst dabei» bei Heimspielen mit «Ich war in der Halle».
-- Letzte Karte: nächstes Kadetten-Spiel mit «Jetzt tippen» (öffnet die Vorschau) und «Resultat teilen» (Resultatbild); ohne nächstes Spiel «Ganze Statistik».
+- Letzte Karte: «Ganze Statistik» und «Resultat teilen» (Story-Bild). Keine Vorschau auf das nächste Spiel mehr (seit 22.11.2026).
 - Einstieg über die Kachel «Spiel-Story» (schwarz mit Streifen wie der Saisonrückblick-Hinweis) auf der Titelseite nach dem Spiel und in der Spielseite (Reiter Bericht). Die Schlagzeile richtet sich nach Resultat und Ort («Der Sieg in der BBC Arena», «Die Niederlage in Thun», «Das Remis gegen Pfadi»), darunter die Tipp-Punkte. Konzept: Design-Canvas, Brett «Spieltagsrückblick · Konzept».
 
 ## Fanshop (20. November 2026)
@@ -348,3 +348,12 @@ Die Vorschau eines kommenden Spiels (QHL und Mobiliar-Cup) beginnt mit einem Auf
   - Bei einem Sieg ist die erste Karte euphorischer: Strahlen, Konfetti, Stempel («Sieg!» bzw. «Weiter im Cup!») und grössere Zahl (`storyWinDecor`). Nur Schmuck, für Screenreader verborgen, bei «Bewegung reduzieren» ohne Bewegung.
   - Die letzte Karte zeigt keine Vorschau auf das nächste Spiel mehr, nur «Ganze Statistik» und «Resultat teilen». Das Spiel bleibt im Fokus.
   - Die Tippkarte heisst «Tippspiel», nennt «Dein Tipp», den Endstand und die Punkte im Tippspiel.
+
+## Teilbilder: Story-Bilder im Schnitt (22. November 2026)
+
+Konzept: Design-Canvas, Brett «Teilbilder · kräftig und ruhig». Umgesetzt ist der Stil «kräftig im Schnitt»; der ruhige, filmische Stil wurde nicht gewählt.
+
+- **Drei Anlässe, ein Format:** Halbzeit, Spielstand (mit Minute) und Endstand als Story-Bild 1080 × 1920 (9:16), auf dem Gerät gezeichnet, ohne Upload (`matchImage`, Inhalt aus `matchImageModel` in `js/share-image.js`). Orange Kante mit Streifenband, kursive Barlow-Zahlen, die Zahl der Kadetten in Orange, Wappen und Fusszeile «Kadetten Fan-App · inoffiziell». Wichtiges liegt zwischen y 250 und 1650, damit Instagram nichts überdeckt. Zweistellige Zahlen werden auf die Breite verkleinert.
+- **Endstand:** der bisherige Weg «Resultat teilen» (letzte Karte der Spiel-Story, Spielbericht, Titelseite). Bei einem Sieg ein Stempel («Sieg!», im Cup «Weiter im Cup!»), bei Niederlage oder Remis eine Marke. Das frühere 4:5-Resultatbild (`resultImage`) entfällt; der Saisonrückblick bleibt 1080 × 1350.
+- **Live:** im Live-Reiter der Knopf «Spielstand teilen», in der Pause «Halbzeitstand teilen» (`data-share-live`, `isHalftime` in `js/gewinnscore.js`; Phase genau «Halbzeit» oder «Pause»). Nur mit gültigem Spielstand; die Minute stammt aus der Spieluhr.
+- Teilen über den Systemdialog, sonst Download.

@@ -1,5 +1,6 @@
 // Teilen und Exportieren: Text teilen, Resultat als Bild, Spielplan als Kalenderdatei.
-import {resultImage, shareImage} from '../share-image.js';
+import {matchImage, matchImageModel, shareImage} from '../share-image.js';
+import {elapsed, isHalftime} from '../gewinnscore.js';
 import {outcome, shortTeam} from '../logic.js';
 import {withFinished} from '../match.js';
 import {crestSrc, RESULT_TEXT} from '../views/parts.js';
@@ -19,17 +20,41 @@ export function createSharing({ui, store, announce}) {
     } catch {}
   }
 
+  async function shareModel(model, crestTeams, name, title) {
+    if (!model) return;
+    announce('Bild wird erstellt …');
+    const blob = await matchImage(model, crestTeams.map(crestSrc));
+    await shareImage(blob, name, title);
+  }
+
+  /** Endstand als Story-Bild. */
   async function shareResult(id) {
     const raw = store.state.data?.games.find(g => String(g.id) === id);
     const game = raw && withFinished(raw, store.state.live, Date.now());
     if (!game?.score) return;
-    announce('Bild wird erstellt …');
-    const blob = await resultImage({
+    const model = matchImageModel({
+      kind: 'end',
       game: {...game, homeShort: shortTeam(game.home), awayShort: shortTeam(game.away)},
-      label: RESULT_TEXT[outcome(game)] || '',
-      crests: [crestSrc(game.home), crestSrc(game.away)]
+      outcome: outcome(game)
     });
-    await shareImage(blob, `kadetten-${game.date}.png`, shareText(game));
+    await shareModel(model, [game.home, game.away], `kadetten-${game.date}.png`, shareText(game));
+  }
+
+  /** Laufendes Spiel: in der Pause «Halbzeit», sonst «Spielstand» mit der Minute. */
+  async function shareLive() {
+    const match = store.state.live?.match;
+    if (!match) return;
+    const model = matchImageModel({
+      kind: isHalftime(match) ? 'half' : 'live',
+      game: {...match, homeShort: shortTeam(match.home), awayShort: shortTeam(match.away), date: match.date || ''},
+      minute: elapsed(match)
+    });
+    await shareModel(
+      model,
+      [match.home, match.away],
+      `kadetten-live-${match.id}.png`,
+      `${shortTeam(match.home)} – ${shortTeam(match.away)}`
+    );
   }
 
   function downloadCalendar() {
@@ -47,6 +72,7 @@ export function createSharing({ui, store, announce}) {
     actions: [
       ['data-share', el => shareLink(el.dataset.share)],
       ['data-share-image', el => shareResult(el.dataset.shareImage)],
+      ['data-share-live', shareLive],
       ['data-calendar', downloadCalendar]
     ]
   };

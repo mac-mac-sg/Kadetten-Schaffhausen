@@ -67,6 +67,9 @@ export function gewinnscore({game, own, opp, ownForm = [], oppForm = []}) {
   return {...result, cup, margin, home, strength: [sOwn, sOpp], form: [fOwn, fOpp]};
 }
 
+/** Pause zwischen den Halbzeiten: die Phase heisst «Halbzeit» oder «Pause», nicht «1. Halbzeit» oder «2. Halbzeit». */
+export const isHalftime = match => /^(halbzeit|halbzeitpause|pause)$/i.test(String(match?.phase || '').trim());
+
 /** Gespielte Minuten aus Spieluhr («42:13») oder Phase («Halbzeit»); null, wenn unbekannt. */
 export function elapsed(match) {
   const m = /^(\d{1,3}):(\d{2})/.exec(String(match?.clock || ''));

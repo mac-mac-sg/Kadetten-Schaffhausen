@@ -402,6 +402,53 @@ test('Spielvorschau im Cup auswärts: Aufmacher, Weiter oder Aus, Anreise, Gewin
   await league.close();
 });
 
+test('Teilbilder: Endstand und Live-Stand als Story-Bild 1080 × 1920 (Download ohne Teilen-Dialog)', async () => {
+  const size = async download => {
+    const file = await download.path();
+    const head = fs.readFileSync(file).subarray(0, 24);
+    assert.equal(head.toString('latin1', 1, 4), 'PNG');
+    return [head.readUInt32BE(16), head.readUInt32BE(20)];
+  };
+  const page = await open('/spiel/508363');
+  const finished = page.waitForEvent('download');
+  await page.locator('[data-share-image]').first().click();
+  const end = await finished;
+  assert.match(end.suggestedFilename(), /^kadetten-2026-09-23\.png$/);
+  assert.deepEqual(await size(end), [1080, 1920]);
+  assert.deepEqual(page.errors, []);
+  await page.close();
+  const game = {
+    id: 'cup-teil',
+    date: '2026-11-19',
+    time: '07:10',
+    home: 'HC Kriens-Luzern',
+    away: 'Kadetten Schaffhausen',
+    league: 'Mobiliar-Cup M',
+    venue: 'Kriens Pilatus Arena, Kriens'
+  };
+  const match = {
+    id: 517411,
+    home: 'HC Kriens-Luzern (QHL)',
+    away: 'Kadetten Schaffhausen (QHL)',
+    score: [12, 24],
+    league: 'Mobiliar-Cup M',
+    clock: '36:12',
+    phase: '2. Halbzeit',
+    details: {ok: true, events: []}
+  };
+  const live = {ok: true, checkedAt: NOW.toISOString(), degraded: false, sources: {SHV: {ok: true}}, match, finished: null};
+  const stand = await open('/spiel/cup-teil', {live, extraGames: [game]});
+  await stand.waitForSelector('[data-share-live]');
+  assert.match(await stand.locator('[data-share-live]').textContent(), /Spielstand teilen/);
+  const shot = stand.waitForEvent('download');
+  await stand.click('[data-share-live]');
+  const d = await shot;
+  assert.equal(d.suggestedFilename(), 'kadetten-live-517411.png');
+  assert.deepEqual(await size(d), [1080, 1920]);
+  assert.deepEqual(stand.errors, []);
+  await stand.close();
+});
+
 // Die langen Geschichten-Tests laufen parallel zu den kurzen.
 await Promise.all(
   tests.map(async ({name, fn}) => {
