@@ -124,3 +124,21 @@ test('Artikel: Autorzeile in verschachtelten Theme-DIVs bleibt vom ersten Satz g
   const out = sanitizeArticle('<div class="x-section"><div class="x-row"><div class="x-col"><i class="x-icon"></i><div class="x-text">Barbara Imobersteg</div></div></div></div><div class="x-text">Mit einer starken Leistung.</div><div class="x-text"><strong>Strafminuten:</strong> 10/8</div>', {parser: DOMParser, doc: document});
   assert.equal(out, '<p>Barbara Imobersteg</p><p>Mit einer starken Leistung.</p><p><strong>Strafminuten:</strong> 10/8</p>');
 });
+
+test('Artikel: Fakten am Schluss (Ort, Zuschauer, Schiedsrichter, Aufstellung, Strafminuten) werden aus dem Zusammenhang gruppiert', () => {
+  const {DOMParser, document} = parseHTML('<html><body></body></html>');
+  const out = sanitizeArticle('<p>Bericht.</p><div>Kriens, Pilatus Arena</div><div>1904 Zuschauer</div><div>Hennig Simon/Salah Morad</div><div>Kadetten Schaffhausen</div><div>Bergmann (9 P./35 %/1), Seravalli (5 P./36%); Meister (4).</div><div><strong>Strafminuten:</strong> 10/8</div>', {parser: DOMParser, doc: document});
+  const d = new DOMParser().parseFromString(out, 'text/html');
+  assert.equal(d.querySelector('p').textContent, 'Bericht.');
+  const box = d.querySelector('.match-facts');
+  assert.deepEqual([...box.children].map(el => el.className), ['mf mf-venue', 'mf mf-crowd', 'mf mf-ref', 'mf mf-team', 'mf-lineup', 'mf mf-pen']);
+  assert.equal(box.querySelector('.mf-venue').textContent, 'Kriens, Pilatus Arena');
+  assert.equal(box.querySelector('.mf-crowd').textContent, '1904 Zuschauer');
+  assert.equal(d.querySelectorAll('.match-facts').length, 1);
+});
+
+test('Artikel: ohne Zuschauerzahl am Schluss bleibt der Text unverändert', () => {
+  const {DOMParser, document} = parseHTML('<html><body></body></html>');
+  const out = sanitizeArticle('<p>Es kamen viele Zuschauer.</p><p>Kriens, Pilatus Arena</p><p>Strafminuten: 10/8</p>', {parser: DOMParser, doc: document});
+  assert.doesNotMatch(out, /match-facts/);
+});

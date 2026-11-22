@@ -21,6 +21,8 @@ const PATHS = {
   share: '<path d="M12 3.5v11M7.5 8 12 3.5 16.5 8M5 13v6.5h14V13"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
   go: '<path d="M9 5l7 7-7 7"/>',
+  whistle: '<circle cx="9" cy="14" r="5"/><path d="M13 10.5 21 8v4.5h-5.5"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',
   ext: '<path d="M8 16 16 8M9.5 8H16v6.5"/>',
   bag: '<path d="M5 8h14l-1.3 12.5H6.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',

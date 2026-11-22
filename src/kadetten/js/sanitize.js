@@ -1,5 +1,6 @@
 // Vereinsartikel sicher darstellen: nur erlaubte Elemente und Attribute, nur HTTPS-Links und -Bilder.
 // Skripte, Stile, Formulare, eingebettete Inhalte und Eventhandler fallen weg. Getestet in tests/app-views.test.mjs.
+import {icon} from './icons.js';
 const ALLOWED = new Set([
   'P',
   'H2',
@@ -81,6 +82,44 @@ function fixtureOf(el, base) {
     label: score ? `${score[1]} : ${score[4]}` : 'vs.',
     half: score?.[2] ? `${score[2]}:${score[3]}` : ''
   };
+}
+
+// Spielbericht-Fakten am Schluss (Ort, Zuschauer, Schiedsrichter, Aufstellung, Strafminuten) stehen im Original als Infobox mit Symbolen.
+// Erkannt wird aus dem Zusammenhang: Anker ist die Zuschauerzahl; davor der Ort, danach die übrigen Absätze bis zum Ende des Artikels.
+const CROWD = /^[\d'’.\s]{1,9}\s*Zuschauer\b/i;
+const FACT_ICON = {'mf-venue': 'pin', 'mf-crowd': 'team', 'mf-ref': 'whistle', 'mf-team': 'verein', 'mf-pen': 'clock'};
+function groupFacts(out, doc) {
+  const kids = [...out.children];
+  const at = kids.findIndex(el => el.tagName === 'P' && CROWD.test(el.textContent.trim()) && el.textContent.trim().length < 40);
+  if (at < 1 || kids[at - 1].tagName !== 'P') return;
+  const tail = kids.slice(at + 1);
+  if (tail.length < 1 || tail.length > 8 || !tail.every(el => el.tagName === 'P' && !el.querySelector('img,a'))) return;
+  const venue = kids[at - 1];
+  if (venue.textContent.trim().length > 90) return;
+  const box = doc.createElement('div');
+  box.setAttribute('class', 'match-facts');
+  const add = (el, cls) => {
+    el.setAttribute('class', cls);
+    const name = FACT_ICON[cls.split(' ')[1]];
+    if (name) {
+      const mark = doc.createElement('span');
+      mark.setAttribute('class', 'mf-i');
+      mark.setAttribute('aria-hidden', 'true');
+      mark.innerHTML = String(icon(name, 20));
+      el.insertBefore(mark, el.firstChild);
+    }
+    box.appendChild(el);
+  };
+  out.insertBefore(box, venue);
+  add(venue, 'mf mf-venue');
+  add(kids[at], 'mf mf-crowd');
+  tail.forEach((el, i) => {
+    const text = el.textContent.trim();
+    if (/^Strafminuten\b/i.test(text)) add(el, 'mf mf-pen');
+    else if (i === 0 && !/\d/.test(text) && text.length <= 60) add(el, 'mf mf-ref');
+    else if (text.length <= 40 && !/[,;()\d]/.test(text)) add(el, 'mf mf-team');
+    else add(el, 'mf-lineup');
+  });
 }
 
 /** Gibt bereinigtes HTML zurück. doc: ein Document zum Erzeugen von Knoten (Browser: document). */
@@ -176,5 +215,6 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
     }
   };
   copy(source.body, out);
+  groupFacts(out, doc);
   return out.innerHTML;
 }
