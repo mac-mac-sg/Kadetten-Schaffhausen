@@ -166,7 +166,12 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
       if ((name === 'TH' || name === 'TD') && /^\d{1,2}$/.test(child.getAttribute('colspan') || ''))
         el.setAttribute('colspan', child.getAttribute('colspan'));
       copy(child, el);
-      if (['P', 'LI', 'FIGCAPTION', 'H2', 'H3', 'H4', 'I', 'EM', 'B', 'STRONG'].includes(name) && !el.textContent.trim() && !el.querySelector('img')) continue;
+      if (
+        ['P', 'LI', 'FIGCAPTION', 'H2', 'H3', 'H4', 'I', 'EM', 'B', 'STRONG'].includes(name) &&
+        !el.textContent.trim() &&
+        !el.querySelector('img')
+      )
+        continue;
       target.appendChild(el);
     }
   };
