@@ -514,7 +514,7 @@ test('Startseite: «Unsere Saison» schreibt den Platz aus', () => {
 test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
   const card = tipCard({game: {id: 1, home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau'}, tip: null, points: null, locked: false});
   assert.doesNotMatch(String(card), /Ohne Einsatz|richtige Differenz/);
-  assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben/);
+  assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben: A 20, B 18[\s\S]*20 : 18[\s\S]*3 Punkte · exakt getippt/);
 });
 
 test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein und Karten mit Schatten (hell ohne Rand)', () => {
