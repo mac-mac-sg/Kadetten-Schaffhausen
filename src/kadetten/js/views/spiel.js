@@ -33,7 +33,7 @@ import {
 import {SQUAD} from '../../data/squad.js';
 import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
-import {isScored, isSwissCup} from '../gewinnscore.js';
+import {isScored, isSwissCup, isHalftime} from '../gewinnscore.js';
 import {leadStory, travelInfo} from '../vorschau.js';
 import {leadBlock, cupStakes, anreiseBlock} from './vorschau.js';
 
@@ -228,11 +228,17 @@ function vorschau({game, data, load, api, now}) {
 const voteCard = (game, ui, load) =>
   ui.votes ? liveVoteCard({game, vote: load('votes:' + game.id, () => ui.votes.status(game.id), 30000), mine: myVotes()[game.id]}) : '';
 
+/** Stand als Story-Bild teilen: in der Pause als Halbzeit, sonst mit der Minute (nur mit gültigem Spielstand). */
+const liveShare = match =>
+  Array.isArray(match?.score) && match.score.every(Number.isInteger)
+    ? html`<section class="sec tight"><button class="btn wide" type="button" data-share-live>${icon('share')}${isHalftime(match) ? 'Halbzeitstand teilen' : 'Spielstand teilen'}</button></section>`
+    : '';
+
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
 function liveTab({game, data, state, ui, load, api}) {
   const oppForm = isScored(game) ? opponentForm(load, api, data, game) : null;
   const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
-  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${renderTicker(state.live.match, {all: ui.tickerAll === '1'})}<section class="sec">
+  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${liveShare(state.live.match)}${renderTicker(state.live.match, {all: ui.tickerAll === '1'})}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
 }
 
