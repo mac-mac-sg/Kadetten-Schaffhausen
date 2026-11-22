@@ -3,10 +3,8 @@
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {tips} from '../personal.js';
 import {outcome, shortTeam, hasScore} from '../logic.js';
 import {isOwn} from '../match.js';
-import {tipPoints} from '../moments.js';
 import {venueInfo} from './parts.js';
 
 const THEMES = ['or', 'bk', 'cr'];
@@ -85,11 +83,9 @@ export function storyWinDecor(game) {
 }
 
 /** Kachel «Spiel-Story» (Spielseite und Titelseite nach dem Spiel), gestaltet wie der Hinweis zum Saisonrückblick. */
-export function storyTeaser(game, tip = tips()[String(game?.id)]) {
+export function storyTeaser(game) {
   if (!hasScore(game)) return '';
-  const points = tipPoints(tip, game.score);
-  const sub = points === null ? 'Resultat, Wendepunkt, bester Werfer' : `Dein Tipp: ${points} ${points === 1 ? 'Punkt' : 'Punkte'}`;
   return html`<section class="sec tight"><a class="card teaser" href="${href.spiel(game.id, 'kurz')}">
     <span class="teaser-k">Spiel-Story</span><span class="teaser-t">${storyHeadline(game)}</span>
-    <span class="teaser-s">${sub}</span>${icon('go')}</a></section>`;
+    <span class="teaser-s">Resultat, Wendepunkt, bester Werfer</span>${icon('go')}</a></section>`;
 }

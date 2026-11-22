@@ -90,10 +90,10 @@ test('Spiel-Story: Schlagzeile nach Resultat und Ort, Tipp-Punkte in der Unterze
     'Die Niederlage in Thun'
   );
   assert.equal(storyHeadline({...games[1], score: [28, 28]}), 'Das Remis gegen Kriens-Luzern');
-  const d = parseHTML('<html><body>' + String(storyTeaser(games[1], [33, 29])) + '</body></html>').document;
+  const d = parseHTML('<html><body>' + String(storyTeaser(games[1])) + '</body></html>').document;
   assert.equal(d.querySelector('a.teaser').getAttribute('href'), '#/spiel/2/kurz');
   assert.equal(d.querySelector('.teaser-k').textContent, 'Spiel-Story');
-  assert.match(d.querySelector('.teaser-s').textContent, /^Dein Tipp: 1 Punkt$/);
+  assert.match(d.querySelector('.teaser-s').textContent, /^Resultat, Wendepunkt, bester Werfer$/);
   assert.equal(String(storyTeaser(games[2])), '', 'ohne Resultat keine Kachel');
 });
 
