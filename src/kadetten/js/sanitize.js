@@ -84,6 +84,9 @@ function fixtureOf(el, base) {
 }
 
 /** Gibt bereinigtes HTML zurück. doc: ein Document zum Erzeugen von Knoten (Browser: document). */
+const BLOCKS = new Set(['DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE']);
+const BLOCK_OUT = new Set(['P', 'UL', 'OL', 'H2', 'H3', 'H4', 'TABLE', 'BLOCKQUOTE', 'FIGURE', 'DIV']);
+
 export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = globalThis.document, base = 'https://kadettensh.ch/'} = {}) {
   const source = new parser().parseFromString(`<!doctype html><html><head></head><body>${String(html || '')}</body></html>`, 'text/html');
   const out = doc.createElement('div');
@@ -128,7 +131,15 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
         }
       }
       if (!ALLOWED.has(name)) {
-        copy(child, target);
+        // Block-Elemente ohne eigenes Element (z. B. Theme-DIVs) bleiben getrennt: Autorzeile und erster Satz verschmelzen nicht.
+        if (BLOCKS.has(tag)) {
+          const para = doc.createElement('p');
+          copy(child, para);
+          const inner = [...para.childNodes];
+          if (inner.some(n => n.nodeType === 1 && BLOCK_OUT.has(n.tagName.toUpperCase())) || !inner.length) {
+            for (const n of inner) target.appendChild(n);
+          } else if (para.textContent.trim() || para.querySelector('img')) target.appendChild(para);
+        } else copy(child, target);
         continue;
       }
       const el = doc.createElement(name.toLowerCase());
@@ -155,7 +166,12 @@ export function sanitizeArticle(html, {parser = globalThis.DOMParser, doc = glob
       if ((name === 'TH' || name === 'TD') && /^\d{1,2}$/.test(child.getAttribute('colspan') || ''))
         el.setAttribute('colspan', child.getAttribute('colspan'));
       copy(child, el);
-      if (['P', 'LI', 'FIGCAPTION', 'H2', 'H3', 'H4'].includes(name) && !el.textContent.trim() && !el.querySelector('img')) continue;
+      if (
+        ['P', 'LI', 'FIGCAPTION', 'H2', 'H3', 'H4', 'I', 'EM', 'B', 'STRONG'].includes(name) &&
+        !el.textContent.trim() &&
+        !el.querySelector('img')
+      )
+        continue;
       target.appendChild(el);
     }
   };

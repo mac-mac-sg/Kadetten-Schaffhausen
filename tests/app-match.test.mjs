@@ -118,3 +118,9 @@ test('Artikel: Vorschau ohne Resultat verwendet dieselbe kompakte Paarungskarte 
   assert.match(out, /Dienstag, 18.45 Uhr/);
   assert.equal(parsed.querySelector('img[alt="Spielfoto"]').getAttribute('width'), '1500');
 });
+
+test('Artikel: Autorzeile in verschachtelten Theme-DIVs bleibt vom ersten Satz getrennt', () => {
+  const {DOMParser, document} = parseHTML('<html><body></body></html>');
+  const out = sanitizeArticle('<div class="x-section"><div class="x-row"><div class="x-col"><i class="x-icon"></i><div class="x-text">Barbara Imobersteg</div></div></div></div><div class="x-text">Mit einer starken Leistung.</div><div class="x-text"><strong>Strafminuten:</strong> 10/8</div>', {parser: DOMParser, doc: document});
+  assert.equal(out, '<p>Barbara Imobersteg</p><p>Mit einer starken Leistung.</p><p><strong>Strafminuten:</strong> 10/8</p>');
+});
