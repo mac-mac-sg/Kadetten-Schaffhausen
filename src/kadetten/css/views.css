@@ -884,3 +884,15 @@ a.sk:active { transform: scale(.97); }
 .event[data-kind="ende"] .event-body::before { background: var(--c-text-muted); }
 .event[data-kind="tor"][data-side="own"] .event-body strong { color: var(--c-accent-text); }
 .event-score.pen { font-size: var(--fs-h2); padding: 0 var(--s-2); color: var(--c-text-muted); }
+
+/* Spielbericht-Fakten (Ort, Zuschauer, Schiedsrichter, Aufstellung, Strafminuten) mit Symbolen */
+.prose .match-facts { display: grid; gap: var(--s-2); margin: var(--s-5) 0 var(--s-3); padding: var(--s-4) var(--s-4) var(--s-4) calc(var(--s-4) + 8px); background: var(--c-surface); border-radius: var(--r-tile); position: relative; overflow: hidden; font: 500 var(--fs-body)/1.4 var(--f-text); }
+.prose .match-facts::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(120deg, var(--c-accent) 0 3px, var(--c-ink) 3px 6px); }
+.prose .match-facts p { margin: 0; }
+.prose .mf { display: flex; align-items: flex-start; gap: var(--s-3); }
+.prose .mf-i { flex: none; width: 20px; height: 20px; margin-top: 1px; color: var(--c-accent-text); }
+.prose .mf-i .icon { display: block; }
+.prose .mf-team { font-weight: 700; margin-top: var(--s-2); }
+.prose .mf-lineup { padding-left: calc(20px + var(--s-3)); font: 400 var(--fs-small)/1.5 var(--f-text); color: var(--c-text-muted); }
+.prose .mf-pen { display: block; position: relative; padding-left: calc(20px + var(--s-3)); margin-top: var(--s-1); }
+.prose .mf-pen .mf-i { position: absolute; left: 0; top: 0; }
