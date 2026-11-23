@@ -1,4 +1,5 @@
 // Einstellungen (unter «Mein Bereich»): Mitteilungen, Kalender, Darstellung. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
+import {versionLabel} from '../config.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -105,7 +106,7 @@ export function renderIch({theme, state, ui, now}) {
         }
         <p class="fine pad-top-s">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
       </details>
-      <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.</p>
+      <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.${versionLabel() ? ' ' + versionLabel() + '.' : ''}</p>
       <details class="card more-card" id="i-bilder">
         <summary><span class="grow"><span class="t">Bildnachweise</span><span class="s">Fotos der Spielhallen</span></span></summary>
         <div class="list">${HALLEN.filter(h => h.author).map(h =>

@@ -54,3 +54,16 @@ test('Build ohne Ziel liest vom eigenen Host (lokale Vorschau)', async () => {
   assert.match(readFileSync(join(OUT, 'index.html'), 'utf8'), /connect-src 'self';/);
   assert.ok(!readFileSync(join(OUT, 'app.js'), 'utf8').includes(API_ORIGIN_PAGES));
 });
+
+test('Versionsnummer: aus package.json und Git-Commit, sichtbar in Einstellungen', async () => {
+  const {buildInfo} = await import('../scripts/build-app.mjs');
+  const {versionLabel} = await import('../src/kadetten/js/config.js');
+  const info = buildInfo();
+  assert.match(info.version, /^\d+\.\d+\.\d+$/);
+  assert.match(info.commit, /^([0-9a-f]{7})?$/);
+  assert.equal(versionLabel('1.2.3', 'abc1234'), 'Version 1.2.3 (abc1234)');
+  assert.equal(versionLabel('1.2.3', ''), 'Version 1.2.3');
+  assert.equal(versionLabel('', 'abc1234'), '', 'ohne Build keine Angabe');
+  const app = readFileSync(join(OUT, 'app.js'), 'utf8');
+  assert.ok(app.includes(JSON.stringify(info.version)), 'Version im ausgelieferten Code');
+});

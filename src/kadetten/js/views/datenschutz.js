@@ -3,6 +3,7 @@
 import {html} from '../text.js';
 import {href} from '../router.js';
 import {subBand, backLink, sectionHead} from './parts.js';
+import {versionLabel} from '../config.js';
 
 export const REPO_URL = 'https://github.com/mac-mac-sg/Kadetten-Schaffhausen';
 
@@ -31,5 +32,5 @@ export function renderDatenschutz() {
       'Bilder von kadettensh.ch werden direkt von dort geladen.'
     ])}
     <section class="sec" aria-labelledby="ds-kontakt">${sectionHead('Kontakt', '', '', 'ds-kontakt')}
-      <div class="card prose legal"><p>Fragen, Fehler und Wünsche zur App: <a href="${REPO_URL + '/issues'}" target="_blank" rel="noopener noreferrer">über GitHub melden</a>.</p></div></section>`;
+      <div class="card prose legal"><p>Fragen, Fehler und Wünsche zur App: <a href="${REPO_URL + '/issues'}" target="_blank" rel="noopener noreferrer">über GitHub melden</a>.${versionLabel() ? html` Bitte die Version angeben: ${versionLabel()}.` : ''}</p></div></section>`;
 }

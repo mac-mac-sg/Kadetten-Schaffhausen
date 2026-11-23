@@ -104,3 +104,7 @@ Web-Push-Laufzeittest: `PUSH_MINIFLARE_MODULE=<Pfad zum Miniflare-Modul aus der 
 Der Schreiblauf übernimmt die vom SHV ausdrücklich als beendet bestätigten QHL-Partien aus derselben Abfrage, die die Spielberichte archiviert, in `kadetten/current.json`. Damit bleibt ein Endresultat nach dem Tageswechsel erhalten, auch wenn der Vereins-Spielplan noch «VS» liefert. Identität, Datum, Wettbewerb und beide Teams müssen passen. Ein Ausfall der Detailstatistiken verhindert das Sichern des bestätigten Endstands nicht. Fehlende Resultate im Vereins-HTML löschen ein gespeichertes Ergebnis derselben unveränderten Partie nicht; geändertes Datum oder andere Teams übernehmen es nicht. Explizit gelieferte Korrekturen bleiben möglich.
 
 Der bestehende Bereitstellungsworkflow für den Datendienst führt nach dem Deployment einen Schreiblauf aus; damit wird die Importkorrektur unmittelbar im Datenstand wirksam. Der tägliche Zeitplan bleibt unverändert.
+
+## Versionsnummer
+
+Die App zeigt unter «Mein Bereich» → Einstellungen und auf der Seite «Datenschutz» die Versionsnummer, z. B. «Version 1.0.0 (abc1234)». Die Zahl steht in `package.json` (`version`), die Kurzform des Git-Commits setzt der Build (`GITHUB_SHA` in Actions, sonst `git rev-parse`). Bei einer sichtbaren Neuerung die mittlere Zahl erhöhen, bei reinen Korrekturen die letzte; die erste Zahl nur bei grossen Umbrüchen.

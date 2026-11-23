@@ -5,19 +5,29 @@ import {build} from 'esbuild';
 import {createHash} from 'node:crypto';
 import {cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync} from 'node:fs';
 import {join, relative} from 'node:path';
+import {execFileSync} from 'node:child_process';
 
 export const API_ORIGIN_PAGES = 'https://kadetten-api.mac-mac-sg.workers.dev';
 // Inter für Text, Barlow Condensed (auch kursiv) für Ziffern und Titel des Designs «Schnitt».
 const FONTS = [['inter', [400, 500, 600], ['normal']], ['barlow-condensed', [600], ['normal', 'italic']]];
 
+// Versionsnummer aus package.json, Commit aus GitHub Actions (GITHUB_SHA) oder dem lokalen Git; ohne Git leer.
+export function buildInfo() {
+  const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
+  let commit = process.env.GITHUB_SHA || '';
+  if (!commit) try { commit = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']}).trim(); } catch { commit = ''; }
+  return {version, commit: /^[0-9a-f]{7,40}$/.test(commit) ? commit.slice(0, 7) : ''};
+}
+
 export async function buildApp({outDir = 'dist/app', target = process.env.KADETTEN_TARGET} = {}) {
+  const info = buildInfo();
   const src = 'src/kadetten';
   const apiOrigin = target === 'pages' ? API_ORIGIN_PAGES : '';
   rmSync(outDir, {recursive: true, force: true});
   mkdirSync(join(outDir, 'fonts'), {recursive: true});
 
   // Code-Splitting: der Wissensbereich (dynamischer Import) landet in einer eigenen Datei unter chunks/, app.js bleibt der Einstieg.
-  await build({entryPoints: {app: join(src, 'js/main.js')}, outdir: outDir, splitting: true, chunkNames: 'chunks/[name]-[hash]', bundle: true, format: 'esm', target: 'es2020', minify: true, legalComments: 'none', define: {__KADETTEN_API_ORIGIN__: JSON.stringify(apiOrigin)}, logLevel: 'warning'});
+  await build({entryPoints: {app: join(src, 'js/main.js')}, outdir: outDir, splitting: true, chunkNames: 'chunks/[name]-[hash]', bundle: true, format: 'esm', target: 'es2020', minify: true, legalComments: 'none', define: {__KADETTEN_API_ORIGIN__: JSON.stringify(apiOrigin), __KADETTEN_VERSION__: JSON.stringify(info.version), __KADETTEN_COMMIT__: JSON.stringify(info.commit)}, logLevel: 'warning'});
   await build({entryPoints: [join(src, 'css/app.css')], outfile: join(outDir, 'app.css'), bundle: true, minify: true, external: ['fonts/*', 'assets/*'], target: ['safari15', 'chrome100', 'firefox100'], logLevel: 'warning'});
 
   cpSync(join(src, 'assets'), join(outDir, 'assets'), {recursive: true});
@@ -52,7 +62,7 @@ export async function buildApp({outDir = 'dist/app', target = process.env.KADETT
     .replace("'__VERSION__'", JSON.stringify(version)).replace('__SHELL__', JSON.stringify(shell)).replace("'__API_ORIGIN__'", JSON.stringify(apiOrigin));
   if (/__[A-Z_]+__/.test(sw)) throw Error('Platzhalter im Service Worker nicht ersetzt');
   writeFileSync(join(outDir, 'sw.js'), sw);
-  return {outDir, version, shell, apiOrigin};
+  return {outDir, version, shell, apiOrigin, appVersion: info.version, commit: info.commit};
 }
 
 function listFiles(dir, base = dir) {
