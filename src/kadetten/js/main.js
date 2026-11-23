@@ -25,6 +25,7 @@ import {renderSaison} from './views/saison.js';
 import {renderTeam, renderSpieler, renderVergleich} from './views/team.js';
 import {renderVerein} from './views/verein.js';
 import {renderIch} from './views/ich.js';
+import {renderDatenschutz} from './views/datenschutz.js';
 import {renderArtikel} from './views/artikel.js';
 import {renderQuiz} from './views/quiz.js';
 import {renderStart} from './views/start.js';
@@ -88,6 +89,7 @@ const VIEWS = {
   vergleich: renderVergleich,
   verein: renderVerein,
   ich: renderIch,
+  datenschutz: renderDatenschutz,
   quiz: renderQuiz,
   mein: renderMein,
   sammlung: renderSammlung,

@@ -9,7 +9,21 @@ import {favourite, pickFor} from '../personal.js';
 import {suggestions, numberFor, surname} from '../wahl.js';
 import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
 
-export const ruleButton = id => html`<button type="button" class="rule" data-rule="${id}" aria-label="Erklärung anzeigen">?</button>`;
+// Begriffe für die Beschriftung der «?»-Knöpfe (die Erklärungen selbst werden mit dem Wissen nachgeladen; ein Test prüft die Übereinstimmung).
+export const RULE_LABELS = {
+  '2min': 'Zeitstrafe',
+  '7m': 'Siebenmeter',
+  auszeit: 'Auszeit',
+  gelb: 'Verwarnung',
+  parade: 'Paraden und Fangquote',
+  rot: 'Disqualifikation',
+  tf: 'Technischer Fehler',
+  tordifferenz: 'Tordifferenz',
+  wurfquote: 'Wurfquote',
+  wurfzonen: 'Wurfzonen'
+};
+export const ruleButton = id =>
+  html`<button type="button" class="rule" data-rule="${id}" aria-label="${'Erklärung: ' + (RULE_LABELS[id] || 'Begriff')}">?</button>`;
 const minute = sec => `${Math.floor(sec / 60) + 1}.`;
 
 /** Vergleichszeile: Orange zeigt immer den Anteil der Kadetten, von ihrer Seite aus. */

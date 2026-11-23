@@ -87,7 +87,7 @@ export function renderIch({theme, state, ui, now}) {
             ? html`<button class="rl" type="button" data-install><span class="lead">${icon('ich')}</span><span class="grow"><span class="t">App installieren</span><span class="s">Auf den Home-Bildschirm</span></span>${icon('go')}</button>`
             : ''
         }
-        ${listRow({title: 'Datenschutz', sub: 'Keine Werbung, kein Tracking. Persönliches bleibt auf diesem Gerät.', end: ''})}
+        ${listRow({title: 'Datenschutz und Über die App', sub: 'Keine Werbung, kein Tracking. Was wo gespeichert wird.', link: href.datenschutz()})}
       </div>
       <details class="card more-card aktuell" id="i-fresh">
         <summary><span class="grow"><span class="t">Aktualität der Daten</span><span class="s">${freshStatus}</span></span></summary>

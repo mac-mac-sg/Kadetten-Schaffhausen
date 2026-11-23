@@ -161,7 +161,10 @@ export function shortTeam(name) {
     'TSV St. Otmar St. Gallen': 'St. Otmar',
     'St. Otmar St. Gallen': 'St. Otmar',
     'HSC Suhr Aarau': 'Suhr Aarau',
-    'Handball Stäfa': 'Stäfa'
+    'Handball Stäfa': 'Stäfa',
+    'Chambery Savoie Mont Blanc HB': 'Chambéry',
+    'HBW Balingen-Weilstetten': 'Balingen',
+    'SG BBM Bietigheim': 'Bietigheim'
   };
   return map[name] || name || '';
 }

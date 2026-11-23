@@ -48,7 +48,11 @@ export function parseRoute(hash = '') {
     case 'verein':
       return {area: 'team', view: 'verein', ...(VEREIN_TABS.includes(second) ? {tab: second} : {})};
     case 'ich':
-      return second === 'einstellungen' ? {area: 'ich', view: 'ich'} : {area: 'ich', view: 'mein'};
+      return second === 'einstellungen'
+        ? {area: 'ich', view: 'ich'}
+        : second === 'datenschutz'
+          ? {area: 'ich', view: 'datenschutz'}
+          : {area: 'ich', view: 'mein'};
     case 'sammlung':
       return second === 'neu'
         ? {area: null, view: 'neu'}
@@ -116,6 +120,7 @@ export const href = {
   verein: tab => '#/verein' + (tab ? '/' + tab : ''),
   ich: () => '#/ich',
   einstellungen: () => '#/ich/einstellungen',
+  datenschutz: () => '#/ich/datenschutz',
   sammlung: () => '#/sammlung',
   karte: id => '#/sammlung/' + encodeURIComponent(id),
   neu: () => '#/sammlung/neu',
