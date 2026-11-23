@@ -22,6 +22,10 @@ Grundlagen der Prüfung:
 | D2 Bildergalerie | per Tastatur erreichbar und beschriftet («Bilder von …»), mit Fokusrahmen; axe meldet keine Verstösse mehr |
 | D3 Teamnamen | Kurznamen für Chambéry, Balingen und Bietigheim; die Spielkarte zeigt «Chambéry» statt «Chambery Sa-voie Mont Blanc HB» |
 | K2 Datenschutz | eigene Seite «Datenschutz» unter Einstellungen (`#/ich/datenschutz`): inoffizielle Fan-App, was auf dem Gerät bleibt, was der Datendienst wie lange speichert (Push 180 Tage, Fan-Wahl 60 Tage, Anschluss 6 Stunden), Anbieter, Kontakt über GitHub. Offen: Name der verantwortlichen Person für ein Impressum (hängt am Entscheid K3) |
+| A1 Linter und Formatierung | ESLint (`eslint.config.mjs`, zwölf Regeln gegen echte Fehler) in `npm run check`; Funde behoben: doppeltes Symbol `ticket`, 14 unbenutzte Importe, Variablen und Funktionen, ein überflüssiger Abruf der Gegnerdaten auf der Spielseite. Prettier gilt jetzt auch für Datendienst, Skripte, Tests und `cloudflare/` |
+| A2 Altlasten | Endpunkte `/api/fcsg/*` und `/api/otmar/*`, `server/fcsg.mjs`, `server/otmar.mjs`, Startstände und ihre Tests entfernt; Vorschauen nur noch für Kadetten; letzter Stand mit ihnen: Commit `bf83616`. Bewusst unverändert: `live.mjs` und die reinen Phasenfunktionen des Push-Wächters (vor dem Spiel vom 24.11. nicht angefasst) |
+| Versionsnummer | «Version 1.0.0 (Commit)» in Einstellungen und auf der Datenschutzseite; Regel in `docs/betrieb.md` |
+| F2 Nutzungszahlen | Cloudflare Web Analytics (gratis, ohne Cookies) vorbereitet; aktiv erst mit Site-Token (`ANALYTICS_TOKEN` in `scripts/build-app.mjs`, Anleitung in `docs/betrieb.md`) |
 
 ## Gesamturteil
 
