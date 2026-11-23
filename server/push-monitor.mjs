@@ -1,5 +1,4 @@
-import {getLiveMatch,getNationalLiveMatch} from './live.mjs';
-import {getFcsgLive} from './fcsg.mjs';
+import {getLiveMatch} from './live.mjs';
 import {PUSH_PREFIX,PUSH_CLUBS,digest} from './push-subscriptions.mjs';
 import {sendPush} from './web-push.mjs';
 const validScore=s=>Array.isArray(s)&&s.length===2&&s.every(v=>Number.isInteger(v)&&v>=0);
@@ -48,7 +47,8 @@ export function advancePushState(previous,fixture,match,club,now) {
  next.phase||='waiting';
  return next;
 }
-const defaultLive=async club=>club==='fcsg'?(await getFcsgLive()).match:club==='otmar'?await getNationalLiveMatch(40900):await getLiveMatch().then(d=>d.match||d.finished);
+// Nur noch Kadetten (PUSH_CLUBS); FC St. Gallen und St. Otmar sind seit der Archivierung von Matchday entfernt.
+const defaultLive=async()=>getLiveMatch().then(d=>d.match||d.finished);
 export async function monitorPush(env,now=Date.now(),deps={}) {
  if(!env.DATA||!env.PUSH_PRIVATE_JWK||!env.PUSH_PUBLIC_KEY)return;
  const kv=env.DATA,devices=[];

@@ -36,7 +36,7 @@ test('Test-Worker: nur GET /probe, alles andere abgewiesen, Standort aus der Anf
 
 test('Test-Worker prüft alle Quellen der App und enthält keine Datenbindung', () => {
   const names = checks.map(c => c[0]).join('|');
-  for (const host of ['kadettensh.ch', 'SHV', 'FCSG', 'fcsg.ch']) assert.ok(names.includes(host), host);
+  for (const host of ['kadettensh.ch', 'SHV']) assert.ok(names.includes(host), host);
   const config = fs.readFileSync('cloudflare/probe/wrangler.toml', 'utf8');
   assert.doesNotMatch(config, /r2_buckets|kv_namespaces|\[vars\]|secret/i);
 });

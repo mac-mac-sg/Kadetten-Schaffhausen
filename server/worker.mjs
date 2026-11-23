@@ -1,12 +1,8 @@
-import {getOtmarArticle} from './otmar.mjs';
-import otmarSeed from './otmar-seed.json' with {type:'json'};
 import {programmes} from './programmes.mjs';
 import {previews} from './previews.mjs';
-import {publicFcsgData, getFcsgLive, getFcsgPlayers} from './fcsg.mjs';
-import fcsgSeed from './fcsg-seed.json' with {type: 'json'};
 import {publicReadCors} from './cors.mjs';
 import {isOwner, mayUpdate} from './auth.mjs';
-import {getLiveMatch, getNationalLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
+import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
 import seed from './seed.json' with {type: 'json'};
 import {runRefresh} from './refresh-run.mjs';
 import {kvStore} from './kv-store.mjs';
@@ -39,36 +35,6 @@ async function adminLogin(request, env) {
   if (request.method !== 'GET') return getRequired();
   if (!(await isOwner(request, env))) return json({error: 'Owner login required'}, 403);
   return new Response(null, {status: 303, headers: {Location: '/', 'Cache-Control': 'no-store'}});
-}
-
-async function fcsgPlayers(request) {
-  if (request.method !== 'GET') return getRequired();
-  try {
-    return json(await getFcsgPlayers());
-  } catch {
-    return json({ok: false, error: 'FCSG player source unavailable'}, 503);
-  }
-}
-
-async function fcsgLive(request, env, u) {
-  if (request.method !== 'GET') return getRequired();
-  const id = u.pathname === '/api/fcsg/live' ? undefined : u.pathname.split('/').at(-1);
-  if (id !== undefined && !/^\/api\/fcsg\/matches\/[1-9][0-9]{0,8}$/.test(u.pathname))
-    return json({error: 'Invalid match'}, 400);
-  try {
-    return json(await getFcsgLive(id));
-  } catch {
-    return json({ok: false, error: 'FCSG live source unavailable'}, 503);
-  }
-}
-
-async function fcsgData(request, env, u) {
-  if (request.method !== 'GET') return getRequired();
-  const saved = await env.BUCKET.get('fcsg/current.json');
-  const data = saved ? await saved.json() : fcsgSeed;
-  if (u.pathname === '/api/fcsg/data') return json(publicFcsgData(data));
-  const story = data.stories.find(n => n.id === u.pathname.split('/').at(-1));
-  return story ? json({id: story.id, html: story.html, url: story.url, version:story.articleVersion || null}) : json({error: 'Article not found'}, 404);
 }
 
 async function access(request, env) {
@@ -207,33 +173,12 @@ async function freshAsset(request, env, u) {
 
 const isPath = path => u => u.pathname === path;
 const isUnder = prefix => u => u.pathname.startsWith(prefix);
-async function otmarData(request,env,u) {
-  if(request.method!=='GET')return getRequired();
-  const saved=await env.BUCKET.get('otmar/current.json'),snapshot=saved?await saved.json():otmarSeed;
-  if(u.pathname==='/api/otmar/data')return json(snapshot);
-  if(u.pathname==='/api/otmar/live') {
-    try {const match=await getNationalLiveMatch(40900);return json({ok:true,checkedAt:new Date().toISOString(),sources:{SHV:{ok:true}},match:match?.status==='finished'?null:match,finished:match?.status==='finished'?match:null});} catch {return json({ok:false,sources:{SHV:{ok:false}}},503);}
-  }
-  const id=u.pathname.split('/').at(-1);
-  if(/^\/api\/otmar\/match-reports\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {const stored=await env.BUCKET.get('otmar/matchreports/'+id+'.json');return stored?json({ok:true,report:await stored.json()}):json({error:'Report not stored yet'},404);}
-  if(/^\/api\/otmar\/reports\/[1-9][0-9]{0,8}$/.test(u.pathname))return json(await getArchivedReport(id,env.BUCKET,'otmar'));
-  if(/^\/api\/otmar\/articles\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {
-    const story=snapshot.stories.find(n=>n.id===id);if(!story)return json({error:'Not found'},404);
-    return json(await getOtmarArticle(story));
-  }
-  if(u.pathname==='/api/otmar/head-to-head')return json(await getHeadToHead(u.searchParams.get('home'),u.searchParams.get('away')));
-  return json({error:'Not found'},404);
-}
 const routes = [
   [isUnder('/api/push/'),pushRoute],
   [isUnder('/api/app/'),appRoute],
-  [isUnder('/api/otmar/'),otmarData],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],
   [isPath('/admin/login'), adminLogin],
-  [isPath('/api/fcsg/players'), fcsgPlayers],
-  [u => u.pathname === '/api/fcsg/live' || u.pathname.startsWith('/api/fcsg/matches/'), fcsgLive],
-  [u => u.pathname === '/api/fcsg/data' || /^\/api\/fcsg\/articles\/[0-9]+$/.test(u.pathname), fcsgData],
   [isPath('/api/access'), access],
   [isPath('/api/head-to-head'), headToHead],
   [isPath('/api/recent-games'), recentGames],

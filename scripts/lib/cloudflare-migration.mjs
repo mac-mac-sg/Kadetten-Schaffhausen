@@ -47,9 +47,6 @@ export async function listRoutes(http, source) {
     if (!g.score) routes.push({group: 'Vorschauen', path: `/api/previews/kadetten/${g.id}`});
     routes.push({group: 'Matchprogramme', path: `/api/programmes/${g.id}`});
   }
-  const fcsg = await getJson(http, source, '/api/fcsg/data');
-  if (fcsg.status === 200 && Array.isArray(fcsg.data?.games))
-    for (const g of fcsg.data.games) if (!g.score && SAFE_ID.test(String(g.id))) routes.push({group: 'Vorschauen', path: `/api/previews/fcsg/${g.id}`});
   return {data, routes};
 }
 

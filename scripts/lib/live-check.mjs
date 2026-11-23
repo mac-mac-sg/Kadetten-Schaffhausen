@@ -1,5 +1,5 @@
 // Prüfung der Live-Routen beider Datendienste (Phase 3 des Cloudflare-Umzugs, docs/cloudflare-umzug.md).
-// Diese Routen rufen beim Aufruf externe Quellen ab (handball.ch, EHF, FCSG). Es wird geprüft, ob der neue Dienst sie von
+// Diese Routen rufen beim Aufruf externe Quellen ab (handball.ch, EHF). Es wird geprüft, ob der neue Dienst sie von
 // Cloudflare aus erreicht, nicht ob die Werte gleich sind (Live-Werte ändern sich laufend). Reine Funktion mit eingespeister
 // HTTP-Schnittstelle: http.json(url) -> {status, data, ms}.
 
@@ -14,8 +14,6 @@ export async function listLiveRoutes(http, source) {
   const opponent = games.map(g => (g.home === TEAM ? g.away : g.away === TEAM ? g.home : null)).find(Boolean);
   const routes = [
     {name: 'Live-Spiel', path: '/api/live'},
-    {name: 'FCSG live', path: '/api/fcsg/live'},
-    {name: 'FCSG Kader (offizielle API)', path: '/api/fcsg/players'},
     {name: 'Letzte Spiele', path: '/api/recent-games?team=' + encodeURIComponent(TEAM)}
   ];
   if (opponent) routes.push({name: 'Direktvergleich', path: `/api/head-to-head?home=${encodeURIComponent(TEAM)}&away=${encodeURIComponent(opponent)}`});

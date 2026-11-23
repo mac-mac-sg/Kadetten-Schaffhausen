@@ -16,7 +16,7 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 
 ## Matchday archiviert (13. November 2026)
 
-Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([archive/matchday](../archive/matchday/README.md)). Unter der öffentlichen Adresse läuft die Kadetten-App. Der Datenlauf aktualisiert FC St. Gallen und St. Otmar nicht mehr (keine Daten, Vorschauen, Matchberichte, Rückblicke), Push gilt nur noch für die Kadetten. Die Endpunkte `/api/fcsg/*` und `/api/otmar/*` bleiben bestehen und liefern den zuletzt gespeicherten Stand.
+Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([archive/matchday](../archive/matchday/README.md)). Unter der öffentlichen Adresse läuft die Kadetten-App. Der Datenlauf aktualisiert FC St. Gallen und St. Otmar nicht mehr (keine Daten, Vorschauen, Matchberichte, Rückblicke), Push gilt nur noch für die Kadetten. Seit dem 23. November 2026 sind die Endpunkte `/api/fcsg/*` und `/api/otmar/*` samt `server/fcsg.mjs`, `server/otmar.mjs` und ihren Startständen entfernt; der letzte Stand mit ihnen ist Commit `bf83616` auf `main`. Die gespeicherten Daten unter `fcsg/` und `otmar/` im KV-Speicher liest niemand mehr; sie verfallen oder lassen sich löschen.
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - **GitHub-Secrets:** `CLOUDFLARE_API_TOKEN` (Cloudflare-Token mit den Berechtigungen für Workers-Skripte, Workers KV Storage: Edit und Workers AI: Edit) und `CLOUDFLARE_ACCOUNT_ID`. Optional `KADETTEN_UPDATE_KEY`: wird nur gebraucht, wenn Dritte per `POST` in den Datendienst schreiben sollen; im Regelbetrieb nicht eingerichtet.

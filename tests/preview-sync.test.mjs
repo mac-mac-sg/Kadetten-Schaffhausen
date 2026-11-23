@@ -63,11 +63,10 @@ test('Vorschauen schreiben: nächste Spiele beider Vereine, öffentlich lesbar �
   const real = Date.now;
   Date.now = () => NOW.getTime() + 60000;
   try {
-    for (const route of ['kadetten/staefa', 'fcsg/458']) {
-      const r = await previews(new Request('https://x.test/api/previews/' + route), env);
-      assert.equal(r.status, 200, route);
-      assert.ok(Array.isArray((await r.json()).paragraphs));
-    }
+    const r = await previews(new Request('https://x.test/api/previews/kadetten/staefa'), env);
+    assert.equal(r.status, 200);
+    assert.ok(Array.isArray((await r.json()).paragraphs));
+    assert.equal((await previews(new Request('https://x.test/api/previews/fcsg/458'), env)).status, 400, 'FC St. Gallen wird nicht mehr ausgeliefert');
   } finally { Date.now = real; }
   const again = await syncPreviews(bucket, {snapshot, fcsgData: fcsg}, {headToHead, now: new Date(NOW.getTime() + 3 * 3600000)});
   assert.deepEqual([again.written, again.unchanged], [0, 2]);
