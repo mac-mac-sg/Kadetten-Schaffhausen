@@ -17,7 +17,7 @@ export const checks = [
   ['kadettensh.ch News (WordPress-API)', () => plainFetch('https://kadettensh.ch/wp-json/wp/v2/posts?per_page=1')],
   ['SHV handball.ch Live (getLiveMatch)', async () => ({match: !!(await getLiveMatch()).match})],
   ['SHV handball.ch Spielerwerte', async () => (await fetchPlayerSeason(), {ok: true})],
-  ['SHV handball.ch Letzte Spiele', async () => (await getRecentGames('Kadetten Schaffhausen'), {ok: true})],
+  ['SHV handball.ch Letzte Spiele', async () => (await getRecentGames('Kadetten Schaffhausen'), {ok: true})]
 ];
 
 export async function runProbe(list = checks, now = () => Date.now()) {

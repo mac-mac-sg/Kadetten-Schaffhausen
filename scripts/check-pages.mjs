@@ -13,6 +13,7 @@ for (const icon of manifest.icons) {
   assert.equal(png.readUInt32BE(20), height);
 }
 assert.ok(fs.existsSync(root + '.nojekyll'), 'GitHub Pages braucht .nojekyll');
-for (const folder of ['server', 'archive', 'src']) assert.ok(!fs.existsSync(root + folder), 'Quellen dürfen nie veröffentlicht werden: ' + folder);
+for (const folder of ['server', 'archive', 'src'])
+  assert.ok(!fs.existsSync(root + folder), 'Quellen dürfen nie veröffentlicht werden: ' + folder);
 assert.match(fs.readFileSync(root + 'app.js', 'utf8'), /https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev/);
 console.log('Pages build: Kadetten-App unter / und /v2/, Pfade, Symbole und Datendienst geprüft.');

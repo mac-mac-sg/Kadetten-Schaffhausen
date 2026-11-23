@@ -28,13 +28,30 @@ function fakeCloudflare(initial = {}) {
   };
   return {map, calls, fetchFn};
 }
-const posts = () => seed.stories.map((s, i) => ({id: 1000 + i, link: s.url, title: {rendered: 'Titel ' + i}, excerpt: {rendered: '<p>eins zwei drei</p>'}, date: '2026-10-01T10:00:00', content: {rendered: '<p>Text ' + i + '</p>', protected: false}, _embedded: {}}));
+const posts = () =>
+  seed.stories.map((s, i) => ({
+    id: 1000 + i,
+    link: s.url,
+    title: {rendered: 'Titel ' + i},
+    excerpt: {rendered: '<p>eins zwei drei</p>'},
+    date: '2026-10-01T10:00:00',
+    content: {rendered: '<p>Text ' + i + '</p>', protected: false},
+    _embedded: {}
+  }));
 const env = {CLOUDFLARE_API_TOKEN: 'GEHEIM-TOKEN', CLOUDFLARE_ACCOUNT_ID: 'konto1'};
 async function offline(fn) {
-  const original = globalThis.fetch, log = console.log;
-  globalThis.fetch = async () => { throw new Error('offline'); };
+  const original = globalThis.fetch,
+    log = console.log;
+  globalThis.fetch = async () => {
+    throw new Error('offline');
+  };
   console.log = () => {};
-  try { return await fn(); } finally { globalThis.fetch = original; console.log = log; }
+  try {
+    return await fn();
+  } finally {
+    globalThis.fetch = original;
+    console.log = log;
+  }
 }
 
 test('KV über REST: lesen (roh, 404 = null), Text und Binärdaten schreiben, Fehler ohne Zugangsdaten', async () => {
@@ -48,7 +65,12 @@ test('KV über REST: lesen (roh, 404 = null), Text und Binärdaten schreiben, Fe
   assert.equal(cf.map.get('t.json'), '{"ok":true}');
   assert.deepEqual([...cf.map.get('p.pdf')], [37, 80, 68, 70, 0, 255]);
   assert.ok(cf.calls.every(c => c.auth === 'Bearer T'));
-  const failing = kvRestStore({accountId: 'a', namespaceId: NS, token: 'GEHEIM-TOKEN', fetchFn: async () => new Response('{}', {status: 403})});
+  const failing = kvRestStore({
+    accountId: 'a',
+    namespaceId: NS,
+    token: 'GEHEIM-TOKEN',
+    fetchFn: async () => new Response('{}', {status: 403})
+  });
   await assert.rejects(failing.get('k'), e => /HTTP 403/.test(e.message) && !e.message.includes('GEHEIM-TOKEN'));
   await assert.rejects(failing.put('k', 'v'), e => /HTTP 403/.test(e.message) && !e.message.includes('GEHEIM-TOKEN'));
 });
@@ -56,7 +78,10 @@ test('KV über REST: lesen (roh, 404 = null), Text und Binärdaten schreiben, Fe
 test('runRefresh: Trockenlauf schreibt nichts, normaler Lauf sichert alten Stand und schreibt den neuen', async () => {
   await offline(async () => {
     const mem = new Map();
-    const bucket = {get: async k => (mem.has(k) ? {json: async () => JSON.parse(mem.get(k))} : null), put: async (k, v) => void mem.set(k, v)};
+    const bucket = {
+      get: async k => (mem.has(k) ? {json: async () => JSON.parse(mem.get(k))} : null),
+      put: async (k, v) => void mem.set(k, v)
+    };
     const dry = await runRefresh(bucket, {previous: seed, hadPrevious: true, supplied: {posts: posts()}, write: false});
     assert.equal(dry.ok, true);
     assert.equal(dry.written, false);
@@ -101,45 +126,89 @@ test('Zeitplan: kein GitHub-Zeitplan mehr, Auslösung nur per workflow_dispatch 
   assert.match(wf, /MODUS: \$\{\{ inputs\.modus \|\| 'schreiben' \}\}/, 'Lauf ohne Eingabe schreibt');
 });
 
-test('KV writes remain readable in the same run even if the remote read still returns an old snapshot',async()=>{
- let remoteGets=0,fail=false;
- const store=kvRestStore({accountId:'a',namespaceId:NS,token:'T',fetchFn:async(url,init={})=>{
-  if(init.method==='PUT')return new Response(JSON.stringify({success:!fail}),{status:fail?503:200});
-  remoteGets++;return new Response('{"checkedAt":"old","news":["old"]}');
- }});
- assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt,'old');
- await store.put('fcsg/current.json',JSON.stringify({checkedAt:'new',news:['fresh']}));
- const current=await (await store.get('fcsg/current.json')).json();assert.deepEqual(current,{checkedAt:'new',news:['fresh']});assert.equal(remoteGets,1);
- fail=true;await assert.rejects(store.put('fcsg/current.json','{"checkedAt":"failed"}'));
- assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt,'new');
- const binary=new Uint8Array([37,80,68,70]);fail=false;await store.put('p.pdf',binary);binary[0]=0;
- assert.deepEqual([...new Uint8Array(await (await store.get('p.pdf')).arrayBuffer())],[37,80,68,70]);
+test('KV writes remain readable in the same run even if the remote read still returns an old snapshot', async () => {
+  let remoteGets = 0,
+    fail = false;
+  const store = kvRestStore({
+    accountId: 'a',
+    namespaceId: NS,
+    token: 'T',
+    fetchFn: async (url, init = {}) => {
+      if (init.method === 'PUT') return new Response(JSON.stringify({success: !fail}), {status: fail ? 503 : 200});
+      remoteGets++;
+      return new Response('{"checkedAt":"old","news":["old"]}');
+    }
+  });
+  assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt, 'old');
+  await store.put('fcsg/current.json', JSON.stringify({checkedAt: 'new', news: ['fresh']}));
+  const current = await (await store.get('fcsg/current.json')).json();
+  assert.deepEqual(current, {checkedAt: 'new', news: ['fresh']});
+  assert.equal(remoteGets, 1);
+  fail = true;
+  await assert.rejects(store.put('fcsg/current.json', '{"checkedAt":"failed"}'));
+  assert.equal((await (await store.get('fcsg/current.json')).json()).checkedAt, 'new');
+  const binary = new Uint8Array([37, 80, 68, 70]);
+  fail = false;
+  await store.put('p.pdf', binary);
+  binary[0] = 0;
+  assert.deepEqual([...new Uint8Array(await (await store.get('p.pdf')).arrayBuffer())], [37, 80, 68, 70]);
 });
-test('Workflow chooses exactly one read-only or writing update step',()=>{
- const wf=fs.readFileSync('.github/workflows/cloudflare-update.yml','utf8');
- const steps=[...wf.matchAll(/- name: (Trockenlauf|In den KV-Speicher schreiben)\n\s+if: env.MODUS == '(pruefen|schreiben)'\n\s+run: (.+)/g)];
- assert.equal(steps.length,2);
- for(const mode of ['pruefen','schreiben']){
-  const chosen=steps.filter(s=>s[2]===mode);assert.equal(chosen.length,1);
-  assert.equal(chosen[0][3].includes('--schreiben'),mode==='schreiben');
- }
+test('Workflow chooses exactly one read-only or writing update step', () => {
+  const wf = fs.readFileSync('.github/workflows/cloudflare-update.yml', 'utf8');
+  const steps = [
+    ...wf.matchAll(/- name: (Trockenlauf|In den KV-Speicher schreiben)\n\s+if: env.MODUS == '(pruefen|schreiben)'\n\s+run: (.+)/g)
+  ];
+  assert.equal(steps.length, 2);
+  for (const mode of ['pruefen', 'schreiben']) {
+    const chosen = steps.filter(s => s[2] === mode);
+    assert.equal(chosen.length, 1);
+    assert.equal(chosen[0][3].includes('--schreiben'), mode === 'schreiben');
+  }
 });
 
-test('Schreiblauf sichert SHV-Endstand trotz ausstehendem Vereins-Spielplan und fehlgeschlagenen Detailstatistiken',async()=>{
- const original=globalThis.fetch,mem=new Map();
- const previous=structuredClone(seed),fixture={id:'508386',date:'2026-10-24',time:'18:00',home:'Kadetten Schaffhausen',away:'GC Amicitia Zürich',league:'QHL'};
- previous.games=[fixture];
- globalThis.fetch=async(url,options={})=>{
-  const request=options.body?JSON.parse(options.body):null;
-  if(request?.query?.includes('games(teamId:')&&request.variables?.teamId===41473)return Response.json({data:{games:[{objectId:508386,isLive:false,gameStatusId:2,seasonId:2026,gameDateTime:'2026-10-24T18:00:00',homeTeamId:41473,homeTeamName:fixture.home,homeTeamScore:37,awayTeamId:41479,awayTeamName:fixture.away,awayTeamScore:26,leagueShortName:'QHL'}]}});
-  throw Error('Quelle momentan nicht verfügbar');
- };
- const bucket={get:async key=>mem.has(key)?{json:async()=>JSON.parse(mem.get(key))}:null,put:async(key,value)=>mem.set(key,value)};
- try{
-  const result=await runRefresh(bucket,{previous,hadPrevious:true,supplied:{posts:posts()}});
-  assert.equal(result.written,true);assert.deepEqual(result.next.games[0].score,[37,26]);
-  assert.deepEqual(JSON.parse(mem.get('kadetten/current.json')).games[0].score,[37,26]);
-  assert.equal(result.reports.ok,false,'Fehlende Details verhindern die Sicherung des bestätigten Endstands nicht');
-  assert.equal(JSON.parse(mem.get('kadetten/previous.json')).games[0].score,undefined);
- }finally{globalThis.fetch=original;}
+test('Schreiblauf sichert SHV-Endstand trotz ausstehendem Vereins-Spielplan und fehlgeschlagenen Detailstatistiken', async () => {
+  const original = globalThis.fetch,
+    mem = new Map();
+  const previous = structuredClone(seed),
+    fixture = {id: '508386', date: '2026-10-24', time: '18:00', home: 'Kadetten Schaffhausen', away: 'GC Amicitia Zürich', league: 'QHL'};
+  previous.games = [fixture];
+  globalThis.fetch = async (url, options = {}) => {
+    const request = options.body ? JSON.parse(options.body) : null;
+    if (request?.query?.includes('games(teamId:') && request.variables?.teamId === 41473)
+      return Response.json({
+        data: {
+          games: [
+            {
+              objectId: 508386,
+              isLive: false,
+              gameStatusId: 2,
+              seasonId: 2026,
+              gameDateTime: '2026-10-24T18:00:00',
+              homeTeamId: 41473,
+              homeTeamName: fixture.home,
+              homeTeamScore: 37,
+              awayTeamId: 41479,
+              awayTeamName: fixture.away,
+              awayTeamScore: 26,
+              leagueShortName: 'QHL'
+            }
+          ]
+        }
+      });
+    throw Error('Quelle momentan nicht verfügbar');
+  };
+  const bucket = {
+    get: async key => (mem.has(key) ? {json: async () => JSON.parse(mem.get(key))} : null),
+    put: async (key, value) => mem.set(key, value)
+  };
+  try {
+    const result = await runRefresh(bucket, {previous, hadPrevious: true, supplied: {posts: posts()}});
+    assert.equal(result.written, true);
+    assert.deepEqual(result.next.games[0].score, [37, 26]);
+    assert.deepEqual(JSON.parse(mem.get('kadetten/current.json')).games[0].score, [37, 26]);
+    assert.equal(result.reports.ok, false, 'Fehlende Details verhindern die Sicherung des bestätigten Endstands nicht');
+    assert.equal(JSON.parse(mem.get('kadetten/previous.json')).games[0].score, undefined);
+  } finally {
+    globalThis.fetch = original;
+  }
 });

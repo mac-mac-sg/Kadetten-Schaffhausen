@@ -7,16 +7,29 @@
 const SHV_ID = /^[1-9][0-9]{0,8}$/;
 const SAFE_ID = /^[a-zA-Z0-9_-]{1,80}$/;
 const sorted = v =>
-  Array.isArray(v) ? v.map(sorted) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, sorted(v[k])])) : v;
+  Array.isArray(v)
+    ? v.map(sorted)
+    : v && typeof v === 'object'
+      ? Object.fromEntries(
+          Object.keys(v)
+            .sort()
+            .map(k => [k, sorted(v[k])])
+        )
+      : v;
 export const canonical = v => JSON.stringify(sorted(v));
 
 // Erstes abweichendes Feld zweier JSON-Werte als Pfad mit gekürzten Werten, z. B. `games[3].score: "2:1" gegen null`.
-const short = v => { const t = JSON.stringify(v); return t === undefined ? 'fehlt' : t.length > 60 ? t.slice(0, 57) + '...' : t; };
+const short = v => {
+  const t = JSON.stringify(v);
+  return t === undefined ? 'fehlt' : t.length > 60 ? t.slice(0, 57) + '...' : t;
+};
 export function firstDifference(a, b, path = '') {
   if (canonical(a) === canonical(b)) return '';
   const isObj = v => v && typeof v === 'object';
   if (!isObj(a) || !isObj(b) || Array.isArray(a) !== Array.isArray(b)) return `${path || 'Wurzel'}: ${short(a)} gegen ${short(b)}`;
-  const keys = Array.isArray(a) ? [...Array(Math.max(a.length, b.length)).keys()] : [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
+  const keys = Array.isArray(a)
+    ? [...Array(Math.max(a.length, b.length)).keys()]
+    : [...new Set([...Object.keys(a), ...Object.keys(b)])].sort();
   for (const k of keys) {
     const sub = firstDifference(a[k], b[k], Array.isArray(a) ? `${path}[${k}]` : path ? `${path}.${k}` : k);
     if (sub) return sub;
@@ -35,7 +48,8 @@ export async function listRoutes(http, source) {
   const first = await getJson(http, source, '/api/data');
   if (first.status !== 200) throw Error('Datenstand nicht lesbar (HTTP ' + first.status + ')');
   const data = first.data;
-  if (!Array.isArray(data?.games) || !Array.isArray(data?.stories) || !Array.isArray(data?.tables?.QHL)) throw Error('Datenstand hat ein unerwartetes Format');
+  if (!Array.isArray(data?.games) || !Array.isArray(data?.stories) || !Array.isArray(data?.tables?.QHL))
+    throw Error('Datenstand hat ein unerwartetes Format');
   const routes = [{group: 'Datenstand', path: '/api/data'}];
   for (const s of data.stories) {
     if (SAFE_ID.test(String(s.id)) && /^[a-f0-9]{64}$/.test(s.articleVersion || ''))
@@ -57,7 +71,7 @@ export async function collect(http, source) {
   const {data, routes} = await listRoutes(http, source);
   const entries = [];
   const summary = {};
-  const count = (group, field) => ((summary[group] ??= {read: 0, skipped: 0})[field]++);
+  const count = (group, field) => (summary[group] ??= {read: 0, skipped: 0})[field]++;
   const add = e => entries.push(e);
   for (const route of routes) {
     const g = route.group;
@@ -67,14 +81,23 @@ export async function collect(http, source) {
       continue;
     }
     const r = await getJson(http, source, route.path);
-    if (r.status !== 200) { count(g, 'skipped'); continue; }
+    if (r.status !== 200) {
+      count(g, 'skipped');
+      continue;
+    }
     if (g === 'Artikel') {
       const id = decodeURIComponent(route.path.split('/')[3].split('?')[0]);
       const version = route.path.split('?v=')[1];
-      if (String(r.data?.id) !== id || r.data?.version !== version || typeof r.data?.html !== 'string') { count(g, 'skipped'); continue; }
+      if (String(r.data?.id) !== id || r.data?.version !== version || typeof r.data?.html !== 'string') {
+        count(g, 'skipped');
+        continue;
+      }
       add({key: `kadetten/articles/${id}/${version}.json`, value: JSON.stringify(r.data)});
     } else if (g === 'Berichte') {
-      if (r.data?.stored !== true || !r.data.report) { count(g, 'skipped'); continue; }
+      if (r.data?.stored !== true || !r.data.report) {
+        count(g, 'skipped');
+        continue;
+      }
       add({key: `kadetten/reports/${route.path.split('/').at(-1)}.json`, value: JSON.stringify(r.data.report)});
     } else if (g === 'Vorschauen') {
       const [, , , club, id] = route.path.split('/');
@@ -82,9 +105,15 @@ export async function collect(http, source) {
     } else if (g === 'Matchprogramme') {
       const id = route.path.split('/').at(-1);
       const {pdfPath, ...meta} = r.data || {};
-      if (!meta.version || typeof pdfPath !== 'string' || !pdfPath.startsWith(`/api/programmes/${id}/pdf`)) { count(g, 'skipped'); continue; }
+      if (!meta.version || typeof pdfPath !== 'string' || !pdfPath.startsWith(`/api/programmes/${id}/pdf`)) {
+        count(g, 'skipped');
+        continue;
+      }
       const pdf = await http.bytes(source + pdfPath);
-      if (pdf.status !== 200 || new TextDecoder().decode(pdf.bytes.slice(0, 5)) !== '%PDF-') { count(g, 'skipped'); continue; }
+      if (pdf.status !== 200 || new TextDecoder().decode(pdf.bytes.slice(0, 5)) !== '%PDF-') {
+        count(g, 'skipped');
+        continue;
+      }
       add({key: `kadetten/programmes/${id}.json`, value: JSON.stringify(meta)});
       add({key: `kadetten/programmes/${id}/${meta.version}.pdf`, value: b64(pdf.bytes), base64: true});
     }
@@ -96,10 +125,15 @@ export async function collect(http, source) {
 // Teilt die Einträge in Pakete (höchstens 10'000 Einträge und etwa 20 MB je Anfrage an die KV-Schnittstelle).
 export function chunk(entries, maxBytes = 20 * 1024 * 1024, maxCount = 10000) {
   const out = [];
-  let current = [], size = 0;
+  let current = [],
+    size = 0;
   for (const e of entries) {
     const n = e.key.length + e.value.length;
-    if (current.length && (size + n > maxBytes || current.length >= maxCount)) { out.push(current); current = []; size = 0; }
+    if (current.length && (size + n > maxBytes || current.length >= maxCount)) {
+      out.push(current);
+      current = [];
+      size = 0;
+    }
     current.push(e);
     size += n;
   }
@@ -116,7 +150,8 @@ export async function bulkWrite(fetchFn, {accountId, namespaceId, token}, entrie
       body: JSON.stringify(part)
     });
     const body = await r.json().catch(() => ({}));
-    if (!r.ok || body.success === false) throw Error('KV-Schreiben fehlgeschlagen (HTTP ' + r.status + '): ' + JSON.stringify(body.errors || []).slice(0, 300));
+    if (!r.ok || body.success === false)
+      throw Error('KV-Schreiben fehlgeschlagen (HTTP ' + r.status + '): ' + JSON.stringify(body.errors || []).slice(0, 300));
     written += part.length;
   }
   return written;

@@ -39,6 +39,10 @@ test('Marken und Hinweis-Kacheln: eine gemeinsame schräge Basis, gerader Text',
   for (const cls of ['.pill', '.tag-ink', '.rb-tag', '.sk-tag'])
     assert.ok(components.includes(cls + '::before'), cls + ' nutzt die gemeinsame schräge Form (::before)');
   const views = read('views.css');
-  for (const cls of ['.rb-tag', '.sk-tag']) assert.doesNotMatch(views.match(new RegExp('^\\' + cls + ' \\{[^}]*\\}', 'm'))[0], /transform: skewX/, cls + ': Text bleibt gerade');
-  assert.ok(views.includes('.teaser {') && !views.includes('rb-teaser'), 'eine Hinweis-Kachel «teaser» für Saisonrückblick und Spiel-Story');
+  for (const cls of ['.rb-tag', '.sk-tag'])
+    assert.doesNotMatch(views.match(new RegExp('^\\' + cls + ' \\{[^}]*\\}', 'm'))[0], /transform: skewX/, cls + ': Text bleibt gerade');
+  assert.ok(
+    views.includes('.teaser {') && !views.includes('rb-teaser'),
+    'eine Hinweis-Kachel «teaser» für Saisonrückblick und Spiel-Story'
+  );
 });

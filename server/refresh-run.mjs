@@ -1,4 +1,4 @@
-import {refresh,mergeConfirmedResults} from './update.mjs';
+import {refresh, mergeConfirmedResults} from './update.mjs';
 import {archiveCompletedReports, getArchivedReport} from './live.mjs';
 import {aggregatePlayerSeason} from './shv.mjs';
 import {updateRankHistory} from './rank-history.mjs';
@@ -36,7 +36,7 @@ export async function runRefresh(bucket, {previous, hadPrevious, supplied = {}, 
   if (hadPrevious) await bucket.put('kadetten/previous.json', JSON.stringify(previous));
   await bucket.put('kadetten/current.json', JSON.stringify(next));
   const reports = await archiveCompletedReports(bucket);
-  next.games = mergeConfirmedResults(next.games,reports.finished);
+  next.games = mergeConfirmedResults(next.games, reports.finished);
   await seasonFromReports(bucket, next);
   await bucket.put('kadetten/current.json', JSON.stringify(next));
   // FC St. Gallen und St. Otmar werden seit der Archivierung von Matchday (13.11.2026) nicht mehr aktualisiert.

@@ -19,8 +19,7 @@ const MAX_BODY = 12000000;
 // Speicher: Auf Sites stellt die Plattform R2 als `BUCKET` bereit, auf Cloudflare Workers KV als `DATA`.
 const withStore = env => (env.BUCKET || !env.DATA ? env : {...env, BUCKET: kvStore(env.DATA)});
 // Statische Dateien liefert auf Sites die Plattform (`ASSETS`), auf Cloudflare GitHub Pages; dort gibt es sie hier nicht.
-const staticAsset = (request, env) =>
-  env.ASSETS ? env.ASSETS.fetch(request) : json({error: 'Not found'}, 404);
+const staticAsset = (request, env) => (env.ASSETS ? env.ASSETS.fetch(request) : json({error: 'Not found'}, 404));
 
 // Jede Route ist eine Funktion (request, env, url) -> Response. Die Reihenfolge in `routes` entspricht der
 // Auswertungsreihenfolge; die erste passende Route gewinnt. Alles andere liefert die statische Oberfläche.
@@ -96,7 +95,8 @@ async function live(request, env, url) {
   try {
     const source = url.searchParams.get('source') || undefined;
     const details = url.searchParams.get('details');
-    if ((source && !['SHV', 'EHF'].includes(source)) || (details !== null && !['0', '1'].includes(details))) return json({error: 'Invalid live options'}, 400);
+    if ((source && !['SHV', 'EHF'].includes(source)) || (details !== null && !['0', '1'].includes(details)))
+      return json({error: 'Invalid live options'}, 400);
     return json(await getLiveMatch({source, includeDetails: details !== '0'}));
   } catch (e) {
     // Die Meldungen der Quellen enthalten keine Zugangsdaten; sie zeigen, welche Quelle warum ausfiel.
@@ -144,8 +144,7 @@ async function refreshData(request, env, u) {
   } catch {
     return json({error: 'Invalid JSON body'}, 400);
   }
-  if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))
-    return json({error: 'JSON object required'}, 400);
+  if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied)) return json({error: 'JSON object required'}, 400);
   const result = await runRefresh(env.BUCKET, {previous, hadPrevious: !!previousObject, supplied});
   if (!result.ok) return json({error: 'All sources failed', status: result.next.status}, 502);
   const {next} = result;
@@ -174,8 +173,8 @@ async function freshAsset(request, env, u) {
 const isPath = path => u => u.pathname === path;
 const isUnder = prefix => u => u.pathname.startsWith(prefix);
 const routes = [
-  [isUnder('/api/push/'),pushRoute],
-  [isUnder('/api/app/'),appRoute],
+  [isUnder('/api/push/'), pushRoute],
+  [isUnder('/api/app/'), appRoute],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],
   [isPath('/admin/login'), adminLogin],
@@ -209,8 +208,13 @@ export default {
   },
   // Cron-Trigger (cloudflare/api/wrangler.toml): löst die Datenaktualisierung in GitHub Actions aus.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(Promise.all([monitorPush(env,event.scheduledTime).catch(()=>console.error('Push: Prüfung fehlgeschlagen')),dispatchUpdate(env, event.scheduledTime).then(result => {
-      if (!result.ok) console.error('Zeitplan: Aktualisierung nicht ausgelöst', result.status || '', result.reason || '');
-    })]));
+    ctx.waitUntil(
+      Promise.all([
+        monitorPush(env, event.scheduledTime).catch(() => console.error('Push: Prüfung fehlgeschlagen')),
+        dispatchUpdate(env, event.scheduledTime).then(result => {
+          if (!result.ok) console.error('Zeitplan: Aktualisierung nicht ausgelöst', result.status || '', result.reason || '');
+        })
+      ])
+    );
   }
 };

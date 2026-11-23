@@ -6,15 +6,23 @@ import {tableFor} from '../../server/preview-text.mjs';
 
 const finished = g => g && Array.isArray(g.score) && g.score.length === 2 && g.score.every(Number.isInteger);
 const lastGames = (games, team, before, n = 3) =>
-  (games || []).filter(g => finished(g) && g.date < before && (g.home === team || g.away === team))
-    .sort((a, b) => b.date.localeCompare(a.date)).slice(0, n).map(({date, home, away, score, externalUrl}) => ({date, home, away, score, externalUrl}));
+  (games || [])
+    .filter(g => finished(g) && g.date < before && (g.home === team || g.away === team))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, n)
+    .map(({date, home, away, score, externalUrl}) => ({date, home, away, score, externalUrl}));
 
 // deps.headToHead(home, away) -> {games}; deps.recentGames(team) -> {games}; beide dürfen wirft/fehlen.
 export async function collectFacts(club, g, {snapshot, fcsgData, otmarData}, {headToHead = null, recentGames = null} = {}) {
-  if(club==='otmar')snapshot=otmarData;
+  if (club === 'otmar') snapshot = otmarData;
   const table = tableFor(club, g, snapshot, fcsgData);
   const data = club !== 'fcsg' ? snapshot : fcsgData;
-  const own = club === 'kadetten' ? 'Kadetten Schaffhausen' : club==='otmar'?'TSV St. Otmar St. Gallen': [g.home, g.away].find(t => /gallen/i.test(t));
+  const own =
+    club === 'kadetten'
+      ? 'Kadetten Schaffhausen'
+      : club === 'otmar'
+        ? 'TSV St. Otmar St. Gallen'
+        : [g.home, g.away].find(t => /gallen/i.test(t));
   const recent = [];
   let duels = [];
   for (const team of [g.home, g.away]) {
@@ -24,11 +32,15 @@ export async function collectFacts(club, g, {snapshot, fcsgData, otmarData}, {he
       try {
         const games = lastGames((await recentGames(team)).games, team, g.date);
         recent.push({team, games, shv: games.length > 0});
-      } catch { recent.push({team, games: []}); }
+      } catch {
+        recent.push({team, games: []});
+      }
     }
   }
   if (club !== 'fcsg' && g.league === 'QHL' && headToHead) {
-    try { duels = ((await headToHead(g.home, g.away)).games || []).slice(0, 3); } catch {}
+    try {
+      duels = ((await headToHead(g.home, g.away)).games || []).slice(0, 3);
+    } catch {}
   }
   return {table, duels, recent};
 }

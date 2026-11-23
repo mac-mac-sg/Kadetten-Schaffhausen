@@ -16,8 +16,13 @@ export function findEndpoints(text, base) {
   for (const m of String(text).matchAll(pattern)) {
     const raw = m[1] || m[0];
     let url;
-    try { url = new URL(raw.startsWith('//') ? 'https:' + raw : raw, base).href; } catch { continue; }
-    if (/api|json|socket|signalr|feed|ticker|livescore|event|match/i.test(url) && !/\.(png|jpe?g|svg|gif|woff2?|ico|css)(\?|$)/i.test(url)) found.add(url);
+    try {
+      url = new URL(raw.startsWith('//') ? 'https:' + raw : raw, base).href;
+    } catch {
+      continue;
+    }
+    if (/api|json|socket|signalr|feed|ticker|livescore|event|match/i.test(url) && !/\.(png|jpe?g|svg|gif|woff2?|ico|css)(\?|$)/i.test(url))
+      found.add(url);
   }
   return [...found].sort();
 }
@@ -25,7 +30,11 @@ export function findEndpoints(text, base) {
 export function scriptSources(html, base) {
   const out = [];
   for (const m of String(html).matchAll(/<script[^>]+src=["']([^"']+)["']/gi)) {
-    try { out.push(new URL(m[1], base).href); } catch { /* ungültige Adresse ignorieren */ }
+    try {
+      out.push(new URL(m[1], base).href);
+    } catch {
+      /* ungültige Adresse ignorieren */
+    }
   }
   return [...new Set(out)];
 }
@@ -48,14 +57,19 @@ export function contextAround(text, needle, width = 220, max = 3) {
 export function findFeedMatch(feed, matchId) {
   for (const day of feed?.days || []) {
     for (const item of day.liveScoreMatches || []) {
-      if (item?.match?.matchID === matchId) return {id: item.match.id, matchID: item.match.matchID, home: item.match.homeTeam?.id, guest: item.match.guestTeam?.id};
+      if (item?.match?.matchID === matchId)
+        return {id: item.match.id, matchID: item.match.matchID, home: item.match.homeTeam?.id, guest: item.match.guestTeam?.id};
     }
   }
   return null;
 }
 
 export const API = 'https://ehfel.eurohandball.com/umbraco/api/';
-export const DATA_ENDPOINTS = ['matchdetailsinfoapi/GetMatchLiveFeed', 'matchdetailapi/GetMatchDetails', 'matchdetailapi/GetMatchDetailStatistic'];
+export const DATA_ENDPOINTS = [
+  'matchdetailsinfoapi/GetMatchLiveFeed',
+  'matchdetailapi/GetMatchDetails',
+  'matchdetailapi/GetMatchDetailStatistic'
+];
 // Namen der Schnittstellen, deren Aufrufe in den Skripten der Spielseite gesucht werden.
 export const NAMES = ['GetMatchLiveFeed', 'GetMatchDetails', 'GetMatchDetailStatistic', 'GetTeams'];
 export const PARAM_NAMES = ['matchId', 'matchID', 'id'];
@@ -72,7 +86,7 @@ export function candidateCalls(matchId) {
 
 // Aufbau einer JSON-Antwort: Schlüssel mit Typ und Länge, bis zu `depth` Ebenen tief.
 export function describeShape(value, depth = 2, maxKeys = 40) {
-  const type = v => Array.isArray(v) ? `Liste(${v.length})` : v === null ? 'null' : typeof v === 'object' ? 'Objekt' : typeof v;
+  const type = v => (Array.isArray(v) ? `Liste(${v.length})` : v === null ? 'null' : typeof v === 'object' ? 'Objekt' : typeof v);
   const lines = [];
   const walk = (v, path, level) => {
     if (level > depth || v === null || typeof v !== 'object') return;
@@ -91,10 +105,14 @@ export function findKeys(value, pattern, limit = 30, maxDepth = 8) {
   const found = [];
   const walk = (v, path, level) => {
     if (found.length >= limit || level > maxDepth || v === null || typeof v !== 'object') return;
-    if (Array.isArray(v)) { if (v.length) walk(v[0], path + '[0]', level + 1); return; }
+    if (Array.isArray(v)) {
+      if (v.length) walk(v[0], path + '[0]', level + 1);
+      return;
+    }
     for (const [k, child] of Object.entries(v)) {
       const here = path ? path + '.' + k : k;
-      if (pattern.test(k)) found.push(`${here}: ${Array.isArray(child) ? 'Liste(' + child.length + ')' : child === null ? 'null' : typeof child}`);
+      if (pattern.test(k))
+        found.push(`${here}: ${Array.isArray(child) ? 'Liste(' + child.length + ')' : child === null ? 'null' : typeof child}`);
       walk(child, here, level + 1);
       if (found.length >= limit) return;
     }
@@ -144,7 +162,20 @@ export function feedOverview(feed) {
 }
 
 // Stichwörter, an denen eine Seite ihre Daten nachlädt (Ausschnitte rund um die Fundstelle zeigen Adresse und Parameter).
-export const LOAD_NEEDLES = ['.json', '/api/', 'ajax', 'fetch(', 'WebSocket', 'EventSource', 'signalR', 'getJSON', 'axios', 'XMLHttpRequest', '.ashx', '.aspx'];
+export const LOAD_NEEDLES = [
+  '.json',
+  '/api/',
+  'ajax',
+  'fetch(',
+  'WebSocket',
+  'EventSource',
+  'signalR',
+  'getJSON',
+  'axios',
+  'XMLHttpRequest',
+  '.ashx',
+  '.aspx'
+];
 export function loadSnippets(text, needles = LOAD_NEEDLES, perNeedle = 2, width = 150, max = 12) {
   const out = [];
   for (const needle of needles) {
@@ -157,7 +188,19 @@ export function loadSnippets(text, needles = LOAD_NEEDLES, perNeedle = 2, width 
 }
 
 // Stichwörter für das Skript der Ticker-Ansicht (tickerApp): Aufrufe mit POST, Adressen und Basispfade der Daten.
-export const TICKER_NEEDLES = ['$.post(', '$.ajax(', '.post(', 'url:', 'iBall', 'appcontext.', 'GetEvents', 'getEvents', 'Static', 'JSON.parse', 'events'];
+export const TICKER_NEEDLES = [
+  '$.post(',
+  '$.ajax(',
+  '.post(',
+  'url:',
+  'iBall',
+  'appcontext.',
+  'GetEvents',
+  'getEvents',
+  'Static',
+  'JSON.parse',
+  'events'
+];
 // Direkt abrufbare Adressen, die die Seite als Basispfade nennt (iBall/Static, iBall/StaticGoal); Versuch nur mit GET.
 export const tickerProbeUrls = id => [`https://ticker.ehf.eu/iBall/Static/${id}`, `https://ticker.ehf.eu/iBall/StaticGoal/${id}`];
 
@@ -179,7 +222,11 @@ export function appContextUrls(context, pageUrl = 'https://ticker.ehf.eu/v3/') {
   const out = [];
   for (const [key, value] of Object.entries(context.paths || {})) {
     let url;
-    try { url = new URL(value, base); } catch { continue; }
+    try {
+      url = new URL(value, base);
+    } catch {
+      continue;
+    }
     if (url.origin === 'https://ticker.ehf.eu') out.push({key, url: url.href});
   }
   return out;
@@ -196,7 +243,9 @@ export function tickerEventsObject(data) {
   return Array.isArray(e) ? e[0] : e;
 }
 export function summarizeTicker(data, {first = 10, perType = 1} = {}) {
-  const top = Object.entries(data && typeof data === 'object' ? data : {}).map(([k, v]) => `${k}: ${Array.isArray(v) ? 'Liste(' + v.length + ')' : v === null ? 'null' : typeof v}`);
+  const top = Object.entries(data && typeof data === 'object' ? data : {}).map(
+    ([k, v]) => `${k}: ${Array.isArray(v) ? 'Liste(' + v.length + ')' : v === null ? 'null' : typeof v}`
+  );
   const eventsObject = tickerEventsObject(data);
   const raw = eventsObject?.actions?.action;
   const actions = Array.isArray(raw) ? raw : raw ? [raw] : [];
@@ -207,7 +256,14 @@ export function summarizeTicker(data, {first = 10, perType = 1} = {}) {
     counts[type] = (counts[type] || 0) + 1;
     (samples[type] ||= []).length < perType && samples[type].push(a);
   }
-  return {top, eventKeys: eventsObject ? Object.keys(eventsObject) : [], total: actions.length, counts, firstActions: actions.slice(0, first), samples};
+  return {
+    top,
+    eventKeys: eventsObject ? Object.keys(eventsObject) : [],
+    total: actions.length,
+    counts,
+    firstActions: actions.slice(0, first),
+    samples
+  };
 }
 
 // Welche Werte kommen vor? Zählungen von `result` und `loc` bei Würfen, `actionAdd` bei allen Ereignissen, `role` der Beteiligten,
@@ -216,20 +272,34 @@ export function tickerValueCounts(data) {
   const eventsObject = tickerEventsObject(data);
   const raw = eventsObject?.actions?.action;
   const actions = Array.isArray(raw) ? raw : raw ? [raw] : [];
-  const bump = (map, key) => { const k = String(key ?? '–'); map[k] = (map[k] || 0) + 1; };
+  const bump = (map, key) => {
+    const k = String(key ?? '–');
+    map[k] = (map[k] || 0) + 1;
+  };
   const out = {shotResult: {}, shotLoc: {}, actionAdd: {}, roleByAction: {}, periodByAction: {}};
   for (const a of actions) {
-    if (a.action === 'SHOT') { bump(out.shotResult, a.result); bump(out.shotLoc, a.loc); }
+    if (a.action === 'SHOT') {
+      bump(out.shotResult, a.result);
+      bump(out.shotLoc, a.loc);
+    }
     if (a.actionAdd !== undefined) bump(out.actionAdd, a.action + ':' + a.actionAdd);
     bump(out.periodByAction, a.action + ':' + a.period);
-    for (const c of a.competitor || []) for (const p of c.composition?.athlete || []) bump(out.roleByAction, a.action + ':' + (p.role ?? 'ohne'));
+    for (const c of a.competitor || [])
+      for (const p of c.composition?.athlete || []) bump(out.roleByAction, a.action + ':' + (p.role ?? 'ohne'));
   }
   out.phaseScores = eventsObject?.phaseScores ?? null;
   return out;
 }
 
 // Reiner Text einer HTML-Seite (ohne Skripte und Formatvorlagen), für Disclaimer und Nutzungsbedingungen.
-export const htmlText = html => String(html).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+export const htmlText = html =>
+  String(html)
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
 export function excerptFrom(text, needle, length = 1800) {
   const i = String(text).indexOf(needle);
   return i === -1 ? '' : String(text).slice(i, i + length);

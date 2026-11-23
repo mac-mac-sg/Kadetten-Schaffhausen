@@ -8,10 +8,15 @@ export function kvRestStore({accountId, namespaceId, token, fetchFn = fetch}) {
   const auth = {Authorization: 'Bearer ' + token};
   // KV-Lesen kann nach einem Schreiben noch den alten Stand liefern.
   const written = new Map();
-  const object = data => ({body:data.slice(0),arrayBuffer:async()=>data.slice(0),text:async()=>new TextDecoder().decode(data),json:async()=>JSON.parse(new TextDecoder().decode(data))});
+  const object = data => ({
+    body: data.slice(0),
+    arrayBuffer: async () => data.slice(0),
+    text: async () => new TextDecoder().decode(data),
+    json: async () => JSON.parse(new TextDecoder().decode(data))
+  });
   return {
     async get(key) {
-      if(written.has(key))return object(written.get(key));
+      if (written.has(key)) return object(written.get(key));
       const r = await fetchFn(`${base}/values/${encodeURIComponent(key)}`, {headers: auth});
       if (r.status === 404) return null;
       if (!r.ok) throw Error('KV-Lesen fehlgeschlagen (HTTP ' + r.status + ')');
@@ -29,8 +34,8 @@ export function kvRestStore({accountId, namespaceId, token, fetchFn = fetch}) {
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok || body.success === false) throw Error('KV-Schreiben fehlgeschlagen (HTTP ' + r.status + ')');
-      const bytes=binary?new Uint8Array(value):new TextEncoder().encode(value);
-      written.set(key,bytes.slice().buffer);
+      const bytes = binary ? new Uint8Array(value) : new TextEncoder().encode(value);
+      written.set(key, bytes.slice().buffer);
     }
   };
 }

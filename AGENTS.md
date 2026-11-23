@@ -14,7 +14,7 @@ npm run dev     # lokale, schreibgeschützte Vorschau der Kadetten-App auf http:
 npm run verify  # alle Prüfungen wie in GitHub Actions: check, test, build:pages, check-pages
 ```
 
-`npm run verify` muss vor jedem Push grün sein. Der JS-Code der App (`src/kadetten/js`) ist mit Prettier formatiert (`.prettierrc.json`); `npm run check` prüft das, `npm run format` formatiert. HTML-Vorlagen fasst Prettier nicht an: lange Vorlagen an Blockgrenzen oder in `${…}` umbrechen, nie zwischen Inline-Elementen (sonst entsteht sichtbarer Leerraum). Der frühere Sites-Build mit Server-Bündel liegt im Archiv (`node archive/matchday/build.mjs`) und wird nur noch gebraucht, solange der alte Sites-Dienst besteht.
+`npm run verify` muss vor jedem Push grün sein. App (`src/kadetten/js`), Datendienst (`server/`), Skripte, Tests und `cloudflare/` sind mit Prettier formatiert (`.prettierrc.json`); `npm run check` prüft das zusammen mit ESLint (`eslint.config.mjs`: wenige Regeln gegen echte Fehler wie unbenutzte oder undefinierte Namen und doppelte Schlüssel). `npm run format` formatiert, `npm run lint` zeigt die ESLint-Funde. Das Archiv (`archive/`) ist ausgenommen. HTML-Vorlagen fasst Prettier nicht an: lange Vorlagen an Blockgrenzen oder in `${…}` umbrechen, nie zwischen Inline-Elementen (sonst entsteht sichtbarer Leerraum). Der frühere Sites-Build mit Server-Bündel liegt im Archiv (`node archive/matchday/build.mjs`) und wird nur noch gebraucht, solange der alte Sites-Dienst besteht.
 
 ## Arbeitsablauf
 1. Aktuellen Stand von `origin/main` holen; Änderungen anderer erhalten.

@@ -17,13 +17,22 @@ export function reportMessages(base) {
         'Format, immer einhalten: Erste Zeile ein kurzer Titel (höchstens 80 Zeichen, kein ganzer Satz mit Punkt), dann eine Leerzeile, dann 3 Absätze mit je 2 bis 4 Sätzen, Absätze durch eine Leerzeile getrennt. Kein Markdown, keine Aufzählungen, keine Anführung des Titels.'
       ].join(' ')
     },
-    {role: 'user', content: `Fakten zum Spiel:\n\n${base.facts.map(x => '- ' + x).join('\n')}\n\nSchreibe daraus den Matchbericht: Titelzeile, Leerzeile, dann 3 Absätze.`}
+    {
+      role: 'user',
+      content: `Fakten zum Spiel:\n\n${base.facts.map(x => '- ' + x).join('\n')}\n\nSchreibe daraus den Matchbericht: Titelzeile, Leerzeile, dann 3 Absätze.`
+    }
   ];
 }
 
 const plain = (v, min, max) => typeof v === 'string' && v.length >= min && v.length <= max && !/[<>\u0000-\u0008]/.test(v);
 // Technische Regeln für gespeicherte Berichte (keine inhaltliche Prüfung, wie bei den Vorschauen).
-export const validReport = r => !!r && plain(r.headline, 3, 160) && Array.isArray(r.paragraphs) && r.paragraphs.length >= 2 && r.paragraphs.length <= 4 && r.paragraphs.every(p => plain(p, 30, 1800));
+export const validReport = r =>
+  !!r &&
+  plain(r.headline, 3, 160) &&
+  Array.isArray(r.paragraphs) &&
+  r.paragraphs.length >= 2 &&
+  r.paragraphs.length <= 4 &&
+  r.paragraphs.every(p => plain(p, 30, 1800));
 
 // Aus der Antwort des Modells; mehr als vier Absätze werden dem vierten angehängt.
 export function toReport(raw, fallbackHeadline) {

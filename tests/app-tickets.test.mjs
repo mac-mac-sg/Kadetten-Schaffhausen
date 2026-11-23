@@ -10,7 +10,14 @@ const TM = 'https://www.ticketmaster.ch/event/kadetten-vs-chambery-tickets/76142
 test('Datendienst: Ticket-Links aus tickets.json, nur Ticketmaster und Ticketcorner über https', () => {
   assert.equal(ticketLink(TM), TM);
   assert.equal(ticketLink('https://www.ticketcorner.ch/artist/x/#calendar'), 'https://www.ticketcorner.ch/artist/x/#calendar');
-  for (const bad of ['http://www.ticketmaster.ch/event/1', 'https://evil.example/ticketmaster.ch', 'https://user:pw@www.ticketmaster.ch/', 'javascript:alert(1)', 42, null])
+  for (const bad of [
+    'http://www.ticketmaster.ch/event/1',
+    'https://evil.example/ticketmaster.ch',
+    'https://user:pw@www.ticketmaster.ch/',
+    'javascript:alert(1)',
+    42,
+    null
+  ])
     assert.equal(ticketLink(bad), null, String(bad));
   const map = parseTickets({
     matches: [
@@ -36,7 +43,16 @@ test('Datendienst: Ticket-Links aus tickets.json, nur Ticketmaster und Ticketcor
   assert.equal(games[2].tickets, undefined, 'veralteter Link wird entfernt');
 });
 
-const game = {id: '508403', date: '2026-12-05', time: '18:00', home: 'Kadetten Schaffhausen', away: 'TSV St. Otmar St. Gallen', league: 'QHL', venue: 'BBC Arena, Schaffhausen', tickets: TM};
+const game = {
+  id: '508403',
+  date: '2026-12-05',
+  time: '18:00',
+  home: 'Kadetten Schaffhausen',
+  away: 'TSV St. Otmar St. Gallen',
+  league: 'QHL',
+  venue: 'BBC Arena, Schaffhausen',
+  tickets: TM
+};
 const before = Date.parse('2026-11-30T12:00:00+01:00');
 
 test('App: Ticket-Link nur bei Heimspielen vor Anpfiff und nur mit gültigem Link', () => {

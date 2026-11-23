@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {findPdfLinks, firstPageText, nextHomeGame, inspectProgrammes, storeProgramme, syncProgrammes, validPdf} from '../scripts/lib/programmes-source.mjs';
+import {
+  findPdfLinks,
+  firstPageText,
+  nextHomeGame,
+  inspectProgrammes,
+  storeProgramme,
+  syncProgrammes,
+  validPdf
+} from '../scripts/lib/programmes-source.mjs';
 import {main} from '../scripts/cloudflare-programmes.mjs';
 import {programmes} from '../server/programmes.mjs';
 
@@ -16,7 +24,10 @@ function pdf(text, pad = 1200) {
   ];
   let out = '%PDF-1.4\n%' + 'x'.repeat(pad) + '\n';
   const offsets = [];
-  objs.forEach((o, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  objs.forEach((o, i) => {
+    offsets.push(out.length);
+    out += `${i + 1} 0 obj\n${o}\nendobj\n`;
+  });
   const xref = out.length;
   out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offsets.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('');
   out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
@@ -31,7 +42,10 @@ test('PDF-Verweise: nur https auf kadettensh.ch, aus HTML und maskiertem JSON, o
   const html = `<a href="/wp-content/uploads/2099/02/programm.pdf">Matchvorschau</a> <a href='https://kadettensh.ch/x/a.PDF?v=2'>x</a>
     <a href="https://fremd.example/boese.pdf">fremd</a> <a href="http://kadettensh.ch/alt.pdf">http</a> <a href="/wp-content/uploads/2099/02/programm.pdf">doppelt</a>`;
   const json = '{"content":{"rendered":"<a href=\\"https:\\/\\/kadettensh.ch\\/wp-content\\/uploads\\/b.pdf\\">b<\\/a>"}}';
-  assert.deepEqual(findPdfLinks(html), ['https://kadettensh.ch/wp-content/uploads/2099/02/programm.pdf', 'https://kadettensh.ch/x/a.PDF?v=2']);
+  assert.deepEqual(findPdfLinks(html), [
+    'https://kadettensh.ch/wp-content/uploads/2099/02/programm.pdf',
+    'https://kadettensh.ch/x/a.PDF?v=2'
+  ]);
   assert.deepEqual(findPdfLinks(json), ['https://kadettensh.ch/wp-content/uploads/b.pdf']);
 });
 
@@ -43,14 +57,22 @@ test('Erste PDF-Seite wird gelesen und das nächste Heimspiel gewählt', async (
 
 function fakeHttp({files, pages}) {
   return {
-    async text(url) { return url in pages ? {status: 200, text: pages[url]} : {status: 404, text: ''}; },
-    async bytes(url) { return url in files ? {status: 200, bytes: files[url], type: 'application/pdf'} : {status: 404, bytes: new Uint8Array(), type: 'text/html'}; }
+    async text(url) {
+      return url in pages ? {status: 200, text: pages[url]} : {status: 404, text: ''};
+    },
+    async bytes(url) {
+      return url in files
+        ? {status: 200, bytes: files[url], type: 'application/pdf'}
+        : {status: 404, bytes: new Uint8Array(), type: 'text/html'};
+    }
   };
 }
 
 test('Trockenlauf: passendes PDF wird erkannt, falsches Datum, Nicht-PDF und fehlende Datei nicht, nichts wird geschrieben', async () => {
-  const good = 'https://kadettensh.ch/wp-content/uploads/gut.pdf', wrong = 'https://kadettensh.ch/wp-content/uploads/falsch.pdf',
-    html = 'https://kadettensh.ch/wp-content/uploads/seite.pdf', gone = 'https://kadettensh.ch/wp-content/uploads/weg.pdf';
+  const good = 'https://kadettensh.ch/wp-content/uploads/gut.pdf',
+    wrong = 'https://kadettensh.ch/wp-content/uploads/falsch.pdf',
+    html = 'https://kadettensh.ch/wp-content/uploads/seite.pdf',
+    gone = 'https://kadettensh.ch/wp-content/uploads/weg.pdf';
   const http = fakeHttp({
     pages: {'https://kadettensh.ch/': `<a href="${good}">a</a><a href="${wrong}">b</a><a href="${html}">c</a><a href="${gone}">d</a>`},
     files: {
@@ -66,7 +88,14 @@ test('Trockenlauf: passendes PDF wird erkannt, falsches Datum, Nicht-PDF und feh
   assert.equal(by[wrong].isPdf && by[wrong].matches, false, 'anderes Datum passt nicht');
   assert.equal(by[html].isPdf, false);
   assert.equal(by[gone].status, 404);
-  assert.deepEqual(r.sources.map(s => [s.status, s.links]), [[200, 4], [404, 0], [404, 0]]);
+  assert.deepEqual(
+    r.sources.map(s => [s.status, s.links]),
+    [
+      [200, 4],
+      [404, 0],
+      [404, 0]
+    ]
+  );
 });
 
 test('main meldet den Befund und ohne Treffer, dass nichts geschrieben wurde', async () => {
@@ -87,14 +116,22 @@ function memBucket(initial = {}, failOn = null) {
   const map = new Map(Object.entries(initial));
   const order = [];
   return {
-    map, order,
-    async get(k) { return map.has(k) ? {json: async () => JSON.parse(map.get(k)), arrayBuffer: async () => map.get(k)} : null; },
-    async put(k, v) { if (failOn && k.endsWith(failOn)) throw Error('KV-Schreiben fehlgeschlagen'); order.push(k); map.set(k, v); }
+    map,
+    order,
+    async get(k) {
+      return map.has(k) ? {json: async () => JSON.parse(map.get(k)), arrayBuffer: async () => map.get(k)} : null;
+    },
+    async put(k, v) {
+      if (failOn && k.endsWith(failOn)) throw Error('KV-Schreiben fehlgeschlagen');
+      order.push(k);
+      map.set(k, v);
+    }
   };
 }
 const GOOD = 'https://kadettensh.ch/wp-content/downloads/Matchprogramm_Kadetten_EHL.pdf';
 const goodPdf = () => pdf('Official Programme KADETTEN SCHAFFHAUSEN HC KRIENS-LUZERN 14.02.2099');
-const programmeHttp = (bytes = goodPdf()) => fakeHttp({pages: {'https://kadettensh.ch/': `<a href="${GOOD}">Matchvorschau</a>`}, files: {[GOOD]: bytes}});
+const programmeHttp = (bytes = goodPdf()) =>
+  fakeHttp({pages: {'https://kadettensh.ch/': `<a href="${GOOD}">Matchvorschau</a>`}, files: {[GOOD]: bytes}});
 const NOW = new Date('2099-01-01T10:00:00Z');
 
 test('Programm speichern: PDF zuerst, dann Metadaten; der Datendienst liefert es danach aus; unverändert wird nicht neu geschrieben', async () => {
@@ -109,7 +146,9 @@ test('Programm speichern: PDF zuerst, dann Metadaten; der Datendienst liefert es
   assert.equal(meta.version, bucket.order[0].match(/([a-f0-9]{64})\.pdf$/)[1]);
 
   // Der Datendienst liest genau dieses Format.
-  const env = {BUCKET: {get: async k => (bucket.map.has(k) ? {json: async () => JSON.parse(bucket.map.get(k)), body: bucket.map.get(k)} : null)}};
+  const env = {
+    BUCKET: {get: async k => (bucket.map.has(k) ? {json: async () => JSON.parse(bucket.map.get(k)), body: bucket.map.get(k)} : null)}
+  };
   const info = await programmes(new Request('https://x.test/api/programmes/508400'), env);
   assert.equal(info.status, 200);
   assert.match((await info.json()).pdfPath, /^\/api\/programmes\/508400\/pdf\?v=[a-f0-9]{64}$/);

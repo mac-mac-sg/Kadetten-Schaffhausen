@@ -19,7 +19,22 @@ const read = path => readFileSync(path, 'utf8');
 const tokens = read('src/kadetten/css/tokens.css');
 const data = decodeDeep(JSON.parse(read('server/seed.json')));
 const now = Date.parse('2026-11-05T10:00:00Z');
-const VIEWS = {jetzt: renderJetzt, news: renderNews, spiel: renderSpiel, spielplan: renderSaison, tabellen: renderSaison, statistik: renderSaison, team: renderTeam, spieler: renderSpieler, verein: renderVerein, ich: renderIch, mein: renderMein, sammlung: renderSammlung, karte: renderKarte, neu: renderNeu};
+const VIEWS = {
+  jetzt: renderJetzt,
+  news: renderNews,
+  spiel: renderSpiel,
+  spielplan: renderSaison,
+  tabellen: renderSaison,
+  statistik: renderSaison,
+  team: renderTeam,
+  spieler: renderSpieler,
+  verein: renderVerein,
+  ich: renderIch,
+  mein: renderMein,
+  sammlung: renderSammlung,
+  karte: renderKarte,
+  neu: renderNeu
+};
 function render(hash, ui = {}, load = () => ({status: 'loading'})) {
   setLogos(data.clubLogos);
   const route = parseRoute(hash);
@@ -34,23 +49,35 @@ function tokenValues(block) {
 const light = tokenValues(tokens.slice(0, tokens.indexOf('@media (prefers-color-scheme: dark)')));
 const dark = {...light, ...tokenValues(tokens.slice(tokens.indexOf(":root[data-theme='dark']")))};
 function luminance(hex) {
-  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
-  return .2126 * r + .7152 * g + .0722 * b;
+  const [r, g, b] = [1, 3, 5]
+    .map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
-const contrast = (a, b) => { const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+const contrast = (a, b) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+};
 
 test('Tokens: Kadettenorange aus dem Wappen, Schnitt von 8° und passende Streifen', () => {
   assert.equal(light['c-accent'], '#ff5d00', 'Wappenorange');
   assert.equal(light.skew, '-8deg');
-  assert.ok(Math.abs(Number(light.slope) - Math.tan(8 * Math.PI / 180)) < 0.001, 'Steigung = tan(8°)');
+  assert.ok(Math.abs(Number(light.slope) - Math.tan((8 * Math.PI) / 180)) < 0.001, 'Steigung = tan(8°)');
   assert.match(light.stripes, /repeating-linear-gradient\(120deg/);
   const components = read('src/kadetten/css/components.css');
-  assert.match(components, /\.band \{[^}]*clip-path: polygon\(0 0, 100% 0, 100% calc\(100% - var\(--cut\)\), 0 100%\)/, 'Kopfband mit geschnittener Unterkante');
+  assert.match(
+    components,
+    /\.band \{[^}]*clip-path: polygon\(0 0, 100% 0, 100% calc\(100% - var\(--cut\)\), 0 100%\)/,
+    'Kopfband mit geschnittener Unterkante'
+  );
   assert.match(components, /\.nav a\.on::before/, 'aktiver Tab: schräger Balken');
 });
 
 test('Kontraste (WCAG AA): Text, Orange als Schrift und Schrift auf Orange in Hell und Dunkel', () => {
-  for (const [name, t] of [['hell', light], ['dunkel', dark]]) {
+  for (const [name, t] of [
+    ['hell', light],
+    ['dunkel', dark]
+  ]) {
     for (const surface of ['c-bg', 'c-surface']) {
       assert.ok(contrast(t['c-text'], t[surface]) >= 7, `${name}: Text auf ${surface}`);
       assert.ok(contrast(t['c-text-muted'], t[surface]) >= 4.5, `${name}: Nebentext auf ${surface}`);
@@ -63,10 +90,15 @@ test('Kontraste (WCAG AA): Text, Orange als Schrift und Schrift auf Orange in He
 });
 
 test('Kontraste: graue Schrift im dunklen Thema mindestens 7:1, Bilanz-Grau (Unentschieden, Niederlage) mindestens 3:1', () => {
-  for (const surface of ['c-bg', 'c-surface']) assert.ok(contrast(dark['c-text-muted'], dark[surface]) >= 7, `dunkel: Nebentext auf ${surface}`);
+  for (const surface of ['c-bg', 'c-surface'])
+    assert.ok(contrast(dark['c-text-muted'], dark[surface]) >= 7, `dunkel: Nebentext auf ${surface}`);
   assert.ok(contrast(dark['c-text-muted'], dark['c-chip']) >= 6.5, 'dunkel: Nebentext auf Chip');
-  for (const [name, t] of [['hell', light], ['dunkel', dark]]) {
-    for (const token of ['c-graph-draw', 'c-graph-loss', 'c-accent']) assert.ok(contrast(t[token], t['c-surface']) >= 3, `${name}: ${token} auf der Karte`);
+  for (const [name, t] of [
+    ['hell', light],
+    ['dunkel', dark]
+  ]) {
+    for (const token of ['c-graph-draw', 'c-graph-loss', 'c-accent'])
+      assert.ok(contrast(t[token], t['c-surface']) >= 3, `${name}: ${token} auf der Karte`);
     assert.notEqual(t['c-graph-draw'], t['c-graph-loss'], `${name}: Unentschieden und Niederlage unterscheidbar`);
   }
   const views = read('src/kadetten/css/views.css');
@@ -78,13 +110,15 @@ test('Kontraste: graue Schrift im dunklen Thema mindestens 7:1, Bilanz-Grau (Une
 test('Dunkle Karten: hellere Fläche mit feinem Rand, Listenkarten mit stärkerem Rand ohne Schatten; Hell unverändert', () => {
   assert.equal(dark['c-card'], '#232326');
   assert.ok(contrast(dark['c-card'], dark['c-bg']) >= 1.15, 'Karte hebt sich vom Grund ab');
-  for (const token of ['c-text-muted', 'c-accent-text']) assert.ok(contrast(dark[token], dark['c-card']) >= 6.5, `dunkel: ${token} auf der Karte`);
+  for (const token of ['c-text-muted', 'c-accent-text'])
+    assert.ok(contrast(dark[token], dark['c-card']) >= 6.5, `dunkel: ${token} auf der Karte`);
   assert.ok(contrast(dark['c-graph-loss'], dark['c-card']) >= 3, 'dunkel: Bilanz-Niederlage auf der Karte');
   assert.ok(contrast(dark['c-surface-2'], dark['c-card']) >= 1.08, 'Kacheln auf Karten bleiben erkennbar');
   assert.equal(light['c-card'], 'var(--c-surface)', 'hell: Karte wie bisher');
   assert.equal(light['c-card-edge'], 'transparent', 'hell: kein Rand');
   assert.equal(dark['card-shadow-list'], 'none');
-  const components = read('src/kadetten/css/components.css'), views = read('src/kadetten/css/views.css');
+  const components = read('src/kadetten/css/components.css'),
+    views = read('src/kadetten/css/views.css');
   assert.match(components, /\.card \{[^}]*background: var\(--c-card\); border: 1px solid var\(--c-card-edge\)/);
   assert.match(views, /\.card\.list \{[^}]*border-color: var\(--c-card-edge-strong\)[^}]*--c-line: var\(--c-line-list, var\(--c-line\)\)/);
 });
@@ -131,7 +165,10 @@ test('Kader: Karten zeigen Porträt, grosse Nummer, Name und Position', () => {
 
 test('Navigation: fünf Tabs mit Symbol und sichtbarer Beschriftung, kein Verein-Tab', () => {
   const d = parseHTML('<html><body>' + String(nav('saison')) + '</body></html>').document;
-  assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent.trim()), ['Start', 'Spiele', 'Tabelle', 'Kader', 'Ich']);
+  assert.deepEqual(
+    [...d.querySelectorAll('a')].map(a => a.textContent.trim()),
+    ['Start', 'Spiele', 'Tabelle', 'Kader', 'Ich']
+  );
   for (const hash of ['#/ich', '#/ich/einstellungen', '#/sammlung', '#/sammlung/k-10']) assert.equal(parseRoute(hash).area, 'ich', hash);
   const ich = parseHTML('<html><body>' + String(nav('ich')) + '</body></html>').document;
   assert.equal(ich.querySelector('a.on').getAttribute('href'), '#/ich');
@@ -167,11 +204,18 @@ test('Schriften: Barlow Condensed kursiv wird mit der App ausgeliefert, nichts v
 
 test('Kader nach Skizze: Positions-Chips, ein Raster nach Nummern, Filter nach Position', () => {
   const all = render('#/team');
-  assert.deepEqual([...all.querySelectorAll('.chips .chip')].map(c => c.textContent), ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis']);
+  assert.deepEqual(
+    [...all.querySelectorAll('.chips .chip')].map(c => c.textContent),
+    ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis']
+  );
   assert.equal(all.querySelector('.chip.on').textContent, 'Alle');
   assert.equal(all.querySelectorAll('.pgrid').length, 1, 'ein gemeinsames Raster statt Gruppen');
   const numbers = [...all.querySelectorAll('.pc .no')].map(n => Number(n.textContent));
-  assert.deepEqual(numbers, [...numbers].sort((a, b) => a - b), 'nach Rückennummer sortiert');
+  assert.deepEqual(
+    numbers,
+    [...numbers].sort((a, b) => a - b),
+    'nach Rückennummer sortiert'
+  );
   const keepers = render('#/team', {pos: 'Tor'});
   assert.equal(keepers.querySelector('.chip.on').textContent, 'Tor');
   assert.ok(keepers.querySelectorAll('.pc').length > 0 && keepers.querySelectorAll('.pc').length < numbers.length);
@@ -181,12 +225,21 @@ test('Kader nach Skizze: Positions-Chips, ein Raster nach Nummern, Filter nach P
 
 test('Verein nach Skizze: Titelzahlen, 1791-Karte, Hallenfoto und zwei Verweise; Details auf Unterseiten', () => {
   const d = render('#/verein');
-  assert.deepEqual([...d.querySelectorAll('.stats.big .k')].map(k => k.textContent), ['Meisterschaften', 'Cupsiege', 'Supercups']);
-  assert.deepEqual([...d.querySelectorAll('.stats.big .v')].map(v => v.textContent), ['15', '11', '16']);
+  assert.deepEqual(
+    [...d.querySelectorAll('.stats.big .k')].map(k => k.textContent),
+    ['Meisterschaften', 'Cupsiege', 'Supercups']
+  );
+  assert.deepEqual(
+    [...d.querySelectorAll('.stats.big .v')].map(v => v.textContent),
+    ['15', '11', '16']
+  );
   assert.equal(d.querySelector('.roots .yr').textContent, '1791');
   assert.match(d.querySelector('.roots p').textContent, /noch nicht die des Handballteams/);
   assert.match(d.querySelector('.club-photo img').getAttribute('alt'), /BBC Arena/);
-  assert.deepEqual([...d.querySelectorAll('.plain-list a')].map(a => a.getAttribute('href')), ['#/verein/geschichte', '#/verein/titel']);
+  assert.deepEqual(
+    [...d.querySelectorAll('.plain-list a')].map(a => a.getAttribute('href')),
+    ['#/verein/geschichte', '#/verein/titel']
+  );
   assert.equal(d.querySelectorAll('.timeline').length, 0, 'Zeitreise liegt auf der Unterseite');
   const history = render('#/verein/geschichte');
   assert.ok(history.querySelector('.timeline li') && history.querySelector('a.back[href="#/verein"]'));
@@ -213,7 +266,8 @@ test('News: Aufmacher und schlichte Zeilen; Tabelle behält den Titel «Tabelle�
   assert.ok(d.querySelector('.lead-story h2'), 'Aufmacher');
   assert.ok(d.querySelectorAll('.plain-list.news-rows a.rl').length > 3);
   assert.equal(d.querySelectorAll('h1').length, 1);
-  for (const hash of ['#/statistik', '#/statistik/spieler']) assert.equal(render(hash).querySelector('.band-t').textContent, 'Tabelle', hash);
+  for (const hash of ['#/statistik', '#/statistik/spieler'])
+    assert.equal(render(hash).querySelector('.band-t').textContent, 'Tabelle', hash);
   assert.ok(render('#/statistik/spieler').querySelector('.seg ~ .chips'), 'Auswahl unter dem Umschalter');
 });
 
@@ -226,7 +280,12 @@ test('Spielerseite: Name und Position unter dem Porträt statt über dem Trikot'
 });
 
 test('Unterseiten mit Titel im Kopfband: Einstellungen, Sammlung, Geschichte, Trophäenschrank', () => {
-  for (const [hash, title, back] of [['#/ich/einstellungen', 'Einstellungen', '#/ich'], ['#/sammlung', 'Sammlung', '#/ich'], ['#/verein/geschichte', 'Geschichte', '#/verein'], ['#/verein/titel', 'Trophäenschrank', '#/verein']]) {
+  for (const [hash, title, back] of [
+    ['#/ich/einstellungen', 'Einstellungen', '#/ich'],
+    ['#/sammlung', 'Sammlung', '#/ich'],
+    ['#/verein/geschichte', 'Geschichte', '#/verein'],
+    ['#/verein/titel', 'Trophäenschrank', '#/verein']
+  ]) {
     const d = render(hash);
     assert.equal(d.querySelector('header.band-sub .band-t').textContent, title, hash);
     assert.equal(d.querySelector('header.band-sub a.back').getAttribute('href'), back, hash);
@@ -248,11 +307,28 @@ test('Wappen: eigener Zuschnitt ohne Sterne und Rahmen; Spielort kurz', () => {
 
 test('Statistik: Spielverlauf mit zwei Kurven, Legende mit Toren und Tordifferenz', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
-  const d = render('#/spiel/508338/bericht', {}, () => ({status: 'ready', value: {shv, archive: {goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '12:00', s: [1, 1], h: true, n: 'B'}, {t: '25:00', s: [5, 9], h: false, n: 'A'}, {t: '40:00', s: [11, 18], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]}}}));
+  const d = render('#/spiel/508338/bericht', {}, () => ({
+    status: 'ready',
+    value: {
+      shv,
+      archive: {
+        goals: [
+          {t: '05:00', s: [0, 1], h: false, n: 'A'},
+          {t: '12:00', s: [1, 1], h: true, n: 'B'},
+          {t: '25:00', s: [5, 9], h: false, n: 'A'},
+          {t: '40:00', s: [11, 18], h: false, n: 'A'},
+          {t: '59:00', s: [20, 28], h: false, n: 'A'}
+        ]
+      }
+    }
+  }));
   const section = d.querySelector('[aria-labelledby="g-verlauf"]');
   assert.ok(section, 'Spielverlauf');
   assert.equal(section.querySelectorAll('svg.curve .cv-line').length, 2);
-  assert.deepEqual([...section.querySelectorAll('.cv-team b')].map(b => b.textContent), ['28', '20']);
+  assert.deepEqual(
+    [...section.querySelectorAll('.cv-team b')].map(b => b.textContent),
+    ['28', '20']
+  );
   assert.match(section.querySelector('.cv-diff').textContent, /\+8/);
   assert.ok(section.querySelector('.card > .h4'), 'Tordifferenz als zweite Grafik');
 });
@@ -261,15 +337,41 @@ test('Statistik: Spielverlauf mit zwei Kurven, Legende mit Toren und Tordifferen
 import {suggestions, numberFor, surname} from '../src/kadetten/js/wahl.js';
 import {picks, pickFor, togglePick, PICKS_KEY} from '../src/kadetten/js/personal.js';
 import {voteSection, liveVoteCard} from '../src/kadetten/js/views/bericht.js';
-const mem = () => { const m = new Map(); return {getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k)}; };
-const cands = [{id: '1', name: 'LIOI Alessio', goals: 2, saves: null}, {id: '2', name: 'PERIC Josip', goals: 7, saves: null}, {id: '3', name: 'SERAVALLI Mathieu', goals: null, saves: 11}, {id: '4', name: 'KUETTEL Dimitrij', goals: 4, saves: null}, {id: '5', name: 'MEIER Max', goals: 0, saves: null}];
+const mem = () => {
+  const m = new Map();
+  return {getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k)};
+};
+const cands = [
+  {id: '1', name: 'LIOI Alessio', goals: 2, saves: null},
+  {id: '2', name: 'PERIC Josip', goals: 7, saves: null},
+  {id: '3', name: 'SERAVALLI Mathieu', goals: null, saves: 11},
+  {id: '4', name: 'KUETTEL Dimitrij', goals: 4, saves: null},
+  {id: '5', name: 'MEIER Max', goals: 0, saves: null}
+];
 const dom2 = v => parseHTML('<html><body>' + String(v) + '</body></html>').document;
 
 test('Vorschläge nach Spieldaten: meiste Tore, zweitmeiste Tore, meiste Paraden; Rest nach Beitrag', () => {
   const {picked, rest} = suggestions(cands);
-  assert.deepEqual(picked.map(p => [p.candidate.id, p.reason]), [['2', 'Meiste Tore'], ['4', 'Zweitmeiste Tore'], ['3', 'Meiste Paraden']]);
-  assert.deepEqual(rest.map(c => c.id), ['1', '5'], 'übrige nach Tore und Paraden, dann Name');
-  assert.equal(suggestions([{id: '1', name: 'A', goals: 3}, {id: '2', name: 'B', goals: 3}]).picked[1].reason, 'Gleich viele Tore');
+  assert.deepEqual(
+    picked.map(p => [p.candidate.id, p.reason]),
+    [
+      ['2', 'Meiste Tore'],
+      ['4', 'Zweitmeiste Tore'],
+      ['3', 'Meiste Paraden']
+    ]
+  );
+  assert.deepEqual(
+    rest.map(c => c.id),
+    ['1', '5'],
+    'übrige nach Tore und Paraden, dann Name'
+  );
+  assert.equal(
+    suggestions([
+      {id: '1', name: 'A', goals: 3},
+      {id: '2', name: 'B', goals: 3}
+    ]).picked[1].reason,
+    'Gleich viele Tore'
+  );
   assert.deepEqual(suggestions(null), {picked: [], rest: []});
   assert.deepEqual(suggestions([{id: '9', name: 'X', goals: 0}]).picked, [], 'ohne gemeldete Werte keine Begründung erfunden');
   assert.equal(numberFor({playerSeason: {players: {10: {shvPlayerId: 7}}}}, '7'), 10);
@@ -282,7 +384,11 @@ test('Favorit merken: nur lokal, je Spiel, nochmals tippen entfernt, ungültige 
   assert.equal(pickFor('508393', s), null);
   assert.deepEqual(togglePick('508393', {id: 2, name: 'PERIC Josip'}, s), {id: '2', name: 'PERIC Josip'});
   assert.deepEqual(pickFor('508393', s), {id: '2', name: 'PERIC Josip'});
-  assert.deepEqual(togglePick('508393', {id: 4, name: 'KUETTEL Dimitrij'}, s), {id: '4', name: 'KUETTEL Dimitrij'}, 'anderer Spieler ersetzt');
+  assert.deepEqual(
+    togglePick('508393', {id: 4, name: 'KUETTEL Dimitrij'}, s),
+    {id: '4', name: 'KUETTEL Dimitrij'},
+    'anderer Spieler ersetzt'
+  );
   assert.equal(togglePick('508393', {id: 4, name: 'KUETTEL Dimitrij'}, s), null, 'gleicher Spieler entfernt');
   assert.equal(s.getItem(PICKS_KEY), null, 'leer: Schlüssel entfernt');
   assert.equal(togglePick('../x', {id: 1, name: 'A'}, s), null);
@@ -294,20 +400,36 @@ test('Favorit merken: nur lokal, je Spiel, nochmals tippen entfernt, ungültige 
 });
 
 test('Wahlliste: Vorschläge mit Begründung, weitere Spieler eingeklappt, Favorit vorgewählt, Bestätigung nennt den Namen', () => {
-  const vote = {status: 'ready', value: {open: true, total: 0, counts: {}, closesAt: Date.parse('2026-11-09T20:45:00Z'), candidates: cands}};
+  const vote = {
+    status: 'ready',
+    value: {open: true, total: 0, counts: {}, closesAt: Date.parse('2026-11-09T20:45:00Z'), candidates: cands}
+  };
   const data = {playerSeason: {players: {10: {shvPlayerId: 2}}}};
   const d = dom2(voteSection({vote, now: Date.parse('2026-11-08T21:00:00Z'), data, selected: '2', pickId: '2'}));
   const rows = [...d.querySelectorAll('.vote-rows > button.vote-player')];
-  assert.deepEqual(rows.map(r => r.getAttribute('data-vote-select')), ['2', '4', '3']);
-  assert.deepEqual(rows.map(r => r.querySelector('.why')?.textContent), ['Meiste Tore', 'Zweitmeiste Tore', 'Meiste Paraden']);
+  assert.deepEqual(
+    rows.map(r => r.getAttribute('data-vote-select')),
+    ['2', '4', '3']
+  );
+  assert.deepEqual(
+    rows.map(r => r.querySelector('.why')?.textContent),
+    ['Meiste Tore', 'Zweitmeiste Tore', 'Meiste Paraden']
+  );
   assert.equal(rows[0].getAttribute('aria-pressed'), 'true');
-  assert.match(rows[0].textContent, /Dein Favorit/); assert.match(rows[0].querySelector('.pk').textContent, /Gewählt/);
+  assert.match(rows[0].textContent, /Dein Favorit/);
+  assert.match(rows[0].querySelector('.pk').textContent, /Gewählt/);
   assert.match(rows[1].querySelector('.pk').textContent, /Wählen/);
   assert.equal(d.querySelectorAll('details.vote-rest .vote-player').length, 2);
   assert.ok(!d.querySelector('details.vote-rest').hasAttribute('open'));
   const confirm = d.querySelector('[data-vote-confirm]');
-  assert.ok(!confirm.hasAttribute('disabled')); assert.match(confirm.textContent, /Stimme für Peric abgeben/);
-  assert.ok(dom2(voteSection({vote, now: 0, data})).querySelector('[data-vote-confirm]').hasAttribute('disabled'), 'ohne Auswahl gesperrt');
+  assert.ok(!confirm.hasAttribute('disabled'));
+  assert.match(confirm.textContent, /Stimme für Peric abgeben/);
+  assert.ok(
+    dom2(voteSection({vote, now: 0, data}))
+      .querySelector('[data-vote-confirm]')
+      .hasAttribute('disabled'),
+    'ohne Auswahl gesperrt'
+  );
   assert.match(dom2(voteSection({vote, now: 0, data})).body.textContent, /Inoffizielle Fan-Wahl, keine Auszeichnung/);
   const noData = dom2(voteSection({vote: {...vote, value: {...vote.value, candidates: [{id: '9', name: 'X Y'}]}}, now: 0}));
   assert.ok(noData.querySelector('details.vote-rest').hasAttribute('open'), 'ohne Vorschläge sind alle Spieler sichtbar');
@@ -344,55 +466,135 @@ test('Schusseffizienz: Würfe und Quote je Spieler aus den Spielberichten, nur w
   const totals = shotTotals([report, report], {9: 261608, 20: 271116, 99: 1, 1: 999});
   assert.deepEqual(totals[9], {goals: 4, shots: 8, games: 2});
   assert.deepEqual(totals[20], {goals: 8, shots: 16, games: 2});
-  assert.equal(totals[99], undefined); assert.equal(totals[1], undefined);
-  const broken = {teams: [{players: [{id: 5, keeper: false, goals: 3, shots: null}, {id: 6, keeper: false, goals: 5, shots: 2}, {id: 7, keeper: true, goals: 0, shots: 0}]}]};
+  assert.equal(totals[99], undefined);
+  assert.equal(totals[1], undefined);
+  const broken = {
+    teams: [
+      {
+        players: [
+          {id: 5, keeper: false, goals: 3, shots: null},
+          {id: 6, keeper: false, goals: 5, shots: 2},
+          {id: 7, keeper: true, goals: 0, shots: 0}
+        ]
+      }
+    ]
+  };
   assert.deepEqual(shotTotals([broken], {1: 5, 2: 6, 3: 7}), {}, 'fehlende oder unmögliche Würfe werden nicht gezählt');
   assert.deepEqual(shotTotals([], {1: 5}), {});
 });
 
 test('Torschützenliste QHL: Spalten Würfe und Quote; ohne Berichte «–», nichts geschätzt', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
-  const season = {season: '2026/27', players: {9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0}, 20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1}, 21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}}};
-  const ctxFor = load => ({route: {view: 'statistik'}, state: {data: {...data, playerSeason: season}, live: null}, now, load, api: {}, ui: {stat: 'qhl'}});
+  const season = {
+    season: '2026/27',
+    players: {
+      9: {shvPlayerId: 261608, games: 8, goals: 10, sevenMeterGoals: 0, twoMinutes: 0},
+      20: {shvPlayerId: 271116, games: 8, goals: 20, sevenMeterGoals: 0, twoMinutes: 1},
+      21: {shvPlayerId: 5, games: 3, goals: 5, sevenMeterGoals: 0, twoMinutes: 0}
+    }
+  };
+  const ctxFor = load => ({
+    route: {view: 'statistik'},
+    state: {data: {...data, playerSeason: season}, live: null},
+    now,
+    load,
+    api: {},
+    ui: {stat: 'qhl'}
+  });
   const ready = dom2(renderStat(ctxFor(() => ({status: 'ready', value: {shv, archive: null}}))));
   const head = [...ready.querySelectorAll('.tbl-real thead th')].map(th => th.textContent);
   assert.deepEqual(head.slice(0, 5), ['Spieler', 'Sp', 'Tore', 'Würfe', 'Quote']);
   const rows = [...ready.querySelectorAll('.tbl-real tbody tr')];
-  const cellsOf = nr => [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td => td.textContent.trim());
-  assert.deepEqual(cellsOf(20).slice(2, 5), ['20', '8', '50 %'], 'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20');
+  const cellsOf = nr =>
+    [...rows.find(r => r.querySelector('a').getAttribute('href') === '#/team/' + nr).querySelectorAll('td')].map(td =>
+      td.textContent.trim()
+    );
+  assert.deepEqual(
+    cellsOf(20).slice(2, 5),
+    ['20', '8', '50 %'],
+    'Würfe und Quote stammen aus dem Bericht (4/8), Tore der Saison bleiben 20'
+  );
   assert.deepEqual(cellsOf(21).slice(3, 5), ['–', '–'], 'kein Bericht: nichts geschätzt');
   assert.equal(ready.querySelector('.sec.tight p.fine'), null, 'keine Hinweise unter der Tabelle');
   const loading = dom2(renderStat(ctxFor(() => ({status: 'loading'}))));
   assert.ok([...loading.querySelectorAll('.tbl-real tbody td.muted')].some(td => td.textContent === '…'));
-  const ehl = dom2(renderStat({...ctxFor(() => ({status: 'loading'})), ui: {stat: 'ehl'}, state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}}));
-  assert.ok(![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'), 'EHL liefert keine verlässlichen Würfe');
+  const ehl = dom2(
+    renderStat({
+      ...ctxFor(() => ({status: 'loading'})),
+      ui: {stat: 'ehl'},
+      state: {data: {...data, playerSeason: season, ehlPlayerSeason: {players: {9: {goals: 3}}}}, live: null}
+    })
+  );
+  assert.ok(
+    ![...ehl.querySelectorAll('.tbl-real thead th')].some(th => th.textContent === 'Würfe'),
+    'EHL liefert keine verlässlichen Würfe'
+  );
 });
 
 // ---- Abgeschlossene QHL-Spiele: nur «Statistik» und «Rückblick» ----
 test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
-  const archive = {report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']}, generator: 'daten', goals: [{t: '05:00', s: [0, 1], h: false, n: 'A'}, {t: '59:00', s: [20, 28], h: false, n: 'A'}]};
+  const archive = {
+    report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']},
+    generator: 'daten',
+    goals: [
+      {t: '05:00', s: [0, 1], h: false, n: 'A'},
+      {t: '59:00', s: [20, 28], h: false, n: 'A'}
+    ]
+  };
   const ready = () => ({status: 'ready', value: {shv, archive}});
-  const tabsOf = d => [...d.querySelectorAll('nav.seg a')].map(a => [a.textContent.trim(), a.getAttribute('href'), a.hasAttribute('aria-current')]);
+  const tabsOf = d =>
+    [...d.querySelectorAll('nav.seg a')].map(a => [a.textContent.trim(), a.getAttribute('href'), a.hasAttribute('aria-current')]);
 
   const stat = render('#/spiel/508338/bericht', {}, ready);
-  assert.deepEqual(tabsOf(stat).map(t => t[0]), ['Statistik', 'Rückblick'], 'kein Ticker, keine Übersicht');
+  assert.deepEqual(
+    tabsOf(stat).map(t => t[0]),
+    ['Statistik', 'Rückblick'],
+    'kein Ticker, keine Übersicht'
+  );
   assert.deepEqual(tabsOf(stat)[0].slice(1), ['#/spiel/508338/bericht', true]);
   assert.equal(tabsOf(stat)[1][1], '#/spiel/508338/rueckblick');
-  assert.ok(stat.querySelector('[aria-labelledby="g-verlauf"]') && stat.querySelector('[aria-labelledby="g-cmp"]') && stat.querySelector('[aria-labelledby="g-spieler"]'), 'Spielverlauf, Teamvergleich, Spielerwerte');
+  assert.ok(
+    stat.querySelector('[aria-labelledby="g-verlauf"]') &&
+      stat.querySelector('[aria-labelledby="g-cmp"]') &&
+      stat.querySelector('[aria-labelledby="g-spieler"]'),
+    'Spielverlauf, Teamvergleich, Spielerwerte'
+  );
   assert.equal(stat.querySelector('[aria-labelledby="g-text"]'), null, 'der Text gehört in den Rückblick');
   assert.doesNotMatch(stat.body.textContent, /Die Kadetten gewinnen 28:20/);
 
   const back = render('#/spiel/508338/rueckblick', {}, ready);
-  assert.deepEqual(tabsOf(back).map(t => [t[0], t[2]]), [['Statistik', false], ['Rückblick', true]]);
+  assert.deepEqual(
+    tabsOf(back).map(t => [t[0], t[2]]),
+    [
+      ['Statistik', false],
+      ['Rückblick', true]
+    ]
+  );
   assert.match(back.querySelector('.prose h3').textContent, /Kadetten schlagen Suhr Aarau/);
   assert.equal(back.querySelectorAll('.prose p').length, 3, 'zwei Absätze und der Quellenhinweis');
   assert.match(back.body.textContent, /Aus den bestätigten Spieldaten zusammengestellt/);
-  for (const sel of ['[aria-labelledby="g-verlauf"]', '[aria-labelledby="g-cmp"]', '[aria-labelledby="g-spieler"]', '[data-my-game]', '.vote-teaser', '[aria-labelledby="g-art"]', '.chart', '.curve']) assert.equal(back.querySelector(sel), null, 'Rückblick enthält nichts ausser dem Text: ' + sel);
+  for (const sel of [
+    '[aria-labelledby="g-verlauf"]',
+    '[aria-labelledby="g-cmp"]',
+    '[aria-labelledby="g-spieler"]',
+    '[data-my-game]',
+    '.vote-teaser',
+    '[aria-labelledby="g-art"]',
+    '.chart',
+    '.curve'
+  ])
+    assert.equal(back.querySelector(sel), null, 'Rückblick enthält nichts ausser dem Text: ' + sel);
 
   for (const hash of ['#/spiel/508338', '#/spiel/508338/live', '#/spiel/508338/vorschau']) {
     const d = render(hash, {}, ready);
-    assert.deepEqual(tabsOf(d).filter(t => t[2]).map(t => t[0]), ['Statistik'], hash + ' führt zur Statistik');
+    assert.deepEqual(
+      tabsOf(d)
+        .filter(t => t[2])
+        .map(t => t[0]),
+      ['Statistik'],
+      hash + ' führt zur Statistik'
+    );
   }
   const noText = render('#/spiel/508338/rueckblick', {}, () => ({status: 'ready', value: {shv, archive: {goals: archive.goals}}}));
   assert.match(noText.body.textContent, /keinen Rückblick/);
@@ -437,23 +639,83 @@ const ehlArchive = () => {
   const [hs, as] = ehlGame.score;
   const zone = (z, shots, goals) => ({zone: z, shots, goals, saved: shots - goals, post: 0, missed: 0, blocked: 0});
   return {
-    home: ehlGame.home, away: ehlGame.away, score: ehlGame.score, half: [Math.floor(hs / 2), Math.floor(as / 2)],
+    home: ehlGame.home,
+    away: ehlGame.away,
+    score: ehlGame.score,
+    half: [Math.floor(hs / 2), Math.floor(as / 2)],
     report: {headline: 'Klarer Sieg in der European League', paragraphs: ['Ein deutlicher Heimsieg.'], generator: 'daten'},
-    goals: [{t: '10:00', s: [1, 0], h: true, n: 'Josip Perić'}, {t: '59:00', s: ehlGame.score, h: true, n: 'Odinn Rikhardsson'}],
+    goals: [
+      {t: '10:00', s: [1, 0], h: true, n: 'Josip Perić'},
+      {t: '59:00', s: ehlGame.score, h: true, n: 'Odinn Rikhardsson'}
+    ],
     teamStats: {
-      home: {goals: hs, shots: 60, misses: 14, efficiency: 65, sevenGoals: 3, sevenShots: 4, twoMinutes: 2, warnings: 1, disqualifications: 1, technicalFaults: 9},
-      guest: {goals: as, shots: 58, misses: 17, efficiency: 55, sevenGoals: 2, sevenShots: 3, twoMinutes: 4, warnings: 2, disqualifications: 0, technicalFaults: 12}
+      home: {
+        goals: hs,
+        shots: 60,
+        misses: 14,
+        efficiency: 65,
+        sevenGoals: 3,
+        sevenShots: 4,
+        twoMinutes: 2,
+        warnings: 1,
+        disqualifications: 1,
+        technicalFaults: 9
+      },
+      guest: {
+        goals: as,
+        shots: 58,
+        misses: 17,
+        efficiency: 55,
+        sevenGoals: 2,
+        sevenShots: 3,
+        twoMinutes: 4,
+        warnings: 2,
+        disqualifications: 0,
+        technicalFaults: 12
+      }
     },
     players: [
       {id: 11, number: 10, home: true, name: 'PERIC Josip', goals: 9, shots: 11, seven: 2, sevenShots: 2, twoMinutes: 0, yellow: 1, red: 1},
-      {id: 12, number: 6, home: true, name: 'RIKHARDSSON Odinn', goals: 6, shots: 8, seven: 1, sevenShots: 2, twoMinutes: 1, yellow: 0, red: 0},
+      {
+        id: 12,
+        number: 6,
+        home: true,
+        name: 'RIKHARDSSON Odinn',
+        goals: 6,
+        shots: 8,
+        seven: 1,
+        sevenShots: 2,
+        twoMinutes: 1,
+        yellow: 0,
+        red: 0
+      },
       {id: 13, number: 1, home: true, name: 'BERGMANN Leon', goalkeeper: true, saves: 12, savesFaced: 30},
       {id: 22, number: 12, home: false, name: 'TORWART Tom', goalkeeper: true, saves: 9, savesFaced: 28},
       {id: 21, number: 7, home: false, name: 'GEGNER Gerd', goals: 8, shots: 12, seven: 1, sevenShots: 1, twoMinutes: 2, yellow: 0, red: 0}
     ],
     shotStats: {
-      home: {...ehlCounts(60, hs, 14, 3, 14, 5), zones: [zone('LLD', 10, 5), zone('PTY', 4, 3), zone('XYZ', 2, 1)], halves: [{half: 'H1', shots: 30, goals: 18}, {half: 'H2', shots: 30, goals: hs - 18}],
-        keepers: [{id: 13, name: 'BERGMANN Leon', shots: 30, saves: 12, sevenShots: 3, sevenSaves: 1, zones: [{zone: 'LLD', shots: 10, saved: 5}, {zone: 'PTY', shots: 3, saved: 1}]}]},
+      home: {
+        ...ehlCounts(60, hs, 14, 3, 14, 5),
+        zones: [zone('LLD', 10, 5), zone('PTY', 4, 3), zone('XYZ', 2, 1)],
+        halves: [
+          {half: 'H1', shots: 30, goals: 18},
+          {half: 'H2', shots: 30, goals: hs - 18}
+        ],
+        keepers: [
+          {
+            id: 13,
+            name: 'BERGMANN Leon',
+            shots: 30,
+            saves: 12,
+            sevenShots: 3,
+            sevenSaves: 1,
+            zones: [
+              {zone: 'LLD', shots: 10, saved: 5},
+              {zone: 'PTY', shots: 3, saved: 1}
+            ]
+          }
+        ]
+      },
       away: {...ehlCounts(58, as, 12, 4, 17, 3), zones: [zone('CLD', 8, 4)], halves: null, keepers: []}
     }
   };
@@ -462,25 +724,55 @@ const ehlArchive = () => {
 test('European League: Statistik mit allen Werten der Matchday-App', () => {
   assert.ok(ehlGame, 'Beispielspiel der European League im Datenbestand');
   const d = render('#/spiel/' + ehlGame.id, {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
-  assert.deepEqual([...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()), ['Statistik', 'Rückblick']);
+  assert.deepEqual(
+    [...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()),
+    ['Statistik', 'Rückblick']
+  );
   // Teamvergleich: Würfe, Fehlwürfe, Disqualifikationen kommen neben den bisherigen Zeilen dazu.
   const labels = [...d.querySelectorAll('[aria-labelledby="g-cmp"] .cmp .bar > span')].map(n => n.textContent.replace('?', '').trim());
-  for (const l of ['Tore', 'Würfe', 'Fehlwürfe', 'Wurfquote', 'Paraden', '7-m', 'Zeitstrafen', 'Verwarnungen', 'Disqualifikationen', 'Technische Fehler']) assert.ok(labels.includes(l), 'Teamvergleich: ' + l + ' in ' + labels.join(', '));
+  for (const l of [
+    'Tore',
+    'Würfe',
+    'Fehlwürfe',
+    'Wurfquote',
+    'Paraden',
+    '7-m',
+    'Zeitstrafen',
+    'Verwarnungen',
+    'Disqualifikationen',
+    'Technische Fehler'
+  ])
+    assert.ok(labels.includes(l), 'Teamvergleich: ' + l + ' in ' + labels.join(', '));
   assert.ok(labels.indexOf('Würfe') < labels.indexOf('Fehlwürfe') && labels.indexOf('Fehlwürfe') < labels.indexOf('Wurfquote'));
   // Spieler: Rückennummer, Disqualifikationen, Toptorschützen
   const players = d.querySelector('[aria-labelledby="g-spieler"]');
-  assert.deepEqual([...players.querySelectorAll('thead th')].map(th => th.textContent), ['Spieler', 'Tore/W', 'Quote', '7-m', '2′', 'G', 'R']);
+  assert.deepEqual(
+    [...players.querySelectorAll('thead th')].map(th => th.textContent),
+    ['Spieler', 'Tore/W', 'Quote', '7-m', '2′', 'G', 'R']
+  );
   assert.match(players.querySelector('tbody tr th').textContent, /^10\s/, 'Rückennummer vor dem Namen');
-  assert.deepEqual([...players.querySelectorAll('.scorers li')].map(li => li.textContent.replace(/\s+/g, ' ').trim().slice(0, 1)), ['9', '6']);
+  assert.deepEqual(
+    [...players.querySelectorAll('.scorers li')].map(li => li.textContent.replace(/\s+/g, ' ').trim().slice(0, 1)),
+    ['9', '6']
+  );
   // Wurfanalyse: wie die Würfe endeten, Zonen inkl. weitere, Halbzeitquoten, Paraden nach Zone
   const wurf = d.querySelector('[aria-labelledby="g-wurf"]');
   assert.ok(wurf);
-  assert.deepEqual([...wurf.querySelectorAll('.cmp .bar > span')].map(n => n.textContent.trim()), ['Tore', 'Vom Torhüter gehalten', 'Pfosten / Latte', 'Daneben', 'Geblockt']);
+  assert.deepEqual(
+    [...wurf.querySelectorAll('.cmp .bar > span')].map(n => n.textContent.trim()),
+    ['Tore', 'Vom Torhüter gehalten', 'Pfosten / Latte', 'Daneben', 'Geblockt']
+  );
   assert.match(wurf.textContent, /Weitere Wurfzone/);
-  assert.deepEqual([...wurf.querySelectorAll('.halves > div span')].map(n => n.textContent), ['1. Halbzeit', '2. Halbzeit'], 'Quote je Halbzeit nur dort, wo die Quelle sie liefert');
+  assert.deepEqual(
+    [...wurf.querySelectorAll('.halves > div span')].map(n => n.textContent),
+    ['1. Halbzeit', '2. Halbzeit'],
+    'Quote je Halbzeit nur dort, wo die Quelle sie liefert'
+  );
   assert.equal(wurf.querySelectorAll('.halves').length, 1);
   const keeper = wurf.querySelector('details.keeper-zones');
-  assert.ok(keeper); assert.match(keeper.textContent, /Paraden nach Wurfzone/); assert.match(keeper.textContent, /Siebenmeter gehalten: 1 \/ 3/);
+  assert.ok(keeper);
+  assert.match(keeper.textContent, /Paraden nach Wurfzone/);
+  assert.match(keeper.textContent, /Siebenmeter gehalten: 1 \/ 3/);
   assert.equal(keeper.querySelectorAll('tbody tr').length, 2);
   assert.match(keeper.textContent, /Links · Distanz/);
   // Rückblick enthält nur den Text
@@ -514,18 +806,35 @@ test('Startseite: «Unsere Saison» schreibt den Platz aus', () => {
 test('Tipp-Karte vor Anpfiff ohne erklärenden Text', () => {
   const card = tipCard({game: {id: 1, home: 'Kadetten Schaffhausen', away: 'HSC Suhr Aarau'}, tip: null, points: null, locked: false});
   assert.doesNotMatch(String(card), /Ohne Einsatz|richtige Differenz/);
-  assert.match(String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})), /Tipp abgegeben: A 20, B 18[\s\S]*20 : 18[\s\S]*3 Punkte · exakt getippt/);
+  assert.match(
+    String(tipCard({game: {id: 1, home: 'A', away: 'B'}, tip: [20, 18], points: 3, locked: true})),
+    /Tipp abgegeben: A 20, B 18[\s\S]*20 : 18[\s\S]*3 Punkte · exakt getippt/
+  );
 });
 
 test('Feinschliff: Verlauf im Band bleibt lesbar, Streifen laufen aus, Schein und Karten mit Schatten (hell ohne Rand)', () => {
-  const stops = [...light['band-bg'].matchAll(/linear-gradient\(([^)]*)\)/g)].flatMap(m => [...m[1].matchAll(/#[0-9a-f]{6}\b/g)].map(x => x[0]));
+  const stops = [...light['band-bg'].matchAll(/linear-gradient\(([^)]*)\)/g)].flatMap(m =>
+    [...m[1].matchAll(/#[0-9a-f]{6}\b/g)].map(x => x[0])
+  );
   assert.ok(stops.length >= 3 && stops.includes('#ff5d00'), 'Verlauf läuft durch das Wappenorange');
   for (const stop of stops) assert.ok(contrast(light['c-ink'], stop) >= 4.5, `Tinte auf ${stop}`);
   const components = read('src/kadetten/css/components.css');
-  assert.match(components, /\.band \{[^}]*background: var\(--band-bg\), var\(--c-accent\)/, 'Orange bleibt als Grundfarbe unter dem Verlauf');
-  assert.match(components, /\.band::after \{[^}]*var\(--stripes-band\)[^}]*mask-image: linear-gradient\(90deg/, 'Streifen im Band laufen aus');
+  assert.match(
+    components,
+    /\.band \{[^}]*background: var\(--band-bg\), var\(--c-accent\)/,
+    'Orange bleibt als Grundfarbe unter dem Verlauf'
+  );
+  assert.match(
+    components,
+    /\.band::after \{[^}]*var\(--stripes-band\)[^}]*mask-image: linear-gradient\(90deg/,
+    'Streifen im Band laufen aus'
+  );
   assert.match(components, /\.band \+ \*::before \{[^}]*var\(--band-glow\)[^}]*pointer-events: none/, 'Schein unter dem Schnitt');
-  assert.match(components, /\.card \{[^}]*border: 1px solid var\(--c-card-edge\); box-shadow: var\(--card-shadow\)/, 'Karten: Schatten, Rand nur im dunklen Thema');
+  assert.match(
+    components,
+    /\.card \{[^}]*border: 1px solid var\(--c-card-edge\); box-shadow: var\(--card-shadow\)/,
+    'Karten: Schatten, Rand nur im dunklen Thema'
+  );
   assert.match(components, /var\(--fill, var\(--c-chip-soft\)\)/, 'nicht gewählte Knöpfe halbdurchsichtig');
   assert.match(light.stripes, /var\(--c-ink\) 0 6px/, 'Marker und Ränder behalten die harten Streifen');
   for (const key of ['band-glow', 'c-chip-soft', 'card-shadow', 'glass-bg', 'glass-edge', 'glass-shadow', 'glass-nav', 'glass-sheet']) {
@@ -544,18 +853,43 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
   assert.doesNotMatch(outside, /backdrop-filter/, 'Unschärfe nur innerhalb von @supports');
   assert.match(supports, /^@supports \(\(-webkit-backdrop-filter: blur\(1px\)\) or \(backdrop-filter: blur\(1px\)\)\)/);
   const selectors = [...supports.matchAll(/^\s{2}([^{@]+)\{[^}]*backdrop-filter/gm)].map(m => m[1].trim());
-  assert.deepEqual(selectors, ['.band-home + .match-score .hero', '.nav', '.icb:not(.on), .back', '.lead-story:has(> img) .lead-copy::before', '.sheet', '.sheet::backdrop']);
+  assert.deepEqual(selectors, [
+    '.band-home + .match-score .hero',
+    '.nav',
+    '.icb:not(.on), .back',
+    '.lead-story:has(> img) .lead-copy::before',
+    '.sheet',
+    '.sheet::backdrop'
+  ]);
   for (const css of [glass, read('src/kadetten/css/components.css'), read('src/kadetten/css/views.css')]) {
-    for (const rule of css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: blur/g)) assert.doesNotMatch(rule[1], /tbl|\.rl\b|\.event|\.prose|\.fb\b|\.card\b|\.plain-list/, 'kein Glas auf Listen, Tabellen, Ticker, Text, Feldbild: ' + rule[1].trim());
+    for (const rule of css.matchAll(/([^{}]+)\{[^}]*backdrop-filter: blur/g))
+      assert.doesNotMatch(
+        rule[1],
+        /tbl|\.rl\b|\.event|\.prose|\.fb\b|\.card\b|\.plain-list/,
+        'kein Glas auf Listen, Tabellen, Ticker, Text, Feldbild: ' + rule[1].trim()
+      );
   }
-  for (const sel of selectors) assert.ok(fallback.includes((sel.endsWith('::before') ? sel.slice(0, -'::before'.length) : sel) + ' {'), 'Rückfall für ' + sel);
-  assert.equal((fallback.match(/backdrop-filter: none/g) || []).length, (selectors.length - 1) * 2, 'jede Glasfläche wird bei «Transparenz reduzieren» deckend');
+  for (const sel of selectors)
+    assert.ok(fallback.includes((sel.endsWith('::before') ? sel.slice(0, -'::before'.length) : sel) + ' {'), 'Rückfall für ' + sel);
+  assert.equal(
+    (fallback.match(/backdrop-filter: none/g) || []).length,
+    (selectors.length - 1) * 2,
+    'jede Glasfläche wird bei «Transparenz reduzieren» deckend'
+  );
   assert.match(fallback, /\.lead-story:has\(> img\) \.lead-copy::before \{ display: none; \}/, 'Aufmacher: Glasschicht entfällt');
-  assert.match(supports, /\.lead-copy::before \{[^}]*mask-image: linear-gradient\(transparent, #000 70%\)/, 'Glas im Aufmacher läuft zum Foto hin aus');
+  assert.match(
+    supports,
+    /\.lead-copy::before \{[^}]*mask-image: linear-gradient\(transparent, #000 70%\)/,
+    'Glas im Aufmacher läuft zum Foto hin aus'
+  );
   assert.match(fallback, /\.nav \{ background: var\(--c-nav-bg\)/);
   // Spielkarte ragt ins Band (Titelseite).
   assert.match(outside, /\.band-home \+ \.match-score \{ margin-top: calc\(-1 \* var\(--cut\) - 6px\); z-index: 1; \}/);
   // Gilt für alle Zustände der Titelseite: die Karte folgt immer direkt auf das Titelband.
   const jetzt = read('src/kadetten/js/views/jetzt.js');
-  assert.equal((jetzt.match(/\$\{homeBand\(\)\}\s*(?:\$\{\s*game\s*\?\s*html`)?<section class="sec match-score/g) || []).length, 4, 'Alltag, Spieltag, Live, Nachspiel');
+  assert.equal(
+    (jetzt.match(/\$\{homeBand\(\)\}\s*(?:\$\{\s*game\s*\?\s*html`)?<section class="sec match-score/g) || []).length,
+    4,
+    'Alltag, Spieltag, Live, Nachspiel'
+  );
 });

@@ -4,13 +4,32 @@ import worker from '../server/worker.mjs';
 import {fixtureKey} from '../server/previews.mjs';
 import {collect, chunk, bulkWrite, compareServices, canonical, firstDifference} from '../scripts/lib/cloudflare-migration.mjs';
 
-const OLD = 'https://old.example.test', NEW = 'https://new.example.test';
+const OLD = 'https://old.example.test',
+  NEW = 'https://new.example.test';
 const sha = 'b'.repeat(64);
-const game = (id, extra) => ({id, home: 'Kadetten Schaffhausen', away: 'Gegner ' + id, date: '2099-01-01', time: '18:00', league: 'QHL', venue: 'Halle', image: 'team.jpg', url: 'https://kadettensh.ch/x', ...extra});
-const games = [game('508338', {date: '2026-08-26', score: [28, 20]}), game('508342', {date: '2026-08-29', score: [20, 25]}), game('999001')];
+const game = (id, extra) => ({
+  id,
+  home: 'Kadetten Schaffhausen',
+  away: 'Gegner ' + id,
+  date: '2099-01-01',
+  time: '18:00',
+  league: 'QHL',
+  venue: 'Halle',
+  image: 'team.jpg',
+  url: 'https://kadettensh.ch/x',
+  ...extra
+});
+const games = [
+  game('508338', {date: '2026-08-26', score: [28, 20]}),
+  game('508342', {date: '2026-08-29', score: [20, 25]}),
+  game('999001')
+];
 const snapshot = {
   games,
-  stories: [{id: '42', articleVersion: sha, title: 'Titel', text: 'Text', date: '01.10.2026', image: 'a.jpg', url: 'https://kadettensh.ch/a/'}, {id: '43', title: 'Ohne Volltext', text: 'x', date: '01.10.2026', image: 'a.jpg', url: 'https://kadettensh.ch/b/'}],
+  stories: [
+    {id: '42', articleVersion: sha, title: 'Titel', text: 'Text', date: '01.10.2026', image: 'a.jpg', url: 'https://kadettensh.ch/a/'},
+    {id: '43', title: 'Ohne Volltext', text: 'x', date: '01.10.2026', image: 'a.jpg', url: 'https://kadettensh.ch/b/'}
+  ],
   tables: {QHL: [], EHL: []}
 };
 const identity = g => JSON.stringify([g.id, g.home, g.away, g.date, g.time || '']);
@@ -20,12 +39,42 @@ function oldService() {
   const mem = new Map();
   const put = (k, v) => mem.set(k, v);
   put('kadetten/current.json', JSON.stringify(snapshot));
-  put(`kadetten/articles/42/${sha}.json`, JSON.stringify({id: '42', version: sha, html: '<p>Volltext ä</p>', url: 'https://kadettensh.ch/a/'}));
+  put(
+    `kadetten/articles/42/${sha}.json`,
+    JSON.stringify({id: '42', version: sha, html: '<p>Volltext ä</p>', url: 'https://kadettensh.ch/a/'})
+  );
   put('kadetten/reports/508338.json', JSON.stringify({score: [28, 20], teams: ['A', 'B']}));
-  put('previews/kadetten/999001.json', JSON.stringify({club: 'kadetten', id: '999001', fixtureKey: fixtureKey(games[2]), headline: 'Vorschau', paragraphs: ['a'.repeat(40), 'b'.repeat(40)], sources: [{label: 'Quelle', url: 'https://kadettensh.ch/'}], generatedAt: new Date().toISOString()}));
-  put('kadetten/programmes/999001.json', JSON.stringify({id: '999001', fixtureKey: identity(games[2]), sourceUrl: 'https://kadettensh.ch/p.pdf', version: 'v1', bytes: pdf.length, updatedAt: '2026-10-01T00:00:00.000Z', home: games[2].home, away: games[2].away, date: games[2].date}));
+  put(
+    'previews/kadetten/999001.json',
+    JSON.stringify({
+      club: 'kadetten',
+      id: '999001',
+      fixtureKey: fixtureKey(games[2]),
+      headline: 'Vorschau',
+      paragraphs: ['a'.repeat(40), 'b'.repeat(40)],
+      sources: [{label: 'Quelle', url: 'https://kadettensh.ch/'}],
+      generatedAt: new Date().toISOString()
+    })
+  );
+  put(
+    'kadetten/programmes/999001.json',
+    JSON.stringify({
+      id: '999001',
+      fixtureKey: identity(games[2]),
+      sourceUrl: 'https://kadettensh.ch/p.pdf',
+      version: 'v1',
+      bytes: pdf.length,
+      updatedAt: '2026-10-01T00:00:00.000Z',
+      home: games[2].home,
+      away: games[2].away,
+      date: games[2].date
+    })
+  );
   put('kadetten/programmes/999001/v1.pdf', pdf);
-  const BUCKET = {get: async k => (mem.has(k) ? {json: async () => JSON.parse(mem.get(k)), body: mem.get(k)} : null), put: async (k, v) => void mem.set(k, v)};
+  const BUCKET = {
+    get: async k => (mem.has(k) ? {json: async () => JSON.parse(mem.get(k)), body: mem.get(k)} : null),
+    put: async (k, v) => void mem.set(k, v)
+  };
   return {env: {BUCKET}};
 }
 
@@ -38,7 +87,9 @@ function newService() {
       const v = map.get(key);
       return (typeof v === 'string' ? new TextEncoder().encode(v) : v).slice().buffer;
     },
-    async put(key, value) { map.set(key, value); }
+    async put(key, value) {
+      map.set(key, value);
+    }
   };
   return {map, env: {DATA}};
 }
@@ -49,8 +100,18 @@ function makeHttp(oldSvc, newSvc) {
     return worker.fetch(new Request(url), env);
   };
   return {
-    json: async url => { const r = await call(url); let data = null; try { data = await r.json(); } catch {} return {status: r.status, data}; },
-    bytes: async url => { const r = await call(url); return {status: r.status, bytes: new Uint8Array(await r.arrayBuffer())}; }
+    json: async url => {
+      const r = await call(url);
+      let data = null;
+      try {
+        data = await r.json();
+      } catch {}
+      return {status: r.status, data};
+    },
+    bytes: async url => {
+      const r = await call(url);
+      return {status: r.status, bytes: new Uint8Array(await r.arrayBuffer())};
+    }
   };
 }
 
@@ -65,9 +126,13 @@ function fakeBulkFetch(newSvc, log) {
 
 test('Import und Vergleich: nach dem Import stimmen beide Dienste in allen Gruppen überein, inklusive PDF', async () => {
   const original = globalThis.fetch;
-  globalThis.fetch = async () => { throw new Error('offline'); };
+  globalThis.fetch = async () => {
+    throw new Error('offline');
+  };
   try {
-    const oldSvc = oldService(), newSvc = newService(), http = makeHttp(oldSvc, newSvc);
+    const oldSvc = oldService(),
+      newSvc = newService(),
+      http = makeHttp(oldSvc, newSvc);
     const before = await compareServices(http, OLD, NEW);
     assert.ok(before.rows.find(r => r.group === 'Datenstand').different > 0, 'vor dem Import weicht der Datenstand ab');
 
@@ -108,9 +173,13 @@ test('Import und Vergleich: nach dem Import stimmen beide Dienste in allen Grupp
 
 test('Vergleich erkennt eine abweichende Antwort und eine abweichende PDF-Datei', async () => {
   const original = globalThis.fetch;
-  globalThis.fetch = async () => { throw new Error('offline'); };
+  globalThis.fetch = async () => {
+    throw new Error('offline');
+  };
   try {
-    const oldSvc = oldService(), newSvc = newService(), http = makeHttp(oldSvc, newSvc);
+    const oldSvc = oldService(),
+      newSvc = newService(),
+      http = makeHttp(oldSvc, newSvc);
     const {entries} = await collect(http, OLD);
     await bulkWrite(fakeBulkFetch(newSvc, []), {accountId: 'a', namespaceId: 'n', token: 't'}, entries);
     newSvc.map.set('kadetten/programmes/999001/v1.pdf', new Uint8Array([...pdf.slice(0, -1), 33]));
@@ -128,10 +197,17 @@ test('Vergleich erkennt eine abweichende Antwort und eine abweichende PDF-Datei'
 });
 
 test('Import: ungültiger Datenstand bricht ab, Schreibfehler von Cloudflare werden gemeldet ohne Zugangsdaten', async () => {
-  const bad = {json: async () => ({status: 200, data: {games: [], stories: []}}), bytes: async () => ({status: 404, bytes: new Uint8Array()})};
+  const bad = {
+    json: async () => ({status: 200, data: {games: [], stories: []}}),
+    bytes: async () => ({status: 404, bytes: new Uint8Array()})
+  };
   await assert.rejects(collect(bad, OLD), /unerwartetes Format/);
-  const failing = async () => new Response(JSON.stringify({success: false, errors: [{code: 10000, message: 'Authentication error'}]}), {status: 403});
-  await assert.rejects(bulkWrite(failing, {accountId: 'a', namespaceId: 'n', token: 'GEHEIMER-TOKEN'}, [{key: 'k', value: 'v'}]), e => /HTTP 403/.test(e.message) && !e.message.includes('GEHEIMER-TOKEN'));
+  const failing = async () =>
+    new Response(JSON.stringify({success: false, errors: [{code: 10000, message: 'Authentication error'}]}), {status: 403});
+  await assert.rejects(
+    bulkWrite(failing, {accountId: 'a', namespaceId: 'n', token: 'GEHEIMER-TOKEN'}, [{key: 'k', value: 'v'}]),
+    e => /HTTP 403/.test(e.message) && !e.message.includes('GEHEIMER-TOKEN')
+  );
 });
 
 test('Pakete: höchstens die erlaubte Menge und Grösse je Anfrage, keine Einträge gehen verloren', () => {
@@ -139,7 +215,17 @@ test('Pakete: höchstens die erlaubte Menge und Grösse je Anfrage, keine Eintr�
   const parts = chunk(entries, 1000, 10);
   assert.ok(parts.every(p => p.length <= 10));
   assert.equal(parts.flat().length, 25);
-  assert.equal(chunk([{key: 'a', value: 'x'.repeat(50)}, {key: 'b', value: 'y'.repeat(50)}], 60, 10).length, 2);
+  assert.equal(
+    chunk(
+      [
+        {key: 'a', value: 'x'.repeat(50)},
+        {key: 'b', value: 'y'.repeat(50)}
+      ],
+      60,
+      10
+    ).length,
+    2
+  );
   assert.equal(canonical({b: 1, a: [{d: 1, c: 2}]}), canonical({a: [{c: 2, d: 1}], b: 1}));
 });
 
