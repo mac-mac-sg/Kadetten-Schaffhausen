@@ -67,3 +67,23 @@ test('Versionsnummer: aus package.json und Git-Commit, sichtbar in Einstellungen
   const app = readFileSync(join(OUT, 'app.js'), 'utf8');
   assert.ok(app.includes(JSON.stringify(info.version)), 'Version im ausgelieferten Code');
 });
+
+test('Cloudflare Web Analytics: nur mit Site-Token, dann Skript und CSP genau für Cloudflare', async () => {
+  const {ANALYTICS_SCRIPT, ANALYTICS_ENDPOINT} = await import('../scripts/build-app.mjs');
+  const token = '0123456789abcdef0123456789abcdef';
+  const on = await buildApp({outDir: OUT + '-wa', target: 'pages', analyticsToken: token});
+  const html = readFileSync(join(OUT + '-wa', 'index.html'), 'utf8');
+  assert.equal(on.analytics, true);
+  assert.match(html, new RegExp(`script-src 'self' ${ANALYTICS_SCRIPT.replace(/[./]/g, '\\$&')};`));
+  assert.match(html, new RegExp(`connect-src 'self' ${API_ORIGIN_PAGES.replace(/[./]/g, '\\$&')} ${ANALYTICS_ENDPOINT.replace(/[./]/g, '\\$&')};`));
+  assert.ok(html.includes(`<script defer src="${ANALYTICS_SCRIPT}" data-cf-beacon='{"token": "${token}"}'></script>`));
+  const {renderDatenschutz} = await import('../src/kadetten/js/views/datenschutz.js');
+  assert.match(String(renderDatenschutz({analytics: true})), /Cloudflare Web Analytics anonym/);
+  assert.match(String(renderDatenschutz({analytics: false})), /keine Cookies und kein Tracking/);
+  for (const [target, analyticsToken] of [['pages', ''], ['pages', 'kein-token'], ['', token]]) {
+    const off = await buildApp({outDir: OUT + '-wa', target, analyticsToken});
+    const plain = readFileSync(join(OUT + '-wa', 'index.html'), 'utf8');
+    assert.equal(off.analytics, false, target + '/' + analyticsToken);
+    assert.doesNotMatch(plain, /cloudflareinsights/);
+  }
+});

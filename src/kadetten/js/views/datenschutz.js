@@ -3,7 +3,7 @@
 import {html} from '../text.js';
 import {href} from '../router.js';
 import {subBand, backLink, sectionHead} from './parts.js';
-import {versionLabel} from '../config.js';
+import {versionLabel, ANALYTICS} from '../config.js';
 
 export const REPO_URL = 'https://github.com/mac-mac-sg/Kadetten-Schaffhausen';
 
@@ -11,7 +11,7 @@ const block = (id, title, items) =>
   html`<section class="sec" aria-labelledby="${id}">${sectionHead(title, '', '', id)}
     <div class="card prose legal">${items.map(text => html`<p>${text}</p>`)}</div></section>`;
 
-export function renderDatenschutz() {
+export function renderDatenschutz({analytics = ANALYTICS} = {}) {
   return html`${subBand(backLink('Einstellungen', href.einstellungen()), 'Datenschutz', 'Über die App')}
     ${block('ds-app', 'Über die App', [
       'Die Kadetten-App ist eine inoffizielle Fan-App. Sie wird privat betrieben und nicht von den Kadetten Schaffhausen herausgegeben.',
@@ -25,7 +25,9 @@ export function renderDatenschutz() {
     ${block('ds-dienst', 'Was der Datendienst speichert', [
       'Mitteilungen: Schaltest du Push ein, speichert der Datendienst die Adresse deines Push-Dienstes (Apple, Google oder Mozilla), die gewählten Mitteilungen und deinen Lieblingsspieler. Beim Ausschalten wird das gelöscht, sonst nach spätestens 180 Tagen.',
       'Fan-Wahl: Deine Stimme wird mit einer zufälligen, verschlüsselten Gerätekennung 60 Tage gespeichert. Gegen Mehrfachstimmen wird die IP-Adresse unumkehrbar verschlüsselt 6 Stunden gezählt.',
-      'Es gibt keine Konten, keine Werbung, keine Cookies und kein Tracking.'
+      analytics
+        ? 'Es gibt keine Konten, keine Werbung und keine Cookies. Seitenaufrufe zählt Cloudflare Web Analytics anonym: ohne Cookies, ohne Wiedererkennung und ohne Profil einzelner Personen.'
+        : 'Es gibt keine Konten, keine Werbung, keine Cookies und kein Tracking.'
     ])}
     ${block('ds-anbieter', 'Anbieter', [
       'Die App liegt bei GitHub Pages, der Datendienst bei Cloudflare. Beide verarbeiten beim Abruf technisch nötige Daten wie die IP-Adresse, auch ausserhalb der Schweiz.',

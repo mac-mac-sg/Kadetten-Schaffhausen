@@ -108,3 +108,13 @@ Der bestehende Bereitstellungsworkflow für den Datendienst führt nach dem Depl
 ## Versionsnummer
 
 Die App zeigt unter «Mein Bereich» → Einstellungen und auf der Seite «Datenschutz» die Versionsnummer, z. B. «Version 1.0.0 (abc1234)». Die Zahl steht in `package.json` (`version`), die Kurzform des Git-Commits setzt der Build (`GITHUB_SHA` in Actions, sonst `git rev-parse`). Bei einer sichtbaren Neuerung die mittlere Zahl erhöhen, bei reinen Korrekturen die letzte; die erste Zahl nur bei grossen Umbrüchen.
+
+## Cloudflare Web Analytics (Nutzungszahlen)
+
+Gratis, ohne Cookies und ohne Wiedererkennung einzelner Personen. Vorbereitet, aber erst aktiv mit einem Site-Token:
+
+1. Im Cloudflare-Dashboard **Web Analytics** → **Add a site** → Hostname der App eintragen (heute `mac-mac-sg.github.io`).
+2. Unter **Manage site** das Token aus dem JS-Snippet kopieren (32 Zeichen, `data-cf-beacon='{"token": "…"}'`).
+3. Das Token in `scripts/build-app.mjs` bei `ANALYTICS_TOKEN` eintragen (es ist öffentlich und steht ohnehin im HTML) und per PR veröffentlichen.
+
+Mit Token setzt der Pages-Build das Skript von `static.cloudflareinsights.com` vor `</body>`, erweitert die CSP genau um dieses Skript (`script-src`) und um `cloudflareinsights.com` (`connect-src`), und die Datenschutzseite nennt die Zählung. Ohne Token bleibt alles wie bisher (Test in `tests/app-build.test.mjs`). Hinweise: Cloudflare erlaubt für das manuell eingebundene Skript keine Integritätsprüfung (SRI), die App vertraut also dem jeweils aktuellen Skript von Cloudflare. Die App nutzt Adressen mit `#`; die Zählung unterscheidet die Seiten daher nicht zuverlässig und zeigt vor allem Besuche, Geräte und Ladezeiten.

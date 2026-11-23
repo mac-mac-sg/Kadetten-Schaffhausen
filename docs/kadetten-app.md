@@ -19,7 +19,7 @@ Die V2 unter `/v2/` wird als eigenständige Kadetten Companion App neu aufgebaut
 | Ort | Die neue App ersetzt die bisherige V2 direkt unter `/v2/`. Installations-ID, Scope und `v2:`-Speicherschlüssel bleiben, damit installierte Apps weiterlaufen. |
 | Technik | Ohne Framework: ES-Module, CSS mit Layern und Tokens, esbuild. Eigene Codebasis ohne gemeinsame Client-Dateien mit V1; die V1-Ausgabe bleibt nachweisbar bytegleich. |
 | Datendienst | Die App liest den bestehenden Datendienst `kadetten-api`. Neue Funktionen erhalten nur zusätzliche Endpunkte unter eigenem Präfix (`/api/app/`, server/app-fan.mjs); bestehende Routen bleiben unverändert. |
-| Charakter | Inoffizielle Fan-App. Kein Auftreten als offizielles Club-Angebot, Videos nur verlinken (Rechte bei SHV/RED), keine Werbung und kein Drittanbieter-Tracking. |
+| Charakter | Inoffizielle Fan-App. Kein Auftreten als offizielles Club-Angebot, Videos nur verlinken (Rechte bei SHV/RED), keine Werbung und kein Tracking einzelner Personen. Seit 23.11.2026 vorbereitet: anonyme Zählung der Seitenaufrufe mit Cloudflare Web Analytics (ohne Cookies), aktiv erst mit Site-Token (docs/betrieb.md). |
 
 ## Fragen der Fans
 
