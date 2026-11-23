@@ -97,3 +97,4 @@
 .ft-btn { position: relative; isolation: isolate; justify-self: start; display: inline-flex; align-items: center; gap: var(--s-1); margin: var(--s-2) 0 0 6px; padding: 8px 16px; font: 600 var(--fs-small)/1 var(--f-text); color: var(--c-on-accent); }
 .ft-btn::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--c-accent); transform: skewX(var(--skew)); }
 .ft-num { position: absolute; top: var(--s-2); right: var(--s-2); min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--c-accent); color: var(--c-on-accent); font: 600 var(--fs-caption)/22px var(--f-text); font-style: normal; text-align: center; }
+.pg:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }

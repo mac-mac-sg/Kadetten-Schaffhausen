@@ -126,7 +126,7 @@ export function renderProdukt({route, state, ui = {}}) {
     .slice(0, 4);
   return html`${subBand(back, p.name, p.kind === 'trikot' ? 'Trikots' : p.kind === 'bekleidung' ? 'Bekleidung' : 'Fanartikel', cartButton())}
     <section class="sec first">
-      <div class="pg" aria-label="Bilder">${images.map((im, i) => img(im, i ? '' : p.name, 'pg-img', !i))}</div>
+      <div class="pg" role="group" tabindex="0" aria-label="${`Bilder von ${p.name}`}">${images.map((im, i) => img(im, i ? '' : p.name, 'pg-img', !i))}</div>
       <div class="pd-head"><p class="pd-p num">${CHF(price)}</p>${p.stock ? '' : html`<span class="tag-ink">Ausverkauft</span>`}</div>
     </section>
     ${p.options.map(

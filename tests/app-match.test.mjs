@@ -142,3 +142,24 @@ test('Artikel: ohne Zuschauerzahl am Schluss bleibt der Text unverändert', () =
   const out = sanitizeArticle('<p>Es kamen viele Zuschauer.</p><p>Kriens, Pilatus Arena</p><p>Strafminuten: 10/8</p>', {parser: DOMParser, doc: document});
   assert.doesNotMatch(out, /match-facts/);
 });
+
+test('Regel-Knöpfe: Beschriftung nennt den Begriff und passt zu den Regeltexten', async () => {
+  const {RULE_LABELS, ruleButton} = await import('../src/kadetten/js/views/bericht.js');
+  const {RULES} = await import('../src/kadetten/js/rules.js');
+  for (const [id, label] of Object.entries(RULE_LABELS)) {
+    assert.ok(RULES[id], 'Regel fehlt: ' + id);
+    assert.ok(RULES[id][0].toLowerCase().includes(label.toLowerCase().split(' ')[0]), id + ': ' + label + ' / ' + RULES[id][0]);
+  }
+  assert.match(String(ruleButton('wurfquote')), /aria-label="Erklärung: Wurfquote"/);
+});
+
+test('Datenschutz: eigene Seite unter Einstellungen mit Fristen und Kontakt', async () => {
+  const {parseRoute, href} = await import('../src/kadetten/js/router.js');
+  const {renderDatenschutz} = await import('../src/kadetten/js/views/datenschutz.js');
+  assert.deepEqual(parseRoute(href.datenschutz()), {area: 'ich', view: 'datenschutz'});
+  const text = String(renderDatenschutz());
+  assert.match(text, /inoffizielle Fan-App/);
+  assert.match(text, /180 Tagen/);
+  assert.match(text, /60 Tage/);
+  assert.match(text, /github\.com\/mac-mac-sg\/Kadetten-Schaffhausen\/issues/);
+});
