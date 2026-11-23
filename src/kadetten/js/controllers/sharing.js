@@ -3,7 +3,7 @@ import {matchImage, matchImageModel, shareImage} from '../share-image.js';
 import {elapsed, isHalftime} from '../gewinnscore.js';
 import {outcome, shortTeam} from '../logic.js';
 import {withFinished} from '../match.js';
-import {crestSrc, RESULT_TEXT} from '../views/parts.js';
+import {crestSrc} from '../views/parts.js';
 import {shareText} from '../views/jetzt.js';
 import {buildCalendar} from '../calendar.js';
 

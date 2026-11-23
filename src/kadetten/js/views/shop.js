@@ -18,7 +18,6 @@ import {
   variantFor,
   valueInStock,
   imageFor,
-  cart,
   cartCount,
   cartLines,
   totals,

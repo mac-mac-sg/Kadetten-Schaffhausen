@@ -9,3 +9,7 @@ for (const folder of ['server','scripts','src/kadetten','src/kadetten/js','src/k
 // Formatierung der V2-App (Prettier, Einstellungen in .prettierrc.json). V1 bleibt eingefroren und wird nicht formatiert.
 const format = spawnSync(process.execPath, ['node_modules/prettier/bin/prettier.cjs', '--check', 'src/kadetten/js'], {stdio: 'inherit'});
 if (format.status !== 0) { console.error('Formatierung abweichend: npm run format'); process.exit(format.status || 1); }
+
+// Wenige Regeln gegen echte Fehler (eslint.config.mjs): unbenutzte und undefinierte Namen, doppelte Schlüssel, toter Code.
+const lint = spawnSync(process.execPath, ['node_modules/eslint/bin/eslint.js', '.'], {stdio: 'inherit'});
+if (lint.status !== 0) { console.error('ESLint meldet Fehler: npx eslint .'); process.exit(lint.status || 1); }

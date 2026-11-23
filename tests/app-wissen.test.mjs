@@ -8,7 +8,6 @@ import {feldbild, stepPlayers, arrowPath} from '../src/kadetten/js/wissen/feld.j
 import {RULES} from '../src/kadetten/js/rules.js';
 import {renderWissen} from '../src/kadetten/js/views/wissen.js';
 import {renderIch} from '../src/kadetten/js/views/ich.js';
-import {renderTeam, renderSpieler} from '../src/kadetten/js/views/team.js';
 import {renderJetzt} from '../src/kadetten/js/views/jetzt.js';
 import {renderMein} from '../src/kadetten/js/views/sammlung.js';
 import {decodeDeep} from '../src/kadetten/js/text.js';

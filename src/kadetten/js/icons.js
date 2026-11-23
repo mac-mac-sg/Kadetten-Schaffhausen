@@ -3,7 +3,6 @@ import {raw} from './text.js';
 
 const PATHS = {
   news: '<path d="M5 4h11a1 1 0 0 1 1 1v14H6a1 1 0 0 1-1-1z"/><path d="M17 8h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2"/><path d="M8 8h6M8 12h6M8 15h4"/>',
-  ticket: '<path d="M3.5 7.5h17v3a1.5 1.5 0 0 0 0 3v3h-17v-3a1.5 1.5 0 0 0 0-3z"/><path d="M14.5 7.5v9" stroke-dasharray="1.5 2"/>',
   pause: '<path d="M8 6v12M16 6v12"/>',
   play: '<path d="M8 5.5v13l10.5-6.5z"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',

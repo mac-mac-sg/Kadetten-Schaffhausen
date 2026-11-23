@@ -1,6 +1,6 @@
 // Spielbezogene Logik ohne Seitenzugriff: Spiele zuordnen, Live-Tabelle, Spielberichte vereinheitlichen.
 // Getestet in tests/app-match.test.mjs.
-import {OWN_TEAM, hasScore, zurichParts, ownGames, standings} from './logic.js';
+import {OWN_TEAM, hasScore, zurichParts, standings} from './logic.js';
 
 /** Liga-Zusatz der SHV im Cup entfernen: «Kadetten Schaffhausen (QHL)» → «Kadetten Schaffhausen». */
 export const cleanTeam = name =>

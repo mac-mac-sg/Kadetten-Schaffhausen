@@ -27,6 +27,8 @@
     "@fontsource/barlow-condensed": "5.2.8",
     "@fontsource/inter": "5.2.8",
     "esbuild": "^0.28.2",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
     "linkedom": "^0.18.13",
     "pdfjs-dist": "^5.4.149",
     "playwright": "1.63.0",

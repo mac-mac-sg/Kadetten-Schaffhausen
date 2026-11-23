@@ -25,7 +25,7 @@ import {findGame, liveTable, sameTeam, withFinished, isOwn, displayName} from '.
 import {liveNotice, liveScoreTime, waitingForLive} from '../live.js';
 import {liveReport, liveVoteCard} from './bericht.js';
 import {tipPoints} from '../moments.js';
-import {tips, favourite} from '../personal.js';
+import {tips} from '../personal.js';
 import {myVotes} from '../fan-vote.js';
 import {
   homeBand,
@@ -43,7 +43,6 @@ import {
   gameRow,
   storyRow,
   storyImage,
-  LOGO,
   RESULT_TEXT,
   tipCard
 } from './parts.js';
@@ -118,28 +117,6 @@ export function previewHero(game, now, {link = true, actions = '', status = null
     label: 'Zur Spielvorschau',
     actions
   });
-}
-
-function tableTeaser(data) {
-  const rows = standings(data.tables?.QHL),
-    own = rows.find(r => r.team === OWN_TEAM);
-  if (!own) return '';
-  const leader = rows[0];
-  const gap =
-    own.rank === 1
-      ? rows[1] && own.points !== null && rows[1].points !== null
-        ? `+${own.points - rows[1].points}`
-        : '–'
-      : leader.points !== null && own.points !== null
-        ? `−${leader.points - own.points}`
-        : '–';
-  return html`<section class="sec" aria-labelledby="j-tab">
-    ${sectionHead('Tabelle in Kürze', 'Ganze Tabelle', href.saison('tabellen'), 'j-tab')}
-    ${stats([
-      [own.rank + '.', 'QHL-Platz'],
-      [own.points, 'Punkte'],
-      [gap, own.rank === 1 ? 'vor Platz 2' : 'auf Platz 1']
-    ])}</section>`;
 }
 
 function liveScorers(match, game) {
