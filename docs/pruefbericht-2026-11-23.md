@@ -14,6 +14,15 @@ Grundlagen der Prüfung:
 - 22 Seiten in echtem Chromium hell und dunkel aufgerufen und mit axe-core 4.10 automatisch auf Barrierefreiheit geprüft.
 - Ladezeit gemessen, einmal schnell und einmal mit simuliertem 4G.
 
+## Umsetzungsstand (23. November 2026)
+
+| Punkt | Stand |
+|---|---|
+| D1 Erklär-Knöpfe | Die Tippfläche war schon 44 px (unsichtbare Fläche um das «?»); die Beschriftung nennt jetzt den Begriff, z. B. «Erklärung: Wurfquote» (`RULE_LABELS`, Test gegen die Regeltexte) |
+| D2 Bildergalerie | per Tastatur erreichbar und beschriftet («Bilder von …»), mit Fokusrahmen; axe meldet keine Verstösse mehr |
+| D3 Teamnamen | Kurznamen für Chambéry, Balingen und Bietigheim; die Spielkarte zeigt «Chambéry» statt «Chambery Sa-voie Mont Blanc HB» |
+| K2 Datenschutz | eigene Seite «Datenschutz» unter Einstellungen (`#/ich/datenschutz`): inoffizielle Fan-App, was auf dem Gerät bleibt, was der Datendienst wie lange speichert (Push 180 Tage, Fan-Wahl 60 Tage, Anschluss 6 Stunden), Anbieter, Kontakt über GitHub. Offen: Name der verantwortlichen Person für ein Impressum (hängt am Entscheid K3) |
+
 ## Gesamturteil
 
 Die App wirkt professionell und ist technisch sauberer gebaut als viele Vereins-Apps von Agenturen:
