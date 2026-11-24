@@ -267,3 +267,10 @@ test('Mein Bereich zeigt vorhandene Hallenbesuche sowie offene und gewertete Tip
   const done = render('#/ich', MOMENTS.nachspiel);
   assert.match(done, /33:27<\/b> · 3 Punkte/);
 });
+
+test('Spieltag auf der Startseite: Ausgangslage verlinkt die Vorschau, kein abgeschnittener Vorschautext', () => {
+  const html = render('#/', MOMENTS.spieltag);
+  assert.match(html, /Ausgangslage<\/h2>[\s\S]*?<a [^>]*href="#\/spiel\/[^"]+"[^>]*>Vorschau lesen/);
+  assert.doesNotMatch(html, /j-vor|class="clamp"/);
+  assert.ok(html.indexOf('Ausgangslage') < html.indexOf('Mein Tipp'), 'Tipp folgt direkt auf die Ausgangslage');
+});

@@ -192,7 +192,9 @@ function liveTableTeaser(data, match) {
 // Rundenkennungen aus dem Vereins-Spielplan für den Mobiliar Cup 2026/27.
 const CUP_ROUNDS_2026 = {84: 'Achtelfinal', 85: 'Viertelfinal'};
 
+// Ausgangslage am Spieltag; der Kopf verlinkt die ganze Vorschau auf der Spielseite (statt eines abgeschnittenen Textauszugs).
 function matchdayStats(game, data) {
+  const head = sectionHead('Ausgangslage', 'Vorschau lesen', href.spiel(game.id), 'j-lage');
   const competition = competitionOf(game);
   const league = competition === 'QHL' || competition === 'EHL';
   const rows = league ? standings(data.tables?.[competition]) : [];
@@ -206,7 +208,7 @@ function matchdayStats(game, data) {
     const round = String(game.round || '').trim();
     const cupSeason = game.date >= '2026-07-01' && game.date < '2027-07-01' && /^Mobiliar-Cup M$/i.test(game.league);
     const label = (cupSeason && CUP_ROUNDS_2026[round]) || (/\p{L}/u.test(round) ? round : null);
-    return html`<section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}
+    return html`<section class="sec" aria-labelledby="j-lage">${head}
       <div class="card list">${listRow({title: label || game.league, sub: label ? game.league : '', end: ''})}${
         recent.length ? listRow({title: formLabel, end: formRow(recent, true)}) : ''
       }</div></section>`;
@@ -221,9 +223,7 @@ function matchdayStats(game, data) {
     if (competition === 'QHL' && own.points != null) items.push([own.points + 2, 'Punkte mit Sieg']);
   }
   if (recent.length) items.push([formRow(recent, true), formLabel]);
-  return items.length
-    ? html`<section class="sec" aria-labelledby="j-lage">${sectionHead('Ausgangslage', '', '', 'j-lage')}${stats(items)}</section>`
-    : '';
+  return items.length ? html`<section class="sec" aria-labelledby="j-lage">${head}${stats(items)}</section>` : '';
 }
 
 export function renderJetzt({state, now, load, api, ui}) {
@@ -250,19 +250,11 @@ export function renderJetzt({state, now, load, api, ui}) {
 
   if (phase === 'spieltag') {
     const actions = html`<div class="acts single"><a class="btn" href="${href.einstellungen()}">${icon('bell')}Push zum Anpfiff</a></div>`;
-    const preview = ['QHL', 'EHL'].includes(game.league) ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
     return html`${homeBand()}
       <section class="sec match-score" aria-labelledby="j-heute">
         <h2 class="sr" id="j-heute">Heute</h2>
         ${previewHero(game, now, {actions, status: waitingForLive(game, state, now)})}</section>
       ${matchdayStats(game, data)}
-      ${
-        preview?.value?.paragraphs?.length
-          ? html`<section class="sec" aria-labelledby="j-vor">
-        ${sectionHead('Vorschau', 'Ganze Vorschau', href.spiel(game.id), 'j-vor')}<a class="card" href="${href.spiel(game.id)}"><p class="clamp">${preview.value.paragraphs[0]}</p>
-        </a></section>`
-          : ''
-      }
       ${tipFor(game, now)}
       ${newsBlock(data, 2)}${offline}`;
   }
