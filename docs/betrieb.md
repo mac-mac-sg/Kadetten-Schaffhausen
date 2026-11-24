@@ -111,7 +111,7 @@ Die App zeigt unter «Mein Bereich» → Einstellungen und auf der Seite «Daten
 
 ## Cloudflare Web Analytics (Nutzungszahlen)
 
-Gratis, ohne Cookies und ohne Wiedererkennung einzelner Personen. Vorbereitet, aber erst aktiv mit einem Site-Token:
+Gratis, ohne Cookies und ohne Wiedererkennung einzelner Personen. Aktiv seit 24. November 2026 für `mac-mac-sg.github.io` (Auswertung im Cloudflare-Dashboard unter Web Analytics). Bei einem Wechsel der Adresse neu einrichten:
 
 1. Im Cloudflare-Dashboard **Web Analytics** → **Add a site** → Hostname der App eintragen (heute `mac-mac-sg.github.io`).
 2. Unter **Manage site** das Token aus dem JS-Snippet kopieren (32 Zeichen, `data-cf-beacon='{"token": "…"}'`).

@@ -21,7 +21,8 @@ test('Eigene Codebasis: keine Datei der Kadetten-App greift auf das Archiv von M
 });
 
 test('Build: Hülle vollständig, Service Worker ohne Platzhalter, Datendienst nur lesend erlaubt', async () => {
-  const {version, shell} = await buildApp({outDir: OUT, target: 'pages'});
+  // Ohne Zählung gebaut; die Variante mit Cloudflare Web Analytics prüft der eigene Test unten.
+  const {version, shell} = await buildApp({outDir: OUT, target: 'pages', analyticsToken: ''});
   for (const file of shell.filter(f => f !== './')) assert.ok(existsSync(join(OUT, file)), 'fehlt: ' + file);
   const sw = readFileSync(join(OUT, 'sw.js'), 'utf8');
   assert.doesNotMatch(sw, /__[A-Z_]+__/);
@@ -101,4 +102,9 @@ test('Cloudflare Web Analytics: nur mit Site-Token, dann Skript und CSP genau f�
     assert.equal(off.analytics, false, target + '/' + analyticsToken);
     assert.doesNotMatch(plain, /cloudflareinsights/);
   }
+});
+
+test('Cloudflare Web Analytics: Token im Pages-Build gesetzt', async () => {
+  const {ANALYTICS_TOKEN} = await import('../scripts/build-app.mjs');
+  assert.match(ANALYTICS_TOKEN, /^[0-9a-f]{32}$/);
 });

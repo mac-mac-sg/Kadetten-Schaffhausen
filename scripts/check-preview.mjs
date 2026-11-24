@@ -7,8 +7,10 @@ function checkApp(root, label) {
   assert.match(html, /<title>Kadetten<\/title>/, label + ' muss die Kadetten-App sein');
   assert.match(html, /name="apple-mobile-web-app-title" content="Kadetten"/);
   assert.doesNotMatch(html, /FCSG|St\. Otmar|Meine Vereine|Matchday|data-preview/, 'Kein Rest von Matchday in ' + label);
-  assert.match(html, /connect-src 'self' https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev;/);
+  assert.match(html, /connect-src 'self' https:\/\/kadetten-api\.mac-mac-sg\.workers\.dev( https:\/\/cloudflareinsights\.com)?;/);
+  // Einzige erlaubte fremde Datei: das Zählskript von Cloudflare Web Analytics (scripts/build-app.mjs).
   for (const [, file] of html.matchAll(/(?:src|href)="([^"#?]+)/g)) {
+    if (file === 'https://static.cloudflareinsights.com/beacon.min.js') continue;
     assert.ok(!file.startsWith('/') && !file.startsWith('..'), 'Pfad verlässt ' + label + ': ' + file);
     assert.ok(fs.existsSync(root + file), 'Fehlt: ' + root + file);
   }

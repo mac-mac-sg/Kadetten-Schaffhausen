@@ -10,7 +10,7 @@ import {execFileSync} from 'node:child_process';
 export const API_ORIGIN_PAGES = 'https://kadetten-api.mac-mac-sg.workers.dev';
 // Cloudflare Web Analytics (gratis, ohne Cookies): Site-Token aus dem Cloudflare-Dashboard (Web Analytics → Add a site →
 // Hostname der App). Das Token ist öffentlich und steht im HTML. Leer = keine Zählung. Nur im Pages-Build, nicht lokal.
-export const ANALYTICS_TOKEN = '';
+export const ANALYTICS_TOKEN = '285c65bdc7644d569496bc34a537e04b';
 export const ANALYTICS_SCRIPT = 'https://static.cloudflareinsights.com/beacon.min.js';
 export const ANALYTICS_ENDPOINT = 'https://cloudflareinsights.com';
 // Inter für Text, Barlow Condensed (auch kursiv) für Ziffern und Titel des Designs «Schnitt».
