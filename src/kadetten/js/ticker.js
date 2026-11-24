@@ -80,7 +80,9 @@ export function renderTicker(match, {all = false} = {}) {
         }</li>`;
       })}</ol>`
         : notice(
-            'Für dieses Spiel liefert die Quelle noch keine einzelnen Ereignisse. Spielstand und verfügbare Werte bleiben unter Übersicht und Statistik erreichbar.'
+            /EHL|European League/.test(match?.league || '')
+              ? 'Die EHF liefert während des Spiels keine einzelnen Ereignisse. Spielstand, Team- und Spielerwerte laufen live unter Statistik; Tore und Strafen folgen im Rückblick nach dem Schlusspfiff.'
+              : 'Für dieses Spiel liefert die Quelle noch keine einzelnen Ereignisse. Spielstand und verfügbare Werte laufen live unter Statistik.'
           )
     }
     <p class="fine pad-top">Quelle: ${/EHL|European League/.test(match?.league || '') ? 'EHF' : 'Schweizerischer Handball-Verband'} · Abruf alle 30 Sekunden</p>
