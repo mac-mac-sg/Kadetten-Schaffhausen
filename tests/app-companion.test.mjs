@@ -150,3 +150,34 @@ test('Adressen der archivierten App Matchday führen zur passenden Ansicht der K
   assert.equal(parseRoute('#home').view, 'jetzt');
   assert.equal(parseRoute('#club').view, 'jetzt');
 });
+
+test('Nach dem Schlusspfiff: Statistik zeigt vorläufige Live-Werte, bis der bestätigte Spielbericht vorliegt', () => {
+  const finished = {
+    ...game,
+    id: 'next',
+    status: 'finished',
+    score: [28, 28],
+    details: {
+      ok: true,
+      events: null,
+      players: [
+        {id: 1, name: 'Óðinn Ríkharðsson', home: true, goals: 9, shots: 12},
+        {id: 2, name: 'Sveinn Jóhannsson', home: false, goals: 7, shots: 9}
+      ]
+    }
+  };
+  const state = {data, live: {finished}};
+  const later = Date.parse('2026-11-11T21:00:00Z');
+  const missing = {...ctx, state, now: later, load: () => ({status: 'error'})};
+  const d = doc(renderSpiel({...missing, route: {id: 'next', tab: 'bericht'}}));
+  assert.match(d.body.textContent, /Vorläufige Werte vom Schlusspfiff/);
+  assert.match(d.body.textContent, /Spielerwerte \(vorläufig\)/);
+  assert.match(d.body.textContent, /Óðinn Ríkharðsson/);
+  assert.doesNotMatch(d.body.textContent, /noch kein bestätigter Spielbericht/);
+  const rueckblick = doc(renderSpiel({...missing, route: {id: 'next', tab: 'rueckblick'}}));
+  assert.doesNotMatch(rueckblick.body.textContent, /vorläufig/, 'der Rückblick wartet auf den bestätigten Bericht');
+  const other = doc(
+    renderSpiel({...missing, state: {data, live: {finished: {...finished, away: 'Wacker Thun'}}}, route: {id: 'next', tab: 'bericht'}})
+  );
+  assert.doesNotMatch(other.body.textContent, /vorläufig/, 'nur für dasselbe Spiel');
+});

@@ -270,6 +270,19 @@ function bericht({game, phase, data, load, api, ui, state, now, part = 'alles'})
         vote.value.open ? (pickFor(game.id) ? 'Dein Favorit ist vorgewählt' : 'Deine Stimme zählt') : 'Zum Ergebnis der Fan-Wahl'
       }</span></span>${icon('go')}</a></section>`
     : '';
+  // Bis der bestätigte Spielbericht vorliegt: die letzten Live-Werte vom Schlusspfiff, als vorläufig gekennzeichnet.
+  const finished = state?.live?.finished;
+  if (
+    supported &&
+    part !== 'rueckblick' &&
+    !normalized &&
+    entry?.status !== 'loading' &&
+    finished?.details &&
+    findGame([game], finished, now)
+  )
+    return html`${voting}<section class="sec">
+      ${notice('Vorläufige Werte vom Schlusspfiff. Der bestätigte Spielbericht mit Torfolge und Rückblick folgt mit der nächsten Datenaktualisierung.', 'doc')}</section>
+      ${renderLiveStats({match: finished, data, ui, provisional: true})}`;
   return renderBericht({game, data, entry, ui, normalized, voting, part, supported});
 }
 
