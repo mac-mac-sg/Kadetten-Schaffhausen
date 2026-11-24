@@ -93,3 +93,27 @@ test('EHF-Ticker live: Gegner mit der Schreibweise der EHF erscheint mit Kurznam
   assert.match(out, /Tor <em>Chambéry<\/em>/);
   assert.doesNotMatch(out, /Savoie/);
 });
+
+test('EHF-Ticker: ein Tor ohne eingetragenen Torschützen zählt mit, die folgenden Tore behalten die richtige Seite', () => {
+  // Wie am 24.11.2026 bei 57:00 und 58:57: die EHF meldet das Tor, aber ohne Torschützen.
+  const copy = structuredClone(fixture);
+  const actions = (Array.isArray(copy.events) ? copy.events[0] : copy.events).actions.action;
+  const goals = actions.filter(a => a.action === 'SHOT' && a.result === 'GOAL').sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const target = goals.at(-2);
+  for (const c of target.competitor || [])
+    if (c.composition) c.composition.athlete = (c.composition.athlete || []).filter(x => x.role !== 'SCR');
+  const original = parseTicker(fixture),
+    ticker = parseTicker(copy);
+  assert.equal(ticker.goals.length, original.goals.length, 'kein Tor geht verloren');
+  assert.deepEqual(
+    ticker.goals.map(g => [g.score, g.side]),
+    original.goals.map(g => [g.score, g.side]),
+    'Spielstand und Seiten unverändert'
+  );
+  assert.equal(ticker.goals.at(-2).name, null);
+  const event = liveTickerEvents(ticker)
+    .filter(e => /Tor$/.test(e.action))
+    .at(-2);
+  assert.equal(event.homePlayer ?? event.awayPlayer, null, 'im Ticker ohne Namen, aber mit Mannschaft');
+  assert.ok(event.homeAction || event.awayAction);
+});
