@@ -56,7 +56,18 @@ export function parseTicker(data) {
     const sec = clockSeconds(a.when);
     if (a.action === 'SHOT') {
       const s = scorerOf(a.competitor);
-      if (!s) continue;
+      // Tor ohne eingetragenen Torschützen (kommt in der Schlussphase vor, z. B. 24.11.2026 bei 57:00 und 58:57): Es zählt trotzdem,
+      // sonst fehlt es in der Torfolge und die nächste Seite wird falsch bestimmt. Seite aus dem Spielstand, ohne Namen.
+      if (!s) {
+        if (a.result === 'GOAL' && Number.isInteger(a.scoreH) && Number.isInteger(a.scoreA) && sec !== null) {
+          const side = a.scoreH > prev[0] ? 'home' : a.scoreA > prev[1] ? 'away' : null;
+          if (side) {
+            goals.push({sec, half: a.period || null, score: [a.scoreH, a.scoreA], side, name: null, bib: null, seven: a.loc === 'PTY'});
+            prev = [a.scoreH, a.scoreA];
+          }
+        }
+        continue;
+      }
       const seven = a.loc === 'PTY';
       const keeper = (a.competitor || []).flatMap(c =>
         (c.composition?.athlete || [])
