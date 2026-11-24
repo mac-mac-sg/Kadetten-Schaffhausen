@@ -13,7 +13,7 @@ const DATA_CACHE = 'kadetten-app-data-' + NS;
 // (kadetten-offline-<Version>-<Pfad>, kadetten-articles-v2-<Pfad>). Sie werden beim Aktivieren gelöscht.
 const OLD_CACHE = key => (key.startsWith('kadetten-offline-') || key.startsWith('kadetten-articles-v2-')) && key.endsWith('-' + NS);
 const CACHEABLE_API = /^\/api\/(data|reports\/|ehf-reports\/|head-to-head|recent-games|previews\/|programmes\/[^/]+$|articles\/)/;
-const NEVER_CACHE = /^\/api\/(live|push\/|access|refresh)/;
+const NEVER_CACHE = /^\/api\/(live|ehf-live\/|push\/|access|refresh)/;
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

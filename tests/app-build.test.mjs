@@ -27,7 +27,7 @@ test('Build: Hülle vollständig, Service Worker ohne Platzhalter, Datendienst n
   const sw = readFileSync(join(OUT, 'sw.js'), 'utf8');
   assert.doesNotMatch(sw, /__[A-Z_]+__/);
   assert.match(sw, new RegExp(`const VERSION = "${version}"`));
-  assert.match(sw, /NEVER_CACHE = \/\^\\\/api\\\/\(live\|push/);
+  assert.match(sw, /NEVER_CACHE = \/\^\\\/api\\\/\(live\|ehf-live\\\/\|push/);
   const html = readFileSync(join(OUT, 'index.html'), 'utf8');
   assert.match(html, new RegExp(`connect-src 'self' ${API_ORIGIN_PAGES.replace(/[.]/g, '\\.')};`));
   assert.match(html, /script-src 'self';/);

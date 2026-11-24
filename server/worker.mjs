@@ -10,6 +10,7 @@ import {dispatchUpdate} from './scheduler.mjs';
 import {pushRoute} from './push-subscriptions.mjs';
 import {monitorPush} from './push-monitor.mjs';
 import {appRoute} from './app-fan.mjs';
+import {ehfLiveRoute} from './ehf-live.mjs';
 
 const json = (x, status = 200) =>
   new Response(JSON.stringify(x), {status, headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-store'}});
@@ -185,6 +186,7 @@ const routes = [
   [isUnder('/api/ehf-reports/'), ehfReports],
   [isUnder('/api/match-reports/'), matchReports],
   [isPath('/api/live'), live],
+  [isUnder('/api/ehf-live/'), ehfLiveRoute],
   [isUnder('/api/articles/'), articles],
   [isPath('/api/data'), data],
   [isPath('/api/refresh'), refreshData],
