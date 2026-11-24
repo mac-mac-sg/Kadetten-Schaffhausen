@@ -68,7 +68,7 @@ test('Zurück aus Spiel und Spiellaschen erreicht Ursprung mit Scrollposition; B
   assert.notEqual(direct.current.id, plan.id, 'keine Kollision mit History-Einträgen früherer Sitzungen');
 });
 
-test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf Start- und Spielseite', () => {
+test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; die Startseite verlinkt sie bei der Ausgangslage', () => {
   const previewCtx = {
     ...ctx,
     now: Date.parse('2026-11-11T14:30:00Z'),
@@ -76,11 +76,13 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf Start- und Spielse
       key === 'preview:next' ? {status: 'ready', value: {generator: 'daten', paragraphs: ['Text zur Vorschau.']}} : {status: 'error'}
   };
   const out = dom(renderSpiel({...previewCtx, route: {id: 'next'}, ui: {backTarget: '#/saison'}}));
-  for (const page of [out, dom(renderJetzt(previewCtx))]) {
-    const headings = [...page.querySelectorAll('h2')].map(h => h.textContent);
-    assert.ok(headings.indexOf('Ausgangslage') < headings.indexOf('Vorschau'));
-    assert.ok(headings.indexOf('Vorschau') >= 0 && headings.indexOf('Vorschau') < headings.indexOf('Mein Tipp'));
-  }
+  const headings = [...out.querySelectorAll('h2')].map(h => h.textContent);
+  assert.ok(headings.indexOf('Ausgangslage') < headings.indexOf('Vorschau'));
+  assert.ok(headings.indexOf('Vorschau') >= 0 && headings.indexOf('Vorschau') < headings.indexOf('Mein Tipp'));
+  const start = dom(renderJetzt(previewCtx));
+  const startHeadings = [...start.querySelectorAll('h2')].map(h => h.textContent);
+  assert.equal(startHeadings.indexOf('Vorschau'), -1, 'kein abgeschnittener Vorschautext auf der Startseite');
+  assert.equal(start.querySelector('#j-lage').closest('section').querySelector('a').getAttribute('href'), '#/spiel/next');
   const form = out.querySelector('[aria-labelledby="g-lage"]');
   assert.equal(form.querySelector('[role="img"]').getAttribute('aria-label'), 'Form: Sieg');
   assert.doesNotMatch(form.textContent, /neuestes zuerst/, 'keine erklärenden Sätze');
