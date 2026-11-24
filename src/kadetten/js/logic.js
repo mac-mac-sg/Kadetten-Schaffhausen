@@ -163,6 +163,9 @@ export function shortTeam(name) {
     'HSC Suhr Aarau': 'Suhr Aarau',
     'Handball Stäfa': 'Stäfa',
     'Chambery Savoie Mont Blanc HB': 'Chambéry',
+    // Schreibweise der EHF (Live-Feed und Ticker)
+    'Chambery Savoie Mont Blanc Handball': 'Chambéry',
+    'Chambéry Savoie Mont Blanc Handball': 'Chambéry',
     'HBW Balingen-Weilstetten': 'Balingen',
     'SG BBM Bietigheim': 'Bietigheim'
   };

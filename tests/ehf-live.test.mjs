@@ -79,3 +79,17 @@ test('EHF-Ticker live: die App übernimmt die Ereignisse in den Ticker; ohne Tic
   const qhl = {league: 'QHL', details: {events: []}};
   assert.equal(withEhfEvents(qhl, {value: {events}}), qhl, 'SHV-Spiele bleiben unverändert');
 });
+
+test('EHF-Ticker live: Gegner mit der Schreibweise der EHF erscheint mit Kurznamen', () => {
+  const match = {
+    id: ID,
+    league: 'European League',
+    home: 'Kadetten Schaffhausen',
+    away: 'Chambery Savoie Mont Blanc Handball',
+    details: {ok: true, events: null}
+  };
+  const merged = withEhfEvents(match, {status: 'ready', value: {ok: true, events: liveTickerEvents(parseTicker(fixture))}});
+  const out = String(renderTicker(merged));
+  assert.match(out, /Tor <em>Chambéry<\/em>/);
+  assert.doesNotMatch(out, /Savoie/);
+});
