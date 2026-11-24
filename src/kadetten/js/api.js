@@ -37,6 +37,8 @@ export function createApi({origin = '', fetchImpl = globalThis.fetch, timeout = 
         fresh: true,
         requestTimeout: LIVE_TIMEOUT
       }),
+    // Ereignisse eines laufenden Spiels der European League (EHF-Ticker), getrennt vom Live-Stand.
+    ehfLive: matchId => get('/api/ehf-live/' + id(matchId), {fresh: true}),
     report: gameId => get('/api/reports/' + id(gameId)),
     ehfReport: gameId => get('/api/ehf-reports/' + id(gameId)),
     matchReport: gameId => get('/api/match-reports/' + id(gameId)),

@@ -390,3 +390,34 @@ export function plainReport(f) {
 
 // Torfolge für die Anzeige in der App: «t» als Spielminute, «s» Spielstand, «h» wahr, wenn das Heimteam traf.
 export const goalFeed = ticker => ticker.goals.map(g => ({t: clockText(g.sec), s: g.score, h: g.side === 'home', n: g.name, p: g.seven}));
+
+// Live-Ereignisse für den Ticker der App, im selben Format wie die SHV-Ereignisse (server/live.mjs, details.events):
+// {id, seconds, action, score, homePlayer, awayPlayer, homeAction, awayAction}. Die Codes (bFeldTor, b7mTor, b2Min, bTO) sind die
+// des SHV, damit die App Tore und Strafen gleich erkennt. Verworfene Siebenmeter erscheinen nur unter «Alle Ereignisse».
+export function liveTickerEvents(ticker) {
+  const events = [];
+  const add = (id, seconds, side, action, code, player = null, score = null) =>
+    Number.isInteger(seconds) &&
+    (side === 'home' || side === 'away') &&
+    events.push({
+      id,
+      seconds,
+      action,
+      ...(score ? {score} : {}),
+      homePlayer: side === 'home' ? player : null,
+      awayPlayer: side === 'away' ? player : null,
+      homeAction: side === 'home' ? code : null,
+      awayAction: side === 'away' ? code : null
+    });
+  ticker.goals.forEach((g, i) =>
+    add('g' + i, g.sec, g.side, g.seven ? '7m Tor' : 'Tor', g.seven ? 'b7mTor' : 'bFeldTor', g.name || null, g.score)
+  );
+  ticker.suspensions.forEach((s, i) => add('s' + i, s.sec, s.side, 'Zeitstrafe', 'b2Min', s.name || null));
+  ticker.timeouts.forEach((t, i) =>
+    add('t' + i, t.sec, t.side, 'Time-out', 'bTO', null, t.score?.every(Number.isInteger) ? t.score : null)
+  );
+  ticker.shots
+    .filter(s => s.zone === 'PTY' && s.result !== 'GOAL')
+    .forEach((s, i) => add('p' + i, s.sec, s.side, '7m verworfen', 'b7mVerworfen'));
+  return events.sort((a, b) => a.seconds - b.seconds);
+}

@@ -234,10 +234,23 @@ const liveShare = match =>
     : '';
 
 /** Reiter «Ticker» eines laufenden Spiels (vor Anpfiff gibt es keine Reiter, danach nur Statistik und Rückblick). */
+/** European League: Die Ereignisse kommen aus dem EHF-Ticker über einen eigenen Abruf (/api/ehf-live); ohne ihn bleibt der Hinweis. */
+export function withEhfEvents(match, ticker) {
+  if (!/European League|EHL/.test(match?.league || '') || Array.isArray(match?.details?.events)) return match;
+  const value = ticker?.value;
+  if (!Array.isArray(value?.events)) return match;
+  return {...match, details: {...(match.details || {}), events: value.events, ok: value.ok !== false}};
+}
+
 function liveTab({game, data, state, ui, load, api}) {
   const oppForm = isScored(game) ? opponentForm(load, api, data, game) : null;
   const pre = oppForm === undefined ? null : preScore({game, data, oppForm});
-  return html`${gewinnLive(pre, state.live.match, game)}${voteCard(game, ui, load)}${liveShare(state.live.match)}${renderTicker(state.live.match, {all: ui.tickerAll === '1'})}<section class="sec">
+  const live = state.live.match;
+  const ehf =
+    /European League|EHL/.test(live?.league || '') && /^\d{15}$/.test(String(live?.id || '')) && api?.ehfLive
+      ? load('ehflive:' + live.id, () => api.ehfLive(live.id), 25000)
+      : null;
+  return html`${gewinnLive(pre, live, game)}${voteCard(game, ui, load)}${liveShare(live)}${renderTicker(withEhfEvents(live, ehf), {all: ui.tickerAll === '1'})}<section class="sec">
     <a class="btn wide" href="${href.spiel(game.id, 'bericht')}">Alle Spielwerte</a></section>`;
 }
 
