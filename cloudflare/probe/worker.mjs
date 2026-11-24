@@ -1,5 +1,4 @@
 import {getLiveMatch, getRecentGames} from '../../server/live.mjs';
-import {getFcsgLive, getFcsgPlayers} from '../../server/fcsg.mjs';
 import {fetchPlayerSeason} from '../../server/shv.mjs';
 
 // Machbarkeitstest für den Umzug auf Cloudflare (docs/cloudflare-umzug.md, Phase 0).
@@ -18,10 +17,7 @@ export const checks = [
   ['kadettensh.ch News (WordPress-API)', () => plainFetch('https://kadettensh.ch/wp-json/wp/v2/posts?per_page=1')],
   ['SHV handball.ch Live (getLiveMatch)', async () => ({match: !!(await getLiveMatch()).match})],
   ['SHV handball.ch Spielerwerte', async () => (await fetchPlayerSeason(), {ok: true})],
-  ['SHV handball.ch Letzte Spiele', async () => (await getRecentGames('Kadetten Schaffhausen'), {ok: true})],
-  ['FCSG Spielerdaten (fcsg-api-cdn)', async () => (await getFcsgPlayers(), {ok: true})],
-  ['FCSG Live (fcsg-api-cdn)', async () => (await getFcsgLive(), {ok: true})],
-  ['fcsg.ch Webseite', () => plainFetch('https://www.fcsg.ch/')]
+  ['SHV handball.ch Letzte Spiele', async () => (await getRecentGames('Kadetten Schaffhausen'), {ok: true})]
 ];
 
 export async function runProbe(list = checks, now = () => Date.now()) {

@@ -30,7 +30,11 @@ export function shopText(value, max = 400) {
 export function shopImage(value) {
   try {
     const u = new URL(String(value));
-    return u.protocol === 'https:' && u.hostname === 'kadettensh.ch' && u.pathname.startsWith('/wp-content/uploads/') && /\.(jpe?g|png|webp)$/i.test(u.pathname) && !u.search
+    return u.protocol === 'https:' &&
+      u.hostname === 'kadettensh.ch' &&
+      u.pathname.startsWith('/wp-content/uploads/') &&
+      /\.(jpe?g|png|webp)$/i.test(u.pathname) &&
+      !u.search
       ? u.href
       : null;
   } catch {
@@ -103,7 +107,9 @@ export function parseShop(products, variations = []) {
       .map(v => {
         const vid = String(v?.id ?? '');
         const values = variationValues(v?.variation);
-        const img = (v?.images || []).map(i => ({id: String(i?.id ?? ''), src: shopImage(i?.src)})).find(i => /^\d{1,10}$/.test(i.id) && i.src);
+        const img = (v?.images || [])
+          .map(i => ({id: String(i?.id ?? ''), src: shopImage(i?.src)}))
+          .find(i => /^\d{1,10}$/.test(i.id) && i.src);
         const vprice = rappen(v?.prices?.price);
         return /^\d{1,10}$/.test(vid) && Object.keys(values).length
           ? {id: vid, values, price: vprice ?? price, stock: v?.is_in_stock === true, ...(img ? {image: img} : {})}

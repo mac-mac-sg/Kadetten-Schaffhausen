@@ -1,12 +1,8 @@
-import {getOtmarArticle} from './otmar.mjs';
-import otmarSeed from './otmar-seed.json' with {type:'json'};
 import {programmes} from './programmes.mjs';
 import {previews} from './previews.mjs';
-import {publicFcsgData, getFcsgLive, getFcsgPlayers} from './fcsg.mjs';
-import fcsgSeed from './fcsg-seed.json' with {type: 'json'};
 import {publicReadCors} from './cors.mjs';
 import {isOwner, mayUpdate} from './auth.mjs';
-import {getLiveMatch, getNationalLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
+import {getLiveMatch, getRecentGames, getHeadToHead, getArchivedReport} from './live.mjs';
 import seed from './seed.json' with {type: 'json'};
 import {runRefresh} from './refresh-run.mjs';
 import {kvStore} from './kv-store.mjs';
@@ -23,8 +19,7 @@ const MAX_BODY = 12000000;
 // Speicher: Auf Sites stellt die Plattform R2 als `BUCKET` bereit, auf Cloudflare Workers KV als `DATA`.
 const withStore = env => (env.BUCKET || !env.DATA ? env : {...env, BUCKET: kvStore(env.DATA)});
 // Statische Dateien liefert auf Sites die Plattform (`ASSETS`), auf Cloudflare GitHub Pages; dort gibt es sie hier nicht.
-const staticAsset = (request, env) =>
-  env.ASSETS ? env.ASSETS.fetch(request) : json({error: 'Not found'}, 404);
+const staticAsset = (request, env) => (env.ASSETS ? env.ASSETS.fetch(request) : json({error: 'Not found'}, 404));
 
 // Jede Route ist eine Funktion (request, env, url) -> Response. Die Reihenfolge in `routes` entspricht der
 // Auswertungsreihenfolge; die erste passende Route gewinnt. Alles andere liefert die statische Oberfläche.
@@ -39,36 +34,6 @@ async function adminLogin(request, env) {
   if (request.method !== 'GET') return getRequired();
   if (!(await isOwner(request, env))) return json({error: 'Owner login required'}, 403);
   return new Response(null, {status: 303, headers: {Location: '/', 'Cache-Control': 'no-store'}});
-}
-
-async function fcsgPlayers(request) {
-  if (request.method !== 'GET') return getRequired();
-  try {
-    return json(await getFcsgPlayers());
-  } catch {
-    return json({ok: false, error: 'FCSG player source unavailable'}, 503);
-  }
-}
-
-async function fcsgLive(request, env, u) {
-  if (request.method !== 'GET') return getRequired();
-  const id = u.pathname === '/api/fcsg/live' ? undefined : u.pathname.split('/').at(-1);
-  if (id !== undefined && !/^\/api\/fcsg\/matches\/[1-9][0-9]{0,8}$/.test(u.pathname))
-    return json({error: 'Invalid match'}, 400);
-  try {
-    return json(await getFcsgLive(id));
-  } catch {
-    return json({ok: false, error: 'FCSG live source unavailable'}, 503);
-  }
-}
-
-async function fcsgData(request, env, u) {
-  if (request.method !== 'GET') return getRequired();
-  const saved = await env.BUCKET.get('fcsg/current.json');
-  const data = saved ? await saved.json() : fcsgSeed;
-  if (u.pathname === '/api/fcsg/data') return json(publicFcsgData(data));
-  const story = data.stories.find(n => n.id === u.pathname.split('/').at(-1));
-  return story ? json({id: story.id, html: story.html, url: story.url, version:story.articleVersion || null}) : json({error: 'Article not found'}, 404);
 }
 
 async function access(request, env) {
@@ -130,7 +95,8 @@ async function live(request, env, url) {
   try {
     const source = url.searchParams.get('source') || undefined;
     const details = url.searchParams.get('details');
-    if ((source && !['SHV', 'EHF'].includes(source)) || (details !== null && !['0', '1'].includes(details))) return json({error: 'Invalid live options'}, 400);
+    if ((source && !['SHV', 'EHF'].includes(source)) || (details !== null && !['0', '1'].includes(details)))
+      return json({error: 'Invalid live options'}, 400);
     return json(await getLiveMatch({source, includeDetails: details !== '0'}));
   } catch (e) {
     // Die Meldungen der Quellen enthalten keine Zugangsdaten; sie zeigen, welche Quelle warum ausfiel.
@@ -178,8 +144,7 @@ async function refreshData(request, env, u) {
   } catch {
     return json({error: 'Invalid JSON body'}, 400);
   }
-  if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))
-    return json({error: 'JSON object required'}, 400);
+  if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied)) return json({error: 'JSON object required'}, 400);
   const result = await runRefresh(env.BUCKET, {previous, hadPrevious: !!previousObject, supplied});
   if (!result.ok) return json({error: 'All sources failed', status: result.next.status}, 502);
   const {next} = result;
@@ -207,33 +172,12 @@ async function freshAsset(request, env, u) {
 
 const isPath = path => u => u.pathname === path;
 const isUnder = prefix => u => u.pathname.startsWith(prefix);
-async function otmarData(request,env,u) {
-  if(request.method!=='GET')return getRequired();
-  const saved=await env.BUCKET.get('otmar/current.json'),snapshot=saved?await saved.json():otmarSeed;
-  if(u.pathname==='/api/otmar/data')return json(snapshot);
-  if(u.pathname==='/api/otmar/live') {
-    try {const match=await getNationalLiveMatch(40900);return json({ok:true,checkedAt:new Date().toISOString(),sources:{SHV:{ok:true}},match:match?.status==='finished'?null:match,finished:match?.status==='finished'?match:null});} catch {return json({ok:false,sources:{SHV:{ok:false}}},503);}
-  }
-  const id=u.pathname.split('/').at(-1);
-  if(/^\/api\/otmar\/match-reports\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {const stored=await env.BUCKET.get('otmar/matchreports/'+id+'.json');return stored?json({ok:true,report:await stored.json()}):json({error:'Report not stored yet'},404);}
-  if(/^\/api\/otmar\/reports\/[1-9][0-9]{0,8}$/.test(u.pathname))return json(await getArchivedReport(id,env.BUCKET,'otmar'));
-  if(/^\/api\/otmar\/articles\/[a-zA-Z0-9_-]{1,80}$/.test(u.pathname)) {
-    const story=snapshot.stories.find(n=>n.id===id);if(!story)return json({error:'Not found'},404);
-    return json(await getOtmarArticle(story));
-  }
-  if(u.pathname==='/api/otmar/head-to-head')return json(await getHeadToHead(u.searchParams.get('home'),u.searchParams.get('away')));
-  return json({error:'Not found'},404);
-}
 const routes = [
-  [isUnder('/api/push/'),pushRoute],
-  [isUnder('/api/app/'),appRoute],
-  [isUnder('/api/otmar/'),otmarData],
+  [isUnder('/api/push/'), pushRoute],
+  [isUnder('/api/app/'), appRoute],
   [u => u.pathname === '/api/programmes' || u.pathname.startsWith('/api/programmes/'), programmes],
   [u => u.pathname === '/api/previews' || u.pathname.startsWith('/api/previews/'), previews],
   [isPath('/admin/login'), adminLogin],
-  [isPath('/api/fcsg/players'), fcsgPlayers],
-  [u => u.pathname === '/api/fcsg/live' || u.pathname.startsWith('/api/fcsg/matches/'), fcsgLive],
-  [u => u.pathname === '/api/fcsg/data' || /^\/api\/fcsg\/articles\/[0-9]+$/.test(u.pathname), fcsgData],
   [isPath('/api/access'), access],
   [isPath('/api/head-to-head'), headToHead],
   [isPath('/api/recent-games'), recentGames],
@@ -264,8 +208,13 @@ export default {
   },
   // Cron-Trigger (cloudflare/api/wrangler.toml): löst die Datenaktualisierung in GitHub Actions aus.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(Promise.all([monitorPush(env,event.scheduledTime).catch(()=>console.error('Push: Prüfung fehlgeschlagen')),dispatchUpdate(env, event.scheduledTime).then(result => {
-      if (!result.ok) console.error('Zeitplan: Aktualisierung nicht ausgelöst', result.status || '', result.reason || '');
-    })]));
+    ctx.waitUntil(
+      Promise.all([
+        monitorPush(env, event.scheduledTime).catch(() => console.error('Push: Prüfung fehlgeschlagen')),
+        dispatchUpdate(env, event.scheduledTime).then(result => {
+          if (!result.ok) console.error('Zeitplan: Aktualisierung nicht ausgelöst', result.status || '', result.reason || '');
+        })
+      ])
+    );
   }
 };

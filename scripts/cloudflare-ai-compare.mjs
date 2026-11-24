@@ -10,13 +10,21 @@ import {aiMessages, parseAiText, checkAi} from '../server/preview-ai.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 import {runModel} from './lib/workers-ai.mjs';
 
-export const DEFAULT_MODELS = ['@cf/mistralai/mistral-small-3.1-24b-instruct', '@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/openai/gpt-oss-120b'];
+export const DEFAULT_MODELS = [
+  '@cf/mistralai/mistral-small-3.1-24b-instruct',
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/openai/gpt-oss-120b'
+];
 const TARGET = (process.env.TARGET_URL || 'https://kadetten-api.mac-mac-sg.workers.dev').replace(/\/$/, '');
 const write = text => {
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
 };
-const quote = text => text.split('\n').map(l => '> ' + l).join('\n');
+const quote = text =>
+  text
+    .split('\n')
+    .map(l => '> ' + l)
+    .join('\n');
 
 async function loadData(fetchFn) {
   const get = async path => {
@@ -28,45 +36,85 @@ async function loadData(fetchFn) {
 }
 
 // Erste künftige Partie je Verein, für die es einen Grundtext gibt.
-export async function pickBaselines({snapshot, fcsgData}, {now = new Date(), headToHead = getHeadToHead, recentGames = getRecentGames, perClub = 1} = {}) {
+export async function pickBaselines(
+  {snapshot, fcsgData},
+  {now = new Date(), headToHead = getHeadToHead, recentGames = getRecentGames, perClub = 1} = {}
+) {
   const today = now.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
   const out = [];
-  for (const [club, data] of [['kadetten', snapshot], ['fcsg', fcsgData]]) {
-    const games = (data.games || []).filter(g => !g.score && !g.live && g.status !== 'FINISHED' && g.date >= today).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+  for (const [club, data] of [
+    ['kadetten', snapshot],
+    ['fcsg', fcsgData]
+  ]) {
+    const games = (data.games || [])
+      .filter(g => !g.score && !g.live && g.status !== 'FINISHED' && g.date >= today)
+      .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
     let taken = 0;
     for (const g of games) {
       const facts = await collectFacts(club, g, {snapshot, fcsgData}, {headToHead, recentGames});
       const baseline = buildPreview({club, game: g, ...facts, now});
-      if (baseline) { out.push(baseline); if (++taken >= perClub) break; }
+      if (baseline) {
+        out.push(baseline);
+        if (++taken >= perClub) break;
+      }
     }
   }
   return out;
 }
 
-export async function main({env = process.env, fetchFn = fetch, data = null, headToHead = getHeadToHead, recentGames = getRecentGames, now = new Date()} = {}) {
+export async function main({
+  env = process.env,
+  fetchFn = fetch,
+  data = null,
+  headToHead = getHeadToHead,
+  recentGames = getRecentGames,
+  now = new Date()
+} = {}) {
   const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;
   if (!token || !accountId) throw Error('CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID fehlen.');
-  const models = (env.MODELLE || '').split(',').map(m => m.trim()).filter(Boolean);
+  const models = (env.MODELLE || '')
+    .split(',')
+    .map(m => m.trim())
+    .filter(Boolean);
   const list = models.length ? models : DEFAULT_MODELS;
-  const baselines = await pickBaselines(data || await loadData(fetchFn), {now, headToHead, recentGames, perClub: Math.min(3, Math.max(1, Number(env.SPIELE) || 1))});
+  const baselines = await pickBaselines(data || (await loadData(fetchFn)), {
+    now,
+    headToHead,
+    recentGames,
+    perClub: Math.min(3, Math.max(1, Number(env.SPIELE) || 1))
+  });
   write('### KI-Stilvergleich Workers AI (nur lesend)\n');
-  if (!baselines.length) { write('Keine künftige Partie mit genug Daten gefunden.'); return {rows: []}; }
+  if (!baselines.length) {
+    write('Keine künftige Partie mit genug Daten gefunden.');
+    return {rows: []};
+  }
   const rows = [];
   for (const baseline of baselines) {
-    write(`\n## ${baseline.headline} (${baseline.club})\n\n**Grundtext (Weg B, sachlich):**\n\n${quote(baseline.paragraphs.join('\n\n'))}\n\n**Fakten an die KI:**\n\n${quote((baseline.facts || []).map(f => '- ' + f).join('\n'))}`);
+    write(
+      `\n## ${baseline.headline} (${baseline.club})\n\n**Grundtext (Weg B, sachlich):**\n\n${quote(baseline.paragraphs.join('\n\n'))}\n\n**Fakten an die KI:**\n\n${quote((baseline.facts || []).map(f => '- ' + f).join('\n'))}`
+    );
     for (const model of list) {
       const res = await runModel({accountId, token, model, messages: aiMessages(baseline), maxTokens: 3000, fetchFn});
       const row = {club: baseline.club, model, ok: res.ok, ms: res.ms, problems: []};
       rows.push(row);
-      if (!res.ok) { row.problems.push(res.error); write(`\n**${model}**: ❌ ${res.error} (${res.ms} ms)`); continue; }
+      if (!res.ok) {
+        row.problems.push(res.error);
+        write(`\n**${model}**: ❌ ${res.error} (${res.ms} ms)`);
+        continue;
+      }
       const parsed = parseAiText(res.text, baseline.headline);
       row.problems = checkAi(parsed, baseline);
       const verdict = row.problems.length ? `⚠️ ${row.problems.join('; ')}` : '✅ Prüfung bestanden';
       const tokens = res.usage ? `, ${res.usage.prompt_tokens ?? '?'} Eingabe-/${res.usage.completion_tokens ?? '?'} Ausgabe-Tokens` : '';
-      write(`\n**${model}**: ${verdict} (${res.ms} ms${tokens})\n\n${quote(parsed ? [parsed.headline, ...parsed.paragraphs].join('\n\n') : res.text.slice(0, 1200))}`);
+      write(
+        `\n**${model}**: ${verdict} (${res.ms} ms${tokens})\n\n${quote(parsed ? [parsed.headline, ...parsed.paragraphs].join('\n\n') : res.text.slice(0, 1200))}`
+      );
     }
   }
-  write('\n---\n\nTabelle: ' + rows.map(r => `${r.model.split('/').at(-1)} ${r.club}: ${r.ok ? (r.problems.length ? 'Befund' : 'bestanden') : 'Fehler'}`).join(' · '));
+  write(
+    '\n---\n\nTabelle: ' +
+      rows.map(r => `${r.model.split('/').at(-1)} ${r.club}: ${r.ok ? (r.problems.length ? 'Befund' : 'bestanden') : 'Fehler'}`).join(' · ')
+  );
   return {rows};
 }
 

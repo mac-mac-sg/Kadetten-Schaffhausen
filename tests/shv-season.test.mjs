@@ -10,21 +10,42 @@ test('QHL-Saisonimport übernimmt jeden gelieferten Spieler und alle vorhandenen
   const source = fixture.data.playerStaff[0].player;
   assert.equal(result.teamGames, 9);
   assert.equal(Object.keys(result.players).length, source.length);
-  assert.equal(source.reduce((sum, p) => sum + p.totalScore, 0), 307);
+  assert.equal(
+    source.reduce((sum, p) => sum + p.totalScore, 0),
+    307
+  );
   for (const original of source) {
     const imported = Object.values(result.players).find(p => p.shvPlayerId === original.playerId);
     assert.ok(imported, 'Nicht zugeordnet: ' + original.playerId);
-    for (const [key, sourceKey] of Object.entries({games:'games', goals:'totalScore', fieldGoals:'totalScoreField', sevenMeterGoals:'totalScore7m', yellowCards:'totalYellowCards', twoMinutes:'total2Minutes', disqualifications:'totalSuspension'}))
+    for (const [key, sourceKey] of Object.entries({
+      games: 'games',
+      goals: 'totalScore',
+      fieldGoals: 'totalScoreField',
+      sevenMeterGoals: 'totalScore7m',
+      yellowCards: 'totalYellowCards',
+      twoMinutes: 'total2Minutes',
+      disqualifications: 'totalSuspension'
+    }))
       assert.equal(imported[key], original[sourceKey], original.playerId + ': ' + key);
   }
-  assert.deepEqual([result.players[6].goals, result.players[6].fieldGoals, result.players[6].sevenMeterGoals, result.players[6].goalsPerGame], [67,34,33,7.4]);
+  assert.deepEqual(
+    [result.players[6].goals, result.players[6].fieldGoals, result.players[6].sevenMeterGoals, result.players[6].goalsPerGame],
+    [67, 34, 33, 7.4]
+  );
   assert.equal(result.players[12], undefined);
   assert.equal(result.players[13], undefined);
 });
 
 test('QHL-Saisonimport lehnt fehlende Tore, duplizierte Spieler und falsche Saison ab', () => {
-  for (const mutate of [d => d.data.playerStaff[0].player.pop(), d => d.data.playerStaff[0].player.push(d.data.playerStaff[0].player[0]), d => {d.data.teamDashboard[0].seasonId=2025;}]) {
-    const broken = structuredClone(fixture); mutate(broken);
+  for (const mutate of [
+    d => d.data.playerStaff[0].player.pop(),
+    d => d.data.playerStaff[0].player.push(d.data.playerStaff[0].player[0]),
+    d => {
+      d.data.teamDashboard[0].seasonId = 2025;
+    }
+  ]) {
+    const broken = structuredClone(fixture);
+    mutate(broken);
     assert.throws(() => parsePlayerSeason(broken));
   }
 });
@@ -33,14 +54,20 @@ test('QHL-Saisonimport nennt bei inkonsistenten Zählern Spieler und Zahlen', ()
   const broken = structuredClone(fixture),
     p = broken.data.playerStaff[0].player[0];
   p.totalScoreField += 1;
-  assert.throws(() => parsePlayerSeason(broken), e => e.message.includes('Spieler ' + p.playerId) && e.message.includes('Total ' + p.totalScore));
+  assert.throws(
+    () => parsePlayerSeason(broken),
+    e => e.message.includes('Spieler ' + p.playerId) && e.message.includes('Total ' + p.totalScore)
+  );
 });
 
 test('QHL-Saisonimport lehnt Spieler mit mehr Spielen als das Team ab und nennt sie', () => {
   const many = structuredClone(fixture),
     q = many.data.playerStaff[0].player[0];
   q.games = many.data.teamDashboard[0].gamesTotal + 1;
-  assert.throws(() => parsePlayerSeason(many), e => e.message.includes('Spieler ' + q.playerId) && e.message.includes('Spiele'));
+  assert.throws(
+    () => parsePlayerSeason(many),
+    e => e.message.includes('Spieler ' + q.playerId) && e.message.includes('Spiele')
+  );
 });
 
 // Berichte im Format von parseArchivedReport: Kadetten (41473) gegen einen Gegner, Spieler mit Toren, 7 m und Strafen.
@@ -54,12 +81,33 @@ const report = (gameId, rows, home = true) => {
 test('QHL-Saisonwerte aus Spielberichten: summiert nur gelieferte QHL-Spiele und prüft gegen das Teamtotal', async () => {
   const {aggregatePlayerSeason} = await import('../server/shv.mjs');
   const reports = [
-    report(1, [{id: 341559, goals: 7, seven: 3, twoMinutes: 1}, {id: 261608, goals: 5}, {id: 999999, goals: 2}]),
-    report(2, [{id: 341559, goals: 4, seven: 1, warnings: 1}, {id: 356818, goals: 0}], false)
+    report(1, [
+      {id: 341559, goals: 7, seven: 3, twoMinutes: 1},
+      {id: 261608, goals: 5},
+      {id: 999999, goals: 2}
+    ]),
+    report(
+      2,
+      [
+        {id: 341559, goals: 4, seven: 1, warnings: 1},
+        {id: 356818, goals: 0}
+      ],
+      false
+    )
   ];
   const season = aggregatePlayerSeason(reports, 2);
   assert.equal(season.basis, 'Bestätigte QHL-Spielberichte');
-  assert.deepEqual(season.players[6], {shvPlayerId: 341559, games: 2, goals: 11, fieldGoals: 7, sevenMeterGoals: 4, goalsPerGame: 5.5, yellowCards: 1, twoMinutes: 1, disqualifications: 0});
+  assert.deepEqual(season.players[6], {
+    shvPlayerId: 341559,
+    games: 2,
+    goals: 11,
+    fieldGoals: 7,
+    sevenMeterGoals: 4,
+    goalsPerGame: 5.5,
+    yellowCards: 1,
+    twoMinutes: 1,
+    disqualifications: 0
+  });
   assert.equal(season.players[9].games, 1);
   assert.equal(season.players[1].goals, 0);
   // Kaderspieler ohne Einsatz erhalten keinen Datensatz (die App kennzeichnet fehlende Werte).
@@ -79,11 +127,19 @@ test('QHL-Saisonwerte aus Spielberichten: fehlender Bericht oder falsche Summe w
 
 test('Spielerwerte im Lauf: Berichte ersetzen eine fehlerhafte SHV-Spielerliste, ein Fehler behält den alten Stand', async () => {
   const {seasonFromReports} = await import('../server/refresh-run.mjs');
-  const stored = new Map([['kadetten/reports/508338.json', report(508338, [{id: 341559, goals: 9, seven: 2}])], ['kadetten/reports/508373.json', report(508373, [{id: 341559, goals: 3}], false)]]);
+  const stored = new Map([
+    ['kadetten/reports/508338.json', report(508338, [{id: 341559, goals: 9, seven: 2}])],
+    ['kadetten/reports/508373.json', report(508373, [{id: 341559, goals: 3}], false)]
+  ]);
   const bucket = {get: async key => (stored.has(key) ? {json: async () => stored.get(key)} : null)};
   const base = () => ({
     checkedAt: '2026-11-12T11:20:57.481Z',
-    games: [{id: '508338', league: 'QHL', score: [9, 20]}, {id: 'staefa', league: 'QHL', score: [20, 3]}, {id: '508999', league: 'QHL'}, {id: 'cup', league: 'Cup', score: [30, 20]}],
+    games: [
+      {id: '508338', league: 'QHL', score: [9, 20]},
+      {id: 'staefa', league: 'QHL', score: [20, 3]},
+      {id: '508999', league: 'QHL'},
+      {id: 'cup', league: 'Cup', score: [30, 20]}
+    ],
     playerSeason: {players: {6: {goals: 1}}},
     status: {players: {ok: false, updatedAt: '2026-10-31T20:20:56.535Z', error: 'SHV player totals mismatch'}}
   });

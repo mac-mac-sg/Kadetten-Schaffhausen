@@ -1,6 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchUrls, findEndpoints, scriptSources, preview, contextAround, findFeedMatch, candidateCalls, describeShape, findKeys, valueAt, findFeedItem, withoutImages, feedOverview, loadSnippets, TICKER_NEEDLES, tickerProbeUrls, parseAppContext, appContextUrls, probeTargets, summarizeTicker, tickerEventsObject, tickerValueCounts, htmlText, excerptFrom} from '../scripts/lib/ehf-source-check.mjs';
+import {
+  matchUrls,
+  findEndpoints,
+  scriptSources,
+  preview,
+  contextAround,
+  findFeedMatch,
+  candidateCalls,
+  describeShape,
+  findKeys,
+  valueAt,
+  findFeedItem,
+  withoutImages,
+  feedOverview,
+  loadSnippets,
+  TICKER_NEEDLES,
+  tickerProbeUrls,
+  parseAppContext,
+  appContextUrls,
+  probeTargets,
+  summarizeTicker,
+  tickerEventsObject,
+  tickerValueCounts,
+  htmlText,
+  excerptFrom
+} from '../scripts/lib/ehf-source-check.mjs';
 import {main} from '../scripts/ehf-source-check.mjs';
 
 test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
@@ -12,7 +37,8 @@ test('Adressen: die drei Quellen enthalten die Spiel-ID', () => {
 });
 
 test('findEndpoints und scriptSources erkennen Schnittstellen, Skripte und lassen Bilder aus', () => {
-  const html = '<script src="/static/app.js"></script><img src="//cdn.test/logo.png"><a href="x">x</a><script>fetch("/api/ticker/events?id=1");const s="wss://ticker.ehf.eu/signalr";var u="https://ticker.ehf.eu/data/match.json";</script>';
+  const html =
+    '<script src="/static/app.js"></script><img src="//cdn.test/logo.png"><a href="x">x</a><script>fetch("/api/ticker/events?id=1");const s="wss://ticker.ehf.eu/signalr";var u="https://ticker.ehf.eu/data/match.json";</script>';
   assert.deepEqual(scriptSources(html, 'https://ticker.ehf.eu/'), ['https://ticker.ehf.eu/static/app.js']);
   const found = findEndpoints(html, 'https://ticker.ehf.eu/');
   assert.ok(found.includes('https://ticker.ehf.eu/api/ticker/events?id=1'));
@@ -31,11 +57,21 @@ test('main: ruft die drei Adressen und den Livescore-Feed ab, schreibt nur lesen
   assert.equal(await main({env: {}, fetchFn}), 0);
   assert.ok(calls.length >= 4);
   assert.ok(calls.every(c => c.method === 'GET'));
-  assert.equal(await main({env: {}, fetchFn: async () => { throw Error('blockiert'); }}), 1);
+  assert.equal(
+    await main({
+      env: {},
+      fetchFn: async () => {
+        throw Error('blockiert');
+      }
+    }),
+    1
+  );
 });
 
 test('Erweiterung: Kennungen aus dem Feed, Versuchsaufrufe und Ausschnitte aus Skripten', () => {
-  const feed = {days: [{liveScoreMatches: [{match: {id: 'GUID1', matchID: '202711020901029', homeTeam: {id: 'h'}, guestTeam: {id: 'g'}}}]}]};
+  const feed = {
+    days: [{liveScoreMatches: [{match: {id: 'GUID1', matchID: '202711020901029', homeTeam: {id: 'h'}, guestTeam: {id: 'g'}}}]}]
+  };
   assert.deepEqual(findFeedMatch(feed, '202711020901029'), {id: 'GUID1', matchID: '202711020901029', home: 'h', guest: 'g'});
   assert.equal(findFeedMatch(feed, '1'), null);
   const calls = candidateCalls('202711020901029');
@@ -55,20 +91,31 @@ test('main mit Erweiterung: ruft nur per GET ab und schreibt die brauchbare Antw
   const fetchFn = async (url, init) => {
     calls.push({url, method: init?.method || 'GET'});
     if (url.includes('livescoreapi')) return new Response(feed, {headers: {'content-type': 'application/json'}});
-    if (url.endsWith('matchdetails_vue.js')) return new Response('axios.get("/umbraco/api/matchdetailsinfoapi/GetMatchLiveFeed", {params: {matchId: id}})');
-    if (url.includes('GetMatchLiveFeed?matchId=202711020901029')) return new Response('{"events":[{"minute":1,"text":"Tor"}]}', {headers: {'content-type': 'application/json'}});
-    if (url.includes('/matches/details/')) return new Response('<script src="/assets/js/matchdetails_vue.js"></script>', {headers: {'content-type': 'text/html'}});
+    if (url.endsWith('matchdetails_vue.js'))
+      return new Response('axios.get("/umbraco/api/matchdetailsinfoapi/GetMatchLiveFeed", {params: {matchId: id}})');
+    if (url.includes('GetMatchLiveFeed?matchId=202711020901029'))
+      return new Response('{"events":[{"minute":1,"text":"Tor"}]}', {headers: {'content-type': 'application/json'}});
+    if (url.includes('/matches/details/'))
+      return new Response('<script src="/assets/js/matchdetails_vue.js"></script>', {headers: {'content-type': 'text/html'}});
     return new Response('', {status: 404});
   };
   assert.equal(await main({env: {}, fetchFn}), 0);
   assert.ok(calls.every(c => c.method === 'GET'));
   assert.ok(calls.some(c => c.url.includes('GetMatchLiveFeed?matchId=202711020901029')));
-  assert.equal(calls.filter(c => c.url.includes('GetMatchLiveFeed')).length, 1, 'nach dem ersten brauchbaren Treffer keine weiteren Versuche');
+  assert.equal(
+    calls.filter(c => c.url.includes('GetMatchLiveFeed')).length,
+    1,
+    'nach dem ersten brauchbaren Treffer keine weiteren Versuche'
+  );
 });
 
 test('Skript startet als Programm ohne Initialisierungsfehler (Netzwerk gesperrt)', async () => {
   const {spawnSync} = await import('node:child_process');
-  const r = spawnSync(process.execPath, ['scripts/ehf-source-check.mjs'], {encoding: 'utf8', env: {...process.env, HTTPS_PROXY: 'http://127.0.0.1:9', HTTP_PROXY: 'http://127.0.0.1:9', NODE_USE_ENV_PROXY: '1'}, timeout: 60000});
+  const r = spawnSync(process.execPath, ['scripts/ehf-source-check.mjs'], {
+    encoding: 'utf8',
+    env: {...process.env, HTTPS_PROXY: 'http://127.0.0.1:9', HTTP_PROXY: 'http://127.0.0.1:9', NODE_USE_ENV_PROXY: '1'},
+    timeout: 60000
+  });
   assert.doesNotMatch(r.stderr + r.stdout, /ReferenceError|before initialization/);
 });
 
@@ -95,16 +142,32 @@ test('valueAt liest Pfade mit Listenindex und liefert undefined, wenn etwas fehl
 });
 
 test('Feed-Eintrag eines Spiels: ohne Bild-Adressen, Tagesübersicht mit Statusfeldern', () => {
-  const feed = {days: [
-    {dayDatumFormatted: '2026-10-06', liveScoreMatches: [{match: {matchID: '1', homeTeam: {fullName: 'A', logoBig: 'https://x/img', photos: {big: 'https://x/p'}}}, matchStats: {isLive: false, time: '60:00', phase: 'Finished'}, homeStats: {totalGoals: 30}}]},
-    {dayDatumFormatted: '2026-10-05', liveScoreMatches: []}
-  ]};
+  const feed = {
+    days: [
+      {
+        dayDatumFormatted: '2026-10-06',
+        liveScoreMatches: [
+          {
+            match: {matchID: '1', homeTeam: {fullName: 'A', logoBig: 'https://x/img', photos: {big: 'https://x/p'}}},
+            matchStats: {isLive: false, time: '60:00', phase: 'Finished'},
+            homeStats: {totalGoals: 30}
+          }
+        ]
+      },
+      {dayDatumFormatted: '2026-10-05', liveScoreMatches: []}
+    ]
+  };
   const item = findFeedItem(feed, '1');
   assert.equal(item.homeStats.totalGoals, 30);
   assert.equal(findFeedItem(feed, '2'), null);
   const text = withoutImages(item);
-  assert.match(text, /"fullName":"A"/);assert.match(text, /"phase":"Finished"/);assert.doesNotMatch(text, /logoBig|photos|https:\/\/x/);
-  assert.deepEqual(feedOverview(feed), [{date: '2026-10-06', matches: 1, firstStats: {isLive: false, time: '60:00', phase: 'Finished'}}, {date: '2026-10-05', matches: 0, firstStats: null}]);
+  assert.match(text, /"fullName":"A"/);
+  assert.match(text, /"phase":"Finished"/);
+  assert.doesNotMatch(text, /logoBig|photos|https:\/\/x/);
+  assert.deepEqual(feedOverview(feed), [
+    {date: '2026-10-06', matches: 1, firstStats: {isLive: false, time: '60:00', phase: 'Finished'}},
+    {date: '2026-10-05', matches: 0, firstStats: null}
+  ]);
   assert.deepEqual(feedOverview(null), []);
 });
 
@@ -129,20 +192,39 @@ test('Ticker-Erkundung: Stichwörter und Probe-Adressen mit der Spiel-ID, nur ti
 });
 
 test('appContext der Ticker-Seite: Basisadresse und Datenpfade, nur Adressen auf ticker.ehf.eu', () => {
-  const html = "<script>window.appContext = { baseUrl: '/v3/', url: 'Ticker/Data', turl: \"Ticker/Team\", nurl: 'Ticker/News', matchID: '1' };</script>";
+  const html =
+    "<script>window.appContext = { baseUrl: '/v3/', url: 'Ticker/Data', turl: \"Ticker/Team\", nurl: 'Ticker/News', matchID: '1' };</script>";
   const ctx = parseAppContext(html);
   assert.equal(ctx.base, '/v3/');
   assert.deepEqual(ctx.paths, {url: 'Ticker/Data', turl: 'Ticker/Team', nurl: 'Ticker/News'});
   const urls = appContextUrls(ctx, 'https://ticker.ehf.eu/v3/202711020901029');
-  assert.deepEqual(urls.map(u => u.url), ['https://ticker.ehf.eu/v3/Ticker/Data', 'https://ticker.ehf.eu/v3/Ticker/Team', 'https://ticker.ehf.eu/v3/Ticker/News']);
+  assert.deepEqual(
+    urls.map(u => u.url),
+    ['https://ticker.ehf.eu/v3/Ticker/Data', 'https://ticker.ehf.eu/v3/Ticker/Team', 'https://ticker.ehf.eu/v3/Ticker/News']
+  );
   const foreign = appContextUrls({base: '/v3/', paths: {url: 'https://fremd.example/x', turl: 'Ticker/Team'}}, 'https://ticker.ehf.eu/v3/');
-  assert.deepEqual(foreign.map(u => u.key), ['turl'], 'fremde Hosts werden verworfen');
+  assert.deepEqual(
+    foreign.map(u => u.key),
+    ['turl'],
+    'fremde Hosts werden verworfen'
+  );
   assert.deepEqual(parseAppContext('nichts'), {base: null, paths: {}});
 });
 
 test('POST nur mit POST_PROBE=1, dann je Datenpfad ein POST mit der Spiel-ID', async () => {
   const html = "<script>window.appContext={baseUrl:'/v3/'};window.appContext.surl='Ticker/Data';</script>";
-  const make = () => { const calls = []; return {calls, fetchFn: async (url, init) => { calls.push({url: String(url), method: init?.method || 'GET', body: String(init?.body || '')}); return String(url).includes('/v3/202711020901029') ? new Response(html, {headers: {'content-type': 'text/html'}}) : new Response('{"events":[]}', {headers: {'content-type': 'application/json'}}); }}; };
+  const make = () => {
+    const calls = [];
+    return {
+      calls,
+      fetchFn: async (url, init) => {
+        calls.push({url: String(url), method: init?.method || 'GET', body: String(init?.body || '')});
+        return String(url).includes('/v3/202711020901029')
+          ? new Response(html, {headers: {'content-type': 'text/html'}})
+          : new Response('{"events":[]}', {headers: {'content-type': 'application/json'}});
+      }
+    };
+  };
   const off = make();
   await main({env: {}, fetchFn: off.fetchFn});
   assert.ok(off.calls.every(c => c.method === 'GET'));
@@ -165,17 +247,29 @@ test('appContext aus der echten Ticker-Seite: auskommentierte Pfade zählen nich
   assert.equal(ctx.base, '//ticker.ehf.eu/v3/');
   assert.deepEqual(Object.keys(ctx.paths).sort(), ['iurl', 'surl', 'turl']);
   const urls = appContextUrls(ctx, 'https://ticker.ehf.eu/v3/202711020901029');
-  assert.deepEqual(urls.map(u => u.url).sort(), ['https://ticker.ehf.eu/v3/MatchImages', 'https://ticker.ehf.eu/v3/TeamData', 'https://ticker.ehf.eu/v3/TickerData']);
-  assert.deepEqual(probeTargets(urls).map(u => u.url), ['https://ticker.ehf.eu/v3/TickerData']);
+  assert.deepEqual(urls.map(u => u.url).sort(), [
+    'https://ticker.ehf.eu/v3/MatchImages',
+    'https://ticker.ehf.eu/v3/TeamData',
+    'https://ticker.ehf.eu/v3/TickerData'
+  ]);
+  assert.deepEqual(
+    probeTargets(urls).map(u => u.url),
+    ['https://ticker.ehf.eu/v3/TickerData']
+  );
 });
 
 test('Ticker-Antwort: Ereignisse aus events (Liste oder Objekt), Anzahl und Beispiel je Art', () => {
   const action = (id, a, extra = {}) => ({id, action: a, when: '00:37', period: 'H1', ...extra});
-  const asList = {lineup: {matchID: '1'}, events: [{_version: 3, actions: {action: [action(1, 'SHOT'), action(2, 'SHOT'), action(3, 'TE'), action(4, 'STARTP')]}}]};
+  const asList = {
+    lineup: {matchID: '1'},
+    events: [{_version: 3, actions: {action: [action(1, 'SHOT'), action(2, 'SHOT'), action(3, 'TE'), action(4, 'STARTP')]}}]
+  };
   const asObject = {events: {actions: {action: action(1, 'SHOT')}}};
   const a = summarizeTicker(asList, {first: 2});
-  assert.equal(a.total, 4);assert.deepEqual(a.counts, {SHOT: 2, TE: 1, STARTP: 1});
-  assert.equal(a.firstActions.length, 2);assert.equal(a.samples.TE[0].id, 3);
+  assert.equal(a.total, 4);
+  assert.deepEqual(a.counts, {SHOT: 2, TE: 1, STARTP: 1});
+  assert.equal(a.firstActions.length, 2);
+  assert.equal(a.samples.TE[0].id, 3);
   assert.ok(a.top.includes('lineup: object') && a.top.includes('events: Liste(1)'));
   assert.deepEqual(a.eventKeys, ['_version', 'actions']);
   assert.equal(summarizeTicker(asObject).total, 1);
@@ -185,18 +279,31 @@ test('Ticker-Antwort: Ereignisse aus events (Liste oder Objekt), Anzahl und Beis
 
 test('Ticker: Wertezählungen (result, loc, actionAdd, Rollen) und Disclaimer-Text aus HTML', () => {
   const athlete = role => ({composition: {athlete: [{role}]}});
-  const data = {events: [{phaseScores: [{period: 'H1', scoreH: 23}], actions: {action: [
-    {action: 'SHOT', period: 'H1', result: 'GOAL', loc: 'CSD', competitor: [athlete('SCR'), athlete('GK')]},
-    {action: 'SHOT', period: 'H1', result: 'POST', loc: 'CLD', competitor: [athlete('SCR')]},
-    {action: 'TOUT', period: 'H2', actionAdd: 'START'},
-    {action: 'TOUT', period: 'H2', actionAdd: 'END'}]}}]};
+  const data = {
+    events: [
+      {
+        phaseScores: [{period: 'H1', scoreH: 23}],
+        actions: {
+          action: [
+            {action: 'SHOT', period: 'H1', result: 'GOAL', loc: 'CSD', competitor: [athlete('SCR'), athlete('GK')]},
+            {action: 'SHOT', period: 'H1', result: 'POST', loc: 'CLD', competitor: [athlete('SCR')]},
+            {action: 'TOUT', period: 'H2', actionAdd: 'START'},
+            {action: 'TOUT', period: 'H2', actionAdd: 'END'}
+          ]
+        }
+      }
+    ]
+  };
   const c = tickerValueCounts(data);
-  assert.deepEqual(c.shotResult, {GOAL: 1, POST: 1});assert.deepEqual(c.shotLoc, {CSD: 1, CLD: 1});
+  assert.deepEqual(c.shotResult, {GOAL: 1, POST: 1});
+  assert.deepEqual(c.shotLoc, {CSD: 1, CLD: 1});
   assert.deepEqual(c.actionAdd, {'TOUT:START': 1, 'TOUT:END': 1});
-  assert.equal(c.roleByAction['SHOT:SCR'], 2);assert.equal(c.roleByAction['SHOT:GK'], 1);
+  assert.equal(c.roleByAction['SHOT:SCR'], 2);
+  assert.equal(c.roleByAction['SHOT:GK'], 1);
   assert.deepEqual(c.phaseScores, [{period: 'H1', scoreH: 23}]);
   assert.deepEqual(tickerValueCounts(null).shotResult, {});
-  const html = '<style>p{}</style><script>var x=1</script><div>Footer Disclaimer x Disclaimer The EHF does not guarantee &amp; accepts no liability.</div>';
+  const html =
+    '<style>p{}</style><script>var x=1</script><div>Footer Disclaimer x Disclaimer The EHF does not guarantee &amp; accepts no liability.</div>';
   assert.equal(htmlText(html), 'Footer Disclaimer x Disclaimer The EHF does not guarantee & accepts no liability.');
   assert.match(excerptFrom(htmlText(html), 'Disclaimer x', 40), /^Disclaimer x Disclaimer The EHF does not/);
   assert.equal(excerptFrom('abc', 'x'), '');

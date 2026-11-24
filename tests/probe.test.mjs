@@ -10,7 +10,12 @@ test('Machbarkeitstest meldet Erfolg, Fehler und Dauer je Quelle, ohne Antwortin
   const results = await runProbe(
     [
       ['gut', async () => ({status: 200})],
-      ['schlecht', async () => { throw new Error(long); }]
+      [
+        'schlecht',
+        async () => {
+          throw new Error(long);
+        }
+      ]
     ],
     now
   );
@@ -21,8 +26,17 @@ test('Machbarkeitstest meldet Erfolg, Fehler und Dauer je Quelle, ohne Antwortin
 });
 
 test('Test-Worker: nur GET /probe, alles andere abgewiesen, Standort aus der Anfrage', async () => {
-  const probe = createProbe([['a', async () => ({ok: true})], ['b', async () => { throw new Error('gesperrt'); }]]);
-  const get = (path, method = 'GET') => probe.fetch(Object.assign(new Request('https://probe.test' + path, {method}), {cf: {colo: 'ZRH', country: 'CH'}}));
+  const probe = createProbe([
+    ['a', async () => ({ok: true})],
+    [
+      'b',
+      async () => {
+        throw new Error('gesperrt');
+      }
+    ]
+  ]);
+  const get = (path, method = 'GET') =>
+    probe.fetch(Object.assign(new Request('https://probe.test' + path, {method}), {cf: {colo: 'ZRH', country: 'CH'}}));
   const ok = await get('/probe');
   assert.equal(ok.status, 200);
   const body = await ok.json();
@@ -36,7 +50,7 @@ test('Test-Worker: nur GET /probe, alles andere abgewiesen, Standort aus der Anf
 
 test('Test-Worker prüft alle Quellen der App und enthält keine Datenbindung', () => {
   const names = checks.map(c => c[0]).join('|');
-  for (const host of ['kadettensh.ch', 'SHV', 'FCSG', 'fcsg.ch']) assert.ok(names.includes(host), host);
+  for (const host of ['kadettensh.ch', 'SHV']) assert.ok(names.includes(host), host);
   const config = fs.readFileSync('cloudflare/probe/wrangler.toml', 'utf8');
   assert.doesNotMatch(config, /r2_buckets|kv_namespaces|\[vars\]|secret/i);
 });

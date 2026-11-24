@@ -4,7 +4,16 @@
 // Ein Fehler lässt bestehende Einträge unberührt; ein Eintrag ohne Bericht wird im nächsten Lauf ergänzt.
 import {ehfLiveEndpoint, getEhfDetails, parseEhfFinishedMatch, reportId} from '../../server/live.mjs';
 import {qhlInputs} from '../../server/qhl-report.mjs';
-import {parseTicker, shotStatistics, withSevenMeters, matchFacts, factLines, plainReport, goalFeed, clockText} from '../../server/ehf-ticker.mjs';
+import {
+  parseTicker,
+  shotStatistics,
+  withSevenMeters,
+  matchFacts,
+  factLines,
+  plainReport,
+  goalFeed,
+  clockText
+} from '../../server/ehf-ticker.mjs';
 import {reportMessages, toReport} from '../../server/report-ai.mjs';
 
 const TICKER_URL = 'https://ticker.ehf.eu/v3/TickerData';
@@ -20,7 +29,14 @@ async function fetchTicker(matchId, fetchFn, {retries = 3, pause = 3000} = {}) {
     try {
       const r = await fetchFn(TICKER_URL, {
         method: 'POST',
-        headers: {'User-Agent': UA, Accept: 'application/json, text/javascript, */*; q=0.01', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Origin: 'https://ticker.ehf.eu', Referer: 'https://ticker.ehf.eu/v3/' + matchId},
+        headers: {
+          'User-Agent': UA,
+          Accept: 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+          Origin: 'https://ticker.ehf.eu',
+          Referer: 'https://ticker.ehf.eu/v3/' + matchId
+        },
         body: new URLSearchParams({MatchID: matchId}),
         signal: AbortSignal.timeout(45000)
       });
@@ -36,7 +52,10 @@ async function fetchTicker(matchId, fetchFn, {retries = 3, pause = 3000} = {}) {
 
 // Spiele, die der Livescore-Feed der EHF nicht mehr führt (er zeigt nur den Spieltag): Spiel-ID der EHF-Spielseite.
 export const KNOWN_MATCHES = {
-  bukarest: {matchId: '202711020901026', url: 'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901026/KadettenSchaffhausen-CSMBucuresti/'}
+  bukarest: {
+    matchId: '202711020901026',
+    url: 'https://ehfel.eurohandball.com/men/2026-27/matches/details/202711020901026/KadettenSchaffhausen-CSMBucuresti/'
+  }
 };
 export const RECORD_VERSION = 3;
 
@@ -45,9 +64,12 @@ export const RECORD_VERSION = 3;
 // (gesicherte Einträge ergänzen, bekannte ältere Spiele nachladen). Vorhandene Berichte bleiben unverändert.
 export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = null, now = new Date()}) {
   const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
-  const today = swissDate(now), yesterday = swissDate(new Date(now.getTime() - 86400000));
+  const today = swissDate(now),
+    yesterday = swissDate(new Date(now.getTime() - 86400000));
   const inWindow = g => [today, yesterday].includes(g.date);
-  const candidates = (games || []).filter(g => g.league === 'EHL' && /Kadetten/.test(g.home + ' ' + g.away) && (inWindow(g) || Array.isArray(g.score)));
+  const candidates = (games || []).filter(
+    g => g.league === 'EHL' && /Kadetten/.test(g.home + ' ' + g.away) && (inWindow(g) || Array.isArray(g.score))
+  );
   if (!candidates.length) return out;
   let feed = null;
   for (const g of candidates) {
@@ -56,12 +78,19 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
       const saved = await bucket.get(archiveKey(g.id));
       const old = saved ? await saved.json() : null;
       // Ein sachlicher Rückfall wird bei laufender KI bis zu dreimal durch einen KI-Text ersetzt; sonst gilt der Eintrag als fertig.
-      const final = (old?.shotStats || old?.shotStatsAttempts >= 3) && old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
-      if (old && old.v >= RECORD_VERSION && final) { out.kept++; continue; }
+      const final =
+        (old?.shotStats || old?.shotStatsAttempts >= 3) &&
+        old?.report &&
+        (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
+      if (old && old.v >= RECORD_VERSION && final) {
+        out.kept++;
+        continue;
+      }
       // Woher kommt die Spiel-ID? Aus dem gesicherten Eintrag, aus der Liste bekannter Spiele oder (Spieltag) aus dem Feed.
       let match = null;
       if (old?.matchId) match = {id: old.matchId, home: old.home, away: old.away, score: old.score, url: old.source?.url || null};
-      else if (KNOWN_MATCHES[g.id] && Array.isArray(g.score)) match = {id: KNOWN_MATCHES[g.id].matchId, home: g.home, away: g.away, score: g.score, url: KNOWN_MATCHES[g.id].url};
+      else if (KNOWN_MATCHES[g.id] && Array.isArray(g.score))
+        match = {id: KNOWN_MATCHES[g.id].matchId, home: g.home, away: g.away, score: g.score, url: KNOWN_MATCHES[g.id].url};
       else if (inWindow(g)) {
         if (!feed) {
           const r = await fetchFn(ehfLiveEndpoint, {headers: {Accept: 'application/json'}, signal: AbortSignal.timeout(20000)});
@@ -69,16 +98,28 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
           feed = await r.json();
         }
         match = parseEhfFinishedMatch(feed, g.date);
-        if (!match) { out.notes.push(`${g.id}: im Feed nicht als beendet gemeldet`); continue; }
-      } else { out.notes.push(`${g.id}: kein Eintrag, nicht mehr im Feed und nicht in der Liste bekannter Spiele`); continue; }
+        if (!match) {
+          out.notes.push(`${g.id}: im Feed nicht als beendet gemeldet`);
+          continue;
+        }
+      } else {
+        out.notes.push(`${g.id}: kein Eintrag, nicht mehr im Feed und nicht in der Liste bekannter Spiele`);
+        continue;
+      }
       const record = old?.v >= RECORD_VERSION && old?.ticker && old?.shotStats ? old : await buildRecord(g, match, fetchFn, old);
       let result = {};
-      if (!record.report || (record.report.generator !== 'ki' && write && record.ticker && (record.report.attempts || 1) < 3)) result = await addReport(record, write);
+      if (!record.report || (record.report.generator !== 'ki' && write && record.ticker && (record.report.attempts || 1) < 3))
+        result = await addReport(record, write);
       if (record.report?.generator === 'ki') delete record.ticker;
-      if (result.report) { out.reports++; if (result.report.generator === 'ki') out.ki++; }
+      if (result.report) {
+        out.reports++;
+        if (result.report.generator === 'ki') out.ki++;
+      }
       await bucket.put(archiveKey(g.id), JSON.stringify(record));
       out.written++;
-      out.notes.push(`${g.id}: ${record.report ? 'Bericht (' + record.report.generator + ')' + (old && old.v < RECORD_VERSION ? ', Eintrag ergänzt' : '') : 'ohne Bericht: ' + (result.reason || '')}`);
+      out.notes.push(
+        `${g.id}: ${record.report ? 'Bericht (' + record.report.generator + ')' + (old && old.v < RECORD_VERSION ? ', Eintrag ergänzt' : '') : 'ohne Bericht: ' + (result.reason || '')}`
+      );
     } catch (e) {
       out.notes.push(`${g.id}: Fehler (${String(e?.message || e).slice(0, 100)})`);
     }
@@ -90,12 +131,25 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
 async function buildRecord(g, match, fetchFn, old = null) {
   const details = await getEhfDetails(match.id, fetchFn);
   if (!details.ok || !details.players || !details.teamStats) throw Error('Spielerwerte und Teamwerte nicht verfügbar');
-  if (details.teamStats.home.goals !== match.score[0] || details.teamStats.guest.goals !== match.score[1]) throw Error('Teamwerte passen nicht zum Endstand');
-  let ticker = null, tickerError = null;
-  try { ticker = await fetchTicker(match.id, fetchFn, {pause: fetchFn === fetch ? 3000 : 0}); } catch (e) { tickerError = String(e?.message || e).slice(0, 160); }
+  if (details.teamStats.home.goals !== match.score[0] || details.teamStats.guest.goals !== match.score[1])
+    throw Error('Teamwerte passen nicht zum Endstand');
+  let ticker = null,
+    tickerError = null;
+  try {
+    ticker = await fetchTicker(match.id, fetchFn, {pause: fetchFn === fetch ? 3000 : 0});
+  } catch (e) {
+    tickerError = String(e?.message || e).slice(0, 160);
+  }
   // Die Ereignisse gelten nur, wenn sie zum Endstand passen (sonst ist die Torfolge unvollständig).
-  if (ticker && (!ticker.final || ticker.final[0] !== match.score[0] || ticker.final[1] !== match.score[1] || ticker.goals.length !== match.score[0] + match.score[1])) {
-    tickerError = 'Ereignisse passen nicht zum Endstand'; ticker = null;
+  if (
+    ticker &&
+    (!ticker.final ||
+      ticker.final[0] !== match.score[0] ||
+      ticker.final[1] !== match.score[1] ||
+      ticker.goals.length !== match.score[0] + match.score[1])
+  ) {
+    tickerError = 'Ereignisse passen nicht zum Endstand';
+    ticker = null;
   }
   const record = {
     v: RECORD_VERSION,
@@ -116,23 +170,40 @@ async function buildRecord(g, match, fetchFn, old = null) {
     timeouts: ticker ? ticker.timeouts.filter(t => t.side).map(t => ({side: t.side, sec: t.sec})) : null,
     suspensions: ticker ? ticker.suspensions.filter(s => s.side).map(s => ({side: s.side, sec: s.sec, name: s.name})) : null,
     tickerError,
-    ticker: ticker && {timeouts: ticker.timeouts, suspensions: ticker.suspensions, goals: ticker.goals, final: ticker.final, halftime: ticker.halftime, sevenMeters: ticker.sevenMeters},
+    ticker: ticker && {
+      timeouts: ticker.timeouts,
+      suspensions: ticker.suspensions,
+      goals: ticker.goals,
+      final: ticker.final,
+      halftime: ticker.halftime,
+      sevenMeters: ticker.sevenMeters
+    },
     source: {label: 'EHF Live-Ticker und Spielstatistik', url: match.url}
   };
   // A transient ticker failure must not discard an already verified distribution.
-  if (!record.shotStats && old?.shotStats && old.score?.every((n,i)=>n===match.score[i])) record.shotStats=old.shotStats;
-  if (!ticker && old?.score?.every((n,i)=>n===match.score[i])) {
-    for (const key of ['goals','half','timeouts','suspensions']) if(old[key])record[key]=old[key];
-    if(old.players)record.players=old.players;
+  if (!record.shotStats && old?.shotStats && old.score?.every((n, i) => n === match.score[i])) record.shotStats = old.shotStats;
+  if (!ticker && old?.score?.every((n, i) => n === match.score[i])) {
+    for (const key of ['goals', 'half', 'timeouts', 'suspensions']) if (old[key]) record[key] = old[key];
+    if (old.players) record.players = old.players;
   }
-  if (old?.report) { record.report = old.report; if (old.facts) record.facts = old.facts; }
+  if (old?.report) {
+    record.report = old.report;
+    if (old.facts) record.facts = old.facts;
+  }
   return record;
 }
 
 // Ergänzt `record.report` (KI oder sachlicher Rückfall) aus den Ereignissen; ohne Ereignisse gibt es keinen Bericht.
 async function addReport(record, write, league = 'European League') {
   if (!record.ticker) return {reason: record.tickerError || 'keine Ereignisse'};
-  const facts = matchFacts({home: record.home, away: record.away, ticker: record.ticker, players: record.players, teamStats: record.teamStats, league});
+  const facts = matchFacts({
+    home: record.home,
+    away: record.away,
+    ticker: record.ticker,
+    players: record.players,
+    teamStats: record.teamStats,
+    league
+  });
   const base = {...plainReport(facts), facts: factLines(facts)};
   let report = {headline: base.headline, paragraphs: base.paragraphs, generator: 'daten'};
   let note = null;
@@ -155,36 +226,81 @@ async function addReport(record, write, league = 'European League') {
 // --- QHL: KI-Matchbericht zu abgeschlossenen Spielen aus dem gesicherten SHV-Spielbericht ---------------------------------------
 // Alle abgeschlossenen QHL-Spiele der Kadetten ohne Bericht (neueste zuerst, höchstens `limit` KI-Aufrufe je Lauf). Eingabe ist der
 // Spielbericht unter kadetten/reports/<SHV-ID>.json (archiveCompletedReports); Ergebnis unter kadetten/matchreports/<Spiel-ID>.json.
-export const qhlKey = (id,club='kadetten') => club+'/matchreports/' + id + '.json';
-export async function syncQhlReports(bucket, {games, write = null, limit = 3, club='kadetten'}) {
+export const qhlKey = (id, club = 'kadetten') => club + '/matchreports/' + id + '.json';
+export async function syncQhlReports(bucket, {games, write = null, limit = 3, club = 'kadetten'}) {
   const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
-  const done = (games || []).filter(g => g.league === 'QHL' && Array.isArray(g.score) && (club==='otmar'?/Otmar/:/Kadetten/).test(g.home + ' ' + g.away) && /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))).sort((a, b) => b.date.localeCompare(a.date));
+  const done = (games || [])
+    .filter(
+      g =>
+        g.league === 'QHL' &&
+        Array.isArray(g.score) &&
+        (club === 'otmar' ? /Otmar/ : /Kadetten/).test(g.home + ' ' + g.away) &&
+        /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))
+    )
+    .sort((a, b) => b.date.localeCompare(a.date));
   let used = 0;
   for (const g of done) {
     out.checked++;
     try {
-      const saved = await bucket.get(qhlKey(g.id,club));
+      const saved = await bucket.get(qhlKey(g.id, club));
       const old = saved ? await saved.json() : null;
-      if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) { out.kept++; continue; }
+      if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) {
+        out.kept++;
+        continue;
+      }
       if (used >= limit) continue;
       let record = old?.ticker ? old : null;
       if (!record) {
         const gameId = reportId(g.id);
-        const stored = gameId ? await bucket.get(club+'/reports/' + gameId + '.json') : null;
-        if (!stored) { out.notes.push(`${g.id}: kein gesicherter Spielbericht`); continue; }
+        const stored = gameId ? await bucket.get(club + '/reports/' + gameId + '.json') : null;
+        if (!stored) {
+          out.notes.push(`${g.id}: kein gesicherter Spielbericht`);
+          continue;
+        }
         const report = await stored.json();
-        if (!Array.isArray(report.score) || report.score.some((v, i) => v !== g.score[i])) { out.notes.push(`${g.id}: Spielbericht passt nicht zum Endstand`); continue; }
+        if (!Array.isArray(report.score) || report.score.some((v, i) => v !== g.score[i])) {
+          out.notes.push(`${g.id}: Spielbericht passt nicht zum Endstand`);
+          continue;
+        }
         let inputs;
-        try { inputs = qhlInputs(report); } catch (e) { out.notes.push(`${g.id}: ohne Bericht (${String(e.message).slice(0, 80)})`); continue; }
-        record = {v: 1, fixtureId: String(g.id), gameId, home: inputs.home, away: inputs.away, date: g.date, score: report.score, half: inputs.ticker.halftime, checkedAt: new Date().toISOString(), players: inputs.players, teamStats: inputs.teamStats, goals: inputs.ticker.goals.map(x => ({t: clockText(x.sec), s: x.score, h: x.side === 'home', n: x.name, p: false})), ticker: inputs.ticker, source: {label: 'SHV Spielbericht', url: report.source || null}};
+        try {
+          inputs = qhlInputs(report);
+        } catch (e) {
+          out.notes.push(`${g.id}: ohne Bericht (${String(e.message).slice(0, 80)})`);
+          continue;
+        }
+        record = {
+          v: 1,
+          fixtureId: String(g.id),
+          gameId,
+          home: inputs.home,
+          away: inputs.away,
+          date: g.date,
+          score: report.score,
+          half: inputs.ticker.halftime,
+          checkedAt: new Date().toISOString(),
+          players: inputs.players,
+          teamStats: inputs.teamStats,
+          goals: inputs.ticker.goals.map(x => ({t: clockText(x.sec), s: x.score, h: x.side === 'home', n: x.name, p: false})),
+          ticker: inputs.ticker,
+          source: {label: 'SHV Spielbericht', url: report.source || null}
+        };
       }
       if (write) used++;
       const result = await addReport(record, write, 'Quickline Handball League (QHL)');
-      if (!record.ticker) { delete record.players; delete record.teamStats; }
-      if (result.report) { out.reports++; if (result.report.generator === 'ki') out.ki++; }
-      await bucket.put(qhlKey(g.id,club), JSON.stringify(record));
+      if (!record.ticker) {
+        delete record.players;
+        delete record.teamStats;
+      }
+      if (result.report) {
+        out.reports++;
+        if (result.report.generator === 'ki') out.ki++;
+      }
+      await bucket.put(qhlKey(g.id, club), JSON.stringify(record));
       out.written++;
-      out.notes.push(`${g.id}: Bericht (${record.report?.generator || 'keiner'})${result.reason ? ', ' + String(result.reason).slice(0, 80) : ''}`);
+      out.notes.push(
+        `${g.id}: Bericht (${record.report?.generator || 'keiner'})${result.reason ? ', ' + String(result.reason).slice(0, 80) : ''}`
+      );
     } catch (e) {
       out.notes.push(`${g.id}: Fehler (${String(e?.message || e).slice(0, 100)})`);
     }

@@ -1,4 +1,5 @@
 // Einstellungen (unter «Mein Bereich»): Mitteilungen, Kalender, Darstellung. Alles bleibt auf dem Gerät, ausser dem Push-Abo.
+import {versionLabel} from '../config.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
@@ -87,7 +88,7 @@ export function renderIch({theme, state, ui, now}) {
             ? html`<button class="rl" type="button" data-install><span class="lead">${icon('ich')}</span><span class="grow"><span class="t">App installieren</span><span class="s">Auf den Home-Bildschirm</span></span>${icon('go')}</button>`
             : ''
         }
-        ${listRow({title: 'Datenschutz und Über die App', sub: 'Keine Werbung, kein Tracking. Was wo gespeichert wird.', link: href.datenschutz()})}
+        ${listRow({title: 'Datenschutz und Über die App', sub: 'Keine Werbung, keine Cookies. Was wo gespeichert wird.', link: href.datenschutz()})}
       </div>
       <details class="card more-card aktuell" id="i-fresh">
         <summary><span class="grow"><span class="t">Aktualität der Daten</span><span class="s">${freshStatus}</span></span></summary>
@@ -105,7 +106,7 @@ export function renderIch({theme, state, ui, now}) {
         }
         <p class="fine pad-top-s">${freshness.label} · Schweizer Zeit${freshness.stale ? ' · Aktualität bitte prüfen' : ''}</p>
       </details>
-      <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.</p>
+      <p class="fine pad-top">Inoffizielle Fan-App, kein Angebot von Kadetten Schaffhausen. Daten: kadettensh.ch, Schweizerischer Handball-Verband, EHF.${versionLabel() ? ' ' + versionLabel() + '.' : ''}</p>
       <details class="card more-card" id="i-bilder">
         <summary><span class="grow"><span class="t">Bildnachweise</span><span class="s">Fotos der Spielhallen</span></span></summary>
         <div class="list">${HALLEN.filter(h => h.author).map(h =>

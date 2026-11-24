@@ -1,7 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {DECK, ARTS, rarityOf, earned, pending, claim, collection, progress, momentCard, cardById, noteLive, liveSeen} from '../src/kadetten/js/sammeln.js';
+import {
+  DECK,
+  ARTS,
+  rarityOf,
+  earned,
+  pending,
+  claim,
+  collection,
+  progress,
+  momentCard,
+  cardById,
+  noteLive,
+  liveSeen
+} from '../src/kadetten/js/sammeln.js';
 import {FIXED_CARDS} from '../src/kadetten/data/sammelkarten.js';
 import {weeklyQuiz, weekIndex, inWeek, QUIZ_SIZE} from '../src/kadetten/js/quiz.js';
 import {quizBilanz} from '../src/kadetten/js/views/sammlung.js';
@@ -32,8 +45,14 @@ test('Kartenstapel: über 100 Karten, eindeutige IDs, jede Art mit Seltenheit, P
 test('Kartentexte: Titeljahre wie im Trophäenschrank, keine erfundenen Superlative', async () => {
   const {TROPHIES} = await import('../src/kadetten/data/club.js');
   const years = id => TROPHIES.find(t => t.id === id).years.map(String);
-  assert.deepEqual(DECK.filter(c => c.id.startsWith('m-')).map(c => c.big), years('master'));
-  assert.deepEqual(DECK.filter(c => c.id.startsWith('c-')).map(c => c.big), years('cup'));
+  assert.deepEqual(
+    DECK.filter(c => c.id.startsWith('m-')).map(c => c.big),
+    years('master')
+  );
+  assert.deepEqual(
+    DECK.filter(c => c.id.startsWith('c-')).map(c => c.big),
+    years('cup')
+  );
   const text = readFileSync(new URL('../src/kadetten/data/sammelkarten.js', import.meta.url), 'utf8');
   assert.doesNotMatch(text, /Rekordmeister|bester Spieler aller Zeiten/);
 });

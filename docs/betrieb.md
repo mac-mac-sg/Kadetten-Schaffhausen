@@ -16,7 +16,7 @@ Diese Seite hält fest, was ein neuer Agent oder Entwickler im Code nicht findet
 
 ## Matchday archiviert (13. November 2026)
 
-Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([archive/matchday](../archive/matchday/README.md)). Unter der öffentlichen Adresse läuft die Kadetten-App. Der Datenlauf aktualisiert FC St. Gallen und St. Otmar nicht mehr (keine Daten, Vorschauen, Matchberichte, Rückblicke), Push gilt nur noch für die Kadetten. Die Endpunkte `/api/fcsg/*` und `/api/otmar/*` bleiben bestehen und liefern den zuletzt gespeicherten Stand.
+Die frühere App Matchday (Kadetten, FC St. Gallen, St. Otmar) ist archiviert ([archive/matchday](../archive/matchday/README.md)). Unter der öffentlichen Adresse läuft die Kadetten-App. Der Datenlauf aktualisiert FC St. Gallen und St. Otmar nicht mehr (keine Daten, Vorschauen, Matchberichte, Rückblicke), Push gilt nur noch für die Kadetten. Seit dem 23. November 2026 sind die Endpunkte `/api/fcsg/*` und `/api/otmar/*` samt `server/fcsg.mjs`, `server/otmar.mjs` und ihren Startständen entfernt; der letzte Stand mit ihnen ist Commit `bf83616` auf `main`. Die gespeicherten Daten unter `fcsg/` und `otmar/` im KV-Speicher liest niemand mehr; sie verfallen oder lassen sich löschen.
 
 ## Namen von Konfiguration und Geheimnissen (Werte nie ins Repository)
 - **GitHub-Secrets:** `CLOUDFLARE_API_TOKEN` (Cloudflare-Token mit den Berechtigungen für Workers-Skripte, Workers KV Storage: Edit und Workers AI: Edit) und `CLOUDFLARE_ACCOUNT_ID`. Optional `KADETTEN_UPDATE_KEY`: wird nur gebraucht, wenn Dritte per `POST` in den Datendienst schreiben sollen; im Regelbetrieb nicht eingerichtet.
@@ -104,3 +104,17 @@ Web-Push-Laufzeittest: `PUSH_MINIFLARE_MODULE=<Pfad zum Miniflare-Modul aus der 
 Der Schreiblauf übernimmt die vom SHV ausdrücklich als beendet bestätigten QHL-Partien aus derselben Abfrage, die die Spielberichte archiviert, in `kadetten/current.json`. Damit bleibt ein Endresultat nach dem Tageswechsel erhalten, auch wenn der Vereins-Spielplan noch «VS» liefert. Identität, Datum, Wettbewerb und beide Teams müssen passen. Ein Ausfall der Detailstatistiken verhindert das Sichern des bestätigten Endstands nicht. Fehlende Resultate im Vereins-HTML löschen ein gespeichertes Ergebnis derselben unveränderten Partie nicht; geändertes Datum oder andere Teams übernehmen es nicht. Explizit gelieferte Korrekturen bleiben möglich.
 
 Der bestehende Bereitstellungsworkflow für den Datendienst führt nach dem Deployment einen Schreiblauf aus; damit wird die Importkorrektur unmittelbar im Datenstand wirksam. Der tägliche Zeitplan bleibt unverändert.
+
+## Versionsnummer
+
+Die App zeigt unter «Mein Bereich» → Einstellungen und auf der Seite «Datenschutz» die Versionsnummer, z. B. «Version 1.0.0 (abc1234)». Die Zahl steht in `package.json` (`version`), die Kurzform des Git-Commits setzt der Build (`GITHUB_SHA` in Actions, sonst `git rev-parse`). Bei einer sichtbaren Neuerung die mittlere Zahl erhöhen, bei reinen Korrekturen die letzte; die erste Zahl nur bei grossen Umbrüchen.
+
+## Cloudflare Web Analytics (Nutzungszahlen)
+
+Gratis, ohne Cookies und ohne Wiedererkennung einzelner Personen. Vorbereitet, aber erst aktiv mit einem Site-Token:
+
+1. Im Cloudflare-Dashboard **Web Analytics** → **Add a site** → Hostname der App eintragen (heute `mac-mac-sg.github.io`).
+2. Unter **Manage site** das Token aus dem JS-Snippet kopieren (32 Zeichen, `data-cf-beacon='{"token": "…"}'`).
+3. Das Token in `scripts/build-app.mjs` bei `ANALYTICS_TOKEN` eintragen (es ist öffentlich und steht ohnehin im HTML) und per PR veröffentlichen.
+
+Mit Token setzt der Pages-Build das Skript von `static.cloudflareinsights.com` vor `</body>`, erweitert die CSP genau um dieses Skript (`script-src`) und um `cloudflareinsights.com` (`connect-src`), und die Datenschutzseite nennt die Zählung. Ohne Token bleibt alles wie bisher (Test in `tests/app-build.test.mjs`). Hinweise: Cloudflare erlaubt für das manuell eingebundene Skript keine Integritätsprüfung (SRI), die App vertraut also dem jeweils aktuellen Skript von Cloudflare. Die App nutzt Adressen mit `#`; die Zählung unterscheidet die Seiten daher nicht zuverlässig und zeigt vor allem Besuche, Geräte und Ladezeiten.

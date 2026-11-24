@@ -29,7 +29,10 @@ test('Cron-Ausdruck des Workers deckt alle sieben Schweizer Zeiten in Sommer und
 
 test('Auslösung: ein POST an die GitHub-Schnittstelle mit Modus «schreiben», Token nur im Kopf und nie im Ergebnis', async () => {
   const calls = [];
-  const fetchFn = async (url, init) => { calls.push({url, init}); return new Response(null, {status: 204}); };
+  const fetchFn = async (url, init) => {
+    calls.push({url, init});
+    return new Response(null, {status: 204});
+  };
   const result = await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T16:20:00Z'), fetchFn);
   assert.deepEqual(result, {ok: true, status: 204});
   assert.equal(calls.length, 1);
@@ -42,27 +45,45 @@ test('Auslösung: ein POST an die GitHub-Schnittstelle mit Modus «schreiben», 
 
 test('Auslösung: falsche Stunde, fehlendes Token, abgelehnter Aufruf und Netzwerkfehler lösen nichts aus und verraten kein Token', async () => {
   let called = 0;
-  const fetchFn = async () => { called++; return new Response('{"message":"Bad credentials geheim-123"}', {status: 401}); };
-  assert.deepEqual(await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T17:20:00Z'), fetchFn), {ok: true, skipped: true, reason: 'nicht zur Schweizer Uhrzeit'});
+  const fetchFn = async () => {
+    called++;
+    return new Response('{"message":"Bad credentials geheim-123"}', {status: 401});
+  };
+  assert.deepEqual(await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T17:20:00Z'), fetchFn), {
+    ok: true,
+    skipped: true,
+    reason: 'nicht zur Schweizer Uhrzeit'
+  });
   assert.equal(called, 0);
   assert.deepEqual(await dispatchUpdate({}, at('2026-10-06T16:20:00Z'), fetchFn), {ok: false, reason: 'DISPATCH_TOKEN fehlt'});
   assert.equal(called, 0);
   const rejected = await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T16:20:00Z'), fetchFn);
-  assert.equal(rejected.ok, false);assert.equal(rejected.status, 401);assert.doesNotMatch(JSON.stringify(rejected), /geheim|Bad credentials/);
-  const down = await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T16:20:00Z'), async () => { throw Error('Verbindung abgebrochen'); });
-  assert.equal(down.ok, false);assert.match(down.reason, /Netzwerk/);assert.doesNotMatch(JSON.stringify(down), /geheim/);
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.status, 401);
+  assert.doesNotMatch(JSON.stringify(rejected), /geheim|Bad credentials/);
+  const down = await dispatchUpdate({DISPATCH_TOKEN: 'geheim-123'}, at('2026-10-06T16:20:00Z'), async () => {
+    throw Error('Verbindung abgebrochen');
+  });
+  assert.equal(down.ok, false);
+  assert.match(down.reason, /Netzwerk/);
+  assert.doesNotMatch(JSON.stringify(down), /geheim/);
 });
 
 test('Worker: scheduled-Handler löst über waitUntil aus und meldet Fehler ohne Token im Protokoll', async () => {
   assert.equal(typeof worker.scheduled, 'function');
-  const waits = [], logged = [];
-  const original = console.error, realFetch = globalThis.fetch;
+  const waits = [],
+    logged = [];
+  const original = console.error,
+    realFetch = globalThis.fetch;
   console.error = (...args) => logged.push(args.join(' '));
   globalThis.fetch = async () => new Response('', {status: 403});
   try {
     worker.scheduled({scheduledTime: at('2026-10-06T16:20:00Z')}, {DISPATCH_TOKEN: 'geheim-123'}, {waitUntil: p => waits.push(p)});
     await Promise.all(waits);
-  } finally { console.error = original; globalThis.fetch = realFetch; }
+  } finally {
+    console.error = original;
+    globalThis.fetch = realFetch;
+  }
   assert.equal(waits.length, 1);
   assert.ok(logged.some(l => /nicht ausgelöst/.test(l) && /403/.test(l)));
   assert.ok(!logged.join(' ').includes('geheim'));

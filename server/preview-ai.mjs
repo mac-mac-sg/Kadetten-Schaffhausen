@@ -29,11 +29,28 @@ export function aiMessages(baseline) {
 // Entfernt Denkblöcke, Markdown-Reste und Umrahmungen; zerlegt in Titel und Absätze. Liefert das Modell keinen Titel (erster Block
 // länger als ein Titel), gilt `fallbackHeadline` und alle Blöcke sind Absätze; ein einzelner Block wird an einer Satzgrenze geteilt.
 export function parseAiText(raw, fallbackHeadline = '') {
-  let text = String(raw ?? '').replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<\/?think>/gi, '').replace(/\r/g, '').trim();
+  let text = String(raw ?? '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<\/?think>/gi, '')
+    .replace(/\r/g, '')
+    .trim();
   text = text.replace(/^```[a-z]*\n?|\n?```$/g, '').trim();
   // Manche Modelle setzen geschützte Bindestriche und Leerzeichen um Resultate («45 : 34»); beides gilt als gewöhnliches Zeichen.
-  text = text.replace(/[\u2010-\u2012\u2060]/g, '-').replace(/[\u00A0\u202F\u2009]/g, ' ').replace(/(\d) ?: ?(\d)/g, '$1:$2').replace(/ß/g, 'ss');
-  const chunks = text.split(/\n\s*\n/).map(c => c.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean);
+  text = text
+    .replace(/[\u2010-\u2012\u2060]/g, '-')
+    .replace(/[\u00A0\u202F\u2009]/g, ' ')
+    .replace(/(\d) ?: ?(\d)/g, '$1:$2')
+    .replace(/ß/g, 'ss');
+  const chunks = text
+    .split(/\n\s*\n/)
+    .map(c =>
+      c
+        .replace(/^#+\s*/, '')
+        .replace(/\*\*/g, '')
+        .replace(/\s*\n\s*/g, ' ')
+        .trim()
+    )
+    .filter(Boolean);
   const isTitle = c => c.length <= 90 && !/[.!?]\s+\S/.test(c);
   if (chunks.length >= 3 && isTitle(chunks[0])) return {headline: cleanTitle(chunks[0]), paragraphs: chunks.slice(1)};
   if (chunks.length === 2 && isTitle(chunks[0])) {
@@ -45,15 +62,21 @@ export function parseAiText(raw, fallbackHeadline = '') {
   const split = splitSentences(chunks[0] || '');
   return split ? {headline: fallbackHeadline, paragraphs: split} : null;
 }
-const cleanTitle = t => t.replace(/^(Titel|Überschrift)\s*:\s*/i, '').replace(/^[«"]|[»"]$/g, '').trim();
+const cleanTitle = t =>
+  t
+    .replace(/^(Titel|Überschrift)\s*:\s*/i, '')
+    .replace(/^[«"]|[»"]$/g, '')
+    .trim();
 // Teilt einen Block an einer Satzgrenze in zwei Absätze (mindestens zwei Sätze nötig). Ein Punkt hinter einer Ordnungszahl
 // («6. Oktober», «5. Rang») ist keine Satzgrenze.
-const ORDINAL_NEXT = /^(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember|Rang|Platz|Spieltag|Runde|Minute)\b/;
+const ORDINAL_NEXT =
+  /^(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember|Rang|Platz|Spieltag|Runde|Minute)\b/;
 function splitSentences(text) {
   const sentences = [];
   let start = 0;
   for (const m of text.matchAll(/([.!?])\s+(?=[A-ZÄÖÜ])/g)) {
-    const before = text.slice(0, m.index + 1), after = text.slice(m.index + m[0].length);
+    const before = text.slice(0, m.index + 1),
+      after = text.slice(m.index + m[0].length);
     if (m[1] === '.' && /(^|\s)\d{1,2}\.$/.test(before) && ORDINAL_NEXT.test(after)) continue;
     sentences.push(text.slice(start, m.index + 1));
     start = m.index + m[0].length;
@@ -81,7 +104,12 @@ export function checkAi(parsed, baseline) {
   if (invented.length) problems.push('Zahlen, die nicht in den Fakten stehen: ' + invented.join(', '));
   // Beide Teamnamen müssen vorkommen (Kurzform genügt: letztes Wort des Namens).
   for (const team of baseline.headline.split(' gegen ')) {
-    const key = team.trim().split(/\s+/).filter(w => !/^\d+$/.test(w)).at(-1)?.toLowerCase();
+    const key = team
+      .trim()
+      .split(/\s+/)
+      .filter(w => !/^\d+$/.test(w))
+      .at(-1)
+      ?.toLowerCase();
     if (key && !all.toLowerCase().includes(key)) problems.push('Team fehlt: ' + team.trim());
   }
   const baseText = baseline.paragraphs.join(' ') + ' ' + baseline.headline;
@@ -90,7 +118,8 @@ export function checkAi(parsed, baseline) {
 }
 
 // Aussagen, die in den Fakten nicht vorkommen und bei kleinen Sprachmodellen erfahrungsgemäss erfunden sind.
-const RISKY = /trainer|coach|verletz|gesperrt|rekord|abstieg|klassenerhalt|meister|titel|play-?off|derby|rivalit|bilanz|\bserie|ungeschlagen|unbesiegt|kapitän|schlusslicht|tabellenende|tabellenletzt|transfer|vertrag|stürmer|torhüter|torwart|verteidiger|mittelfeld|nationalspieler|saisonziel|aufstieg|champions|favorit|aussenseiter/gi;
+const RISKY =
+  /trainer|coach|verletz|gesperrt|rekord|abstieg|klassenerhalt|meister|titel|play-?off|derby|rivalit|bilanz|\bserie|ungeschlagen|unbesiegt|kapitän|schlusslicht|tabellenende|tabellenletzt|transfer|vertrag|stürmer|torhüter|torwart|verteidiger|mittelfeld|nationalspieler|saisonziel|aufstieg|champions|favorit|aussenseiter/gi;
 const WORDS = text => (String(text).match(/[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu) || []).map(w => w.replace(/[.'’-]+$/, ''));
 export function riskyClaims(all, baseText) {
   const problems = [];
@@ -100,9 +129,15 @@ export function riskyClaims(all, baseText) {
   const LEADER = /tabellenführ|spitzenreiter|tabellenspitze|an der spitze/i;
   if (LEADER.test(all)) {
     const leader = baseText.match(/(?:liegt |, )([^,()]+?) auf dem 1\. Rang/)?.[1];
-    const key = leader?.trim().split(/\s+/).filter(w => !/^\d+$/.test(w)).at(-1)?.toLowerCase();
+    const key = leader
+      ?.trim()
+      .split(/\s+/)
+      .filter(w => !/^\d+$/.test(w))
+      .at(-1)
+      ?.toLowerCase();
     const sentences = all.split(/(?<=[.!?])\s+|\n+/).filter(x => LEADER.test(x));
-    if (!key || !sentences.every(x => x.toLowerCase().includes(key))) problems.push('nennt einen Tabellenführer, den die Fakten nicht belegen');
+    if (!key || !sentences.every(x => x.toLowerCase().includes(key)))
+      problems.push('nennt einen Tabellenführer, den die Fakten nicht belegen');
   }
   // Personennamen: mitten im Satz mindestens zwei aufeinanderfolgende grossgeschriebene Wörter, die nicht in den Fakten stehen.
   const known = new Set(WORDS(baseText).map(w => w.toLowerCase()));
@@ -110,8 +145,14 @@ export function riskyClaims(all, baseText) {
   for (const sentence of all.split(/(?<=[.!?:])\s+|\n+/)) {
     const tokens = WORDS(sentence);
     let run = [];
-    const flush = () => { if (run.filter(w => !known.has(w.toLowerCase())).length >= 2) names.push(run.join(' ')); run = []; };
-    tokens.forEach((w, i) => { if (i > 0 && /^[A-ZÄÖÜ]/.test(w) && w.length > 1 && !/^\d/.test(w)) run.push(w); else flush(); });
+    const flush = () => {
+      if (run.filter(w => !known.has(w.toLowerCase())).length >= 2) names.push(run.join(' '));
+      run = [];
+    };
+    tokens.forEach((w, i) => {
+      if (i > 0 && /^[A-ZÄÖÜ]/.test(w) && w.length > 1 && !/^\d/.test(w)) run.push(w);
+      else flush();
+    });
     flush();
   }
   if (names.length) problems.push('mögliche Personen- oder Eigennamen, die nicht in den Fakten stehen: ' + [...new Set(names)].join(', '));

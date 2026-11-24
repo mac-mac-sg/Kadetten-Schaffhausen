@@ -5,14 +5,20 @@
 import {programmeMatches, identity} from '../../server/programmes.mjs';
 
 export const HOME = 'https://kadettensh.ch/';
-export const PAGE_SOURCES = [HOME, 'https://kadettensh.ch/wp-json/wp/v2/pages?slug=home&_fields=slug,content', 'https://kadettensh.ch/wp-json/wp/v2/pages?slug=matchcenter&_fields=slug,content'];
+export const PAGE_SOURCES = [
+  HOME,
+  'https://kadettensh.ch/wp-json/wp/v2/pages?slug=home&_fields=slug,content',
+  'https://kadettensh.ch/wp-json/wp/v2/pages?slug=matchcenter&_fields=slug,content'
+];
 const allowedHost = host => host === 'kadettensh.ch' || host.endsWith('.kadettensh.ch');
 
 // Alle https-PDF-Adressen auf kadettensh.ch aus HTML oder JSON-Text (Schrägstriche in JSON sind maskiert).
 export function findPdfLinks(text, base = HOME) {
   const cleaned = String(text).replaceAll('\\/', '/').replaceAll('&amp;', '&').replaceAll('&#038;', '&');
   const found = new Set();
-  for (const m of cleaned.matchAll(/(?:href|src|data-[a-z-]+)\s*=\s*["']([^"']+?\.pdf(?:\?[^"']*)?)["']|(https?:\/\/[^\s"'<>\\]+?\.pdf(?:\?[^\s"'<>\\]*)?)/gi)) {
+  for (const m of cleaned.matchAll(
+    /(?:href|src|data-[a-z-]+)\s*=\s*["']([^"']+?\.pdf(?:\?[^"']*)?)["']|(https?:\/\/[^\s"'<>\\]+?\.pdf(?:\?[^\s"'<>\\]*)?)/gi
+  )) {
     try {
       const url = new URL(m[1] || m[2], base);
       if (url.protocol === 'https:' && allowedHost(url.hostname)) found.add(url.href);
@@ -24,10 +30,20 @@ export function findPdfLinks(text, base = HOME) {
 // Text der ersten PDF-Seite (die Titelseite nennt Heimteam, Gegner und Datum).
 export async function firstPageText(bytes) {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const doc = await pdfjs.getDocument({data: new Uint8Array(bytes), useSystemFonts: true, isEvalSupported: false, disableFontFace: true, verbosity: 0}).promise;
+  const doc = await pdfjs.getDocument({
+    data: new Uint8Array(bytes),
+    useSystemFonts: true,
+    isEvalSupported: false,
+    disableFontFace: true,
+    verbosity: 0
+  }).promise;
   try {
     const page = await doc.getPage(1);
-    return (await page.getTextContent()).items.map(i => i.str).join(' ').replace(/\s+/g, ' ').trim();
+    return (await page.getTextContent()).items
+      .map(i => i.str)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   } finally {
     await doc.destroy();
   }
@@ -36,7 +52,11 @@ export async function firstPageText(bytes) {
 // Nächstes Heimspiel der Kadetten, das noch kein Ergebnis hat (Datum in Schweizer Zeit).
 export function nextHomeGame(games, now = new Date()) {
   const today = now.toLocaleDateString('en-CA', {timeZone: 'Europe/Zurich'});
-  return (games || []).filter(g => g.home === 'Kadetten Schaffhausen' && !g.score && g.date >= today).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0] || null;
+  return (
+    (games || [])
+      .filter(g => g.home === 'Kadetten Schaffhausen' && !g.score && g.date >= today)
+      .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))[0] || null
+  );
 }
 
 // Trockenlauf: nichts wird gespeichert. Rückgabe: {game, sources: [{url, status, links}], pdfs: [{url, status, type, bytes, isPdf, text, matches, error}]}
@@ -45,7 +65,8 @@ export async function inspectProgrammes(http, games, now = new Date()) {
   const sources = [];
   const links = new Set();
   for (const url of PAGE_SOURCES) {
-    let status = 0, found = [];
+    let status = 0,
+      found = [];
     try {
       const r = await http.text(url);
       status = r.status;
@@ -77,7 +98,12 @@ export async function inspectProgrammes(http, games, now = new Date()) {
 // Gleiche Prüfung wie der Datendienst beim Annehmen eines Programms (server/programmes.mjs): PDF-Kopf, Dateiende, Grösse.
 const MAX_PDF = 8 * 1024 * 1024;
 export function validPdf(bytes) {
-  return bytes.length >= 1000 && bytes.length <= MAX_PDF && new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-' && new TextDecoder().decode(bytes.slice(-1024)).includes('%%EOF');
+  return (
+    bytes.length >= 1000 &&
+    bytes.length <= MAX_PDF &&
+    new TextDecoder().decode(bytes.slice(0, 5)) === '%PDF-' &&
+    new TextDecoder().decode(bytes.slice(-1024)).includes('%%EOF')
+  );
 }
 
 // Speichert das passende Programm im selben Format wie POST /api/programmes (Metadaten `kadetten/programmes/<id>.json`, PDF unter
@@ -93,7 +119,20 @@ export async function storeProgramme(bucket, game, row, now = new Date()) {
     if (meta.version === hash && meta.fixtureKey === identity(game)) return 'unveraendert';
   }
   await bucket.put(`${key}/${hash}.pdf`, row.data);
-  await bucket.put(key + '.json', JSON.stringify({id: game.id, fixtureKey: identity(game), sourceUrl: row.url, version: hash, bytes: row.data.length, updatedAt: now.toISOString(), home: game.home, away: game.away, date: game.date}));
+  await bucket.put(
+    key + '.json',
+    JSON.stringify({
+      id: game.id,
+      fixtureKey: identity(game),
+      sourceUrl: row.url,
+      version: hash,
+      bytes: row.data.length,
+      updatedAt: now.toISOString(),
+      home: game.home,
+      away: game.away,
+      date: game.date
+    })
+  );
   return 'gespeichert';
 }
 

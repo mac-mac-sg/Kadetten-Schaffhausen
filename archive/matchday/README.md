@@ -32,4 +32,4 @@ Wieder veröffentlichen hiesse: `scripts/build-pages.mjs` auf diesen Build umste
 
 ## Datendienst
 
-FC St. Gallen und St. Otmar werden seit der Archivierung nicht mehr aktualisiert (keine Daten, Vorschauen, Matchberichte oder Rückblicke, kein Push). Die Endpunkte `/api/fcsg/*` und `/api/otmar/*` sowie `server/fcsg.mjs` und `server/otmar.mjs` bleiben bestehen und liefern den zuletzt gespeicherten Stand; Live-Endpunkte fragen die Quellen weiterhin bei Bedarf ab.
+FC St. Gallen und St. Otmar werden seit der Archivierung nicht mehr aktualisiert (keine Daten, Vorschauen, Matchberichte oder Rückblicke, kein Push). Die Endpunkte `/api/fcsg/*` und `/api/otmar/*` sowie `server/fcsg.mjs`, `server/otmar.mjs`, ihre Startstände und Tests sind seit dem 23. November 2026 entfernt (Prüfbericht vom 23.11., Punkt A2). Der letzte Stand mit ihnen ist Commit `bf83616` auf `main`; die archivierte Oberfläche fände ihre Daten dort nicht mehr.

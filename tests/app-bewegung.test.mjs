@@ -16,7 +16,10 @@ test('Zeitleiste: Marken bei 0, 2 und 4 Sekunden, Schritt folgt der Zeit', () =>
   assert.deepEqual(MARKS, [0, 2, 4]);
   assert.equal(DURATION, 6);
   const z = article('kreuzen');
-  assert.deepEqual([0, 1.99, 2, 3.5, 4, 6].map(t => stepAt(z, t)), [0, 0, 1, 1, 2, 2]);
+  assert.deepEqual(
+    [0, 1.99, 2, 3.5, 4, 6].map(t => stepAt(z, t)),
+    [0, 0, 1, 1, 2, 2]
+  );
   assert.equal(frame(z, -3).t, 0, 'vor dem Anfang');
   assert.equal(frame(z, 99).t, 6, 'nach dem Ende');
   assert.equal(frame(z, 2).plan, 1, 'an der Marke liegen die geplanten Wege des Schritts an');
@@ -33,7 +36,8 @@ test('Alle acht Spielzüge: an den Marken stehen die Angreifer wie in den Daten,
         assert.ok(Math.abs(got.x - p.x) < 0.01 && Math.abs(got.y - p.y) < 0.01, `${z.id} Marke ${i + 1}: ${p.l} steht an seinem Ort`);
       }
     });
-    let prev = null, steps = 0;
+    let prev = null,
+      steps = 0;
     for (let t = 0; t <= DURATION + 1e-9; t += 0.05) {
       const f = frame(z, t);
       for (const p of f.players) {
@@ -43,7 +47,8 @@ test('Alle acht Spielzüge: an den Marken stehen die Angreifer wie in den Daten,
       }
       if (prev) assert.ok(Math.hypot(f.ball.x - prev.ball.x, f.ball.y - prev.ball.y) < 14, `${z.id} t=${t.toFixed(2)}: Ball springt nicht`);
       assert.ok(f.ball.lift >= 0 && f.ball.lift <= 1);
-      prev = f; steps++;
+      prev = f;
+      steps++;
     }
     assert.ok(steps > 100);
   }
@@ -51,13 +56,16 @@ test('Alle acht Spielzüge: an den Marken stehen die Angreifer wie in den Daten,
 
 test('Ball: am Anfang in der Hand des Ballführenden, am Ende im Tor, im Flug mit Bogen', () => {
   for (const z of ZUEGE) {
-    const f0 = frame(z, 0), holder = f0.players.find(p => p.l === z.steps[0].ball && p.team === 'a');
+    const f0 = frame(z, 0),
+      holder = f0.players.find(p => p.l === z.steps[0].ball && p.team === 'a');
     assert.ok(Math.hypot(f0.ball.x - holder.x, f0.ball.y - holder.y) < 12, `${z.id}: Ball beim Ballführenden`);
     assert.deepEqual([frame(z, 6).ball.x, frame(z, 6).ball.y], GOAL, `${z.id}: Ball am Ende im Tor`);
-    const lifts = []; for (let t = 0; t <= 6; t += 0.05) lifts.push(frame(z, t).ball.lift);
+    const lifts = [];
+    for (let t = 0; t <= 6; t += 0.05) lifts.push(frame(z, t).ball.lift);
     assert.ok(Math.max(...lifts) > 0.5, `${z.id}: Ball fliegt im Bogen`);
   }
-  const lifts = []; for (let t = 2; t <= 4; t += 0.02) lifts.push(frame(article('ueberzahl'), t).ball.lift);
+  const lifts = [];
+  for (let t = 2; t <= 4; t += 0.02) lifts.push(frame(article('ueberzahl'), t).ball.lift);
   const peaks = lifts.filter((l, i) => i && i < lifts.length - 1 && l > 0.9 && l >= lifts[i - 1] && l >= lifts[i + 1]).length;
   assert.ok(peaks >= 2, 'zwei Pässe nacheinander: zwei Bögen');
 });
@@ -65,14 +73,19 @@ test('Ball: am Anfang in der Hand des Ballführenden, am Ende im Tor, im Flug mi
 test('Bild ist reine Rechnung: gleiche Zeit, gleiches Bild; Nachbilder nur in Bewegung; Blick zum Tor oder in Laufrichtung', () => {
   const z = article('kreuzen');
   assert.deepEqual(frame(z, 1.1), frame(z, 1.1));
-  const still = frame(z, 0.05), moving = frame(z, 0.9);
-  assert.ok(still.players.every(p => p.echoes.length === 0), 'am Anfang kein Nachbild');
+  const still = frame(z, 0.05),
+    moving = frame(z, 0.9);
+  assert.ok(
+    still.players.every(p => p.echoes.length === 0),
+    'am Anfang kein Nachbild'
+  );
   const rm = moving.players.find(p => p.l === 'RM' && p.team === 'a');
   assert.ok(rm.moving && rm.echoes.length > 0, 'Läufer hinterlässt Nachbilder');
   assert.ok(rm.angle < -30, 'läuft nach links: Blick nach links');
   const rr = frame(z, 0.9).players.find(p => p.l === 'RR' && p.team === 'a');
   assert.ok(!rr.moving && Math.abs(rr.angle) > 5, 'wer steht, schaut zum Tor');
-  const d = frame(z, 4.5).players.find(p => p.l === '3' && p.team === 'd'), d0 = frame(z, 0).players.find(p => p.l === '3' && p.team === 'd');
+  const d = frame(z, 4.5).players.find(p => p.l === '3' && p.team === 'd'),
+    d0 = frame(z, 0).players.find(p => p.l === '3' && p.team === 'd');
   assert.ok(Math.hypot(d.x - d0.x, d.y - d0.y) > 8, 'Verteidiger 3 reagiert und öffnet die Lücke');
 });
 
@@ -106,20 +119,47 @@ test('advance und clock: Zeit läuft nur beim Abspielen, hält am Ende, halbes T
 });
 
 test('Live-Feld: updateFeld ergibt dasselbe Bild wie neu zeichnen', () => {
-  for (const z of ZUEGE) for (const [t1, t2] of [[0, 2.7], [2.7, 4.5], [4.5, 0.4]]) {
-    const svg = live(z, t1), fresh = live(z, t2);
-    updateFeld(svg, frame(z, t2));
-    for (const g of fresh.querySelectorAll('g.fb-p')) {
-      const mine = svg.querySelector(`g.fb-p[data-l="${g.getAttribute('data-l')}"][class="${g.getAttribute('class')}"]`);
-      assert.equal(mine.getAttribute('transform'), g.getAttribute('transform'), `${z.id} ${t1}→${t2}: Ort`);
-      assert.equal(mine.querySelector('.fb-body').getAttribute('transform'), g.querySelector('.fb-body').getAttribute('transform'), `${z.id}: Blick`);
+  for (const z of ZUEGE)
+    for (const [t1, t2] of [
+      [0, 2.7],
+      [2.7, 4.5],
+      [4.5, 0.4]
+    ]) {
+      const svg = live(z, t1),
+        fresh = live(z, t2);
+      updateFeld(svg, frame(z, t2));
+      for (const g of fresh.querySelectorAll('g.fb-p')) {
+        const mine = svg.querySelector(`g.fb-p[data-l="${g.getAttribute('data-l')}"][class="${g.getAttribute('class')}"]`);
+        assert.equal(mine.getAttribute('transform'), g.getAttribute('transform'), `${z.id} ${t1}→${t2}: Ort`);
+        assert.equal(
+          mine.querySelector('.fb-body').getAttribute('transform'),
+          g.querySelector('.fb-body').getAttribute('transform'),
+          `${z.id}: Blick`
+        );
+      }
+      for (const sel of ['circle.fb-ball', '.fb-ballshadow'])
+        for (const attr of ['cx', 'cy'])
+          assert.equal(svg.querySelector(sel).getAttribute(attr), fresh.querySelector(sel).getAttribute(attr), `${z.id} ${sel} ${attr}`);
+      assert.equal(
+        svg.querySelector('g.fb-hint').getAttribute('class'),
+        fresh.querySelector('g.fb-hint').getAttribute('class'),
+        `${z.id}: Hinweis an/aus`
+      );
+      assert.equal(
+        svg.querySelector('.fb-pilltext').textContent,
+        fresh.querySelector('.fb-pilltext').textContent || svg.querySelector('.fb-pilltext').textContent
+      );
+      assert.deepEqual(
+        [...svg.querySelectorAll('g.fb-plan')].map(g => g.getAttribute('class')),
+        [...fresh.querySelectorAll('g.fb-plan')].map(g => g.getAttribute('class')),
+        `${z.id}: geplante Wege`
+      );
+      assert.deepEqual(
+        [...svg.querySelectorAll('ellipse.fb-echo')].map(e => e.getAttribute('class')),
+        [...fresh.querySelectorAll('ellipse.fb-echo')].map(e => e.getAttribute('class')),
+        `${z.id}: Nachbilder an/aus`
+      );
     }
-    for (const sel of ['circle.fb-ball', '.fb-ballshadow']) for (const attr of ['cx', 'cy']) assert.equal(svg.querySelector(sel).getAttribute(attr), fresh.querySelector(sel).getAttribute(attr), `${z.id} ${sel} ${attr}`);
-    assert.equal(svg.querySelector('g.fb-hint').getAttribute('class'), fresh.querySelector('g.fb-hint').getAttribute('class'), `${z.id}: Hinweis an/aus`);
-    assert.equal(svg.querySelector('.fb-pilltext').textContent, fresh.querySelector('.fb-pilltext').textContent || svg.querySelector('.fb-pilltext').textContent);
-    assert.deepEqual([...svg.querySelectorAll('g.fb-plan')].map(g => g.getAttribute('class')), [...fresh.querySelectorAll('g.fb-plan')].map(g => g.getAttribute('class')), `${z.id}: geplante Wege`);
-    assert.deepEqual([...svg.querySelectorAll('ellipse.fb-echo')].map(e => e.getAttribute('class')), [...fresh.querySelectorAll('ellipse.fb-echo')].map(e => e.getAttribute('class')), `${z.id}: Nachbilder an/aus`);
-  }
 });
 
 test('Live-Feld: keine style-Attribute, genau ein Bild mit Beschreibung, alle Spieler beschriftet', () => {
@@ -132,13 +172,36 @@ test('Live-Feld: keine style-Attribute, genau ein Bild mit Beschreibung, alle Sp
 
 // ---- Steuerung mit Scheinuhr ----
 function setup(hash = '#/wissen/spielzuege/kreuzen', visible = () => true) {
-  const ui = {}, route = parseRoute(hash);
+  const ui = {},
+    route = parseRoute(hash);
   const root = parseHTML('<html><body><div id="app"></div></body></html>').document;
-  const queue = []; let clockNow = 0, steuerung = null;
-  const render = () => { steuerung.sync(route); root.getElementById('app').innerHTML = String(renderWissen({route, ui})); };
-  steuerung = createWissenSteuerung({ui, render, root, raf: fn => queue.push(fn), cancel: () => { queue.length = 0; }, now: () => clockNow, visible});
+  const queue = [];
+  let clockNow = 0,
+    steuerung = null;
+  const render = () => {
+    steuerung.sync(route);
+    root.getElementById('app').innerHTML = String(renderWissen({route, ui}));
+  };
+  steuerung = createWissenSteuerung({
+    ui,
+    render,
+    root,
+    raf: fn => queue.push(fn),
+    cancel: () => {
+      queue.length = 0;
+    },
+    now: () => clockNow,
+    visible
+  });
   render();
-  const tickFor = (seconds, step = 0.1) => { for (let s = 0; s < seconds - 1e-9; s += step) { clockNow += step * 1000; const fn = queue.shift(); if (!fn) return; fn(clockNow); } };
+  const tickFor = (seconds, step = 0.1) => {
+    for (let s = 0; s < seconds - 1e-9; s += step) {
+      clockNow += step * 1000;
+      const fn = queue.shift();
+      if (!fn) return;
+      fn(clockNow);
+    }
+  };
   return {ui, root, steuerung, tickFor, queue};
 }
 
@@ -153,18 +216,23 @@ test('Steuerung: Abspielen läuft mit der Zeit, Pause hält, Tempo halbiert, Reg
   assert.equal(s.root.querySelector('[data-wk-time]').textContent, '0:01 / 0:06');
   s.steuerung.click('speed');
   assert.equal(s.ui.anim.speed, 0.5);
-  const before = s.ui.anim.t; s.tickFor(1);
+  const before = s.ui.anim.t;
+  s.tickFor(1);
   assert.ok(Math.abs(s.ui.anim.t - before - 0.5) < 0.01, 'halbes Tempo');
   s.steuerung.click('play');
   assert.equal(s.ui.anim.playing, false, 'Pause');
-  const held = s.ui.anim.t; s.tickFor(1);
+  const held = s.ui.anim.t;
+  s.tickFor(1);
   assert.equal(s.ui.anim.t, held, 'in der Pause bewegt sich nichts');
-  s.steuerung.click('play'); s.steuerung.seek(4100);
+  s.steuerung.click('play');
+  s.steuerung.seek(4100);
   assert.equal(s.ui.anim.playing, false, 'Regler ziehen hält an');
   assert.equal(s.ui.anim.t, 4.1);
   assert.match(s.root.querySelector('[data-wk-caption]').textContent, /Schritt 3 von 3/, 'Text folgt der Zeit');
   assert.equal(s.root.querySelector('.wk-mk.on b').textContent, '3');
-  s.steuerung.click('speed'); s.steuerung.click('play'); s.tickFor(10);
+  s.steuerung.click('speed');
+  s.steuerung.click('play');
+  s.tickFor(10);
   assert.equal(s.ui.anim.t, 6, 'läuft bis zum Ende');
   assert.equal(s.ui.anim.playing, false, 'und hält dort an');
   assert.equal(s.root.querySelector('[data-wk="play"]').textContent, 'Abspielen');
@@ -194,7 +262,9 @@ test('Bewegung reduzieren: keine Wiedergabe-Knöpfe, der Regler springt zwischen
     assert.equal(d.querySelector('[data-wk]'), null, 'kein Abspielen, kein Tempo');
     assert.equal(d.querySelector('.wk-scrub').getAttribute('step'), '2000');
     assert.equal(d.querySelectorAll('.wk-marks a').length, 3);
-  } finally { globalThis.matchMedia = saved; }
+  } finally {
+    globalThis.matchMedia = saved;
+  }
 });
 
 test('Steuerung: ausserhalb des Bildschirms hält die Wiedergabe an und spart Akku', () => {

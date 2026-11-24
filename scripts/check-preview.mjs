@@ -21,7 +21,8 @@ function checkApp(root, label) {
   assert.doesNotMatch(sw, /__[A-Z_]+__/);
   assert.match(sw, /const NS = encodeURIComponent\(SCOPE\.pathname\)/, 'Caches tragen den Pfad der App');
   assert.match(sw, /OLD_CACHE = /, 'Caches von Matchday und der bisherigen V2 werden abgeräumt');
-  for (const file of JSON.parse(sw.match(/const SHELL = (\[[^\]]*\])/)[1]).filter(f => f !== './')) assert.ok(fs.existsSync(root + file), 'Hülle fehlt: ' + root + file);
+  for (const file of JSON.parse(sw.match(/const SHELL = (\[[^\]]*\])/)[1]).filter(f => f !== './'))
+    assert.ok(fs.existsSync(root + file), 'Hülle fehlt: ' + root + file);
   assert.ok(!fs.existsSync(root + 'js/app.js'), 'Bundle von Matchday darf nicht mehr ausgeliefert werden');
   assert.ok(!fs.existsSync(root + 'platform-config.js'), 'Konfiguration von Matchday darf nicht mehr ausgeliefert werden');
 }

@@ -5,7 +5,7 @@ import {href} from '../router.js';
 import {shortTeam} from '../logic.js';
 import {isOwn, displayName, storiesForGame} from '../match.js';
 import {reportText, goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
-import {favourite, pickFor} from '../personal.js';
+import {favourite} from '../personal.js';
 import {suggestions, numberFor, surname} from '../wahl.js';
 import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
 

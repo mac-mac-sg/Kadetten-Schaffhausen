@@ -1,7 +1,6 @@
 // «Verein»: Titel als grosse Zahlen, Wurzeln (1791), Heimhalle und Zugang zu Geschichte und Trophäenschrank.
 // Keine Anreise- oder Türöffnungsangaben.
 import {html} from '../text.js';
-import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {TROPHIES, HISTORY} from '../../data/club.js';
 import {topBar, backLink, subBand, sectionHead, listRow} from './parts.js';

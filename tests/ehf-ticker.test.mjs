@@ -3,13 +3,48 @@ import assert from 'node:assert/strict';
 import {parseTicker, shotStatistics, withSevenMeters, matchFacts, factLines, plainReport, goalFeed} from '../server/ehf-ticker.mjs';
 import {reportMessages, toReport, validReport} from '../server/report-ai.mjs';
 
-const KAD = 'uyEpUicNjwv8hCX9B7A3sg', IZV = '2zXEaNBPEzJP81Ffhy6t9g';
-const athlete = (bib, given, family, role) => ({code: given + bib, order: 1, bib, ...(role ? {role} : {}), description: {givenName: given, familyName: family}});
+const KAD = 'uyEpUicNjwv8hCX9B7A3sg',
+  IZV = '2zXEaNBPEzJP81Ffhy6t9g';
+const athlete = (bib, given, family, role) => ({
+  code: given + bib,
+  order: 1,
+  bib,
+  ...(role ? {role} : {}),
+  description: {givenName: given, familyName: family}
+});
 const side = (code, name, athletes) => ({code, description: {teamname: name}, composition: {athlete: athletes}});
 let order = 0;
-const shot = (when, scorerCode, bib, given, family, [h, a], result = 'GOAL', loc = 'CSD') => ({id: 's' + ++order, period: +when.split(':')[0] < 30 ? 'H1' : 'H2', order: ++order, action: 'SHOT', when, loc, result, scoreH: h, scoreA: a, competitor: [side(scorerCode, 'x', [athlete(bib, given, family, 'SCR')])]});
-const tout = (when, code, score) => ({order: ++order, period: 'H1', action: 'TOUT', actionAdd: 'START', when, scoreH: score[0], scoreA: score[1], competitor: [side(code, 'x')]});
-const susp = (when, code, bib, given, family) => ({order: ++order, period: 'H1', action: 'TMS', when, scoreH: 3, scoreA: 1, competitor: [side(code, 'x', [athlete(bib, given, family)])]});
+const shot = (when, scorerCode, bib, given, family, [h, a], result = 'GOAL', loc = 'CSD') => ({
+  id: 's' + ++order,
+  period: +when.split(':')[0] < 30 ? 'H1' : 'H2',
+  order: ++order,
+  action: 'SHOT',
+  when,
+  loc,
+  result,
+  scoreH: h,
+  scoreA: a,
+  competitor: [side(scorerCode, 'x', [athlete(bib, given, family, 'SCR')])]
+});
+const tout = (when, code, score) => ({
+  order: ++order,
+  period: 'H1',
+  action: 'TOUT',
+  actionAdd: 'START',
+  when,
+  scoreH: score[0],
+  scoreA: score[1],
+  competitor: [side(code, 'x')]
+});
+const susp = (when, code, bib, given, family) => ({
+  order: ++order,
+  period: 'H1',
+  action: 'TMS',
+  when,
+  scoreH: 3,
+  scoreA: 1,
+  competitor: [side(code, 'x', [athlete(bib, given, family)])]
+});
 // 1:0 Gast, dann Kadetten ziehen davon (5 Tore in Folge), ein Siebenmeter
 const actions = [
   {order: 1, period: 'H1', action: 'STARTP', when: '0:0'},
@@ -26,34 +61,48 @@ const actions = [
   shot('45:00', IZV, 24, 'Mile', 'Lasic', [5, 2]),
   {order: 100, period: 'H2', action: 'ENDP', when: '60:0', scoreH: 5, scoreA: 2}
 ];
-const data = {playerstats: {homeTeam: {team: {id: KAD}}, guestTeam: {team: {id: IZV}}}, events: [{actions: {action: actions}, phaseScores: [{name: 'Match ended', scoreA: 5, scoreB: 2}]}]};
+const data = {
+  playerstats: {homeTeam: {team: {id: KAD}}, guestTeam: {team: {id: IZV}}},
+  events: [{actions: {action: actions}, phaseScores: [{name: 'Match ended', scoreA: 5, scoreB: 2}]}]
+};
 
 test('Wurfdetails prüfen auch Fehlwürfe und Torhüter-Zuordnung gegen offizielle Summen', () => {
-  const t=structuredClone(parseTicker(data)), official={home:{goals:5,shots:6},guest:{goals:2,shots:2}};
-  for(const s of t.shots.filter(s=>s.side==='home'))s.keeper={id:'g',bib:1,name:'Gasttorhüter'};
-  const players=[{id:'g',number:'1',name:'Gasttorhüter',home:false,goalkeeper:true,saves:1,savesFaced:6}];
-  const stats=shotStatistics(t,official,players);
-  assert.equal(stats.home.saved,1);assert.equal(stats.home.post,0);
-  assert.deepEqual(stats.home.halves.map(h=>h.shots),[6,0]);
-  assert.equal(stats.home.zones.find(z=>z.zone==='PTY').shots,2);
-  assert.deepEqual([stats.away.keepers[0].sevenSaves,stats.away.keepers[0].sevenShots],[1,2]);
+  const t = structuredClone(parseTicker(data)),
+    official = {home: {goals: 5, shots: 6}, guest: {goals: 2, shots: 2}};
+  for (const s of t.shots.filter(s => s.side === 'home')) s.keeper = {id: 'g', bib: 1, name: 'Gasttorhüter'};
+  const players = [{id: 'g', number: '1', name: 'Gasttorhüter', home: false, goalkeeper: true, saves: 1, savesFaced: 6}];
+  const stats = shotStatistics(t, official, players);
+  assert.equal(stats.home.saved, 1);
+  assert.equal(stats.home.post, 0);
+  assert.deepEqual(
+    stats.home.halves.map(h => h.shots),
+    [6, 0]
+  );
+  assert.equal(stats.home.zones.find(z => z.zone === 'PTY').shots, 2);
+  assert.deepEqual([stats.away.keepers[0].sevenSaves, stats.away.keepers[0].sevenShots], [1, 2]);
   // A complete score with an omitted saved shot is still incomplete.
-  const incomplete={...t,shots:t.shots.filter(s=>s.result!=='SAVE')};
-  assert.equal(shotStatistics(incomplete,official,players),null);
-  assert.equal(shotStatistics({...t,shots:[...t.shots,{...t.shots[0],result:'OTHER'}]},official,players),null);
-  t.shots.find(s=>s.side==='home').keeper=null;
-  assert.equal(shotStatistics(t,official,players).away.keepers.length,0);
-  assert.equal(shotStatistics(null,official),null);
+  const incomplete = {...t, shots: t.shots.filter(s => s.result !== 'SAVE')};
+  assert.equal(shotStatistics(incomplete, official, players), null);
+  assert.equal(shotStatistics({...t, shots: [...t.shots, {...t.shots[0], result: 'OTHER'}]}, official, players), null);
+  t.shots.find(s => s.side === 'home').keeper = null;
+  assert.equal(shotStatistics(t, official, players).away.keepers.length, 0);
+  assert.equal(shotStatistics(null, official), null);
 });
 
 test('Ticker: Tore, Seite aus dem Spielstand, Siebenmeter, Auszeit und Strafe', () => {
   const t = parseTicker(data);
   assert.equal(t.goals.length, 7);
-  assert.deepEqual(t.goals.map(g => g.side), ['away', 'home', 'home', 'home', 'home', 'home', 'away']);
+  assert.deepEqual(
+    t.goals.map(g => g.side),
+    ['away', 'home', 'home', 'home', 'home', 'home', 'away']
+  );
   assert.deepEqual(t.goals[3], {sec: 255, half: 'H1', score: [3, 1], side: 'home', name: 'Max Muster', bib: 7, seven: true});
   assert.deepEqual(t.final, [5, 2]);
   assert.deepEqual(t.halftime, [5, 1]);
-  assert.deepEqual(t.sevenMeters, [{side: 'home', bib: 7, goal: true}, {side: 'home', bib: 7, goal: false}]);
+  assert.deepEqual(t.sevenMeters, [
+    {side: 'home', bib: 7, goal: true},
+    {side: 'home', bib: 7, goal: false}
+  ]);
   assert.deepEqual(t.timeouts, [{sec: 180, half: 'H1', score: [2, 1], code: IZV, side: 'away'}]);
   assert.equal(t.suspensions.length, 1);
   assert.equal(t.suspensions[0].side, 'away');
@@ -73,7 +122,11 @@ test('Ticker ohne Ereignisliste oder mit unplausiblem Spielstand wirft', () => {
 
 test('Siebenmeter je Spieler nur bei vollständiger Torfolge', () => {
   const t = parseTicker(data);
-  const players = [{home: true, number: '7', name: 'Max Muster'}, {home: true, number: '20', name: 'Luka Maros'}, {home: false, number: '7', name: 'Anderer'}];
+  const players = [
+    {home: true, number: '7', name: 'Max Muster'},
+    {home: true, number: '20', name: 'Luka Maros'},
+    {home: false, number: '7', name: 'Anderer'}
+  ];
   const out = withSevenMeters(players, t);
   assert.deepEqual([out[0].seven, out[0].sevenShots], [1, 2]);
   assert.deepEqual([out[1].seven, out[1].sevenShots], [0, 0]);
@@ -111,7 +164,8 @@ test('Fakten und sachlicher Bericht: Halbzeit, Führung, Serie, Auszeit, Torsch�
 });
 
 test('KI-Antwort zum Matchbericht: Titel und Absätze, mehr als vier Absätze werden zusammengelegt', () => {
-  const raw = 'Kadetten ziehen früh davon\n\nAbsatz eins mit genug Text für den Bericht des Spiels.\n\nAbsatz zwei mit genug Text für den Bericht des Spiels.\n\nAbsatz drei mit genug Text für den Bericht des Spiels.\n\nAbsatz vier mit genug Text für den Bericht des Spiels.\n\nAbsatz fünf mit genug Text für den Bericht des Spiels.';
+  const raw =
+    'Kadetten ziehen früh davon\n\nAbsatz eins mit genug Text für den Bericht des Spiels.\n\nAbsatz zwei mit genug Text für den Bericht des Spiels.\n\nAbsatz drei mit genug Text für den Bericht des Spiels.\n\nAbsatz vier mit genug Text für den Bericht des Spiels.\n\nAbsatz fünf mit genug Text für den Bericht des Spiels.';
   const r = toReport(raw, 'Rückfall');
   assert.equal(r.headline, 'Kadetten ziehen früh davon');
   assert.equal(r.paragraphs.length, 4);

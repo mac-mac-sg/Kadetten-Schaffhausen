@@ -1,5 +1,5 @@
 // Persönliche Angaben bleiben nur auf diesem Gerät (localStorage, Präfix v2:). Keine Übertragung, kein Konto.
-import {storage, readJson as read, writeJson as write} from './storage.js';
+import {readJson as read, writeJson as write} from './storage.js';
 export const FAVOURITE_KEY = 'v2:app-favourite';
 export const MY_GAMES_KEY = 'v2:app-my-games';
 

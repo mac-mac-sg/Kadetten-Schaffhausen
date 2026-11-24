@@ -178,8 +178,7 @@ function keeperTable({state, load, api, now}) {
   const ids = Object.fromEntries(
     keepers.map(k => [k.number, state.data.playerSeason?.players?.[k.number]?.shvPlayerId]).filter(([, id]) => id)
   );
-  let pending = 0,
-    used = 0;
+  let pending = 0;
   const totals = Object.fromEntries(keepers.map(k => [k.number, {saves: 0, shots: 0, games: 0}]));
   for (const game of games) {
     const entry = loadReportFor(load, api, game);
@@ -189,7 +188,6 @@ function keeperTable({state, load, api, now}) {
     }
     const report = entry.status === 'ready' ? normalizeReport(entry.value.shv, null) : null;
     if (!report || !fitsGame(report, game)) continue;
-    used++;
     for (const k of keepers) {
       const p = ids[k.number] ? playerInReport(report, [ids[k.number]]) : null;
       if (p && Number.isInteger(p.saves) && Number.isInteger(p.keeperShots) && p.keeperShots > 0)

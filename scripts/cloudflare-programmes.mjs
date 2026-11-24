@@ -20,7 +20,10 @@ const write = text => {
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');
 };
-const cell = s => String(s ?? '').replace(/\|/g, '/').replace(/\s+/g, ' ');
+const cell = s =>
+  String(s ?? '')
+    .replace(/\|/g, '/')
+    .replace(/\s+/g, ' ');
 
 export async function main(httpImpl = http, games) {
   if (!games) {
@@ -30,12 +33,23 @@ export async function main(httpImpl = http, games) {
   }
   const {game, sources, pdfs} = await inspectProgrammes(httpImpl, games);
   write('### Matchprogramme (Trockenlauf)\n');
-  write(game ? `Nächstes Heimspiel: **${game.home} – ${game.away}**, ${game.date}${game.time ? ' ' + game.time : ''} (ID ${game.id}).` : 'Kein künftiges Heimspiel ohne Ergebnis im Datenstand.');
+  write(
+    game
+      ? `Nächstes Heimspiel: **${game.home} – ${game.away}**, ${game.date}${game.time ? ' ' + game.time : ''} (ID ${game.id}).`
+      : 'Kein künftiges Heimspiel ohne Ergebnis im Datenstand.'
+  );
   write('\n| Quelle | HTTP | PDF-Verweise |\n|---|---|---|');
   for (const s of sources) write(`| ${cell(s.url)} | ${s.status} | ${s.links} |`);
   write('\n| PDF | HTTP | Typ | Bytes | gültig | passt zum Spiel | Beginn der ersten Seite |\n|---|---|---|---|---|---|---|');
-  for (const p of pdfs) write(`| ${cell(p.url)} | ${p.status} | ${cell(p.type)} | ${p.bytes} | ${p.isPdf ? 'ja' : 'nein'} | ${p.matches ? 'JA' : 'nein'} | ${cell(p.error || p.text)} |`);
-  write(pdfs.some(p => p.matches) ? '\nEin PDF passt zum nächsten Heimspiel.' : '\nKein PDF passt zum nächsten Heimspiel. Trockenlauf: nichts geschrieben.');
+  for (const p of pdfs)
+    write(
+      `| ${cell(p.url)} | ${p.status} | ${cell(p.type)} | ${p.bytes} | ${p.isPdf ? 'ja' : 'nein'} | ${p.matches ? 'JA' : 'nein'} | ${cell(p.error || p.text)} |`
+    );
+  write(
+    pdfs.some(p => p.matches)
+      ? '\nEin PDF passt zum nächsten Heimspiel.'
+      : '\nKein PDF passt zum nächsten Heimspiel. Trockenlauf: nichts geschrieben.'
+  );
   return {game, sources, pdfs};
 }
 

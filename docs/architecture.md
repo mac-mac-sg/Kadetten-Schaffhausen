@@ -83,6 +83,8 @@ Abgeschlossene QHL-Spiele: `/api/reports/:id` liest den bestätigten SHV-Bericht
 
 ## Zwei Vereine
 
+> Stand 23. November 2026: FC St. Gallen und St. Otmar sind aus dem Datendienst entfernt (Endpunkte `/api/fcsg/*` und `/api/otmar/*`, `server/fcsg.mjs`, `server/otmar.mjs`). Die FCSG-Abschnitte unten beschreiben den früheren Stand; der Code liegt im Git-Verlauf bis Commit `bf83616`.
+
 ### EHL-Gegnerform
 
 Der bestehende Datenlauf speichert zusätzlich die EHF-Spielerwerte der Kadetten-Teamseite 2026/27 (`scripts/lib/ehl-player-season.mjs`, Snapshot `ehlPlayerSeason`). Die API-Adresse samt Saison-/Rundenparametern wird aus der Teamseite gelesen; EHF-Personen-IDs werden den bestehenden Profilen zugeordnet. Tore, Verwarnungen, Zeitstrafen und Disqualifikationen werden übernommen. Würfe, Quoten, Einsätze und Torhüterparaden dieser API sind nicht verlässlich befüllt und bleiben als Strich sichtbar. Die EHF-Werte gelten für den auf der Teamseite ausgewählten Wettbewerbsabschnitt. Quellenfehler erhalten den letzten gültigen Stand. Die Spieleransicht zeigt im zweiten Scroll-Abschnitt ausschliesslich QHL-Saisonwerte ohne Wettbewerbsumschalter. Beide Tabellen bleiben unverändert.

@@ -5,7 +5,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {API_ORIGIN} from '../config.js';
 import {OWN_TEAM, form, standings, shortTeam, outcome, hasScore, ownGames, kickoff, dayLabel, shortDate} from '../logic.js';
-import {findGame, gamePhase, withFinished, liveTable, sameTeam, isOwn} from '../match.js';
+import {findGame, gamePhase, withFinished, sameTeam, isOwn} from '../match.js';
 import {waitingForLive} from '../live.js';
 import {normalizeReport, fitsGame, goalTimeline} from '../report.js';
 import {shortCards, personalCards} from '../kurz.js';
@@ -136,8 +136,6 @@ function vorschau({game, data, load, api, now}) {
       ? API_ORIGIN + programme.value.pdfPath
       : null;
   const p = preview?.value;
-  const oppScorers =
-    game.league === 'QHL' && !hasScore(game) ? load('opponent:' + opponentOf(game), () => api.opponent(opponentOf(game)), 900000) : null;
   const ownLast = ownGames(data.games)
     .filter(g => hasScore(g) && kickoff(g) < kickoff(game))
     .reverse()
