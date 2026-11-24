@@ -649,7 +649,7 @@ export function liveVoteCard({game, vote, mine}) {
   return html`<section class="sec">${notice('Die Fan-Wahl öffnet, sobald die Quelle die Spieler der Kadetten meldet, und läuft bis zum Schlusspfiff.', 'star')}</section>`;
 }
 
-export function renderLiveStats({match, data, ui}) {
+export function renderLiveStats({match, data, ui, provisional = false}) {
   const report = liveReport(match);
   if (!report)
     return html`<section class="sec">
@@ -660,13 +660,13 @@ export function renderLiveStats({match, data, ui}) {
   return html`
     ${
       rows.length > 1
-        ? html`<section class="sec" aria-labelledby="l-cmp">${sectionHead('Teamwerte live', '', '', 'l-cmp')}<div class="card list">
+        ? html`<section class="sec" aria-labelledby="l-cmp">${sectionHead(provisional ? 'Teamwerte (vorläufig)' : 'Teamwerte live', '', '', 'l-cmp')}<div class="card list">
       <div class="cmp head"><span>${shortTeam(match.home)}</span><span></span><span>${shortTeam(match.away)}</span></div>
       ${rows.map(c => cmpRow(c, ownHome))}
     </div></section>`
         : ''
     }
-    <section class="sec" aria-labelledby="l-sp">${sectionHead('Spielerwerte live', '', '', 'l-sp')}
+    <section class="sec" aria-labelledby="l-sp">${sectionHead(provisional ? 'Spielerwerte (vorläufig)' : 'Spielerwerte live', '', '', 'l-sp')}
       <div class="seg flush" role="group" aria-label="Mannschaft">${[
         ['own', 'Kadetten'],
         ['opp', shortTeam(ownHome ? match.away : match.home)]

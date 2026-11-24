@@ -361,3 +361,5 @@ Konzept: Design-Canvas, Brett «Teilbilder · kräftig und ruhig». Umgesetzt is
 ## Laufendes Spiel: zwei Reiter (24. November 2026)
 
 Während des Spiels gibt es nur noch «Live» (Gewinnchance, Fan-Wahl, Spielstand teilen, Ticker) und «Statistik» (Team- und Spielerwerte). Die frühere «Übersicht» zeigte dieselben Werte wie die Statistik ein zweites Mal und entfällt; ihre alte Adresse führt zu «Live». Bei Spielen der European League kommen die Ereignisse (Tore mit Torschütze, Siebenmeter, Zeitstrafen, Auszeiten) aus dem EHF-Ticker über einen eigenen Abruf `GET /api/ehf-live/<EHF-Spiel-ID>` (server/ehf-live.mjs, 20 Sekunden zwischengespeichert). Er ist vom Live-Stand getrennt: Fällt der EHF-Ticker aus oder überschreitet der Worker seine Rechenzeit, fehlen nur die Ereignisse, und der Live-Reiter zeigt den Hinweis mit Verweis auf die Statistik.
+
+Nach dem Schlusspfiff zeigt der Reiter «Statistik» die letzten Live-Werte vom Spielende als «vorläufig», bis die Datenaktualisierung (06:20 bis 22:20 Uhr, siehe docs/betrieb.md) den bestätigten Spielbericht gespeichert hat. Der Rückblick wartet auf den bestätigten Bericht.
