@@ -357,3 +357,7 @@ Konzept: Design-Canvas, Brett «Teilbilder · kräftig und ruhig». Umgesetzt is
 - **Endstand:** der bisherige Weg «Resultat teilen» (letzte Karte der Spiel-Story, Spielbericht, Titelseite). Bei einem Sieg ein Stempel («Sieg!», im Cup «Weiter im Cup!»), bei Niederlage oder Remis eine Marke. Das frühere 4:5-Resultatbild (`resultImage`) entfällt; der Saisonrückblick bleibt 1080 × 1350.
 - **Live:** im Live-Reiter der Knopf «Spielstand teilen», in der Pause «Halbzeitstand teilen» (`data-share-live`, `isHalftime` in `js/gewinnscore.js`; Phase genau «Halbzeit» oder «Pause»). Nur mit gültigem Spielstand; die Minute stammt aus der Spieluhr.
 - Teilen über den Systemdialog, sonst Download.
+
+## Laufendes Spiel: zwei Reiter (24. November 2026)
+
+Während des Spiels gibt es nur noch «Live» (Gewinnchance, Fan-Wahl, Spielstand teilen, Ticker) und «Statistik» (Team- und Spielerwerte). Die frühere «Übersicht» zeigte dieselben Werte wie die Statistik ein zweites Mal und entfällt; ihre alte Adresse führt zu «Live». Bei Spielen der European League liefert die EHF live keine Ereignisliste (der Ticker der EHF ist rund 450 KB gross und wird erst nach dem Spiel für den Rückblick ausgewertet); der Live-Reiter sagt das und verweist auf die Statistik.

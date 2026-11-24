@@ -37,9 +37,10 @@ import {isScored, isSwissCup, isHalftime} from '../gewinnscore.js';
 import {leadStory, travelInfo} from '../vorschau.js';
 import {leadBlock, cupStakes, anreiseBlock} from './vorschau.js';
 
-const GAME_TABS = [
-  ['vorschau', 'Übersicht'],
-  ['live', 'Ticker'],
+// Laufendes Spiel: «Live» (Gewinnchance, Fan-Wahl, Teilen, Ticker) und «Statistik» (alle Werte). Die frühere «Übersicht»
+// zeigte dieselben Werte wie die Statistik noch einmal und entfällt.
+const LIVE_TABS = [
+  ['live', 'Live'],
   ['bericht', 'Statistik']
 ];
 // Abgeschlossene Spiele (QHL, EHL, Cup, Test): nur «Statistik» (alle Zahlen) und «Rückblick» (nur der erzeugte Bericht), kein Ticker.
@@ -324,6 +325,8 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   // Vor Anpfiff gibt es nur die Vorschau; Ticker und Statistik wären leer, also keine Reiterleiste.
   const preOnly = phase === 'vorschau';
   if (preOnly && tab !== 'wahl') tab = 'vorschau';
+  // Alte Adresse der Übersicht während des Spiels führt zum Live-Reiter.
+  if (phase === 'live' && tab === 'vorschau') tab = 'live';
   const title = `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
   if (tab === 'kurz') return kurz({game, data, load, api, ui, now});
   const share = hasScore(game)
@@ -337,7 +340,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
         : previewHero(game, now, {link: false, status: waitingForLive(game, state, now)});
   const visited = myGames().includes(String(game.id));
   const started = kickoff(game) !== null && kickoff(game) <= now;
-  const tabs = (twoTabs ? FINISHED_TABS : GAME_TABS).map(([id, label]) => [
+  const tabs = (twoTabs ? FINISHED_TABS : LIVE_TABS).map(([id, label]) => [
     id,
     label,
     href.spiel(game.id, id),
@@ -360,13 +363,9 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     phase === 'bericht'
       ? report(tab === 'rueckblick' ? 'rueckblick' : 'statistik')
       : phase === 'live'
-        ? tab === 'live'
-          ? liveTab({game, data, state, ui, load, api})
-          : tab === 'bericht'
-            ? report()
-            : html`<section class="sec">
-              <a class="btn pri" href="${href.spiel(game.id, 'live')}">Zum Liveticker</a></section>
-              ${voteCard(game, ui, load)}${renderLiveStats({match: live.match, data, ui})}`
+        ? tab === 'bericht'
+          ? report()
+          : liveTab({game, data, state, ui, load, api})
         : html`${vorschau({game, data, load, api, now, ui})}${
             started
               ? ''

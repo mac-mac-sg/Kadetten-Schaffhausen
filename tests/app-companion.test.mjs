@@ -81,7 +81,11 @@ test('Ticker nutzt nur bestätigte, gültige Ereignisse, sortiert und entfernt D
   assert.match(out, /&lt;script&gt;/);
   assert.equal(doc(out).querySelectorAll('[data-event-id]').length, 2);
   assert.equal(doc(String(renderTicker(match))).querySelectorAll('[data-event-id]').length, 1, 'Standard: nur Tore und Strafen');
-  assert.match(String(renderTicker({league: 'European League', details: {events: null}})), /noch keine einzelnen Ereignisse/);
+  assert.match(
+    String(renderTicker({league: 'European League', details: {events: null}})),
+    /EHF liefert während des Spiels keine einzelnen Ereignisse[\s\S]*unter Statistik/
+  );
+  assert.match(String(renderTicker({league: 'QHL', details: {events: null}})), /noch keine einzelnen Ereignisse/);
   assert.match(String(renderTicker({...match, details: {...match.details, ok: false}})), /verzögert/);
 });
 test('Livetab zeigt Ereignisse, Statistik bleibt separat erreichbar', () => {
@@ -95,7 +99,14 @@ test('Livetab zeigt Ereignisse, Statistik bleibt separat erreichbar', () => {
   };
   const d = doc(renderSpiel({...ctx, state: {data, live: {match}}, route: {id: 'next', tab: 'live'}}));
   assert.match(d.querySelector('.event-list').textContent, /Tor Kadetten/);
-  assert.equal(d.querySelector('[aria-current="page"]').textContent.trim(), 'Ticker');
+  assert.equal(d.querySelector('[aria-current="page"]').textContent.trim(), 'Live');
+  assert.deepEqual(
+    [...d.querySelectorAll('.seg a')].map(a => a.textContent.trim()),
+    ['Live', 'Statistik'],
+    'keine doppelte Übersicht während des Spiels'
+  );
+  const old = doc(renderSpiel({...ctx, state: {data, live: {match}}, route: {id: 'next', tab: 'vorschau'}}));
+  assert.equal(old.querySelector('[aria-current="page"]').textContent.trim(), 'Live', 'alte Adresse der Übersicht führt zu Live');
   assert.equal(d.querySelector('a[href="#/spiel/next/bericht"]').textContent, 'Statistik');
 });
 test('Spielerwahl benötigt Auswahl und Bestätigung, Fotos werden anhand Quellen-ID zugeordnet', () => {

@@ -146,7 +146,7 @@ test('Spielseite wechselt Vorschau → Live → Bericht', () => {
   const before = render('#/spiel/508393', MOMENTS.alltag);
   assert.doesNotMatch(before, /aria-label="Spielseite"/, 'vor Anpfiff keine Reiterleiste');
   assert.match(before, /Ausgangslage/);
-  assert.match(render('#/spiel/508393', MOMENTS.live), /aria-current="page"><i class="dot"><\/i>Ticker/);
+  assert.match(render('#/spiel/508393', MOMENTS.live), /aria-current="page"><i class="dot"><\/i>Live/);
   const done = render('#/spiel/508393', MOMENTS.nachspiel);
   assert.match(done, /aria-current="page">Statistik/);
   assert.doesNotMatch(done, />Ticker<|>Übersicht</, 'abgeschlossenes QHL-Spiel: nur Statistik und Rückblick');
