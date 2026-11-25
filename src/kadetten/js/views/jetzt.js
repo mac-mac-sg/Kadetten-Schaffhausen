@@ -291,7 +291,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       ${
         table && shown.league === 'QHL'
           ? html`<section class="sec" aria-labelledby="j-nach">
-        ${sectionHead('Tabelle danach', '', '', 'j-nach')}<a class="card rowcard" href="${href.saison('tabellen')}"><span class="res big num">${table.rank}.</span><span class="grow"><span class="t">QHL · ${table.points} Punkte</span><span class="s">nach ${table.played} Spielen</span></span>${icon('go')}</a></section>`
+        ${sectionHead('Tabelle danach', '', '', 'j-nach')}<a class="card rowcard tile" href="${href.saison('tabellen')}"><span class="res big num">${table.rank}.</span><span class="grow"><span class="t">QHL · ${table.points} Punkte</span><span class="s">nach ${table.played} Spielen</span></span>${icon('go')}</a></section>`
           : ''
       }
       ${
@@ -319,13 +319,13 @@ export function renderJetzt({state, now, load, api, ui}) {
     ${
       own
         ? html`<section class="sec" aria-labelledby="j-saison">
-      ${sectionHead('Unsere Saison', '', '', 'j-saison')}<a class="card rowcard" href="#/statistik" aria-label="${`${own.rank}. Platz in der QHL, ${own.points ?? '–'} Punkte, ${own.played ?? '–'} Spiele`}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Platz in der QHL</span><span class="s">${own.points ?? '–'} Punkte · ${own.played ?? '–'} Spiele</span></span>${icon('go')}</a></section>`
+      ${sectionHead('Unsere Saison', '', '', 'j-saison')}<a class="card rowcard tile" href="#/statistik" aria-label="${`${own.rank}. Platz in der QHL, ${own.points ?? '–'} Punkte, ${own.played ?? '–'} Spiele`}"><span class="res big num">${own.rank}.</span><span class="grow"><span class="t">Platz in der QHL</span><span class="s">${own.points ?? '–'} Punkte · ${own.played ?? '–'} Spiele</span></span>${icon('go')}</a></section>`
         : ''
     }
     ${
       last
         ? html`<section class="sec" aria-labelledby="j-last">
-      ${sectionHead('Letztes Resultat', '', '', 'j-last')}<div class="card list">
+      ${sectionHead('Letztes Resultat', '', '', 'j-last')}<div class="card list tile">
       ${gameRow(last, now)}</div>
       </section>`
         : ''

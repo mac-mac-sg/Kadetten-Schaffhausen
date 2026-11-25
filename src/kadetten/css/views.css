@@ -910,8 +910,17 @@ a.sk:active { transform: scale(.97); }
 .qdots i { width: 22px; height: 8px; background: var(--c-chip); transform: skewX(var(--skew)); }
 .qdots i.on { background: var(--c-accent); }
 .quizcard { display: flex; align-items: center; gap: var(--s-4); }
-.quizcard .qno { flex: none; min-width: 84px; font-size: var(--fs-kick); color: var(--c-accent-text); }
+.quizcard .qno { flex: none; min-width: 68px; font-size: var(--fs-xl); line-height: .9; color: var(--c-accent-text); }
 .quizcard.part .qno { color: var(--c-text-muted); }
 .quizcard .t { font: 500 var(--fs-body)/1.3 var(--f-text); }
 .quizcard .s { font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-text-muted); }
 .quizcard > .icon { flex: none; color: var(--c-text-muted); }
+
+/* Einzeilige weisse Kacheln der Titelseite (Saison, Resultat, Quiz) sind gleich hoch */
+.tile { min-height: 76px; box-sizing: border-box; }
+.card.list.tile { display: flex; flex-direction: column; justify-content: center; }
+.quizcard .line { display: flex; align-items: center; gap: var(--s-3); }
+.quizcard .line .qdots { margin-top: 0; }
+@media (max-width: 360px) { .quizcard .qdots { display: none; } .quizcard .qno { min-width: 56px; } }
+.quizcard .grow { min-width: 0; }
+.quizcard .s { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

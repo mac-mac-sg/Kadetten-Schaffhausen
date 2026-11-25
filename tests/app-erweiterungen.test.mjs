@@ -314,8 +314,10 @@ test('Quiz der Woche auf der Titelseite: offen, laufend und abgeschlossen mit si
   const wrong = q => (q.c + 1) % 4;
   const show = answers => parseHTML('<html><body>' + String(quizTeaser(now, answers)) + '</body></html>').document;
   const open = show({});
-  assert.match(open.body.textContent, /Drei Fragen zu Handball und Verein[\s\S]*Noch nicht gespielt/);
+  assert.match(open.body.textContent, /Drei neue Fragen[\s\S]*Noch nicht gespielt/);
   assert.equal(open.querySelector('.quizcard'), null);
+  assert.ok(open.querySelector('a.tile'), 'gleich hohe Kachel wie Saison und Resultat');
+  assert.ok(show({[quiz.week]: quiz.questions.map(q => q.c)}).querySelector('a.quizcard.tile'));
   const running = show({[quiz.week]: [quiz.questions[0].c]});
   assert.match(running.body.textContent, /Frage 2 von 3/);
   assert.equal(running.querySelectorAll('.qdots i.on').length, 1);
