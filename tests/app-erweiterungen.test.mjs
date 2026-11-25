@@ -305,3 +305,29 @@ test('Spielort: Halle ohne Ort davor, BBC Arena mit Adresse, Kartenlink auf die 
   assert.match(out, /target="_blank" rel="noopener noreferrer"/);
   assert.equal(String(spielort({})), '');
 });
+
+test('Quiz der Woche auf der Titelseite: offen, laufend und abgeschlossen mit sichtbarem Erfolg', async () => {
+  const {quizTeaser} = await import('../src/kadetten/js/views/quiz.js');
+  const {parseHTML} = await import('linkedom');
+  const now = Date.parse('2026-11-25T12:00:00+01:00'),
+    quiz = weeklyQuiz(now);
+  const wrong = q => (q.c + 1) % 4;
+  const show = answers => parseHTML('<html><body>' + String(quizTeaser(now, answers)) + '</body></html>').document;
+  const open = show({});
+  assert.match(open.body.textContent, /Drei Fragen zu Handball und Verein[\s\S]*Noch nicht gespielt/);
+  assert.equal(open.querySelector('.quizcard'), null);
+  const running = show({[quiz.week]: [quiz.questions[0].c]});
+  assert.match(running.body.textContent, /Frage 2 von 3/);
+  assert.equal(running.querySelectorAll('.qdots i.on').length, 1);
+  assert.equal(running.querySelectorAll('.qdots i').length, QUIZ_SIZE);
+  const all = show({[quiz.week]: quiz.questions.map(q => q.c)});
+  assert.match(all.querySelector('.qno').textContent, new RegExp(`^${QUIZ_SIZE}/${QUIZ_SIZE}$`));
+  assert.match(all.body.textContent, /Alles richtig[\s\S]*Neues Quiz am/);
+  assert.equal(all.querySelectorAll('.qdots i.on').length, QUIZ_SIZE);
+  assert.equal(all.querySelector('.quizcard.part'), null);
+  const part = show({[quiz.week]: quiz.questions.map((q, i) => (i === 0 ? wrong(q) : q.c))});
+  assert.match(part.querySelector('.qno').textContent, new RegExp(`^${QUIZ_SIZE - 1}/${QUIZ_SIZE}$`));
+  assert.ok(part.querySelector('.quizcard.part'), 'bei Fehlern ruhig grau statt orange');
+  assert.equal(part.querySelectorAll('.qdots i.on').length, QUIZ_SIZE - 1);
+  assert.equal(part.querySelector('.qdots').getAttribute('aria-hidden'), 'true');
+});
