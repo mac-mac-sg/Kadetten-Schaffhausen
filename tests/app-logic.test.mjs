@@ -94,3 +94,26 @@ test('Tabelle, Countdown und Datumsangaben', () => {
   assert.equal(shortTeam('GC Amicitia Zürich'), 'GC Amicitia');
   assert.equal(initials('HSC Suhr Aarau'), 'SA');
 });
+
+test('Nach dem Spiel: Resultat bleibt bis zum Mittag des Folgetags, danach das nächste Spiel', async () => {
+  const {jetztState, aftermathEnd} = await import('../src/kadetten/js/logic.js');
+  const played = {
+    id: 'a',
+    date: '2026-11-24',
+    time: '18:45',
+    home: 'Kadetten Schaffhausen',
+    away: 'Chambery Savoie Mont Blanc HB',
+    league: 'EHL',
+    score: [28, 28]
+  };
+  const next = {id: 'b', date: '2026-12-01', time: '18:45', home: 'CSM Bucuresti', away: 'Kadetten Schaffhausen', league: 'EHL'};
+  const at = iso => Date.parse(iso);
+  assert.equal(aftermathEnd(played), at('2026-11-25T12:00:00+01:00'));
+  assert.equal(jetztState({games: [played, next], now: at('2026-11-25T08:00:00+01:00')}).state, 'nachspiel');
+  assert.equal(jetztState({games: [played, next], now: at('2026-11-25T11:59:00+01:00')}).state, 'nachspiel');
+  const after = jetztState({games: [played, next], now: at('2026-11-25T12:00:00+01:00')});
+  assert.equal(after.state, 'alltag');
+  assert.equal(after.game.id, 'b');
+  const soon = {...next, date: '2026-11-25', time: '20:00'};
+  assert.equal(jetztState({games: [played, soon], now: at('2026-11-25T10:00:00+01:00')}).state, 'spieltag', 'Spieltag hat Vorrang');
+});

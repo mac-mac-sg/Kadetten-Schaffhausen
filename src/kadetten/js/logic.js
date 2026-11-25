@@ -6,7 +6,6 @@ const HOUR = 3600000;
 // Ohne gemeldete Spielendzeit gilt ein Spiel etwa zwei Stunden nach Anpfiff als beendet.
 export const GAME_DURATION = 2 * HOUR;
 export const MATCHDAY_WINDOW = 24 * HOUR;
-export const AFTERMATH_WINDOW = 24 * HOUR;
 
 const offsetCache = new Map();
 function zurichOffset(epoch) {
@@ -103,6 +102,14 @@ export function form(games, team = OWN_TEAM, count = 5, league) {
  * nachspiel – ein Spiel endete vor höchstens 24 Stunden
  * alltag    – sonst
  */
+/** Das Resultat bleibt bis zum Mittag (12:00 Schweizer Zeit) des Tages nach dem Spiel auf der Startseite. */
+export function aftermathEnd(game) {
+  const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(game?.date || '');
+  if (!d) return -Infinity;
+  const next = new Date(Date.UTC(+d[1], +d[2] - 1, +d[3] + 1)).toISOString().slice(0, 10);
+  return kickoff({date: next, time: '12:00'});
+}
+
 export function jetztState({games, live, now}) {
   if (live?.match && involves(live.match)) return {state: 'live', game: live.match};
   const next = nextGame(games, now);
@@ -112,7 +119,7 @@ export function jetztState({games, live, now}) {
   if (finished) return {state: 'nachspiel', game: finished};
   if (last?.date === zurichParts(now).date && (!next || kickoff(next) > now)) return {state: 'nachspiel', game: last};
   if (next && kickoff(next) - now <= MATCHDAY_WINDOW) return {state: 'spieltag', game: next};
-  if (last && now - (kickoff(last) + GAME_DURATION) <= AFTERMATH_WINDOW) return {state: 'nachspiel', game: last};
+  if (last && now < aftermathEnd(last)) return {state: 'nachspiel', game: last};
   return {state: 'alltag', game: next, last};
 }
 

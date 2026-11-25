@@ -61,7 +61,7 @@ Spielseite (von Jetzt, Spielplan, Spieler, Artikel) ─ Vorschau → Live → Be
 | Alltag | ausserhalb der übrigen Zustände | nächstes Spiel mit Countdown, letztes Resultat, News, Tabelle in Kürze |
 | Spieltag | etwa 24 h vor Anpfiff | Spiel im Vordergrund: Ausgangslage (Tabelle, Form), Vorschau, «Wo läuft das Spiel?», Ticket-Link, Push zum Anpfiff |
 | Live | Anpfiff bis bestätigtes Endresultat | Spielstand, Spielphase und Spielzeit, Halbzeitstand, Live-Tabelle, Zeitpunkt der letzten Aktualisierung |
-| Nachspiel | bis etwa 24 h nach Spielende | Endresultat, Spielbericht mit Torschützen und Teamwerten, Tabelle danach, Teilen-Bild, nächstes Spiel |
+| Nachspiel | bis 12:00 Uhr (Schweizer Zeit) am Tag nach dem Spiel; ein Spieltag hat Vorrang | Endresultat, Spielbericht mit Torschützen und Teamwerten, Tabelle danach, Teilen-Bild, nächstes Spiel |
 
 ### Spielseite: Zustände
 
