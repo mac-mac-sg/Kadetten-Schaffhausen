@@ -274,3 +274,10 @@ test('Spieltag auf der Startseite: Ausgangslage verlinkt die Vorschau, kein abge
   assert.doesNotMatch(html, /j-vor|class="clamp"/);
   assert.ok(html.indexOf('Ausgangslage') < html.indexOf('Mein Tipp'), 'Tipp folgt direkt auf die Ausgangslage');
 });
+
+test('Startseite nach dem Spiel: «Nächstes Spiel» als kleine Spielkarte mit Wappen, Anpfiff und Countdown', () => {
+  const html = render('#/', MOMENTS.nachspiel);
+  assert.match(html, /<a class="card nextcard" href="#\/spiel\/[^"]+"[^>]*aria-label="Nächstes Spiel: /);
+  assert.match(html, /nextcard[\s\S]*class="pill"[\s\S]*class="vs"[\s\S]*class="kick num"/);
+  assert.doesNotMatch(html, /j-next[\s\S]{0,200}class="card list"/, 'keine Listenzeile mehr');
+});

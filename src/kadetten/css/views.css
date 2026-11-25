@@ -896,3 +896,11 @@ a.sk:active { transform: scale(.97); }
 .prose .mf-lineup { padding-left: calc(20px + var(--s-3)); font: 400 var(--fs-small)/1.5 var(--f-text); color: var(--c-text-muted); }
 .prose .mf-pen { display: block; position: relative; padding-left: calc(20px + var(--s-3)); margin-top: var(--s-1); }
 .prose .mf-pen .mf-i { position: absolute; left: 0; top: 0; }
+
+/* Kleine Spielkarte «Nächstes Spiel» (Startseite nach dem Spiel) */
+.nextcard { display: block; padding: var(--s-4) var(--s-5) var(--s-5); color: inherit; text-decoration: none; }
+.nextcard .meta { display: flex; }
+.nextcard .vs { margin-top: var(--s-3); }
+.nextcard .kick { font-size: var(--fs-xl); }
+.nextcard .team { font-size: var(--fs-small); font-weight: 600; }
+.nextcard .pill { margin: 0; }
