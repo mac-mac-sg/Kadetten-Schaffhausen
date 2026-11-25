@@ -17,17 +17,24 @@ export function quizState(now, answers = quizAnswers()) {
   return {...quiz, ...result, given: given.slice(0, result.size)};
 }
 
-/** Hinweis auf der Titelseite und im Wissen. */
-export function quizTeaser(now) {
-  const s = quizState(now);
-  return html`<section class="sec" aria-labelledby="j-quiz">${sectionHead('Quiz der Woche', '', '', 'j-quiz')}
-    <a class="card rowcard" href="${href.quiz()}"><span class="lead">${icon('book')}</span><span class="grow"><span class="t">${
-      s.done
-        ? `${s.right} von ${s.size} richtig`
-        : s.given.length
-          ? `Frage ${s.given.length + 1} von ${s.size}`
-          : 'Drei Fragen zu Handball und Verein'
-    }</span>${s.done ? html`<span class="s">Neues Quiz am ${day(nextQuizAt(now))}</span>` : ''}</span>${icon('go')}</a></section>`;
+/** Ein Strich je Frage: orange für beantwortete (laufend) bzw. richtige (abgeschlossen) Fragen. Reine Zierde, der Text sagt dasselbe. */
+const quizDots = s =>
+  html`<span class="qdots" aria-hidden="true">${s.questions.map((q, i) =>
+    s.given[i] === undefined || (s.done && s.given[i] !== q.c) ? html`<i></i>` : html`<i class="on"></i>`
+  )}</span>`;
+
+/** Karte «Quiz der Woche» auf der Titelseite: offen, laufend oder abgeschlossen mit grosser Ergebniszahl. */
+export function quizTeaser(now, answers = quizAnswers()) {
+  const s = quizState(now, answers);
+  const open = href.quiz();
+  const body = s.done
+    ? html`<a class="card quizcard done${s.right === s.size ? '' : ' part'}" href="${open}"><b class="fig qno num">${s.right}/${s.size}</b><span class="grow"><span class="t">${
+        s.right === s.size ? 'Alles richtig' : `${s.right} von ${s.size} richtig`
+      }</span>${quizDots(s)}<span class="s">Neues Quiz am ${day(nextQuizAt(now))}</span></span>${icon('go')}</a>`
+    : html`<a class="card rowcard" href="${open}"><span class="lead">${icon('book')}</span><span class="grow"><span class="t">${
+        s.given.length ? `Frage ${s.given.length + 1} von ${s.size}` : 'Drei Fragen zu Handball und Verein'
+      }</span>${s.given.length ? quizDots(s) : html`<span class="s">Noch nicht gespielt</span>`}</span>${icon('go')}</a>`;
+  return html`<section class="sec" aria-labelledby="j-quiz">${sectionHead('Quiz der Woche', '', '', 'j-quiz')}${body}</section>`;
 }
 
 function answered(q, choice, index) {
