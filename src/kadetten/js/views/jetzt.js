@@ -33,6 +33,7 @@ import {
   venueShort,
   sectionHead,
   heroCard,
+  crest,
   kickoffTime,
   scoreLine,
   formRow,
@@ -117,6 +118,17 @@ export function previewHero(game, now, {link = true, actions = '', status = null
     label: 'Zur Spielvorschau',
     actions
   });
+}
+
+/** Kleine Spielkarte «Nächstes Spiel» nach dem Spiel: dasselbe Muster wie die grosse Karte oben (Wappen, Anpfiff, Wappen). */
+export function nextGameCard(game, now) {
+  const own = isOwn(game.home) || isOwn(game.away);
+  const place = own ? (isOwn(game.home) ? 'Heim' : 'auswärts') : '';
+  const meta = [dayLabel(game, now), game.league, place].filter(Boolean).join(' · ');
+  const label = `Nächstes Spiel: ${shortTeam(game.home)} – ${shortTeam(game.away)}, ${meta}, ${game.time || ''} Uhr`;
+  return html`<a class="card nextcard" href="${href.spiel(game.id)}" aria-label="${label}">
+    <span class="meta"><span>${meta}</span><span class="pill">${countdown(kickoff(game), now)}</span></span>
+    <span class="vs"><span class="team">${crest(game.home)}${shortTeam(game.home)}</span>${kickoffTime(game.time)}<span class="team">${crest(game.away)}${shortTeam(game.away)}</span></span></a>`;
 }
 
 function liveScorers(match, game) {
@@ -285,8 +297,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       ${
         next && next.id !== shown.id
           ? html`<section class="sec" aria-labelledby="j-next">
-        ${sectionHead('Nächstes Spiel', '', '', 'j-next')}<div class="card list">
-        ${gameRow(next, now)}</div>
+        ${sectionHead('Nächstes Spiel', '', '', 'j-next')}${nextGameCard(next, now)}
         </section>`
           : ''
       }
