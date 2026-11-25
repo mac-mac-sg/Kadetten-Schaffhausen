@@ -6,6 +6,7 @@ import {weeklyQuiz, quizAnswers, quizStats, nextQuizAt, weekResult} from '../qui
 import {subBand, backLink, sectionHead} from './parts.js';
 
 const more = m => (m === 'verein' ? href.verein('geschichte') : Array.isArray(m) ? href.wissen(m[0], m[1]) : null);
+const weekday = at => new Date(at).toLocaleDateString('de-CH', {weekday: 'long', timeZone: 'Europe/Zurich'});
 const day = at => new Date(at).toLocaleDateString('de-CH', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Zurich'});
 
 /** Zustand des Quiz dieser Woche: Fragen, gegebene Antworten, Anzahl richtige. */
@@ -28,11 +29,11 @@ export function quizTeaser(now, answers = quizAnswers()) {
   const s = quizState(now, answers);
   const open = href.quiz();
   const body = s.done
-    ? html`<a class="card quizcard done${s.right === s.size ? '' : ' part'}" href="${open}"><b class="fig qno num">${s.right}/${s.size}</b><span class="grow"><span class="t">${
+    ? html`<a class="card quizcard tile done${s.right === s.size ? '' : ' part'}" href="${open}"><b class="fig qno num">${s.right}/${s.size}</b><span class="grow"><span class="line"><span class="t">${
         s.right === s.size ? 'Alles richtig' : `${s.right} von ${s.size} richtig`
-      }</span>${quizDots(s)}<span class="s">Neues Quiz am ${day(nextQuizAt(now))}</span></span>${icon('go')}</a>`
-    : html`<a class="card rowcard" href="${open}"><span class="lead">${icon('book')}</span><span class="grow"><span class="t">${
-        s.given.length ? `Frage ${s.given.length + 1} von ${s.size}` : 'Drei Fragen zu Handball und Verein'
+      }</span>${quizDots(s)}</span><span class="s">Neues Quiz am ${weekday(nextQuizAt(now))}</span></span>${icon('go')}</a>`
+    : html`<a class="card rowcard tile" href="${open}"><span class="lead">${icon('book')}</span><span class="grow"><span class="t">${
+        s.given.length ? `Frage ${s.given.length + 1} von ${s.size}` : 'Drei neue Fragen'
       }</span>${s.given.length ? quizDots(s) : html`<span class="s">Noch nicht gespielt</span>`}</span>${icon('go')}</a>`;
   return html`<section class="sec" aria-labelledby="j-quiz">${sectionHead('Quiz der Woche', '', '', 'j-quiz')}${body}</section>`;
 }

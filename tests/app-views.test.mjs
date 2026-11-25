@@ -281,3 +281,10 @@ test('Startseite nach dem Spiel: «Nächstes Spiel» als kleine Spielkarte mit W
   assert.match(html, /nextcard[\s\S]*class="pill"[\s\S]*class="vs"[\s\S]*class="kick num"/);
   assert.doesNotMatch(html, /j-next[\s\S]{0,200}class="card list"/, 'keine Listenzeile mehr');
 });
+
+test('Titelseite im Alltag: Saison, letztes Resultat und Quiz sind gleich hohe Kacheln', () => {
+  const html = render('#/', MOMENTS.alltag);
+  assert.match(html, /class="card rowcard tile" href="#\/statistik"/);
+  assert.match(html, /<div class="card list tile">/);
+  assert.match(html, /class="card rowcard tile" href="#\/quiz"/);
+});
