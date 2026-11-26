@@ -403,3 +403,11 @@ Konzept: Design-Canvas «Weniger Kachelarten». Jede Kachel der Titelseite und v
 | Fokus | dunkle Kachel mit Knöpfen, einmal je Seite | Innenabstand `--tile-pad` | `.card.claim`, `.card.nextcard` |
 
 Umgesetzt: Quiz-Bilanz in «Ich» als drei Kennzahl-Kacheln, Sammelkarten als Zeile mit dünnem Fortschrittsbalken (`.sub-bar`; die Legende steht in der Zeile, die Seltenheiten auf der Sammlungsseite), Zeilen der Titelseite mit gleicher Zahlengrösse. Neue Funktionen wählen eine der drei Arten und bauen keine eigene Kachel. Nicht angepasst (Inhalte, keine Kacheln): Sammelkarten, Kader, Tabelle, Spiel-Story, Spielkarte im Band.
+
+## Start je Spielzustand (26. November 2026)
+
+Konzept: Design-Canvas «Start je Spielzustand». Die Titelseite kannte die vier Zustände schon (`jetztState`: Alltag, Spieltag, Live, Nach dem Spiel); neu ist, dass jeder Zustand nur einen Fokus zeigt.
+
+- Neuigkeiten erscheinen nur noch im Alltag, als eine Zeile mit der neuesten Meldung («Neues aus dem Verein», Link «Alle News») am Ende der Seite. Am Spieltag, live und nach dem Spiel fehlen sie. Die Bildgeschichte der Titelseite entfällt; weitere Meldungen stehen im Reiter «News».
+- Alltag: nächstes Spiel, Saison, Letztes Resultat, Quiz, neueste Meldung.
+- Spieltag, Live und Nach dem Spiel sind sonst unverändert (Spielkarte, Tipp, Ausgangslage bzw. Live-Tabelle und Werfer bzw. Tabelle danach und nächstes Spiel).

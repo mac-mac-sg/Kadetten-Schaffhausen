@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {reportText} from '../src/kadetten/js/report.js';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
 import {dataFreshness, OWN_TEAM} from '../src/kadetten/js/logic.js';
@@ -87,6 +88,20 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; di
   assert.equal(form.querySelector('[role="img"]').getAttribute('aria-label'), 'Form: Sieg');
   assert.doesNotMatch(form.textContent, /neuestes zuerst/, 'keine erklärenden Sätze');
   assert.equal(out.querySelector('[data-route-back]').getAttribute('href'), '#/saison');
+});
+
+test('KI-Texte für Vorschau und Rückblick erscheinen nicht mehr; sachliche Texte bleiben', () => {
+  const ctxWith = generator => ({
+    ...ctx,
+    now: Date.parse('2026-11-11T14:30:00Z'),
+    load: key => (key === 'preview:next' ? {status: 'ready', value: {generator, paragraphs: ['Text zur Vorschau.']}} : {status: 'error'})
+  });
+  const headings = generator =>
+    [...dom(renderSpiel({...ctxWith(generator), route: {id: 'next'}, ui: {}})).querySelectorAll('h2')].map(h => h.textContent);
+  assert.ok(headings('ki').indexOf('Vorschau') < 0, 'KI-Vorschau ausgeblendet');
+  assert.ok(headings('daten').includes('Vorschau'), 'sachliche Vorschau bleibt');
+  assert.equal(reportText({report: {headline: 'X', paragraphs: ['A'], generator: 'ki'}}), null, 'KI-Rückblick ausgeblendet');
+  assert.equal(reportText({report: {headline: 'X', paragraphs: ['A'], generator: 'daten'}}).paragraphs.length, 1);
 });
 
 test('Torhüter eröffnet mit Fangquote und Paraden, weist drei fehlende Berichte aus und priorisiert keine Tore', () => {

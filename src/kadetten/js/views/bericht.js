@@ -454,7 +454,7 @@ function verlauf(goals, ownHome, game) {
 const textSection = text => html`<section class="sec" aria-labelledby="g-text">${sectionHead('Matchbericht', '', '', 'g-text')}
       <article class="card prose">
         ${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
-      <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p>
+      <p class="fine">Aus den bestätigten Spieldaten zusammengestellt.</p>
         </article>
         </section>`;
 
@@ -474,7 +474,7 @@ function rueckblick(entry, supported = true) {
   return html`<section class="sec after-band" aria-labelledby="g-text"><h2 class="sr" id="g-text">Rückblick</h2>
     <article class="card prose">
       ${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
-    <p class="fine">${text.generator === 'ki' ? 'Von einer KI aus den bestätigten Spieldaten formuliert.' : 'Aus den bestätigten Spieldaten zusammengestellt.'}</p>
+    <p class="fine">Aus den bestätigten Spieldaten zusammengestellt.</p>
       </article>
       </section>`;
 }

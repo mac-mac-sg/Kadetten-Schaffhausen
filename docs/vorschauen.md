@@ -42,3 +42,11 @@ Dem Eigentümer ist der sachliche Text zu nüchtern. Deshalb formuliert ein Mode
 **Feinschliff (Vergleich vom 6. Oktober 2026, GPT-OSS):** Wettbewerbe stehen immer als «im Wettbewerb X» (das Modell setzte falsche Artikel, «im Brack Super League»); der Schlusssatz wechselt und vermeidet «Wir freuen uns … herzlich ein»; Prognosen («verspricht Spannung») und Resultat-Deutungen («unter Druck setzen») sind verboten. Der Parser ersetzt geschützte Bindestriche und Leerzeichen sowie «45 : 34» durch gewöhnliche Zeichen.
 
 **Stand 6. Oktober 2026:** Standardmodell wieder Mistral Small 3.1 (schneller, zuverlässiger). Der verfeinerte Prompt bleibt; «ß» wird im Parser zu «ss», und der Prompt nennt keine Ortsbezeichnung ausser der aus den Fakten (GPT-OSS erfand «Wankdorf-Halle»). Der Eigentümer beobachtet die Formulierungen der nächsten Spiele, Verbesserungen folgen gemeinsam.
+
+## KI-Texte abgeschaltet (26. November 2026)
+
+Die KI-Texte für die Match-Vorschau und den Rückblick (Matchbericht) waren zu allgemein und sind abgeschaltet. Es entstehen nur noch die sachlichen Texte aus bestätigten Daten (`generator: 'daten'`).
+
+- Der Actions-Lauf (`scripts/cloudflare-update.mjs`) übergibt weder `rewrite` noch `reportWriter`; bestehende KI-Vorschauen werden beim nächsten Lauf durch den sachlichen Text ersetzt.
+- Die App blendet Texte mit `generator: 'ki'` aus (Vorschau auf der Spielseite, Rückblick im Bericht). Ältere gesicherte Spiele mit KI-Bericht zeigen deshalb im Rückblick keinen Text, Statistik und Spielverlauf bleiben.
+- Der Code der KI-Schicht (`server/preview-ai.mjs`, `server/report-ai.mjs`, `scripts/lib/preview-rewrite.mjs`, `scripts/lib/workers-ai.mjs`, Vergleichslauf `cloudflare-ai-compare`) ist noch vorhanden, wird aber nicht aufgerufen.

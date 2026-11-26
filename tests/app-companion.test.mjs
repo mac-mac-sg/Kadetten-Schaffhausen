@@ -39,11 +39,13 @@ test('Titelseite im Stil «Schnitt»: Kopfband mit Wappen, Spielkarte, echte New
   );
   assert.doesNotMatch(d.body.textContent, /Handball seit 1791/);
   assert.equal(d.querySelector('.match-score .hero-link').getAttribute('href'), '#/spiel/next', 'Nächstes Spiel als Karte');
-  assert.match(d.querySelector('.lead-story').textContent, /Aktuelle Geschichte/);
-  assert.equal(d.querySelector('.lead-story img').getAttribute('src'), 'https://example.org/photo.webp');
+  const news = d.querySelector('#j-news').closest('section');
+  assert.match(news.querySelector('a.rowcard').textContent, /Aktuelle Geschichte/, 'neueste Meldung als Zeile');
+  assert.equal(news.querySelector('a.more, .sh a').getAttribute('href'), '#/news', 'weitere Meldungen im Reiter News');
+  assert.ok(!d.querySelector('.lead-story'), 'keine Bildgeschichte mehr auf dem Start');
   assert.ok(!d.querySelector('.moments'));
   const empty = doc(renderJetzt({...ctx, state: {data: {...data, stories: []}}}));
-  assert.ok(!empty.querySelector('.lead-story'), 'ohne News keine erfundene Bildgeschichte');
+  assert.ok(!empty.querySelector('#j-news'), 'ohne News keine erfundene Meldung');
 });
 test('Fünf Tabs: Start, Spiele, Tabelle, Kader, Ich; Verein über das Wappen', () => {
   assert.deepEqual(

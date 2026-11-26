@@ -178,15 +178,11 @@ function vorschau({game, data, load, api, now}) {
     ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
     ${gewinnCard(pre)}
     ${
-      p?.paragraphs?.length
+      p?.paragraphs?.length && p.generator !== 'ki'
         ? html`<section class="sec" aria-labelledby="g-vor">
-          ${sectionHead(p.generator === 'daten' ? 'Vorschau' : 'Vorschau', '', '', 'g-vor')}
+          ${sectionHead('Vorschau', '', '', 'g-vor')}
       <article class="card prose">${p.headline ? html`<h3 class="h3">${p.headline}</h3>` : ''}${p.paragraphs.map(t => html`<p>${t}</p>`)}
-        <p class="fine">${
-          p.generator === 'daten'
-            ? 'Aus bestätigten Spiel- und Tabellendaten zusammengestellt.'
-            : 'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert. Keine Ergebnisprognose.'
-        }</p>
+        <p class="fine">Aus bestätigten Spiel- und Tabellendaten zusammengestellt.</p>
           </article>
           </section>`
         : ''

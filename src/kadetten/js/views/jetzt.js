@@ -162,25 +162,13 @@ export function tipFor(game, now) {
   return tipCard({game, tip, locked, points: hasScore(game) && tip ? tipPoints(tip, game.score) : null});
 }
 
-function newsBlock(data, count = 3) {
-  const stories = (data.stories || []).slice(0, count);
-  if (!stories.length) return '';
-  const [lead, ...rest] = stories,
-    image = storyImage(lead);
-  return html`<section class="sec editorial" aria-labelledby="j-news"><h2 class="sr" id="j-news">Neues aus dem Verein</h2>
-    <a class="lead-story${image ? '' : ' no-photo'}" href="${href.artikel(lead.id)}">${
-      image ? html`<img src="${image}" alt="" width="800" height="520" decoding="async" fetchpriority="high">` : ''
-    }<span class="lead-copy"><span class="story-date">${lead.date}</span><h3>${lead.title}</h3>
-      </span></a>
-    ${
-      rest.length
-        ? html`<div class="sh news-heading">
-      <h2 class="h2">Kurz aus dem Verein</h2>
-      <a class="more" href="${href.news()}">Alle News</a></div>
-      <div class="news-rows">
-      ${rest.map(storyRow)}</div>`
-        : html`<a class="more" href="${href.news()}">Alle News</a>`
-    }
+/** Neuigkeiten auf der Titelseite: nur die neueste Meldung als Zeile; alle weiteren stehen im Reiter «News». */
+function newsLine(data) {
+  const lead = (data.stories || [])[0];
+  if (!lead) return '';
+  return html`<section class="sec" aria-labelledby="j-news">
+    ${sectionHead('Neues aus dem Verein', 'Alle News', href.news(), 'j-news')}
+    <a class="card rowcard tile" href="${href.artikel(lead.id)}"><span class="lead">${icon('doc')}</span><span class="grow"><span class="t">${lead.title}</span><span class="s">${lead.date}</span></span>${icon('go')}</a>
   </section>`;
 }
 
@@ -257,7 +245,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       ${own && ui?.votes ? liveVoteCard({game: own, vote: load('votes:' + own.id, () => ui.votes.status(own.id), 30000), mine: myVotes()[own.id]}) : ''}
       ${liveTableTeaser(data, {...game, league: game.league || own?.league})}
       ${liveScorers(game, own)}
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   if (phase === 'spieltag') {
@@ -268,7 +256,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         ${previewHero(game, now, {actions, status: waitingForLive(game, state, now)})}</section>
       ${matchdayStats(game, data)}
       ${tipFor(game, now)}
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   if (phase === 'nachspiel') {
@@ -301,7 +289,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         </section>`
           : ''
       }
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   const last = lastResult(data.games, now);
@@ -315,7 +303,6 @@ export function renderJetzt({state, now, load, api, ui}) {
         : ''
     }
     ${game ? '' : recapTeaser(data.games, now, true)}
-    ${newsBlock(data, 3)}
     ${
       own
         ? html`<section class="sec" aria-labelledby="j-saison">
@@ -331,6 +318,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         : ''
     }
     ${quizTeaser(now)}
+    ${newsLine(data)}
     ${offline}`;
 }
 
