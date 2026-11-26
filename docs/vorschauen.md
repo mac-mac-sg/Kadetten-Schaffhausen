@@ -43,10 +43,9 @@ Dem Eigentümer ist der sachliche Text zu nüchtern. Deshalb formuliert ein Mode
 
 **Stand 6. Oktober 2026:** Standardmodell wieder Mistral Small 3.1 (schneller, zuverlässiger). Der verfeinerte Prompt bleibt; «ß» wird im Parser zu «ss», und der Prompt nennt keine Ortsbezeichnung ausser der aus den Fakten (GPT-OSS erfand «Wankdorf-Halle»). Der Eigentümer beobachtet die Formulierungen der nächsten Spiele, Verbesserungen folgen gemeinsam.
 
-## KI-Texte abgeschaltet (26. November 2026)
+## Keine Vorschau- und Rückblick-Texte mehr in der App (26. November 2026)
 
-Die KI-Texte für die Match-Vorschau und den Rückblick (Matchbericht) waren zu allgemein und sind abgeschaltet. Es entstehen nur noch die sachlichen Texte aus bestätigten Daten (`generator: 'daten'`).
+Die KI-Texte waren zu allgemein, die sachlichen Texte aus Daten ebenfalls. Die App zeigt deshalb weder den Abschnitt «Vorschau» (Spielseite vor dem Spiel) noch den Reiter «Rückblick» (Spielseite nach dem Spiel). Abgeschlossene Spiele zeigen nur noch die Statistik ohne Reiterleiste; die alte Adresse `#/spiel/<id>/rueckblick` führt dorthin. Geblieben sind der Aufmacher («Worum geht es?», aus Daten) und die Ausgangslage mit Zahlen.
 
-- Der Actions-Lauf (`scripts/cloudflare-update.mjs`) übergibt weder `rewrite` noch `reportWriter`; bestehende KI-Vorschauen werden beim nächsten Lauf durch den sachlichen Text ersetzt.
-- Die App blendet Texte mit `generator: 'ki'` aus (Vorschau auf der Spielseite, Rückblick im Bericht). Ältere gesicherte Spiele mit KI-Bericht zeigen deshalb im Rückblick keinen Text, Statistik und Spielverlauf bleiben.
-- Der Code der KI-Schicht (`server/preview-ai.mjs`, `server/report-ai.mjs`, `scripts/lib/preview-rewrite.mjs`, `scripts/lib/workers-ai.mjs`, Vergleichslauf `cloudflare-ai-compare`) ist noch vorhanden, wird aber nicht aufgerufen.
+- Der Datendienst (`scripts/cloudflare-update.mjs`) erzeugt keine KI-Texte mehr (`rewrite` und `reportWriter` sind `null`). Er schreibt aber weiterhin sachliche Vorschauen (`previews/…`) und Berichte (`report`) in den Speicher, die die App nicht mehr liest. Aufräumen wäre ein eigener Schritt (`server/previews.mjs`, `server/preview-text.mjs`, `scripts/lib/preview-sync.mjs`, `scripts/lib/ehf-archive.mjs`, KI-Schicht `server/preview-ai.mjs`, `server/report-ai.mjs`, `scripts/lib/preview-rewrite.mjs`, `scripts/lib/workers-ai.mjs`, Vergleichslauf `cloudflare-ai-compare`).
+- Der Saisonrückblick (`#/rueckblick`, «Deine Saison») ist davon nicht betroffen.

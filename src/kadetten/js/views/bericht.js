@@ -4,7 +4,7 @@ import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {shortTeam} from '../logic.js';
 import {isOwn, displayName, storiesForGame} from '../match.js';
-import {reportText, goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
+import {goalTimeline, flow, incidents, comparisonRows, fmtPct, pct, ZONES} from '../report.js';
 import {favourite} from '../personal.js';
 import {suggestions, numberFor, surname} from '../wahl.js';
 import {sectionHead, notice, loading, listRow, storyRow, playerByNumber, playerPhoto} from './parts.js';
@@ -450,38 +450,8 @@ function verlauf(goals, ownHome, game) {
     ${curveChart(goals, ownHome, {ownName: 'Kadetten', oppName, final})}`;
 }
 
-/** Inhalt des Berichts-Tabs. entry: Ergebnis von loadReportFor. */
-const textSection = text => html`<section class="sec" aria-labelledby="g-text">${sectionHead('Matchbericht', '', '', 'g-text')}
-      <article class="card prose">
-        ${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
-      <p class="fine">Aus den bestätigten Spieldaten zusammengestellt.</p>
-        </article>
-        </section>`;
-
-/** Rückblick: nur der erzeugte Bericht, sonst nichts. Alle Zahlen stehen unter «Statistik». */
-function rueckblick(entry, supported = true) {
-  if (!supported)
-    return html`<section class="sec">
-      ${notice('Für dieses Spiel liefert die Quelle keinen Spielbericht, deshalb gibt es keinen Rückblick.', 'doc')}</section>`;
-  if (!entry || entry.status === 'error')
-    return html`<section class="sec">
-      ${notice('Der Rückblick erscheint, sobald der bestätigte Spielbericht vorliegt. Das ist in der Regel kurz nach Spielende.', 'doc')}</section>`;
-  if (entry.status === 'loading') return html`<section class="sec">${loading('Rückblick wird geladen …')}</section>`;
-  const text = reportText(entry.value.archive);
-  if (!text)
-    return html`<section class="sec">
-      ${notice('Für dieses Spiel gibt es keinen Rückblick. Spielverlauf, Teamvergleich und Spielerwerte stehen unter «Statistik».', 'doc')}</section>`;
-  return html`<section class="sec after-band" aria-labelledby="g-text"><h2 class="sr" id="g-text">Rückblick</h2>
-    <article class="card prose">
-      ${text.headline ? html`<h3 class="h3">${text.headline}</h3>` : ''}${text.paragraphs.map(p => html`<p>${p}</p>`)}
-    <p class="fine">Aus den bestätigten Spieldaten zusammengestellt.</p>
-      </article>
-      </section>`;
-}
-
-/** Inhalt des Berichts. part: 'alles' (bisher), 'statistik' (alles ausser dem Text) oder 'rueckblick' (nur der erzeugte Text). */
+/** Inhalt des Berichts (Spielwerte, Spielverlauf, Artikel; es gibt keine Textberichte mehr). */
 export function renderBericht({game, data, entry, ui, normalized, voting = '', part = 'alles', supported = true}) {
-  if (part === 'rueckblick') return rueckblick(entry, supported);
   const stories = storiesForGame(data.stories, game);
   const articles = stories.length
     ? html`<section class="sec" aria-labelledby="g-art">
@@ -500,7 +470,6 @@ export function renderBericht({game, data, entry, ui, normalized, voting = '', p
   if (entry.status === 'loading') return html`${voting}<section class="sec">${loading('Spielbericht wird geladen …')}</section>${articles}`;
   const {shv, archive} = entry.value;
   const report = normalized;
-  const text = reportText(archive);
   const ownHome = isOwn(game.home);
   const goals = goalTimeline(archive, shv);
   const f = flow(goals),
@@ -512,7 +481,6 @@ export function renderBericht({game, data, entry, ui, normalized, voting = '', p
   const sideText = side => (side === ownSide ? 'Kadetten' : shortTeam(ownHome ? game.away : game.home));
   return html`
     ${voting}
-    ${text && part === 'alles' ? textSection(text) : ''}
     ${
       goals.length
         ? html`<section class="sec" aria-labelledby="g-verlauf">${sectionHead('Spielverlauf', '', '', 'g-verlauf')}

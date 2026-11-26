@@ -156,13 +156,11 @@ test('Zurück: von jedem Hauptreiter zum Start, aus Unteransichten zur übergeor
   await page.click('.band a.back');
   await settled(page, '#/team');
   await back(page, '#/');
-  // Spielplan → Spiel → Reiterwechsel → Hauptreiter «Kader»: Zurück führt zum Start, nicht zum Spiel.
+  // Spielplan → Spiel: Zurück führt zum Spielplan.
   await page.click('nav.nav a[href="#/saison"]');
   await settled(page, '#/saison');
   await page.goto(origin + '/#/spiel/508363/bericht');
-  await page.waitForSelector('nav.seg');
-  await page.click('nav.seg a[href$="/rueckblick"]');
-  await settled(page, '#/spiel/508363/rueckblick');
+  await page.waitForSelector('.match-score');
   await back(page, '#/saison');
   assert.deepEqual(page.errors, []);
   await page.close();
@@ -181,7 +179,7 @@ test('Zurück: Spiel von der Titelseite, dann Hauptreiter «Kader» führt zum S
 
 test('Zurück: Direktaufruf einer Unteransicht (Mitteilung) führt über die Menüstruktur statt aus der App', async () => {
   const page = await open('/spiel/508363/bericht');
-  await page.waitForSelector('nav.seg');
+  await page.waitForSelector('.match-score');
   await back(page, '#/saison');
   await back(page, '#/');
   const einstellungen = await open('/ich/einstellungen');

@@ -2,17 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, statSync} from 'node:fs';
 import {join} from 'node:path';
-import {
-  goalTimeline,
-  flow,
-  incidents,
-  normalizeReport,
-  fitsGame,
-  comparisonRows,
-  reportText,
-  playerInReport,
-  pct
-} from '../src/kadetten/js/report.js';
+import {goalTimeline, flow, incidents, normalizeReport, fitsGame, comparisonRows, playerInReport, pct} from '../src/kadetten/js/report.js';
 import {liveReport, scoreChart, curveChart} from '../src/kadetten/js/views/bericht.js';
 import {
   streak,
@@ -104,8 +94,6 @@ test('Spielverlauf aus Archiv oder SHV-Ereignissen: Torfolge, grösste Führung,
   const svg = String(scoreChart(goals, true));
   assert.match(svg, /role="img"/);
   assert.match(svg, /grösste Führung Kadetten 2 Tore/);
-  assert.equal(reportText({report: {headline: 'X', paragraphs: ['A']}}).paragraphs.length, 1);
-  assert.equal(reportText({report: {paragraphs: []}}), null);
 });
 
 test('Live-Werte aus /api/live ohne Ereignisliste', () => {

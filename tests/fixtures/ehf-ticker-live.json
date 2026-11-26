@@ -1,1 +1,3233 @@
-{"events":[{"ticket":"t534f4","ticketId":"7sik6q2Jw6gafHdVGwCyDg","competitionCode":"0LdFJEv4Xeq34p7ZoHYnNQ","documentCode":"202711020901036","version":6536936,"maxActionVersion":-2104587098,"feedFlag":"P","date":"2026-11-24T00:00:00Z","time":"19:06:19.933","logicalDate":"2026-11-24T18:45:00Z","phaseScores":[{"periodId":71,"period":"H1","name":"1st Half","scoreA":0,"scoreB":0,"order":1},{"periodId":0,"period":"C","name":"current","scoreA":9,"scoreB":7,"order":0,"clockState":"RUNNING"}],"actions":{"homeCompetitorId":"uyEpUicNjwv8hCX9B7A3sg","awayCompetitorId":"zh6zSrhwVj2qcyJfotLxjw","action":[{"id":"-AN8zVs1JN46k9yjiK2MOg","period":"H1","order":1,"version":-2104587098,"action":"STARTP","when":"0:0","result":"GAME","scoreH":0,"scoreA":0,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:46:03.217Z"},{"id":"O-SnkkNU-UgzOdqqbm9HuA","period":"H1","order":2,"version":-2104596092,"action":"RFP","when":"1:13","scoreH":0,"scoreA":0,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:47:15.423Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"vTbkruUenUPCLKU-ejA4bA","order":1,"bib":2,"description":{"givenName":"Lucas","familyName":"Meister","gender":"M","organisation":"SUI","birthDate":"1996-08-16T00:00:00Z","nationality":"SUI"}}]}}]},{"id":"E3k5hV0V3v9bWhKJS9nfZA","period":"H1","order":3,"version":-2104596088,"action":"FRP","when":"1:13","scoreH":0,"scoreA":0,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:47:15.423Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"vTbkruUenUPCLKU-ejA4bA","order":1,"bib":2,"description":{"givenName":"Lucas","familyName":"Meister","gender":"M","organisation":"SUI","birthDate":"1996-08-16T00:00:00Z","nationality":"SUI"}}]}}]},{"id":"FBE9DyLRVE7_d-BJPbyX8A","period":"H1","order":4,"version":-2104596041,"action":"SHOT","when":"1:23","loc":"PTY","result":"GOAL","scoreH":1,"scoreA":0,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:47:25.423Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"rIxC4ihkwRtn6YB2UXib0g","order":1,"bib":6,"role":"SCR","description":{"givenName":"Óðinn","familyName":"Ríkharðsson","gender":"M","organisation":"ISL","birthDate":"1997-10-23T00:00:00Z","nationality":"ISL"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"-bKX7ymtHf2ZbrmpQR6ZAA","period":"H1","order":5,"version":-2104595860,"action":"SHOT","when":"1:57","loc":"CLD","result":"GOAL","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:48:03.55Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"hWoVKssXzF9RU6z4GDbX-A","order":1,"bib":21,"role":"SCR","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"RxBvaaf9TK580FfzwdaNbQ","period":"H1","order":6,"version":-2104595794,"action":"SHOT","when":"2:16","loc":"CLD","result":"SAVE","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:48:18.427Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"Dmn7_Z3ZD-6YGuEMjxFlbw","order":1,"bib":18,"role":"SCR","description":{"givenName":"Ariel Piotr","familyName":"Pietrasik","gender":"M","organisation":"POL","birthDate":"1999-10-21T00:00:00Z","nationality":"POL"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"k5fJDXtt5mKhpK7W-lWYwA","period":"H1","order":7,"version":-2104595649,"action":"TE","when":"2:40","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:48:42.427Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}},{"code":"KTBmzKPrurKtmHTte1OgLQ","order":2,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":2,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}},{"code":"KTBmzKPrurKtmHTte1OgLQ","order":2,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"kZaB6P9KqtcKafqN5zJklg","period":"H1","order":8,"version":-2104595649,"action":"TO","when":"2:40","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:48:42.427Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"J85RFIQ6XB4jCyqvYpPdew","period":"H1","order":9,"version":-2104595472,"action":"SHOT","when":"2:51","loc":"CLD","result":"BLC","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:49:08.437Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"SCR","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"Dmn7_Z3ZD-6YGuEMjxFlbw","order":1,"bib":18,"role":"BLC","description":{"givenName":"Ariel Piotr","familyName":"Pietrasik","gender":"M","organisation":"POL","birthDate":"1999-10-21T00:00:00Z","nationality":"POL"}}]}}]},{"id":"JwTgh3puivDPIp4FxqL4vg","period":"H1","order":10,"version":-2104595259,"action":"TE","when":"3:23","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:50:01.437Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}},{"code":"bewJ4LWWNM4yLFphOOUbng","order":2,"bib":5,"role":"TO","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}},{"code":"bewJ4LWWNM4yLFphOOUbng","order":2,"bib":5,"role":"TO","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}}]},{"id":"ypp2hPPKyfJc_dJb9Zjz-g","period":"H1","order":11,"version":-2104595259,"action":"TO","when":"3:23","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:50:01.437Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"role":"TO","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}}]},{"id":"Rgg6tpJ8pDWpHCcvePv-sA","period":"H1","order":12,"version":-2104594967,"action":"YC","when":"4:1","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:50:39.443Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}}]},{"id":"Rgg6tpJ8pDWpHCcvePv-sA","period":"H1","order":13,"version":-2104594967,"action":"TYC","when":"4:1","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:50:39.443Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}}]},{"id":"D5M7gT31uReK-zWvgYXbAg","period":"H1","order":14,"version":-2104594920,"action":"SHOT","when":"4:19","loc":"CSD","result":"SAVE","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:50:57.443Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"XJIPleZsKcUwN-1d_EkI9A","period":"H1","order":15,"version":-2104594838,"action":"SHOT","when":"4:29","loc":"CLD","result":"SAVE","scoreH":1,"scoreA":1,"leadH":0,"leadA":0,"timestamp":"2026-11-24T17:51:07.443Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"SCR","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"XhIrpSSnOB_0NfHp6tFA2w","period":"H1","order":16,"version":-2104594730,"action":"SHOT","when":"4:35","loc":"CSD","result":"GOAL","scoreH":2,"scoreA":1,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:51:16.827Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"4RO6AWfYcGqc1PMdU8CRpg","period":"H1","order":17,"version":-2104594458,"action":"SHOT","when":"5:12","loc":"CSD","result":"SAVE","scoreH":2,"scoreA":1,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:51:50.453Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"role":"SCR","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"qqz011qEH6Pvcw1NS2jW4A","period":"H1","order":18,"version":-2104594263,"action":"SHOT","when":"5:43","loc":"CLD","result":"GOAL","scoreH":3,"scoreA":1,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:52:31.61Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"5g8-lruLHWaYQz7ic2bieg","period":"H1","order":19,"version":-2104594185,"action":"TE","when":"5:58","scoreH":3,"scoreA":1,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:52:43.457Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}},{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":2,"bib":95,"role":"TO","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}},{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":2,"bib":95,"role":"TO","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}}]},{"id":"6x_BoQAwzJ0llGfuA-oV0Q","period":"H1","order":20,"version":-2104594185,"action":"TO","when":"5:58","scoreH":3,"scoreA":1,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:52:43.457Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"TO","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}}]},{"id":"I3UNFp6FW3w5qWqg7-7vZg","period":"H1","order":21,"version":-2104594094,"action":"SHOT","when":"6:1","loc":"CSD","result":"GOAL","scoreH":4,"scoreA":1,"leadH":3,"leadA":-3,"timestamp":"2026-11-24T17:52:51.21Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"vHCfSNWPrjGnNkLVLY5lWg","order":1,"bib":5,"role":"SCR","description":{"givenName":"Nikos","familyName":"Sarlos","gender":"M","organisation":"SUI","birthDate":"2005-01-27T00:00:00Z","nationality":"SUI"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"BLNH5c-P2SE_gTVRtqO0Bg","period":"H1","order":22,"version":-2104593898,"action":"SHOT","when":"6:31","loc":"CLD","result":"GOAL","scoreH":4,"scoreA":2,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:53:20.173Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"hWoVKssXzF9RU6z4GDbX-A","order":1,"bib":21,"role":"SCR","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"dV_bbzlVWDNA2QWrRg6CMQ","period":"H1","order":23,"version":-2104593844,"action":"SHOT","when":"6:37","loc":"LLD","result":"GOAL","scoreH":5,"scoreA":2,"leadH":3,"leadA":-3,"timestamp":"2026-11-24T17:53:26.377Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"VM-LgaumtXjYMucoNGGvvQ","period":"H1","order":24,"version":-2104593427,"action":"SHOT","when":"7:26","loc":"CSD","result":"GOAL","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:54:22.417Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"SCR","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}},{"code":"hWoVKssXzF9RU6z4GDbX-A","order":2,"bib":21,"role":"ASSIST","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":3,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"SCR","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}},{"code":"hWoVKssXzF9RU6z4GDbX-A","order":2,"bib":21,"role":"ASSIST","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"OTJpXQfIedUa_Vavy9SNqg","period":"H1","order":25,"version":-2104593087,"action":"TE","when":"8:18","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:55:16.47Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":2,"description":{"teamname":"Kadetten Schaffhausen"}}]},{"id":"U5FiaPLM81g2FtBBbAYc1w","period":"H1","order":26,"version":-2104593087,"action":"TO","when":"8:18","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:55:16.47Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"}}]},{"id":"fNTqbqBn6olIdnHw0FHYug","period":"H1","order":27,"version":-2104592992,"action":"TMS","when":"8:18","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:55:22.47Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"vTbkruUenUPCLKU-ejA4bA","order":1,"bib":2,"description":{"givenName":"Lucas","familyName":"Meister","gender":"M","organisation":"SUI","birthDate":"1996-08-16T00:00:00Z","nationality":"SUI"}}]}}]},{"id":"fNTqbqBn6olIdnHw0FHYug","period":"H1","order":28,"version":-2104592992,"action":"TBP","when":"8:18","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:55:22.47Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"vTbkruUenUPCLKU-ejA4bA","order":1,"bib":2,"description":{"givenName":"Lucas","familyName":"Meister","gender":"M","organisation":"SUI","birthDate":"1996-08-16T00:00:00Z","nationality":"SUI"}}]}}]},{"id":"uAHrIlluGQ2JqvwDLYw1sw","period":"H1","order":29,"version":-2104592660,"action":"SHOT","when":"8:49","loc":"RSD","result":"SAVE","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:56:03.47Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"7CwnoGLrPuQ0B_nTxC_iWw","order":1,"bib":69,"role":"SCR","description":{"givenName":"Emilien","familyName":"Peyronnet","gender":"M","organisation":"FRA","birthDate":"2004-03-22T00:00:00Z","nationality":"FRA"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"xI3XzNdkA3rSezFsJEo_1w","period":"H1","order":30,"version":-2104592205,"action":"SHOT","when":"9:32","loc":"LSD","result":"SAVE","scoreH":5,"scoreA":3,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:56:46.47Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"nehQnAKH1wL9Tu04O1Ir0g","period":"H1","order":31,"version":-2104591952,"action":"SHOT","when":"9:56","loc":"CSD","result":"GOAL","scoreH":5,"scoreA":4,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:57:14.8Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"psWz1SVU1X55pvl99Oknag","order":1,"bib":30,"role":"SCR","description":{"givenName":"André","familyName":"Sousa","gender":"M","organisation":"POR","birthDate":"2002-03-03T00:00:00Z","nationality":"POR"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"6uJ86CZTrF1JbvE_5i5E5A","period":"H1","order":32,"version":-2104591643,"action":"SHOT","when":"10:51","loc":"LLD","result":"GOAL","scoreH":6,"scoreA":4,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:58:09.07Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"IQaUK3e3yDq_X7JBqJeh1w","period":"H1","order":33,"version":-2104591462,"action":"SHOT","when":"11:29","loc":"CLD","result":"SAVE","scoreH":6,"scoreA":4,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:58:43.473Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"hWoVKssXzF9RU6z4GDbX-A","order":1,"bib":21,"role":"SCR","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"2Lh2fjfBs10UHVDcv-MqeQ","period":"H1","order":34,"version":-2104591382,"action":"SHOT","when":"11:38","loc":"CLD","result":"POST","scoreH":6,"scoreA":4,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T17:58:52.473Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"Dmn7_Z3ZD-6YGuEMjxFlbw","order":1,"bib":18,"role":"SCR","description":{"givenName":"Ariel Piotr","familyName":"Pietrasik","gender":"M","organisation":"POL","birthDate":"1999-10-21T00:00:00Z","nationality":"POL"}}]}}]},{"id":"Va23jBzY5xFKPzvTKQ8wew","period":"H1","order":35,"version":-2104591259,"action":"SHOT","when":"11:41","loc":"CSD","result":"GOAL","scoreH":6,"scoreA":5,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:58:59.397Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"RKxkk6LmkvQJnHtqldjOug","order":1,"bib":2,"role":"SCR","description":{"givenName":"Harold","familyName":"Metmer","gender":"M","organisation":"FRA","birthDate":"2008-02-29T00:00:00Z","nationality":"FRA"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"r58dS7WctSKc4XnIkkZIiw","period":"H1","order":36,"version":-2104591010,"action":"TE","when":"12:13","scoreH":6,"scoreA":5,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:59:27.477Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}},{"code":"KTBmzKPrurKtmHTte1OgLQ","order":2,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":2,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}},{"code":"KTBmzKPrurKtmHTte1OgLQ","order":2,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"ZnQXRk3WqnJ7_Edyo8X-DA","period":"H1","order":37,"version":-2104591010,"action":"TO","when":"12:13","scoreH":6,"scoreA":5,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T17:59:27.477Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"role":"TO","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"qDCJUORUB1N4JxvVc9WXFA","period":"H1","order":38,"version":-2104590667,"action":"SHOT","when":"12:42","loc":"CSD","result":"GOAL","scoreH":6,"scoreA":6,"leadH":0,"leadA":0,"timestamp":"2026-11-24T18:00:02.317Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"role":"SCR","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}},{"code":"hWoVKssXzF9RU6z4GDbX-A","order":2,"bib":21,"role":"ASSIST","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":3,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"role":"SCR","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}},{"code":"hWoVKssXzF9RU6z4GDbX-A","order":2,"bib":21,"role":"ASSIST","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"c6YGX1ggtH6PzeVuiFj0hg","period":"H1","order":39,"version":-2104590593,"action":"SHOT","when":"12:55","loc":"LSD","result":"GOAL","scoreH":7,"scoreA":6,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T18:00:14.06Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"wiovSHVO9_tX6WN9ZaHB7w","period":"H1","order":40,"version":-2104590344,"action":"SHOT","when":"13:33","loc":"CLD","result":"SAVE","scoreH":7,"scoreA":6,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T18:00:47.487Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"RKxkk6LmkvQJnHtqldjOug","order":1,"bib":2,"role":"SCR","description":{"givenName":"Harold","familyName":"Metmer","gender":"M","organisation":"FRA","birthDate":"2008-02-29T00:00:00Z","nationality":"FRA"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"zS7bdmDDQujmpk6FCow6tg","period":"H1","order":41,"version":-2104590131,"action":"SHOT","when":"14:1","loc":"CSD","result":"SAVE","scoreH":7,"scoreA":6,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T18:01:15.5Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"hWoVKssXzF9RU6z4GDbX-A","order":1,"bib":21,"role":"SCR","description":{"givenName":"Achilleas","familyName":"Toskas","gender":"M","organisation":"GRE","birthDate":"2004-10-01T00:00:00Z","nationality":"GRE"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"ax2s1tLt3R4jaHBeEsrPww","period":"H1","order":42,"version":-2104590020,"action":"RFP","when":"14:13","scoreH":7,"scoreA":6,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T18:01:27.5Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"ezG9BjEvIFDu0HInMs6wIg","period":"H1","order":43,"version":-2104590010,"action":"FRP","when":"14:13","scoreH":7,"scoreA":6,"leadH":1,"leadA":-1,"timestamp":"2026-11-24T18:01:27.5Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"H-NpN8UYZUXgkaIPkPOROw","period":"H1","order":44,"version":-2104589919,"action":"SHOT","when":"14:30","loc":"PTY","result":"GOAL","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:01:44.5Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"rIxC4ihkwRtn6YB2UXib0g","order":1,"bib":6,"role":"SCR","description":{"givenName":"Óðinn","familyName":"Ríkharðsson","gender":"M","organisation":"ISL","birthDate":"1997-10-23T00:00:00Z","nationality":"ISL"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"QYNEpEcAXTk5hXOKmx9orQ","order":1,"bib":16,"role":"GK","description":{"givenName":"Adrien","familyName":"Seguin Rodriguez","gender":"M","organisation":"FRA","birthDate":"2005-11-23T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"PiU3AYvPhox0wDjBYxrE6A","period":"H1","order":45,"version":-2104589547,"action":"RFP","when":"15:12","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:02:26.51Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":1,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"RKxkk6LmkvQJnHtqldjOug","order":1,"bib":2,"description":{"givenName":"Harold","familyName":"Metmer","gender":"M","organisation":"FRA","birthDate":"2008-02-29T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"QC50fX9YUU1uBo5xDK8qrQ","period":"H1","order":46,"version":-2104589522,"action":"FRP","when":"15:12","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:02:26.51Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"5wRFxyUoqRvsWH7lcaNeSQ","order":1,"bib":4,"description":{"givenName":"Lukas","familyName":"Saueressig","gender":"M","organisation":"GER","birthDate":"1997-06-09T00:00:00Z","nationality":"GER"}}]}},{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"RKxkk6LmkvQJnHtqldjOug","order":1,"bib":2,"description":{"givenName":"Harold","familyName":"Metmer","gender":"M","organisation":"FRA","birthDate":"2008-02-29T00:00:00Z","nationality":"FRA"}}]}}]},{"id":"82AaR-qnqhL8tSWgWx7GJQ","period":"H1","order":47,"version":-2104589352,"action":"SHOT","when":"15:27","loc":"PTY","result":"SAVE","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:02:42.51Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"yqb_uvmbyS1nXyYe8YWcTw","order":1,"bib":8,"role":"SCR","description":{"givenName":"Elio","familyName":"Zammit","gender":"M","organisation":"FRA","birthDate":"2000-08-28T00:00:00Z","nationality":"FRA"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"ofvPY6rUUu-VP1QIBeX0Vw","period":"H1","order":48,"version":-2104589015,"action":"SHOT","when":"16:3","loc":"CLD","result":"POST","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:03:18.51Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"KTBmzKPrurKtmHTte1OgLQ","order":1,"bib":22,"role":"SCR","description":{"givenName":"Patrik","familyName":"Martinović","gender":"M","organisation":"CRO","birthDate":"2000-08-29T00:00:00Z","nationality":"CRO"}}]}}]},{"id":"q644fWtREXknRvqeTtDEmQ","period":"H1","order":49,"version":-2104588666,"action":"SHOT","when":"16:45","loc":"RW","result":"SAVE","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:04:00.51Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"7CwnoGLrPuQ0B_nTxC_iWw","order":1,"bib":69,"role":"SCR","description":{"givenName":"Emilien","familyName":"Peyronnet","gender":"M","organisation":"FRA","birthDate":"2004-03-22T00:00:00Z","nationality":"FRA"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"UP4tFOoDiPWQU5iy0IqERA","period":"H1","order":50,"version":-2104588374,"action":"SHOT","when":"16:58","loc":"RSD","result":"MISS","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:04:14.277Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"rIxC4ihkwRtn6YB2UXib0g","order":1,"bib":6,"role":"SCR","description":{"givenName":"Óðinn","familyName":"Ríkharðsson","gender":"M","organisation":"ISL","birthDate":"1997-10-23T00:00:00Z","nationality":"ISL"}}]}}]},{"id":"L-Smv9e-qr1US1DNEV_FLw","period":"H1","order":51,"version":-2104587887,"action":"SHOT","when":"17:49","loc":"CLD","result":"SAVE","scoreH":8,"scoreA":6,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:05:04.513Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"9kLmeqLz5eJY8u9Uvsjt_Q","order":1,"bib":95,"role":"SCR","description":{"givenName":"Gabriel","familyName":"Cavalcanti","gender":"M","organisation":"POR","birthDate":"2004-05-30T00:00:00Z","nationality":"POR"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]},{"id":"IIg4srJNqXtISxNDs3irOg","period":"H1","order":52,"version":-2104587765,"action":"SHOT","when":"17:53","result":"GOAL","scoreH":9,"scoreA":6,"leadH":3,"leadA":-3,"timestamp":"2026-11-24T18:05:13.597Z","competitor":[{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"DnKQumPZ2gFW4e65HJCChg","order":1,"bib":8,"role":"SCR","description":{"givenName":"Frederik","familyName":"Tilsted","gender":"M","organisation":"DEN","birthDate":"1999-07-05T00:00:00Z","nationality":"DEN"}}]}}]},{"id":"J01q3mr8BI5o0MnAcuD6fg","period":"H1","order":53,"version":-2104587377,"action":"SHOT","when":"18:24","loc":"CSD","result":"GOAL","scoreH":9,"scoreA":7,"leadH":2,"leadA":-2,"timestamp":"2026-11-24T18:05:43.067Z","competitor":[{"code":"zh6zSrhwVj2qcyJfotLxjw","type":"A","organisation":"FRA","order":2,"description":{"teamname":"Chambery Savoie Mont Blanc Handball"},"composition":{"athlete":[{"code":"bewJ4LWWNM4yLFphOOUbng","order":1,"bib":5,"role":"SCR","description":{"givenName":"Sveinn","familyName":"Jóhannsson","gender":"M","organisation":"ISL","birthDate":"1999-06-16T00:00:00Z","nationality":"ISL"}}]}},{"code":"uyEpUicNjwv8hCX9B7A3sg","type":"A","organisation":"SUI","order":1,"description":{"teamname":"Kadetten Schaffhausen"},"composition":{"athlete":[{"code":"hgA1rufJkxawfEgkIVgW_w","order":1,"bib":1,"role":"GK","description":{"givenName":"Leon","familyName":"Bergmann","gender":"M","organisation":"AUT","birthDate":"2004-04-17T00:00:00Z","nationality":"AUT"}}]}}]}]}}],"playerstats":{"homeTeam":{"team":{"id":"uyEpUicNjwv8hCX9B7A3sg","nationAbbreviation":"SUI","name":"Kadetten Schaffhausen"}},"guestTeam":{"team":{"id":"zh6zSrhwVj2qcyJfotLxjw","nationAbbreviation":"FRA","name":"Chambery Savoie Mont Blanc Handball"}}},"livescores":[{"matchID":"202711020901036","matchStats":{"time":"18:36","phase":"1st Half","state":1},"spielzeitID":71,"_version":1287004}]}
+{
+  "events": [
+    {
+      "ticket": "t534f4",
+      "ticketId": "7sik6q2Jw6gafHdVGwCyDg",
+      "competitionCode": "0LdFJEv4Xeq34p7ZoHYnNQ",
+      "documentCode": "202711020901036",
+      "version": 6536936,
+      "maxActionVersion": -2104587098,
+      "feedFlag": "P",
+      "date": "2026-11-24T00:00:00Z",
+      "time": "19:06:19.933",
+      "logicalDate": "2026-11-24T18:45:00Z",
+      "phaseScores": [
+        {"periodId": 71, "period": "H1", "name": "1st Half", "scoreA": 0, "scoreB": 0, "order": 1},
+        {"periodId": 0, "period": "C", "name": "current", "scoreA": 9, "scoreB": 7, "order": 0, "clockState": "RUNNING"}
+      ],
+      "actions": {
+        "homeCompetitorId": "uyEpUicNjwv8hCX9B7A3sg",
+        "awayCompetitorId": "zh6zSrhwVj2qcyJfotLxjw",
+        "action": [
+          {
+            "id": "-AN8zVs1JN46k9yjiK2MOg",
+            "period": "H1",
+            "order": 1,
+            "version": -2104587098,
+            "action": "STARTP",
+            "when": "0:0",
+            "result": "GAME",
+            "scoreH": 0,
+            "scoreA": 0,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:46:03.217Z"
+          },
+          {
+            "id": "O-SnkkNU-UgzOdqqbm9HuA",
+            "period": "H1",
+            "order": 2,
+            "version": -2104596092,
+            "action": "RFP",
+            "when": "1:13",
+            "scoreH": 0,
+            "scoreA": 0,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:47:15.423Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "vTbkruUenUPCLKU-ejA4bA",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Lucas",
+                        "familyName": "Meister",
+                        "gender": "M",
+                        "organisation": "SUI",
+                        "birthDate": "1996-08-16T00:00:00Z",
+                        "nationality": "SUI"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "E3k5hV0V3v9bWhKJS9nfZA",
+            "period": "H1",
+            "order": 3,
+            "version": -2104596088,
+            "action": "FRP",
+            "when": "1:13",
+            "scoreH": 0,
+            "scoreA": 0,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:47:15.423Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "vTbkruUenUPCLKU-ejA4bA",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Lucas",
+                        "familyName": "Meister",
+                        "gender": "M",
+                        "organisation": "SUI",
+                        "birthDate": "1996-08-16T00:00:00Z",
+                        "nationality": "SUI"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "FBE9DyLRVE7_d-BJPbyX8A",
+            "period": "H1",
+            "order": 4,
+            "version": -2104596041,
+            "action": "SHOT",
+            "when": "1:23",
+            "loc": "PTY",
+            "result": "GOAL",
+            "scoreH": 1,
+            "scoreA": 0,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:47:25.423Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "rIxC4ihkwRtn6YB2UXib0g",
+                      "order": 1,
+                      "bib": 6,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Óðinn",
+                        "familyName": "Ríkharðsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1997-10-23T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "-bKX7ymtHf2ZbrmpQR6ZAA",
+            "period": "H1",
+            "order": 5,
+            "version": -2104595860,
+            "action": "SHOT",
+            "when": "1:57",
+            "loc": "CLD",
+            "result": "GOAL",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:48:03.55Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 1,
+                      "bib": 21,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "RxBvaaf9TK580FfzwdaNbQ",
+            "period": "H1",
+            "order": 6,
+            "version": -2104595794,
+            "action": "SHOT",
+            "when": "2:16",
+            "loc": "CLD",
+            "result": "SAVE",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:48:18.427Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "Dmn7_Z3ZD-6YGuEMjxFlbw",
+                      "order": 1,
+                      "bib": 18,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Ariel Piotr",
+                        "familyName": "Pietrasik",
+                        "gender": "M",
+                        "organisation": "POL",
+                        "birthDate": "1999-10-21T00:00:00Z",
+                        "nationality": "POL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "k5fJDXtt5mKhpK7W-lWYwA",
+            "period": "H1",
+            "order": 7,
+            "version": -2104595649,
+            "action": "TE",
+            "when": "2:40",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:48:42.427Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    },
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 2,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 2,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    },
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 2,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "kZaB6P9KqtcKafqN5zJklg",
+            "period": "H1",
+            "order": 8,
+            "version": -2104595649,
+            "action": "TO",
+            "when": "2:40",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:48:42.427Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "J85RFIQ6XB4jCyqvYpPdew",
+            "period": "H1",
+            "order": 9,
+            "version": -2104595472,
+            "action": "SHOT",
+            "when": "2:51",
+            "loc": "CLD",
+            "result": "BLC",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:49:08.437Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "Dmn7_Z3ZD-6YGuEMjxFlbw",
+                      "order": 1,
+                      "bib": 18,
+                      "role": "BLC",
+                      "description": {
+                        "givenName": "Ariel Piotr",
+                        "familyName": "Pietrasik",
+                        "gender": "M",
+                        "organisation": "POL",
+                        "birthDate": "1999-10-21T00:00:00Z",
+                        "nationality": "POL"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "JwTgh3puivDPIp4FxqL4vg",
+            "period": "H1",
+            "order": 10,
+            "version": -2104595259,
+            "action": "TE",
+            "when": "3:23",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:50:01.437Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    },
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 2,
+                      "bib": 5,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    },
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 2,
+                      "bib": 5,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ypp2hPPKyfJc_dJb9Zjz-g",
+            "period": "H1",
+            "order": 11,
+            "version": -2104595259,
+            "action": "TO",
+            "when": "3:23",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:50:01.437Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "Rgg6tpJ8pDWpHCcvePv-sA",
+            "period": "H1",
+            "order": 12,
+            "version": -2104594967,
+            "action": "YC",
+            "when": "4:1",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:50:39.443Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "Rgg6tpJ8pDWpHCcvePv-sA",
+            "period": "H1",
+            "order": 13,
+            "version": -2104594967,
+            "action": "TYC",
+            "when": "4:1",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:50:39.443Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "D5M7gT31uReK-zWvgYXbAg",
+            "period": "H1",
+            "order": 14,
+            "version": -2104594920,
+            "action": "SHOT",
+            "when": "4:19",
+            "loc": "CSD",
+            "result": "SAVE",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:50:57.443Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "XJIPleZsKcUwN-1d_EkI9A",
+            "period": "H1",
+            "order": 15,
+            "version": -2104594838,
+            "action": "SHOT",
+            "when": "4:29",
+            "loc": "CLD",
+            "result": "SAVE",
+            "scoreH": 1,
+            "scoreA": 1,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T17:51:07.443Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "XhIrpSSnOB_0NfHp6tFA2w",
+            "period": "H1",
+            "order": 16,
+            "version": -2104594730,
+            "action": "SHOT",
+            "when": "4:35",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 2,
+            "scoreA": 1,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:51:16.827Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "4RO6AWfYcGqc1PMdU8CRpg",
+            "period": "H1",
+            "order": 17,
+            "version": -2104594458,
+            "action": "SHOT",
+            "when": "5:12",
+            "loc": "CSD",
+            "result": "SAVE",
+            "scoreH": 2,
+            "scoreA": 1,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:51:50.453Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "qqz011qEH6Pvcw1NS2jW4A",
+            "period": "H1",
+            "order": 18,
+            "version": -2104594263,
+            "action": "SHOT",
+            "when": "5:43",
+            "loc": "CLD",
+            "result": "GOAL",
+            "scoreH": 3,
+            "scoreA": 1,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:52:31.61Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "5g8-lruLHWaYQz7ic2bieg",
+            "period": "H1",
+            "order": 19,
+            "version": -2104594185,
+            "action": "TE",
+            "when": "5:58",
+            "scoreH": 3,
+            "scoreA": 1,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:52:43.457Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    },
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 2,
+                      "bib": 95,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    },
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 2,
+                      "bib": 95,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6x_BoQAwzJ0llGfuA-oV0Q",
+            "period": "H1",
+            "order": 20,
+            "version": -2104594185,
+            "action": "TO",
+            "when": "5:58",
+            "scoreH": 3,
+            "scoreA": 1,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:52:43.457Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "I3UNFp6FW3w5qWqg7-7vZg",
+            "period": "H1",
+            "order": 21,
+            "version": -2104594094,
+            "action": "SHOT",
+            "when": "6:1",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 4,
+            "scoreA": 1,
+            "leadH": 3,
+            "leadA": -3,
+            "timestamp": "2026-11-24T17:52:51.21Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "vHCfSNWPrjGnNkLVLY5lWg",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Nikos",
+                        "familyName": "Sarlos",
+                        "gender": "M",
+                        "organisation": "SUI",
+                        "birthDate": "2005-01-27T00:00:00Z",
+                        "nationality": "SUI"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "BLNH5c-P2SE_gTVRtqO0Bg",
+            "period": "H1",
+            "order": 22,
+            "version": -2104593898,
+            "action": "SHOT",
+            "when": "6:31",
+            "loc": "CLD",
+            "result": "GOAL",
+            "scoreH": 4,
+            "scoreA": 2,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:53:20.173Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 1,
+                      "bib": 21,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "dV_bbzlVWDNA2QWrRg6CMQ",
+            "period": "H1",
+            "order": 23,
+            "version": -2104593844,
+            "action": "SHOT",
+            "when": "6:37",
+            "loc": "LLD",
+            "result": "GOAL",
+            "scoreH": 5,
+            "scoreA": 2,
+            "leadH": 3,
+            "leadA": -3,
+            "timestamp": "2026-11-24T17:53:26.377Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "VM-LgaumtXjYMucoNGGvvQ",
+            "period": "H1",
+            "order": 24,
+            "version": -2104593427,
+            "action": "SHOT",
+            "when": "7:26",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:54:22.417Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    },
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 2,
+                      "bib": 21,
+                      "role": "ASSIST",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 3,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    },
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 2,
+                      "bib": 21,
+                      "role": "ASSIST",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "OTJpXQfIedUa_Vavy9SNqg",
+            "period": "H1",
+            "order": 25,
+            "version": -2104593087,
+            "action": "TE",
+            "when": "8:18",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:55:16.47Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"}
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 2,
+                "description": {"teamname": "Kadetten Schaffhausen"}
+              }
+            ]
+          },
+          {
+            "id": "U5FiaPLM81g2FtBBbAYc1w",
+            "period": "H1",
+            "order": 26,
+            "version": -2104593087,
+            "action": "TO",
+            "when": "8:18",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:55:16.47Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"}
+              }
+            ]
+          },
+          {
+            "id": "fNTqbqBn6olIdnHw0FHYug",
+            "period": "H1",
+            "order": 27,
+            "version": -2104592992,
+            "action": "TMS",
+            "when": "8:18",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:55:22.47Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "vTbkruUenUPCLKU-ejA4bA",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Lucas",
+                        "familyName": "Meister",
+                        "gender": "M",
+                        "organisation": "SUI",
+                        "birthDate": "1996-08-16T00:00:00Z",
+                        "nationality": "SUI"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "fNTqbqBn6olIdnHw0FHYug",
+            "period": "H1",
+            "order": 28,
+            "version": -2104592992,
+            "action": "TBP",
+            "when": "8:18",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:55:22.47Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "vTbkruUenUPCLKU-ejA4bA",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Lucas",
+                        "familyName": "Meister",
+                        "gender": "M",
+                        "organisation": "SUI",
+                        "birthDate": "1996-08-16T00:00:00Z",
+                        "nationality": "SUI"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "uAHrIlluGQ2JqvwDLYw1sw",
+            "period": "H1",
+            "order": 29,
+            "version": -2104592660,
+            "action": "SHOT",
+            "when": "8:49",
+            "loc": "RSD",
+            "result": "SAVE",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:56:03.47Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "7CwnoGLrPuQ0B_nTxC_iWw",
+                      "order": 1,
+                      "bib": 69,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Emilien",
+                        "familyName": "Peyronnet",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2004-03-22T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "xI3XzNdkA3rSezFsJEo_1w",
+            "period": "H1",
+            "order": 30,
+            "version": -2104592205,
+            "action": "SHOT",
+            "when": "9:32",
+            "loc": "LSD",
+            "result": "SAVE",
+            "scoreH": 5,
+            "scoreA": 3,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:56:46.47Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "nehQnAKH1wL9Tu04O1Ir0g",
+            "period": "H1",
+            "order": 31,
+            "version": -2104591952,
+            "action": "SHOT",
+            "when": "9:56",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 5,
+            "scoreA": 4,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:57:14.8Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "psWz1SVU1X55pvl99Oknag",
+                      "order": 1,
+                      "bib": 30,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "André",
+                        "familyName": "Sousa",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2002-03-03T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "6uJ86CZTrF1JbvE_5i5E5A",
+            "period": "H1",
+            "order": 32,
+            "version": -2104591643,
+            "action": "SHOT",
+            "when": "10:51",
+            "loc": "LLD",
+            "result": "GOAL",
+            "scoreH": 6,
+            "scoreA": 4,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:58:09.07Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "IQaUK3e3yDq_X7JBqJeh1w",
+            "period": "H1",
+            "order": 33,
+            "version": -2104591462,
+            "action": "SHOT",
+            "when": "11:29",
+            "loc": "CLD",
+            "result": "SAVE",
+            "scoreH": 6,
+            "scoreA": 4,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:58:43.473Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 1,
+                      "bib": 21,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "2Lh2fjfBs10UHVDcv-MqeQ",
+            "period": "H1",
+            "order": 34,
+            "version": -2104591382,
+            "action": "SHOT",
+            "when": "11:38",
+            "loc": "CLD",
+            "result": "POST",
+            "scoreH": 6,
+            "scoreA": 4,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T17:58:52.473Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "Dmn7_Z3ZD-6YGuEMjxFlbw",
+                      "order": 1,
+                      "bib": 18,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Ariel Piotr",
+                        "familyName": "Pietrasik",
+                        "gender": "M",
+                        "organisation": "POL",
+                        "birthDate": "1999-10-21T00:00:00Z",
+                        "nationality": "POL"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "Va23jBzY5xFKPzvTKQ8wew",
+            "period": "H1",
+            "order": 35,
+            "version": -2104591259,
+            "action": "SHOT",
+            "when": "11:41",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 6,
+            "scoreA": 5,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:58:59.397Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "RKxkk6LmkvQJnHtqldjOug",
+                      "order": 1,
+                      "bib": 2,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Harold",
+                        "familyName": "Metmer",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2008-02-29T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "r58dS7WctSKc4XnIkkZIiw",
+            "period": "H1",
+            "order": 36,
+            "version": -2104591010,
+            "action": "TE",
+            "when": "12:13",
+            "scoreH": 6,
+            "scoreA": 5,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:59:27.477Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    },
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 2,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 2,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    },
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 2,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ZnQXRk3WqnJ7_Edyo8X-DA",
+            "period": "H1",
+            "order": 37,
+            "version": -2104591010,
+            "action": "TO",
+            "when": "12:13",
+            "scoreH": 6,
+            "scoreA": 5,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T17:59:27.477Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "role": "TO",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "qDCJUORUB1N4JxvVc9WXFA",
+            "period": "H1",
+            "order": 38,
+            "version": -2104590667,
+            "action": "SHOT",
+            "when": "12:42",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 6,
+            "scoreA": 6,
+            "leadH": 0,
+            "leadA": 0,
+            "timestamp": "2026-11-24T18:00:02.317Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    },
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 2,
+                      "bib": 21,
+                      "role": "ASSIST",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 3,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    },
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 2,
+                      "bib": 21,
+                      "role": "ASSIST",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "c6YGX1ggtH6PzeVuiFj0hg",
+            "period": "H1",
+            "order": 39,
+            "version": -2104590593,
+            "action": "SHOT",
+            "when": "12:55",
+            "loc": "LSD",
+            "result": "GOAL",
+            "scoreH": 7,
+            "scoreA": 6,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T18:00:14.06Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "wiovSHVO9_tX6WN9ZaHB7w",
+            "period": "H1",
+            "order": 40,
+            "version": -2104590344,
+            "action": "SHOT",
+            "when": "13:33",
+            "loc": "CLD",
+            "result": "SAVE",
+            "scoreH": 7,
+            "scoreA": 6,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T18:00:47.487Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "RKxkk6LmkvQJnHtqldjOug",
+                      "order": 1,
+                      "bib": 2,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Harold",
+                        "familyName": "Metmer",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2008-02-29T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "zS7bdmDDQujmpk6FCow6tg",
+            "period": "H1",
+            "order": 41,
+            "version": -2104590131,
+            "action": "SHOT",
+            "when": "14:1",
+            "loc": "CSD",
+            "result": "SAVE",
+            "scoreH": 7,
+            "scoreA": 6,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T18:01:15.5Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hWoVKssXzF9RU6z4GDbX-A",
+                      "order": 1,
+                      "bib": 21,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Achilleas",
+                        "familyName": "Toskas",
+                        "gender": "M",
+                        "organisation": "GRE",
+                        "birthDate": "2004-10-01T00:00:00Z",
+                        "nationality": "GRE"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ax2s1tLt3R4jaHBeEsrPww",
+            "period": "H1",
+            "order": 42,
+            "version": -2104590020,
+            "action": "RFP",
+            "when": "14:13",
+            "scoreH": 7,
+            "scoreA": 6,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T18:01:27.5Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ezG9BjEvIFDu0HInMs6wIg",
+            "period": "H1",
+            "order": 43,
+            "version": -2104590010,
+            "action": "FRP",
+            "when": "14:13",
+            "scoreH": 7,
+            "scoreA": 6,
+            "leadH": 1,
+            "leadA": -1,
+            "timestamp": "2026-11-24T18:01:27.5Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "H-NpN8UYZUXgkaIPkPOROw",
+            "period": "H1",
+            "order": 44,
+            "version": -2104589919,
+            "action": "SHOT",
+            "when": "14:30",
+            "loc": "PTY",
+            "result": "GOAL",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:01:44.5Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "rIxC4ihkwRtn6YB2UXib0g",
+                      "order": 1,
+                      "bib": 6,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Óðinn",
+                        "familyName": "Ríkharðsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1997-10-23T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "QYNEpEcAXTk5hXOKmx9orQ",
+                      "order": 1,
+                      "bib": 16,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Adrien",
+                        "familyName": "Seguin Rodriguez",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2005-11-23T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "PiU3AYvPhox0wDjBYxrE6A",
+            "period": "H1",
+            "order": 45,
+            "version": -2104589547,
+            "action": "RFP",
+            "when": "15:12",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:02:26.51Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 1,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "RKxkk6LmkvQJnHtqldjOug",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Harold",
+                        "familyName": "Metmer",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2008-02-29T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "QC50fX9YUU1uBo5xDK8qrQ",
+            "period": "H1",
+            "order": 46,
+            "version": -2104589522,
+            "action": "FRP",
+            "when": "15:12",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:02:26.51Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "5wRFxyUoqRvsWH7lcaNeSQ",
+                      "order": 1,
+                      "bib": 4,
+                      "description": {
+                        "givenName": "Lukas",
+                        "familyName": "Saueressig",
+                        "gender": "M",
+                        "organisation": "GER",
+                        "birthDate": "1997-06-09T00:00:00Z",
+                        "nationality": "GER"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "RKxkk6LmkvQJnHtqldjOug",
+                      "order": 1,
+                      "bib": 2,
+                      "description": {
+                        "givenName": "Harold",
+                        "familyName": "Metmer",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2008-02-29T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "82AaR-qnqhL8tSWgWx7GJQ",
+            "period": "H1",
+            "order": 47,
+            "version": -2104589352,
+            "action": "SHOT",
+            "when": "15:27",
+            "loc": "PTY",
+            "result": "SAVE",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:02:42.51Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "yqb_uvmbyS1nXyYe8YWcTw",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Elio",
+                        "familyName": "Zammit",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2000-08-28T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "ofvPY6rUUu-VP1QIBeX0Vw",
+            "period": "H1",
+            "order": 48,
+            "version": -2104589015,
+            "action": "SHOT",
+            "when": "16:3",
+            "loc": "CLD",
+            "result": "POST",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:03:18.51Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "KTBmzKPrurKtmHTte1OgLQ",
+                      "order": 1,
+                      "bib": 22,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Patrik",
+                        "familyName": "Martinović",
+                        "gender": "M",
+                        "organisation": "CRO",
+                        "birthDate": "2000-08-29T00:00:00Z",
+                        "nationality": "CRO"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "q644fWtREXknRvqeTtDEmQ",
+            "period": "H1",
+            "order": 49,
+            "version": -2104588666,
+            "action": "SHOT",
+            "when": "16:45",
+            "loc": "RW",
+            "result": "SAVE",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:04:00.51Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "7CwnoGLrPuQ0B_nTxC_iWw",
+                      "order": 1,
+                      "bib": 69,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Emilien",
+                        "familyName": "Peyronnet",
+                        "gender": "M",
+                        "organisation": "FRA",
+                        "birthDate": "2004-03-22T00:00:00Z",
+                        "nationality": "FRA"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "UP4tFOoDiPWQU5iy0IqERA",
+            "period": "H1",
+            "order": 50,
+            "version": -2104588374,
+            "action": "SHOT",
+            "when": "16:58",
+            "loc": "RSD",
+            "result": "MISS",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:04:14.277Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "rIxC4ihkwRtn6YB2UXib0g",
+                      "order": 1,
+                      "bib": 6,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Óðinn",
+                        "familyName": "Ríkharðsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1997-10-23T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "L-Smv9e-qr1US1DNEV_FLw",
+            "period": "H1",
+            "order": 51,
+            "version": -2104587887,
+            "action": "SHOT",
+            "when": "17:49",
+            "loc": "CLD",
+            "result": "SAVE",
+            "scoreH": 8,
+            "scoreA": 6,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:05:04.513Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "9kLmeqLz5eJY8u9Uvsjt_Q",
+                      "order": 1,
+                      "bib": 95,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Gabriel",
+                        "familyName": "Cavalcanti",
+                        "gender": "M",
+                        "organisation": "POR",
+                        "birthDate": "2004-05-30T00:00:00Z",
+                        "nationality": "POR"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "IIg4srJNqXtISxNDs3irOg",
+            "period": "H1",
+            "order": 52,
+            "version": -2104587765,
+            "action": "SHOT",
+            "when": "17:53",
+            "result": "GOAL",
+            "scoreH": 9,
+            "scoreA": 6,
+            "leadH": 3,
+            "leadA": -3,
+            "timestamp": "2026-11-24T18:05:13.597Z",
+            "competitor": [
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "DnKQumPZ2gFW4e65HJCChg",
+                      "order": 1,
+                      "bib": 8,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Frederik",
+                        "familyName": "Tilsted",
+                        "gender": "M",
+                        "organisation": "DEN",
+                        "birthDate": "1999-07-05T00:00:00Z",
+                        "nationality": "DEN"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "J01q3mr8BI5o0MnAcuD6fg",
+            "period": "H1",
+            "order": 53,
+            "version": -2104587377,
+            "action": "SHOT",
+            "when": "18:24",
+            "loc": "CSD",
+            "result": "GOAL",
+            "scoreH": 9,
+            "scoreA": 7,
+            "leadH": 2,
+            "leadA": -2,
+            "timestamp": "2026-11-24T18:05:43.067Z",
+            "competitor": [
+              {
+                "code": "zh6zSrhwVj2qcyJfotLxjw",
+                "type": "A",
+                "organisation": "FRA",
+                "order": 2,
+                "description": {"teamname": "Chambery Savoie Mont Blanc Handball"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "bewJ4LWWNM4yLFphOOUbng",
+                      "order": 1,
+                      "bib": 5,
+                      "role": "SCR",
+                      "description": {
+                        "givenName": "Sveinn",
+                        "familyName": "Jóhannsson",
+                        "gender": "M",
+                        "organisation": "ISL",
+                        "birthDate": "1999-06-16T00:00:00Z",
+                        "nationality": "ISL"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "code": "uyEpUicNjwv8hCX9B7A3sg",
+                "type": "A",
+                "organisation": "SUI",
+                "order": 1,
+                "description": {"teamname": "Kadetten Schaffhausen"},
+                "composition": {
+                  "athlete": [
+                    {
+                      "code": "hgA1rufJkxawfEgkIVgW_w",
+                      "order": 1,
+                      "bib": 1,
+                      "role": "GK",
+                      "description": {
+                        "givenName": "Leon",
+                        "familyName": "Bergmann",
+                        "gender": "M",
+                        "organisation": "AUT",
+                        "birthDate": "2004-04-17T00:00:00Z",
+                        "nationality": "AUT"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "playerstats": {
+    "homeTeam": {"team": {"id": "uyEpUicNjwv8hCX9B7A3sg", "nationAbbreviation": "SUI", "name": "Kadetten Schaffhausen"}},
+    "guestTeam": {"team": {"id": "zh6zSrhwVj2qcyJfotLxjw", "nationAbbreviation": "FRA", "name": "Chambery Savoie Mont Blanc Handball"}}
+  },
+  "livescores": [
+    {"matchID": "202711020901036", "matchStats": {"time": "18:36", "phase": "1st Half", "state": 1}, "spielzeitID": 71, "_version": 1287004}
+  ]
+}

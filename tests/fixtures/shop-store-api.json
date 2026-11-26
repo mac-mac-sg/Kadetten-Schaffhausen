@@ -1,786 +1,786 @@
 {
- "products": [
-  {
-   "id": 33904,
-   "name": "Trikot Heim",
-   "type": "variable",
-   "permalink": "https://kadettensh.ch/produkt/trikot-heim/",
-   "short_description": "<p>Bei Fragen oder Interesse an einem Druck mit Nummer und Name gerne direkt bei der Geschäftsstelle melden: <a href=\"mailto:geschaeftsstelle@kadettensh.ch\">geschaeftsstelle@kadettensh.ch</a></p>",
-   "description": "",
-   "on_sale": false,
-   "prices": {
-    "price": "7400",
-    "regular_price": "7400",
-    "sale_price": "7400",
-    "currency_code": "CHF"
-   },
-   "images": [
+  "products": [
     {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    },
-    {
-     "id": 33915,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_20.jpg"
-    },
-    {
-     "id": 33941,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0038.jpg"
-    },
-    {
-     "id": 33942,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0039.jpg"
-    }
-   ],
-   "is_in_stock": true,
-   "attributes": [
-    {
-     "id": 2,
-     "name": "Grösse",
-     "taxonomy": "pa_groesse",
-     "has_variations": true,
-     "terms": [
-      {
-       "id": 35,
-       "name": "L",
-       "slug": "l"
+      "id": 33904,
+      "name": "Trikot Heim",
+      "type": "variable",
+      "permalink": "https://kadettensh.ch/produkt/trikot-heim/",
+      "short_description": "<p>Bei Fragen oder Interesse an einem Druck mit Nummer und Name gerne direkt bei der Geschäftsstelle melden: <a href=\"mailto:geschaeftsstelle@kadettensh.ch\">geschaeftsstelle@kadettensh.ch</a></p>",
+      "description": "",
+      "on_sale": false,
+      "prices": {
+        "price": "7400",
+        "regular_price": "7400",
+        "sale_price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "id": 34,
-       "name": "M",
-       "slug": "m"
-      },
-      {
-       "id": 33,
-       "name": "S",
-       "slug": "s"
-      },
-      {
-       "id": 36,
-       "name": "XL",
-       "slug": "xl"
-      },
-      {
-       "id": 37,
-       "name": "XXL",
-       "slug": "xxl"
-      },
-      {
-       "id": 120,
-       "name": "XXXL",
-       "slug": "xxxl"
-      }
-     ]
-    }
-   ],
-   "variations": [
-    {
-     "id": 33922,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "s"
-      }
-     ]
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        },
+        {
+          "id": 33915,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_20.jpg"
+        },
+        {
+          "id": 33941,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0038.jpg"
+        },
+        {
+          "id": 33942,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0039.jpg"
+        }
+      ],
+      "is_in_stock": true,
+      "attributes": [
+        {
+          "id": 2,
+          "name": "Grösse",
+          "taxonomy": "pa_groesse",
+          "has_variations": true,
+          "terms": [
+            {
+              "id": 35,
+              "name": "L",
+              "slug": "l"
+            },
+            {
+              "id": 34,
+              "name": "M",
+              "slug": "m"
+            },
+            {
+              "id": 33,
+              "name": "S",
+              "slug": "s"
+            },
+            {
+              "id": 36,
+              "name": "XL",
+              "slug": "xl"
+            },
+            {
+              "id": 37,
+              "name": "XXL",
+              "slug": "xxl"
+            },
+            {
+              "id": 120,
+              "name": "XXXL",
+              "slug": "xxxl"
+            }
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": 33922,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "s"
+            }
+          ]
+        },
+        {
+          "id": 33923,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "m"
+            }
+          ]
+        },
+        {
+          "id": 33924,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "l"
+            }
+          ]
+        },
+        {
+          "id": 33925,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "xl"
+            }
+          ]
+        },
+        {
+          "id": 33926,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "xxl"
+            }
+          ]
+        },
+        {
+          "id": 33921,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "xxxl"
+            }
+          ]
+        }
+      ]
     },
     {
-     "id": 33923,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "m"
-      }
-     ]
-    },
-    {
-     "id": 33924,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "l"
-      }
-     ]
-    },
-    {
-     "id": 33925,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "xl"
-      }
-     ]
-    },
-    {
-     "id": 33926,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "xxl"
-      }
-     ]
-    },
-    {
-     "id": 33921,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "xxxl"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": 31716,
-   "name": "Sweatshirt Kids",
-   "type": "variable",
-   "permalink": "https://kadettensh.ch/produkt/sweatshirt-kids/",
-   "short_description": "",
-   "description": "",
-   "on_sale": false,
-   "prices": {
-    "price": "3900",
-    "regular_price": "3900",
-    "sale_price": "3900",
-    "currency_code": "CHF"
-   },
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ],
-   "is_in_stock": false,
-   "attributes": [
-    {
-     "id": 2,
-     "name": "Grösse",
-     "taxonomy": "pa_groesse",
-     "has_variations": true,
-     "terms": [
-      {
-       "id": 38,
-       "name": "116",
-       "slug": "116"
+      "id": 31716,
+      "name": "Sweatshirt Kids",
+      "type": "variable",
+      "permalink": "https://kadettensh.ch/produkt/sweatshirt-kids/",
+      "short_description": "",
+      "description": "",
+      "on_sale": false,
+      "prices": {
+        "price": "3900",
+        "regular_price": "3900",
+        "sale_price": "3900",
+        "currency_code": "CHF"
       },
-      {
-       "id": 39,
-       "name": "128",
-       "slug": "128"
-      },
-      {
-       "id": 40,
-       "name": "140",
-       "slug": "140"
-      },
-      {
-       "id": 41,
-       "name": "152",
-       "slug": "152"
-      },
-      {
-       "id": 42,
-       "name": "164",
-       "slug": "164"
-      },
-      {
-       "id": 43,
-       "name": "176",
-       "slug": "176"
-      }
-     ]
-    }
-   ],
-   "variations": [
-    {
-     "id": 31717,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "116"
-      }
-     ]
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ],
+      "is_in_stock": false,
+      "attributes": [
+        {
+          "id": 2,
+          "name": "Grösse",
+          "taxonomy": "pa_groesse",
+          "has_variations": true,
+          "terms": [
+            {
+              "id": 38,
+              "name": "116",
+              "slug": "116"
+            },
+            {
+              "id": 39,
+              "name": "128",
+              "slug": "128"
+            },
+            {
+              "id": 40,
+              "name": "140",
+              "slug": "140"
+            },
+            {
+              "id": 41,
+              "name": "152",
+              "slug": "152"
+            },
+            {
+              "id": 42,
+              "name": "164",
+              "slug": "164"
+            },
+            {
+              "id": 43,
+              "name": "176",
+              "slug": "176"
+            }
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": 31717,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "116"
+            }
+          ]
+        },
+        {
+          "id": 31718,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "128"
+            }
+          ]
+        },
+        {
+          "id": 31719,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "140"
+            }
+          ]
+        },
+        {
+          "id": 31720,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "152"
+            }
+          ]
+        },
+        {
+          "id": 31721,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "164"
+            }
+          ]
+        },
+        {
+          "id": 31722,
+          "attributes": [
+            {
+              "name": "Grösse",
+              "value": "176"
+            }
+          ]
+        }
+      ]
     },
     {
-     "id": 31718,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "128"
-      }
-     ]
-    },
-    {
-     "id": 31719,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "140"
-      }
-     ]
-    },
-    {
-     "id": 31720,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "152"
-      }
-     ]
-    },
-    {
-     "id": 31721,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "164"
-      }
-     ]
-    },
-    {
-     "id": 31722,
-     "attributes": [
-      {
-       "name": "Grösse",
-       "value": "176"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": 30192,
-   "name": "Goalie Trikot Erwachsene",
-   "type": "variable",
-   "permalink": "https://kadettensh.ch/produkt/goalie-trikot-erwachsene/",
-   "short_description": "<p>Bei Fragen oder Interesse an einem Druck mit Nummer und Name gerne direkt bei der Geschäftsstelle melden: <a href=\"mailto:geschaeftsstelle@kadettensh.ch\">geschaeftsstelle@kadettensh.ch</a></p>",
-   "description": "",
-   "on_sale": false,
-   "prices": {
-    "price": "7400",
-    "regular_price": "7400",
-    "sale_price": "7400",
-    "currency_code": "CHF"
-   },
-   "images": [
-    {
-     "id": 33916,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_56.jpg"
-    },
-    {
-     "id": 33919,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_86.jpg"
-    },
-    {
-     "id": 33956,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0063.jpg"
-    },
-    {
-     "id": 33954,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0057.jpg"
-    }
-   ],
-   "is_in_stock": true,
-   "attributes": [
-    {
-     "id": 1,
-     "name": "Farbe",
-     "taxonomy": "pa_farbe",
-     "has_variations": true,
-     "terms": [
-      {
-       "id": 121,
-       "name": "Dunkelblau",
-       "slug": "dunkelblau"
+      "id": 30192,
+      "name": "Goalie Trikot Erwachsene",
+      "type": "variable",
+      "permalink": "https://kadettensh.ch/produkt/goalie-trikot-erwachsene/",
+      "short_description": "<p>Bei Fragen oder Interesse an einem Druck mit Nummer und Name gerne direkt bei der Geschäftsstelle melden: <a href=\"mailto:geschaeftsstelle@kadettensh.ch\">geschaeftsstelle@kadettensh.ch</a></p>",
+      "description": "",
+      "on_sale": false,
+      "prices": {
+        "price": "7400",
+        "regular_price": "7400",
+        "sale_price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "id": 122,
-       "name": "Mint",
-       "slug": "mint"
-      }
-     ]
+      "images": [
+        {
+          "id": 33916,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_56.jpg"
+        },
+        {
+          "id": 33919,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_86.jpg"
+        },
+        {
+          "id": 33956,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0063.jpg"
+        },
+        {
+          "id": 33954,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0057.jpg"
+        }
+      ],
+      "is_in_stock": true,
+      "attributes": [
+        {
+          "id": 1,
+          "name": "Farbe",
+          "taxonomy": "pa_farbe",
+          "has_variations": true,
+          "terms": [
+            {
+              "id": 121,
+              "name": "Dunkelblau",
+              "slug": "dunkelblau"
+            },
+            {
+              "id": 122,
+              "name": "Mint",
+              "slug": "mint"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Grösse",
+          "taxonomy": "pa_groesse",
+          "has_variations": true,
+          "terms": [
+            {
+              "id": 35,
+              "name": "L",
+              "slug": "l"
+            },
+            {
+              "id": 34,
+              "name": "M",
+              "slug": "m"
+            },
+            {
+              "id": 33,
+              "name": "S",
+              "slug": "s"
+            },
+            {
+              "id": 36,
+              "name": "XL",
+              "slug": "xl"
+            }
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": 33945,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "dunkelblau"
+            },
+            {
+              "name": "Grösse",
+              "value": "s"
+            }
+          ]
+        },
+        {
+          "id": 33946,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "dunkelblau"
+            },
+            {
+              "name": "Grösse",
+              "value": "m"
+            }
+          ]
+        },
+        {
+          "id": 33947,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "dunkelblau"
+            },
+            {
+              "name": "Grösse",
+              "value": "l"
+            }
+          ]
+        },
+        {
+          "id": 33948,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "dunkelblau"
+            },
+            {
+              "name": "Grösse",
+              "value": "xl"
+            }
+          ]
+        },
+        {
+          "id": 33949,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "mint"
+            },
+            {
+              "name": "Grösse",
+              "value": "s"
+            }
+          ]
+        },
+        {
+          "id": 33950,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "mint"
+            },
+            {
+              "name": "Grösse",
+              "value": "m"
+            }
+          ]
+        },
+        {
+          "id": 33951,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "mint"
+            },
+            {
+              "name": "Grösse",
+              "value": "l"
+            }
+          ]
+        },
+        {
+          "id": 33952,
+          "attributes": [
+            {
+              "name": "Farbe",
+              "value": "mint"
+            },
+            {
+              "name": "Grösse",
+              "value": "xl"
+            }
+          ]
+        }
+      ]
     },
     {
-     "id": 2,
-     "name": "Grösse",
-     "taxonomy": "pa_groesse",
-     "has_variations": true,
-     "terms": [
-      {
-       "id": 35,
-       "name": "L",
-       "slug": "l"
+      "id": 30146,
+      "name": "Pin",
+      "type": "simple",
+      "permalink": "https://kadettensh.ch/produkt/pin/",
+      "short_description": "",
+      "description": "",
+      "on_sale": false,
+      "prices": {
+        "price": "200",
+        "regular_price": "200",
+        "sale_price": "200",
+        "currency_code": "CHF"
       },
-      {
-       "id": 34,
-       "name": "M",
-       "slug": "m"
-      },
-      {
-       "id": 33,
-       "name": "S",
-       "slug": "s"
-      },
-      {
-       "id": 36,
-       "name": "XL",
-       "slug": "xl"
-      }
-     ]
+      "images": [
+        {
+          "id": 30204,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/08/Pin.jpg"
+        }
+      ],
+      "is_in_stock": true,
+      "attributes": [],
+      "variations": []
     }
-   ],
-   "variations": [
+  ],
+  "variations": [
     {
-     "id": 33945,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "dunkelblau"
+      "id": 33952,
+      "parent": 30192,
+      "variation": "Farbe: Mint, Grösse: XL",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "s"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33953,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
+        }
+      ]
     },
     {
-     "id": 33946,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "dunkelblau"
+      "id": 33951,
+      "parent": 30192,
+      "variation": "Farbe: Mint, Grösse: L",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "m"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33953,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
+        }
+      ]
     },
     {
-     "id": 33947,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "dunkelblau"
+      "id": 33950,
+      "parent": 30192,
+      "variation": "Farbe: Mint, Grösse: M",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "l"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33953,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
+        }
+      ]
     },
     {
-     "id": 33948,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "dunkelblau"
+      "id": 33949,
+      "parent": 30192,
+      "variation": "Farbe: Mint, Grösse: S",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "xl"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33953,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
+        }
+      ]
     },
     {
-     "id": 33949,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "mint"
+      "id": 33948,
+      "parent": 30192,
+      "variation": "Farbe: Dunkelblau, Grösse: XL",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "s"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33955,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
+        }
+      ]
     },
     {
-     "id": 33950,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "mint"
+      "id": 33947,
+      "parent": 30192,
+      "variation": "Farbe: Dunkelblau, Grösse: L",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "m"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33955,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
+        }
+      ]
     },
     {
-     "id": 33951,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "mint"
+      "id": 33946,
+      "parent": 30192,
+      "variation": "Farbe: Dunkelblau, Grösse: M",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "l"
-      }
-     ]
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33955,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
+        }
+      ]
     },
     {
-     "id": 33952,
-     "attributes": [
-      {
-       "name": "Farbe",
-       "value": "mint"
+      "id": 33945,
+      "parent": 30192,
+      "variation": "Farbe: Dunkelblau, Grösse: S",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
       },
-      {
-       "name": "Grösse",
-       "value": "xl"
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": 30146,
-   "name": "Pin",
-   "type": "simple",
-   "permalink": "https://kadettensh.ch/produkt/pin/",
-   "short_description": "",
-   "description": "",
-   "on_sale": false,
-   "prices": {
-    "price": "200",
-    "regular_price": "200",
-    "sale_price": "200",
-    "currency_code": "CHF"
-   },
-   "images": [
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33955,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
+        }
+      ]
+    },
     {
-     "id": 30204,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/08/Pin.jpg"
-    }
-   ],
-   "is_in_stock": true,
-   "attributes": [],
-   "variations": []
-  }
- ],
- "variations": [
-  {
-   "id": 33952,
-   "parent": 30192,
-   "variation": "Farbe: Mint, Grösse: XL",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33926,
+      "parent": 33904,
+      "variation": "Grösse: XXL",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33953,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33951,
-   "parent": 30192,
-   "variation": "Farbe: Mint, Grösse: L",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33925,
+      "parent": 33904,
+      "variation": "Grösse: XL",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33953,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33950,
-   "parent": 30192,
-   "variation": "Farbe: Mint, Grösse: M",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33924,
+      "parent": 33904,
+      "variation": "Grösse: L",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33953,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33949,
-   "parent": 30192,
-   "variation": "Farbe: Mint, Grösse: S",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33923,
+      "parent": 33904,
+      "variation": "Grösse: M",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33953,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0056.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33948,
-   "parent": 30192,
-   "variation": "Farbe: Dunkelblau, Grösse: XL",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33922,
+      "parent": 33904,
+      "variation": "Grösse: S",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33955,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33947,
-   "parent": 30192,
-   "variation": "Farbe: Dunkelblau, Grösse: L",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 33921,
+      "parent": 33904,
+      "variation": "Grösse: XXXL",
+      "prices": {
+        "price": "7400",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": true,
+      "images": [
+        {
+          "id": 33917,
+          "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+        }
+      ]
+    },
     {
-     "id": 33955,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33946,
-   "parent": 30192,
-   "variation": "Farbe: Dunkelblau, Grösse: M",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 31722,
+      "parent": 31716,
+      "variation": "Grösse: 176",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
+    },
     {
-     "id": 33955,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33945,
-   "parent": 30192,
-   "variation": "Farbe: Dunkelblau, Grösse: S",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 31721,
+      "parent": 31716,
+      "variation": "Grösse: 164",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
+    },
     {
-     "id": 33955,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/Kadetten_Trikot-0062.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33926,
-   "parent": 33904,
-   "variation": "Grösse: XXL",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 31720,
+      "parent": 31716,
+      "variation": "Grösse: 152",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
+    },
     {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33925,
-   "parent": 33904,
-   "variation": "Grösse: XL",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 31719,
+      "parent": 31716,
+      "variation": "Grösse: 140",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
+    },
     {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33924,
-   "parent": 33904,
-   "variation": "Grösse: L",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
+      "id": 31718,
+      "parent": 31716,
+      "variation": "Grösse: 128",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
+    },
     {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
+      "id": 31717,
+      "parent": 31716,
+      "variation": "Grösse: 116",
+      "prices": {
+        "price": "3900",
+        "currency_code": "CHF"
+      },
+      "is_in_stock": false,
+      "images": [
+        {
+          "id": 31723,
+          "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
+        }
+      ]
     }
-   ]
-  },
-  {
-   "id": 33923,
-   "parent": 33904,
-   "variation": "Grösse: M",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
-    {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33922,
-   "parent": 33904,
-   "variation": "Grösse: S",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
-    {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    }
-   ]
-  },
-  {
-   "id": 33921,
-   "parent": 33904,
-   "variation": "Grösse: XXXL",
-   "prices": {
-    "price": "7400",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": true,
-   "images": [
-    {
-     "id": 33917,
-     "src": "https://kadettensh.ch/wp-content/uploads/2026/08/20260811_kadetten_schaffhausen_70.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31722,
-   "parent": 31716,
-   "variation": "Grösse: 176",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31721,
-   "parent": 31716,
-   "variation": "Grösse: 164",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31720,
-   "parent": 31716,
-   "variation": "Grösse: 152",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31719,
-   "parent": 31716,
-   "variation": "Grösse: 140",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31718,
-   "parent": 31716,
-   "variation": "Grösse: 128",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  },
-  {
-   "id": 31717,
-   "parent": 31716,
-   "variation": "Grösse: 116",
-   "prices": {
-    "price": "3900",
-    "currency_code": "CHF"
-   },
-   "is_in_stock": false,
-   "images": [
-    {
-     "id": 31723,
-     "src": "https://kadettensh.ch/wp-content/uploads/2025/12/Kadetten_Sweatshirt_Kids.jpg"
-    }
-   ]
-  }
- ]
+  ]
 }

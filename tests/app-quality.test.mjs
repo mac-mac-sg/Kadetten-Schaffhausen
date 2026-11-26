@@ -1,5 +1,4 @@
 import test from 'node:test';
-import {reportText} from '../src/kadetten/js/report.js';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
 import {dataFreshness, OWN_TEAM} from '../src/kadetten/js/logic.js';
@@ -78,8 +77,8 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; di
   };
   const out = dom(renderSpiel({...previewCtx, route: {id: 'next'}, ui: {backTarget: '#/saison'}}));
   const headings = [...out.querySelectorAll('h2')].map(h => h.textContent);
-  assert.ok(headings.indexOf('Ausgangslage') < headings.indexOf('Vorschau'));
-  assert.ok(headings.indexOf('Vorschau') >= 0 && headings.indexOf('Vorschau') < headings.indexOf('Mein Tipp'));
+  assert.ok(headings.indexOf('Ausgangslage') >= 0 && headings.indexOf('Ausgangslage') < headings.indexOf('Mein Tipp'));
+  assert.equal(headings.indexOf('Vorschau'), -1, 'kein Vorschautext mehr');
   const start = dom(renderJetzt(previewCtx));
   const startHeadings = [...start.querySelectorAll('h2')].map(h => h.textContent);
   assert.equal(startHeadings.indexOf('Vorschau'), -1, 'kein abgeschnittener Vorschautext auf der Startseite');
@@ -90,18 +89,25 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; di
   assert.equal(out.querySelector('[data-route-back]').getAttribute('href'), '#/saison');
 });
 
-test('KI-Texte für Vorschau und Rückblick erscheinen nicht mehr; sachliche Texte bleiben', () => {
-  const ctxWith = generator => ({
-    ...ctx,
-    now: Date.parse('2026-11-11T14:30:00Z'),
-    load: key => (key === 'preview:next' ? {status: 'ready', value: {generator, paragraphs: ['Text zur Vorschau.']}} : {status: 'error'})
-  });
-  const headings = generator =>
-    [...dom(renderSpiel({...ctxWith(generator), route: {id: 'next'}, ui: {}})).querySelectorAll('h2')].map(h => h.textContent);
-  assert.ok(headings('ki').indexOf('Vorschau') < 0, 'KI-Vorschau ausgeblendet');
-  assert.ok(headings('daten').includes('Vorschau'), 'sachliche Vorschau bleibt');
-  assert.equal(reportText({report: {headline: 'X', paragraphs: ['A'], generator: 'ki'}}), null, 'KI-Rückblick ausgeblendet');
-  assert.equal(reportText({report: {headline: 'X', paragraphs: ['A'], generator: 'daten'}}).paragraphs.length, 1);
+test('Vorschau- und Rückblick-Texte erscheinen nicht mehr, auch wenn der Datendienst sie liefert', () => {
+  for (const generator of ['ki', 'daten', undefined]) {
+    const out = dom(
+      renderSpiel({
+        ...ctx,
+        now: Date.parse('2026-11-11T14:30:00Z'),
+        load: key =>
+          key === 'preview:next' ? {status: 'ready', value: {generator, paragraphs: ['Text zur Vorschau.']}} : {status: 'error'},
+        route: {id: 'next'},
+        ui: {}
+      })
+    );
+    assert.equal(
+      [...out.querySelectorAll('h2')].some(h => h.textContent === 'Vorschau'),
+      false,
+      String(generator)
+    );
+    assert.doesNotMatch(out.body.textContent, /Text zur Vorschau/, String(generator));
+  }
 });
 
 test('Torhüter eröffnet mit Fangquote und Paraden, weist drei fehlende Berichte aus und priorisiert keine Tore', () => {

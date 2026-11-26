@@ -174,8 +174,6 @@ test('Nach dem Schlusspfiff: Statistik zeigt vorläufige Live-Werte, bis der bes
   assert.match(d.body.textContent, /Spielerwerte \(vorläufig\)/);
   assert.match(d.body.textContent, /Óðinn Ríkharðsson/);
   assert.doesNotMatch(d.body.textContent, /noch kein bestätigter Spielbericht/);
-  const rueckblick = doc(renderSpiel({...missing, route: {id: 'next', tab: 'rueckblick'}}));
-  assert.doesNotMatch(rueckblick.body.textContent, /vorläufig/, 'der Rückblick wartet auf den bestätigten Bericht');
   const other = doc(
     renderSpiel({...missing, state: {data, live: {finished: {...finished, away: 'Wacker Thun'}}}, route: {id: 'next', tab: 'bericht'}})
   );

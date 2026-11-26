@@ -13,25 +13,6 @@ const clockSeconds = t => {
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 };
 
-/** Text des Matchberichts, wenn gültig. Von einer KI formulierte Texte (ältere Archiveinträge) zeigt die App nicht mehr an. */
-export function reportText(archive) {
-  const r = archive?.report;
-  if (
-    !r ||
-    r.generator === 'ki' ||
-    !Array.isArray(r.paragraphs) ||
-    !r.paragraphs.length ||
-    !r.paragraphs.every(p => typeof p === 'string' && p.trim())
-  )
-    return null;
-  return {
-    headline: typeof r.headline === 'string' ? r.headline : '',
-    paragraphs: r.paragraphs,
-    generator: r.generator || null,
-    generatedAt: r.generatedAt || null
-  };
-}
-
 /** Tore in zeitlicher Reihenfolge: [{sec, score:[h,a], home, name, seven}] aus Archiv oder SHV-Ereignissen. */
 export function goalTimeline(archive, shv) {
   if (Array.isArray(archive?.goals) && archive.goals.length) {
