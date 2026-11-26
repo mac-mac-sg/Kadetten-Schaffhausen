@@ -44,11 +44,8 @@ const LIVE_TABS = [
   ['live', 'Live'],
   ['bericht', 'Statistik']
 ];
-// Abgeschlossene Spiele (QHL, EHL, Cup, Test): nur «Statistik» (alle Zahlen) und «Rückblick» (nur der erzeugte Bericht), kein Ticker.
-const FINISHED_TABS = [
-  ['bericht', 'Statistik'],
-  ['rueckblick', 'Rückblick']
-];
+// Abgeschlossene Spiele (QHL, EHL, Cup, Test): nur «Statistik» (alle Zahlen), kein Ticker und keine Textberichte.
+const FINISHED_TABS = [['bericht', 'Statistik']];
 
 function opponentOf(game) {
   return isOwn(game.home) ? game.away : game.home;
@@ -129,15 +126,12 @@ function vorschau({game, data, load, api, now}) {
     opp = table.find(r => sameTeam(r.team, opponentOf(game)));
   const oppForm = opponentForm(load, api, data, game);
   const formLeague = ['QHL', 'EHL'].includes(game.league) ? game.league : undefined;
-  const preview =
-    ['QHL', 'EHL'].includes(game.league) && !hasScore(game) ? load('preview:' + game.id, () => api.preview(game.id), 600000) : null;
   const duels = game.league === 'QHL' ? load('duel:' + game.id, () => api.headToHead(game.home, game.away), 900000) : null;
   const programme = !hasScore(game) && isOwn(game.home) ? load('programme:' + game.id, () => api.programme(game.id), 900000) : null;
   const pdf =
     programme?.value && /^\/api\/programmes\/[a-zA-Z0-9_-]+\/pdf\?v=[a-f0-9]{64}$/.test(programme.value.pdfPath || '')
       ? API_ORIGIN + programme.value.pdfPath
       : null;
-  const p = preview?.value;
   const reise = routeFor(game) && venueInfo(game.venue) ? routeFor(game) : null;
   const ownLast = ownGames(data.games)
     .filter(g => hasScore(g) && kickoff(g) < kickoff(game))
@@ -177,20 +171,6 @@ function vorschau({game, data, load, api, now}) {
     </section>
     ${['QHL', 'EHL'].includes(game.league) ? gegnerCheck({game, own, opp}) : ''}
     ${gewinnCard(pre)}
-    ${
-      p?.paragraphs?.length
-        ? html`<section class="sec" aria-labelledby="g-vor">
-          ${sectionHead(p.generator === 'daten' ? 'Vorschau' : 'Vorschau', '', '', 'g-vor')}
-      <article class="card prose">${p.headline ? html`<h3 class="h3">${p.headline}</h3>` : ''}${p.paragraphs.map(t => html`<p>${t}</p>`)}
-        <p class="fine">${
-          p.generator === 'daten'
-            ? 'Aus bestätigten Spiel- und Tabellendaten zusammengestellt.'
-            : 'Von einer KI aus bestätigten Spiel- und Tabellendaten formuliert. Keine Ergebnisprognose.'
-        }</p>
-          </article>
-          </section>`
-        : ''
-    }
     ${tipFor(game, now)}
     ${
       duels?.value?.games?.length
@@ -388,7 +368,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
   const report = part => bericht({game, phase, data, load, api, ui, state, now, part});
   const content =
     phase === 'bericht'
-      ? report(tab === 'rueckblick' ? 'rueckblick' : 'statistik')
+      ? report('statistik')
       : phase === 'live'
         ? tab === 'bericht'
           ? report()
@@ -405,7 +385,7 @@ export function renderSpiel({route, state, now, load, api, ui}) {
     <section class="match-score${phase === 'live' ? ' match-live' : ''}">
     ${hero}</section>`
   )}
-    ${preOnly ? '' : segment(tabs, tab, 'Spielseite')}
+    ${preOnly || twoTabs ? '' : segment(tabs, tab, 'Spielseite')}
     ${twoTabs && tab === 'bericht' ? storyTeaser(game) : ''}
     ${twoTabs && tab === 'bericht' ? tipFor(game, now) : ''}
     ${content}

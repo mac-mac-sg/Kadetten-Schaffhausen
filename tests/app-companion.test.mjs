@@ -174,10 +174,16 @@ test('Nach dem Schlusspfiff: Statistik zeigt vorläufige Live-Werte, bis der bes
   assert.match(d.body.textContent, /Spielerwerte \(vorläufig\)/);
   assert.match(d.body.textContent, /Óðinn Ríkharðsson/);
   assert.doesNotMatch(d.body.textContent, /noch kein bestätigter Spielbericht/);
-  const rueckblick = doc(renderSpiel({...missing, route: {id: 'next', tab: 'rueckblick'}}));
-  assert.doesNotMatch(rueckblick.body.textContent, /vorläufig/, 'der Rückblick wartet auf den bestätigten Bericht');
   const other = doc(
     renderSpiel({...missing, state: {data, live: {finished: {...finished, away: 'Wacker Thun'}}}, route: {id: 'next', tab: 'bericht'}})
   );
   assert.doesNotMatch(other.body.textContent, /vorläufig/, 'nur für dasselbe Spiel');
+});
+
+test('Nach dem letzten Spiel der Saison erscheint der Saisonrückblick als Hinweis auf der Titelseite, vorher nicht', () => {
+  const over = {...game, score: [30, 25]};
+  const after = Date.parse('2026-11-14T10:00:00Z'); // zwei Tage nach dem letzten Spiel: kein Nachspiel-Zustand mehr
+  const end = doc(renderJetzt({...ctx, now: after, state: {data: {...data, games: [over]}}}));
+  assert.equal(end.querySelector('a.teaser[href="#/rueckblick"]')?.textContent.includes('Deine Saison ist da.'), true);
+  assert.equal(doc(renderJetzt(ctx)).querySelector('a.teaser[href="#/rueckblick"]'), null, 'vor Saisonende kein Hinweis');
 });

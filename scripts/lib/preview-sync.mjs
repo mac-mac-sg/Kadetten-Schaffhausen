@@ -61,7 +61,7 @@ export async function syncPreviews(
         const recent = fresh && Date.parse(old.generatedAt) > now.getTime() - 12 * HOURS;
 
         // Derselbe KI-Text für dieselben Fakten: nur den Zeitstempel erneuern, damit die Vorschau sichtbar bleibt.
-        if (fresh && old.generator === 'ki' && old.baseHash === hash) {
+        if (rewrite && fresh && old.generator === 'ki' && old.baseHash === hash) {
           if (recent) {
             out.unchanged++;
             continue;

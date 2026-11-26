@@ -257,7 +257,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       ${own && ui?.votes ? liveVoteCard({game: own, vote: load('votes:' + own.id, () => ui.votes.status(own.id), 30000), mine: myVotes()[own.id]}) : ''}
       ${liveTableTeaser(data, {...game, league: game.league || own?.league})}
       ${liveScorers(game, own)}
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   if (phase === 'spieltag') {
@@ -268,7 +268,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         ${previewHero(game, now, {actions, status: waitingForLive(game, state, now)})}</section>
       ${matchdayStats(game, data)}
       ${tipFor(game, now)}
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   if (phase === 'nachspiel') {
@@ -301,7 +301,7 @@ export function renderJetzt({state, now, load, api, ui}) {
         </section>`
           : ''
       }
-      ${newsBlock(data, 2)}${offline}`;
+      ${offline}`;
   }
 
   const last = lastResult(data.games, now);

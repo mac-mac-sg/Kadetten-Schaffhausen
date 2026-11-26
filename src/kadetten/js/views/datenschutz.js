@@ -15,8 +15,7 @@ export function renderDatenschutz({analytics = ANALYTICS} = {}) {
   return html`${subBand(backLink('Einstellungen', href.einstellungen()), 'Datenschutz', 'Über die App')}
     ${block('ds-app', 'Über die App', [
       'Die Kadetten-App ist eine inoffizielle Fan-App. Sie wird privat betrieben und nicht von den Kadetten Schaffhausen herausgegeben.',
-      'Spieldaten stammen vom Schweizerischen Handballverband und der EHF, News, Bilder und Fanshop-Artikel von kadettensh.ch. Die Rechte liegen bei den jeweiligen Urhebern.',
-      'Texte, die mit «Von einer KI formuliert» bezeichnet sind, entstehen automatisch aus bestätigten Spieldaten.'
+      'Spieldaten stammen vom Schweizerischen Handballverband und der EHF, News, Bilder und Fanshop-Artikel von kadettensh.ch. Die Rechte liegen bei den jeweiligen Urhebern.'
     ])}
     ${block('ds-geraet', 'Was auf deinem Gerät bleibt', [
       'Tipps, Sammelkarten, Quiz, Lieblingsspieler, «Meine Spiele», Darstellung, Warenkorb und die Angaben in der Kasse speichert die App nur im Browser dieses Geräts. Sie werden nicht übertragen.',

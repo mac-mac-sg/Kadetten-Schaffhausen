@@ -391,3 +391,23 @@ Bei noch nicht gespielten Auswärtsspielen zeigt die Vorschau unter dem Aufmache
 - `src/kadetten/js/reise.js`: Hallenorte mit Koordinaten (fest im Code, kein Kartendienst), Luftlinie (Haversine), Strecke als Bogen. Unbekannter Ort, Heimspiel oder gespieltes Spiel: keine Kachel. Neuer Spielort = neue Zeile in `PLACES`.
 - `views/vorschau.js` (`reiseBlock`): Inline-SVG mit Linie und Punkt in Schleife. Bei «Bewegung reduzieren» steht die fertige Linie ohne Animation.
 - Die App zeigt keine Fahrzeit; die Karten-App rechnet sie.
+
+## Drei Kachelarten (26. November 2026)
+
+Konzept: Design-Canvas «Weniger Kachelarten». Jede Kachel der Titelseite und von «Ich» gehört zu einer von drei Arten mit festen Massen (Tokens in `css/tokens.css`):
+
+| Art | Aufbau | Mass | Klassen |
+| --- | --- | --- | --- |
+| Zeile | Zahl links (62 px breit, 40 px gross), Text, Pfeil | mindestens `--tile-h` (76 px) | `.card.rowcard`, `.card.quizcard`, `.tile` |
+| Kennzahl | Zahl über Beschriftung, zwei bis drei nebeneinander, keine Aktion | `--kn-h` (96 px) | `.kn-row > .card.kn` |
+| Fokus | dunkle Kachel mit Knöpfen, einmal je Seite | Innenabstand `--tile-pad` | `.card.claim`, `.card.nextcard` |
+
+Umgesetzt: Quiz-Bilanz in «Ich» als drei Kennzahl-Kacheln, Sammelkarten als Zeile mit dünnem Fortschrittsbalken (`.sub-bar`; die Legende steht in der Zeile, die Seltenheiten auf der Sammlungsseite), Zeilen der Titelseite mit gleicher Zahlengrösse. Neue Funktionen wählen eine der drei Arten und bauen keine eigene Kachel. Nicht angepasst (Inhalte, keine Kacheln): Sammelkarten, Kader, Tabelle, Spiel-Story, Spielkarte im Band.
+
+## Start je Spielzustand (26. November 2026)
+
+Konzept: Design-Canvas «Start je Spielzustand». Die Titelseite kannte die vier Zustände schon (`jetztState`: Alltag, Spieltag, Live, Nach dem Spiel); neu ist, dass jeder Zustand nur einen Fokus zeigt.
+
+- Neuigkeiten (grosse Bildgeschichte, «Kurz aus dem Verein») erscheinen nur im Alltag. Am Spieltag, live und nach dem Spiel fehlen sie.
+- Alltag: nächstes Spiel, Neuigkeiten, Saison, Letztes Resultat, Quiz.
+- Spieltag, Live und Nach dem Spiel sind sonst unverändert (Spielkarte, Tipp, Ausgangslage bzw. Live-Tabelle und Werfer bzw. Tabelle danach und nächstes Spiel).

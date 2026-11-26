@@ -132,7 +132,7 @@ for (const [name, moment] of Object.entries(MOMENTS)) {
 test('Jetzt zeigt je Zustand das Passende', () => {
   assert.match(
     render('#/', MOMENTS.alltag),
-    /band-home[\s\S]*Nächstes Spiel[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat/
+    /band-home[\s\S]*Nächstes Spiel[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat[\s\S]*Quiz der Woche/
   );
   assert.match(render('#/', MOMENTS.spieltag), /noch 3:45 h[\s\S]*Push zum Anpfiff[\s\S]*Ausgangslage/);
   const live = render('#/', MOMENTS.live);
@@ -140,6 +140,9 @@ test('Jetzt zeigt je Zustand das Passende', () => {
   assert.doesNotMatch(live, /Torschütze[^n]/, 'live keine Torschützen');
   assert.match(render('#/', MOMENTS.nachspiel), /S · Sieg[\s\S]*33:27[\s\S]*Spielbericht[\s\S]*Teilen/);
   assert.match(render('#/', MOMENTS.offline), /zuletzt gespeicherte Stand/);
+  // Je Zustand ein Fokus: Neuigkeiten nur im Alltag, nicht am Spieltag, live oder nach dem Spiel
+  for (const moment of ['spieltag', 'live', 'nachspiel'])
+    assert.doesNotMatch(render('#/', MOMENTS[moment]), /Neues aus dem Verein/, moment);
 });
 
 test('Spielseite wechselt Vorschau → Live → Bericht', () => {
@@ -148,8 +151,8 @@ test('Spielseite wechselt Vorschau → Live → Bericht', () => {
   assert.match(before, /Ausgangslage/);
   assert.match(render('#/spiel/508393', MOMENTS.live), /aria-current="page"><i class="dot"><\/i>Live/);
   const done = render('#/spiel/508393', MOMENTS.nachspiel);
-  assert.match(done, /aria-current="page">Statistik/);
-  assert.doesNotMatch(done, />Ticker<|>Übersicht</, 'abgeschlossenes QHL-Spiel: nur Statistik und Rückblick');
+  assert.doesNotMatch(done, /aria-label="Spielseite"/, 'abgeschlossenes QHL-Spiel: eine Ansicht ohne Reiter');
+  assert.doesNotMatch(done, />Ticker<|>Übersicht<|>Rückblick</, 'abgeschlossenes QHL-Spiel: nur Statistik');
   assert.match(render('#/spiel/508338', MOMENTS.alltag), /Spielbericht wird geladen/);
 });
 

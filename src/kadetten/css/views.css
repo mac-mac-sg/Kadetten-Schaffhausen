@@ -19,13 +19,15 @@
 .card.list > :first-child, .card.list .list > :first-child, .card-in.list > :first-child, .next-wrap:first-child .rl { border-top: 0; }
 .rl.compact { min-height: 48px; }
 .grow { flex: 1; min-width: 0; display: grid; gap: var(--s-1); }
-.rl .t, .rowcard .t { font: 500 var(--fs-body)/1.3 var(--f-text); overflow-wrap: anywhere; }
-.rl .s, .rowcard .s { font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-text-muted); }
-.rl > .icon, .rowcard > .icon { flex: none; color: var(--c-text-muted); }
+.rl .t, .rowcard .t, .quizcard .t { font: 500 var(--fs-body)/1.3 var(--f-text); overflow-wrap: anywhere; }
+.rl .s, .rowcard .s, .quizcard .s { font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-text-muted); }
+.rl > .icon, .rowcard > .icon, .quizcard > .icon { flex: none; color: var(--c-text-muted); }
 .res { display: inline-flex; align-items: center; gap: var(--s-2); flex: none; font: italic 600 var(--fs-h3)/1 var(--f-display); font-variant-numeric: tabular-nums; }
 .res.big { font-size: var(--fs-h1); }
 .res small { font: 400 var(--fs-small)/1 var(--f-text); color: var(--c-text-muted); }
-.rowcard { display: flex; align-items: center; gap: var(--s-4); }
+.rowcard, .quizcard { display: flex; align-items: center; gap: var(--s-4); }
+/* Zeile: eine Zahl links (gleiche Breite und Grösse), Text, Pfeil; Höhe aus --tile-h */
+.rowcard .res.big, .rowcard .qno, .quizcard .qno { flex: none; min-width: 62px; font-size: var(--fs-xl); line-height: .9; }
 .thumb { width: 96px; height: 68px; flex: none; object-fit: cover; border-radius: 10px 10px 0 0; clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%); background: var(--c-surface-2); }
 .thumb-empty { display: grid; place-items: center; }
 .schedule-tools { position: sticky; top: env(safe-area-inset-top); z-index: 3; padding: 1px 0 var(--s-2); background: var(--c-bg); }
@@ -544,23 +546,16 @@ nav.chips { scroll-margin-top: var(--s-3); }
 
 /* Mein Bereich und Sammelkarten (views/sammlung.js). Karten im Seitenverhältnis 2:3, Seltenheit über Farbe und Rahmen:
    Standard dunkel (Kader) oder Papier (Geschichte, Orte), Spezial orange (Titel, Spiele), Legende dunkel mit Streifenrahmen. */
-.claim { display: grid; grid-template-columns: auto 1fr; column-gap: var(--s-3); align-items: center; padding: var(--s-4); background: var(--c-tile); color: var(--c-on-tile); border: 0; }
+.claim { display: grid; grid-template-columns: auto 1fr; column-gap: var(--s-3); align-items: center; padding: var(--tile-pad); background: var(--c-tile); color: var(--c-on-tile); border: 0; }
 .claim-k { grid-column: 1 / -1; font: 600 var(--fs-meta)/1.2 var(--f-text); color: var(--c-tile-hot); }
 .claim-n { font: italic 600 var(--fs-kick)/.9 var(--f-display); color: var(--c-tile-hot); }
 .claim-t { font: 500 var(--fs-body)/1.35 var(--f-text); }
 .claim .btn { grid-column: 1 / -1; margin-top: var(--s-3); }
-.stats.q3 { padding: var(--s-4); }
-.stats.q3 .v { color: var(--c-accent-text); font-size: var(--fs-h1); }
-.prog { display: block; padding: var(--s-4); color: inherit; }
-.prog-row { display: flex; align-items: baseline; gap: var(--s-2); }
-.prog-row b { font: italic 600 var(--fs-h1)/1 var(--f-display); }
-.prog-row span { font: 400 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
-.prog-row em { margin-left: auto; font: italic 600 var(--fs-h1)/1 var(--f-display); color: var(--c-accent-text); }
-.prog-bar { display: block; height: 8px; margin-top: var(--s-3); background: var(--c-surface-2); transform: skewX(var(--skew)); overflow: hidden; }
-.prog-bar i { display: block; height: 100%; background: var(--c-accent); }
-.prog-leg { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--c-line); font: 400 var(--fs-meta)/1.2 var(--f-text); color: var(--c-text-muted); }
-.prog-leg b { color: var(--c-text); font-weight: 600; }
-.prog-leg i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; transform: skewX(var(--skew)); vertical-align: -1px; }
+/* Kennzahl: zwei bis drei kleine Kacheln nebeneinander, Zahl über Beschriftung, keine Aktion */
+.kn-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+.kn { min-height: var(--kn-h); box-sizing: border-box; padding: var(--s-3); display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-2); }
+.kn .v { font: italic 600 var(--fs-h1)/.9 var(--f-display); font-variant-numeric: tabular-nums; color: var(--c-accent-text); }
+.kn .k { font: 400 var(--fs-caption)/1.3 var(--f-text); color: var(--c-text-muted); }
 .r-standard { background: var(--c-ink); }
 .r-spezial { background: var(--c-accent); }
 .r-legende { background: var(--c-ink); box-shadow: 0 0 0 2px var(--c-accent); }
@@ -636,7 +631,7 @@ a.sk:active { transform: scale(.97); }
 @keyframes sk-up { from { opacity: 0; transform: translateY(18px) rotate(-1.5deg); } to { opacity: 1; transform: none; } }
 .btn.pulse { animation: sk-pulse 2.4s ease-in-out infinite; }
 @keyframes sk-pulse { 0%, 70%, 100% { transform: none; } 80% { transform: scale(1.03); } 90% { transform: scale(.99); } }
-.prog-bar i { animation: sk-bar .9s cubic-bezier(.2, .8, .2, 1) both; transform-origin: left; }
+.rowcard .sub-bar i { animation: sk-bar .9s cubic-bezier(.2, .8, .2, 1) both; transform-origin: left; }
 @keyframes sk-bar { from { transform: scaleX(0); } }
 
 /* Umdrehen: beide Seiten übereinander, gedreht um die Hochachse */
@@ -679,7 +674,7 @@ a.sk:active { transform: scale(.97); }
 .fn-7 { --n: 7; } .fn-8 { --n: 8; } .fn-9 { --n: 9; } .fn-10 { --n: 10; } .fn-11 { --n: 11; } .fn-12 { --n: 12; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sk-gl, .btn.pulse, .prog-bar i, .sk-grid.enter > *, .sk-row.enter > *, .sk-flip.enter, .fan.deal .fan-c, .fan-c.is-open .sk-flip, .fan-c.is-open.r-legende .sk-face.rear > .sk { animation: none; }
+  .sk-gl, .btn.pulse, .rowcard .sub-bar i, .sk-grid.enter > *, .sk-row.enter > *, .sk-flip.enter, .fan.deal .fan-c, .fan-c.is-open .sk-flip, .fan-c.is-open.r-legende .sk-face.rear > .sk { animation: none; }
   .sk-face, .fan-c, a.sk { transition: none; }
 }
 
@@ -932,7 +927,7 @@ a.sk:active { transform: scale(.97); }
 .prose .mf-pen .mf-i { position: absolute; left: 0; top: 0; }
 
 /* Kleine Spielkarte «Nächstes Spiel» (Startseite nach dem Spiel) */
-.nextcard { display: block; padding: var(--s-4) var(--s-5) var(--s-5); color: inherit; text-decoration: none; }
+.nextcard { display: block; padding: var(--tile-pad); color: inherit; text-decoration: none; }
 .nextcard .meta { display: flex; }
 .nextcard .vs { margin-top: var(--s-3); }
 .nextcard .kick { font-size: var(--fs-xl); }
@@ -944,17 +939,18 @@ a.sk:active { transform: scale(.97); }
 .qdots i { width: 22px; height: 8px; background: var(--c-chip); transform: skewX(var(--skew)); }
 .qdots i.on { background: var(--c-accent); }
 .quizcard { display: flex; align-items: center; gap: var(--s-4); }
-.quizcard .qno { flex: none; min-width: 68px; font-size: var(--fs-xl); line-height: .9; color: var(--c-accent-text); }
+.quizcard .qno { color: var(--c-accent-text); }
 .quizcard.part .qno { color: var(--c-text-muted); }
-.quizcard .t { font: 500 var(--fs-body)/1.3 var(--f-text); }
 .quizcard .s { font: 400 var(--fs-small)/1.35 var(--f-text); color: var(--c-text-muted); }
 .quizcard > .icon { flex: none; color: var(--c-text-muted); }
 
 /* Einzeilige weisse Kacheln der Titelseite (Saison, Resultat, Quiz) sind gleich hoch */
-.tile { min-height: 76px; box-sizing: border-box; }
+.tile { min-height: var(--tile-h); box-sizing: border-box; }
 .card.list.tile { display: flex; flex-direction: column; justify-content: center; }
 .quizcard .line { display: flex; align-items: center; gap: var(--s-3); }
 .quizcard .line .qdots { margin-top: 0; }
 @media (max-width: 360px) { .quizcard .qdots { display: none; } .quizcard .qno { min-width: 56px; } }
+.rowcard .sub-bar { display: block; height: 6px; margin-top: var(--s-1); background: var(--c-surface-2); transform: skewX(var(--skew)); overflow: hidden; }
+.rowcard .sub-bar i { display: block; height: 100%; background: var(--c-accent); }
 .quizcard .grow { min-width: 0; }
 .quizcard .s { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

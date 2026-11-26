@@ -42,3 +42,10 @@ Dem Eigentümer ist der sachliche Text zu nüchtern. Deshalb formuliert ein Mode
 **Feinschliff (Vergleich vom 6. Oktober 2026, GPT-OSS):** Wettbewerbe stehen immer als «im Wettbewerb X» (das Modell setzte falsche Artikel, «im Brack Super League»); der Schlusssatz wechselt und vermeidet «Wir freuen uns … herzlich ein»; Prognosen («verspricht Spannung») und Resultat-Deutungen («unter Druck setzen») sind verboten. Der Parser ersetzt geschützte Bindestriche und Leerzeichen sowie «45 : 34» durch gewöhnliche Zeichen.
 
 **Stand 6. Oktober 2026:** Standardmodell wieder Mistral Small 3.1 (schneller, zuverlässiger). Der verfeinerte Prompt bleibt; «ß» wird im Parser zu «ss», und der Prompt nennt keine Ortsbezeichnung ausser der aus den Fakten (GPT-OSS erfand «Wankdorf-Halle»). Der Eigentümer beobachtet die Formulierungen der nächsten Spiele, Verbesserungen folgen gemeinsam.
+
+## Keine Vorschau- und Rückblick-Texte mehr in der App (26. November 2026)
+
+Die KI-Texte waren zu allgemein, die sachlichen Texte aus Daten ebenfalls. Die App zeigt deshalb weder den Abschnitt «Vorschau» (Spielseite vor dem Spiel) noch den Reiter «Rückblick» (Spielseite nach dem Spiel). Abgeschlossene Spiele zeigen nur noch die Statistik ohne Reiterleiste; die alte Adresse `#/spiel/<id>/rueckblick` führt dorthin. Geblieben sind der Aufmacher («Worum geht es?», aus Daten) und die Ausgangslage mit Zahlen.
+
+- Der Datendienst (`scripts/cloudflare-update.mjs`) erzeugt keine KI-Texte mehr (`rewrite` und `reportWriter` sind `null`). Er schreibt aber weiterhin sachliche Vorschauen (`previews/…`) und Berichte (`report`) in den Speicher, die die App nicht mehr liest. Aufräumen wäre ein eigener Schritt (`server/previews.mjs`, `server/preview-text.mjs`, `scripts/lib/preview-sync.mjs`, `scripts/lib/ehf-archive.mjs`, KI-Schicht `server/preview-ai.mjs`, `server/report-ai.mjs`, `scripts/lib/preview-rewrite.mjs`, `scripts/lib/workers-ai.mjs`, Vergleichslauf `cloudflare-ai-compare`).
+- Der Saisonrückblick (`#/rueckblick`, «Deine Saison») ist davon nicht betroffen.

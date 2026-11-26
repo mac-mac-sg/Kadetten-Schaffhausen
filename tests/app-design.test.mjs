@@ -531,76 +531,41 @@ test('Torschützenliste QHL: Spalten Würfe und Quote; ohne Berichte «–», ni
   );
 });
 
-// ---- Abgeschlossene QHL-Spiele: nur «Statistik» und «Rückblick» ----
-test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): genau zwei Reiter, Statistik mit allen Zahlen, Rückblick nur mit dem erzeugten Bericht', () => {
+// ---- Abgeschlossene QHL-Spiele: nur die Statistik, keine Textberichte ----
+test('Abgeschlossenes QHL-Spiel (ebenso Cup und Test): eine Ansicht ohne Reiter, Statistik mit allen Zahlen, kein Textbericht', () => {
   const shv = Object.values(JSON.parse(read('src/kadetten/data/game-reports.json')).reports).find(r => r.gameId === 508338);
   const archive = {
-    report: {headline: 'Kadetten schlagen Suhr Aarau', paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.']},
-    generator: 'daten',
+    report: {
+      headline: 'Kadetten schlagen Suhr Aarau',
+      paragraphs: ['Die Kadetten gewinnen 28:20.', 'Der Sieg war nie gefährdet.'],
+      generator: 'daten'
+    },
     goals: [
       {t: '05:00', s: [0, 1], h: false, n: 'A'},
       {t: '59:00', s: [20, 28], h: false, n: 'A'}
     ]
   };
   const ready = () => ({status: 'ready', value: {shv, archive}});
-  const tabsOf = d =>
-    [...d.querySelectorAll('nav.seg a')].map(a => [a.textContent.trim(), a.getAttribute('href'), a.hasAttribute('aria-current')]);
-
-  const stat = render('#/spiel/508338/bericht', {}, ready);
-  assert.deepEqual(
-    tabsOf(stat).map(t => t[0]),
-    ['Statistik', 'Rückblick'],
-    'kein Ticker, keine Übersicht'
-  );
-  assert.deepEqual(tabsOf(stat)[0].slice(1), ['#/spiel/508338/bericht', true]);
-  assert.equal(tabsOf(stat)[1][1], '#/spiel/508338/rueckblick');
-  assert.ok(
-    stat.querySelector('[aria-labelledby="g-verlauf"]') &&
-      stat.querySelector('[aria-labelledby="g-cmp"]') &&
-      stat.querySelector('[aria-labelledby="g-spieler"]'),
-    'Spielverlauf, Teamvergleich, Spielerwerte'
-  );
-  assert.equal(stat.querySelector('[aria-labelledby="g-text"]'), null, 'der Text gehört in den Rückblick');
-  assert.doesNotMatch(stat.body.textContent, /Die Kadetten gewinnen 28:20/);
-
-  const back = render('#/spiel/508338/rueckblick', {}, ready);
-  assert.deepEqual(
-    tabsOf(back).map(t => [t[0], t[2]]),
-    [
-      ['Statistik', false],
-      ['Rückblick', true]
-    ]
-  );
-  assert.match(back.querySelector('.prose h3').textContent, /Kadetten schlagen Suhr Aarau/);
-  assert.equal(back.querySelectorAll('.prose p').length, 3, 'zwei Absätze und der Quellenhinweis');
-  assert.match(back.body.textContent, /Aus den bestätigten Spieldaten zusammengestellt/);
-  for (const sel of [
-    '[aria-labelledby="g-verlauf"]',
-    '[aria-labelledby="g-cmp"]',
-    '[aria-labelledby="g-spieler"]',
-    '[data-my-game]',
-    '.vote-teaser',
-    '[aria-labelledby="g-art"]',
-    '.chart',
-    '.curve'
-  ])
-    assert.equal(back.querySelector(sel), null, 'Rückblick enthält nichts ausser dem Text: ' + sel);
-
-  for (const hash of ['#/spiel/508338', '#/spiel/508338/live', '#/spiel/508338/vorschau']) {
+  // Auch alte Adressen (Rückblick, Live, Vorschau) führen zur Statistik; es gibt keine Reiterleiste und keinen Text.
+  for (const hash of [
+    '#/spiel/508338',
+    '#/spiel/508338/bericht',
+    '#/spiel/508338/rueckblick',
+    '#/spiel/508338/live',
+    '#/spiel/508338/vorschau'
+  ]) {
     const d = render(hash, {}, ready);
-    assert.deepEqual(
-      tabsOf(d)
-        .filter(t => t[2])
-        .map(t => t[0]),
-      ['Statistik'],
-      hash + ' führt zur Statistik'
+    assert.equal(d.querySelectorAll('nav.seg a').length, 0, hash + ': keine Reiterleiste');
+    assert.ok(
+      d.querySelector('[aria-labelledby="g-verlauf"]') &&
+        d.querySelector('[aria-labelledby="g-cmp"]') &&
+        d.querySelector('[aria-labelledby="g-spieler"]'),
+      hash + ': Spielverlauf, Teamvergleich, Spielerwerte'
     );
+    assert.equal(d.querySelector('[aria-labelledby="g-text"]'), null, hash + ': kein Textbericht');
+    assert.doesNotMatch(d.body.textContent, /Die Kadetten gewinnen 28:20|Rückblick/, hash);
   }
-  const noText = render('#/spiel/508338/rueckblick', {}, () => ({status: 'ready', value: {shv, archive: {goals: archive.goals}}}));
-  assert.match(noText.body.textContent, /keinen Rückblick/);
-  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'loading'})).body.textContent, /Rückblick wird geladen/);
-  assert.match(render('#/spiel/508338/rueckblick', {}, () => ({status: 'error'})).body.textContent, /Rückblick erscheint/);
-  assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick');
+  assert.equal(parseRoute('#/spiel/508338/rueckblick').tab, 'rueckblick', 'alte Adresse bleibt gültig');
 });
 
 test('Vor Anpfiff gibt es keine Reiterleiste, nur die Vorschau', () => {
@@ -612,24 +577,23 @@ test('Vor Anpfiff gibt es keine Reiterleiste, nur die Vorschau', () => {
   }
 });
 
-test('Cup, Testspiele und European League: dieselben zwei Reiter wie bei der QHL', () => {
+test('Cup, Testspiele und European League: wie bei der QHL ohne Reiter und ohne Textbericht', () => {
   const find = c => data.games.find(g => competitionOf(g) === c && Array.isArray(g.score));
   const [test, cup, ehl] = ['Test', 'Cup', 'EHL'].map(find);
   assert.ok(test && cup && ehl, 'Beispielspiele der drei Wettbewerbe im Datenbestand');
-  const tabs = d => [...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim());
-  const text = {report: {headline: 'Test gewonnen', paragraphs: ['Ein deutlicher Sieg im Cup.']}, goals: []};
+  const tabs = d => d.querySelectorAll('nav.seg a').length;
+  const text = {report: {headline: 'Test gewonnen', paragraphs: ['Ein deutlicher Sieg im Cup.'], generator: 'daten'}, goals: []};
 
   const t = render('#/spiel/' + test.id);
-  assert.deepEqual(tabs(t), ['Statistik', 'Rückblick'], 'Testspiel');
+  assert.equal(tabs(t), 0, 'Testspiel');
   assert.match(t.body.textContent, /liefert die Quelle keine Spielwerte/, 'ehrlicher Hinweis statt Wartemeldung');
-  assert.match(render('#/spiel/' + test.id + '/rueckblick').body.textContent, /keinen Spielbericht, deshalb gibt es keinen Rückblick/);
-  assert.deepEqual(tabs(render('#/spiel/' + test.id + '/live')), ['Statistik', 'Rückblick']);
+  assert.match(render('#/spiel/' + test.id + '/rueckblick').body.textContent, /liefert die Quelle keine Spielwerte/);
 
   const c = render('#/spiel/' + cup.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: text}}));
-  assert.deepEqual(tabs(c), ['Statistik', 'Rückblick'], 'Cup');
-  assert.match(c.querySelector('.prose').textContent, /Test gewonnen/);
+  assert.equal(tabs(c), 0, 'Cup');
+  assert.doesNotMatch(c.body.textContent, /Test gewonnen|Ein deutlicher Sieg im Cup/, 'kein Textbericht');
 
-  assert.deepEqual(tabs(render('#/spiel/' + ehl.id)), ['Statistik', 'Rückblick'], 'EHL: ebenfalls zwei Reiter');
+  assert.equal(tabs(render('#/spiel/' + ehl.id)), 0, 'EHL');
 });
 
 // ---- European League: alle Statistiken der Matchday-App ----
@@ -724,10 +688,7 @@ const ehlArchive = () => {
 test('European League: Statistik mit allen Werten der Matchday-App', () => {
   assert.ok(ehlGame, 'Beispielspiel der European League im Datenbestand');
   const d = render('#/spiel/' + ehlGame.id, {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
-  assert.deepEqual(
-    [...d.querySelectorAll('nav.seg a')].map(a => a.textContent.trim()),
-    ['Statistik', 'Rückblick']
-  );
+  assert.equal(d.querySelectorAll('nav.seg a').length, 0, 'eine Ansicht ohne Reiter');
   // Teamvergleich: Würfe, Fehlwürfe, Disqualifikationen kommen neben den bisherigen Zeilen dazu.
   const labels = [...d.querySelectorAll('[aria-labelledby="g-cmp"] .cmp .bar > span')].map(n => n.textContent.replace('?', '').trim());
   for (const l of [
@@ -775,10 +736,10 @@ test('European League: Statistik mit allen Werten der Matchday-App', () => {
   assert.match(keeper.textContent, /Siebenmeter gehalten: 1 \/ 3/);
   assert.equal(keeper.querySelectorAll('tbody tr').length, 2);
   assert.match(keeper.textContent, /Links · Distanz/);
-  // Rückblick enthält nur den Text
+  // Die alte Adresse des Rückblicks zeigt dieselbe Statistik, aber keinen Text
   const back = render('#/spiel/' + ehlGame.id + '/rueckblick', {}, () => ({status: 'ready', value: {shv: null, archive: ehlArchive()}}));
-  assert.match(back.querySelector('.prose').textContent, /Klarer Sieg in der European League/);
-  assert.equal(back.querySelector('[aria-labelledby="g-wurf"]'), null);
+  assert.equal(back.querySelector('.prose'), null);
+  assert.doesNotMatch(back.body.textContent, /Klarer Sieg in der European League/);
 });
 
 test('Teamvergleich: Zeilen nur mit Werten beider Teams, keine erfundenen Disqualifikationen bei QHL', () => {
@@ -892,4 +853,25 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
     4,
     'Alltag, Spieltag, Live, Nachspiel'
   );
+});
+
+test('Drei Kachelarten: Zeile, Kennzahl und Fokus mit festen Massen aus Tokens', () => {
+  const tokens = read('src/kadetten/css/tokens.css'),
+    views = read('src/kadetten/css/views.css');
+  for (const t of ['--tile-h: 76px', '--kn-h: 96px', '--tile-pad: var(--s-4)']) assert.ok(tokens.includes(t), t);
+  assert.doesNotMatch(views, /min-height: 76px/, 'Zeilenhöhe nur über --tile-h');
+  assert.doesNotMatch(views, /\.prog-row|\.prog-leg|\.stats\.q3/, 'alte Sonderkacheln sind entfernt');
+  // Mein Bereich: Quiz als drei Kennzahl-Kacheln, Sammelkarten als Zeile mit Balken
+  const mein = render('#/ich');
+  assert.equal(mein.querySelectorAll('.kn-row > .card.kn').length, 3);
+  const karten = mein.querySelector('a.card.rowcard.tile[href="#/sammlung"]');
+  assert.ok(karten, 'Sammelkarten als Zeile');
+  assert.match(karten.textContent, /Sammelkarten/);
+  assert.ok(karten.querySelector('.sub-bar i'), 'dünner Fortschrittsbalken');
+  assert.equal(mein.querySelector('.prog'), null);
+  assert.equal(mein.querySelector('#m-dich'), null, '«Für dich» entfällt: Lieblingsspieler und Einstellungen stehen unter Einstellungen');
+  assert.ok(mein.querySelector('.band-acts a[href="#/ich/einstellungen"]'), 'Einstellungen bleiben über das Zahnrad erreichbar');
+  // Startseite: Zeilen haben dieselbe Klasse und damit dieselbe Mindesthöhe
+  const start = render('#/');
+  for (const el of start.querySelectorAll('a.rowcard.tile, a.quizcard.tile, .card.list.tile')) assert.ok(el.classList.contains('tile'));
 });

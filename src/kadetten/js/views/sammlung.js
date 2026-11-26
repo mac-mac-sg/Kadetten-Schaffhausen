@@ -1,12 +1,11 @@
 // «Mein Bereich» mit Quiz-Bilanz und Sammelkarten, die Sammlung, die Kartenansicht und neue Karten.
 import {recapTeaser} from './rueckblick.js';
-import {seasonOver} from '../rueckblick.js';
 import {cartCount} from '../shop.js';
 import {shopTile} from './shop.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {LOGO, topBar, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips, gameRow} from './parts.js';
+import {LOGO, topBar, subBand, backLink, sectionHead, listRow, notice, chips, gameRow} from './parts.js';
 import {hasScore, ownGames, kickoff} from '../logic.js';
 import {tipPoints} from '../moments.js';
 import {withFinished} from '../match.js';
@@ -151,12 +150,21 @@ function myMatchday({input, state, now}) {
   </section>`;
 }
 
+/** Zeile «Sammelkarten»: Anzahl Legenden und Spezialkarten als kurzer Satz. */
+function rarityText(prog) {
+  const count = r => {
+    const arts = ARTS.filter(([, , x]) => x === r).map(([id]) => id);
+    return [arts.reduce((n, a) => n + prog.per[a].have, 0), arts.reduce((n, a) => n + prog.per[a].total, 0)];
+  };
+  const [legend, spec] = [count('legende'), count('spezial')];
+  return `${legend[0]} ${RARITY_LABEL.legende} · ${spec[0]} ${RARITY_LABEL.spezial}`;
+}
+
 export function renderMein({state, now, ui = {}}) {
   const input = sammelInput(state),
     open = pending(input),
     prog = progress(),
     quiz = quizBilanz(input.answers, now),
-    fav = playerByNumber(favourite()),
     latest = recent(3, input.games);
   const gained = open.reduce((n, r) => n + (r.fixed?.length || 0) + (r.pick || 0), 0);
   return html`${topBar('Mein Bereich', 'Spieltag, Quiz und Sammlung', html`<a class="icb shop-cart" href="${cartCount() ? href.warenkorb() : href.shop()}" aria-label="${cartCount() ? `Warenkorb, ${cartCount()} Artikel` : 'Fanshop'}">${icon('bag', 22)}${cartCount() ? html`<i class="num" aria-hidden="true">${cartCount()}</i>` : ''}</a><a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
@@ -171,21 +179,13 @@ export function renderMein({state, now, ui = {}}) {
     }
     ${recapTeaser(state.data?.games, now)}
     <section class="sec" aria-labelledby="m-quiz">${sectionHead('Quiz der Woche', 'Zum Quiz', href.quiz(), 'm-quiz')}
-      <div class="card stats q3">
-        <span class="stat"><span class="v num">${quiz.streak}</span><span class="k">${quiz.streak === 1 ? 'Woche' : 'Wochen'} in Folge</span></span>
-        <span class="stat"><span class="v num">${quiz.quote === null ? '–' : quiz.quote + ' %'}</span><span class="k">richtig beantwortet</span></span>
-        <span class="stat"><span class="v num">${quiz.perfect}</span><span class="k">${quiz.perfect === 1 ? 'Woche' : 'Wochen'} ohne Fehler</span></span>
+      <div class="kn-row">
+        <span class="card kn"><span class="v num">${quiz.streak}</span><span class="k">${quiz.streak === 1 ? 'Woche' : 'Wochen'} in Folge</span></span>
+        <span class="card kn"><span class="v num">${quiz.quote === null ? '–' : quiz.quote + ' %'}</span><span class="k">richtig beantwortet</span></span>
+        <span class="card kn"><span class="v num">${quiz.perfect}</span><span class="k">${quiz.perfect === 1 ? 'Woche' : 'Wochen'} ohne Fehler</span></span>
       </div></section>
     <section class="sec" aria-labelledby="m-karten">${sectionHead('Sammelkarten', 'Alle Karten', href.sammlung(), 'm-karten')}
-      <a class="card prog" href="${href.sammlung()}">
-        <span class="prog-row"><b class="num">${prog.have}</b><span>von ${prog.total} Karten${prog.moments ? ` · ${prog.moments} ${prog.moments === 1 ? 'Moment' : 'Momente'}` : ''}</span><em class="num">${Math.round((prog.have / prog.total) * 100)} %</em></span>
-        <span class="prog-bar" aria-hidden="true"><i data-style="${'width:' + Math.max(1, Math.round((prog.have / prog.total) * 100)) + '%'}"></i></span>
-        <span class="prog-leg">${['standard', 'spezial', 'legende'].map(r => {
-          const arts = ARTS.filter(([, , x]) => x === r).map(([id]) => id);
-          const have = arts.reduce((n, a) => n + prog.per[a].have, 0),
-            total = arts.reduce((n, a) => n + prog.per[a].total, 0);
-          return html`<span><i class="r-${r}"></i>${RARITY_LABEL[r]} <b class="num">${have}/${total}</b></span>`;
-        })}</span></a>
+      <a class="card rowcard tile" href="${href.sammlung()}"><b class="fig qno num">${prog.have}</b><span class="grow"><span class="t">Sammelkarten</span><span class="s">von ${prog.total} · ${rarityText(prog)}</span><span class="sub-bar" aria-hidden="true"><i data-style="${'width:' + Math.max(1, Math.round((prog.have / prog.total) * 100)) + '%'}"></i></span></span>${icon('go')}</a>
       ${latest.length ? html`<div class="sk-row${ui.enter ? ' enter' : ''}">${latest.map(c => cardFront(c, {size: 'sm'}))}</div>` : ''}
       <p class="fine pad-top">Karten gibt es für das Quiz der Woche, für Tipps, für Heimspiele in der Halle und wenn du ein Spiel live in der App verfolgst.</p>
     </section>
@@ -198,21 +198,6 @@ export function renderMein({state, now, ui = {}}) {
           ['aufstellungen', 'Aufstellungen', 'Abwehr, Angriff und Positionen im Feldbild'],
           ['spielzuege', 'Spielzüge', 'Schritt für Schritt erklärt']
         ].map(([id, title, sub]) => listRow({title, sub, link: href.wissen(id), lead: html`<span class="lead">${icon('book')}</span>`}))}
-      </div></section>
-    <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
-      <div class="card list">
-        ${listRow({title: 'Lieblingsspieler', sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken', link: fav ? href.spieler(fav.number) : href.team(), lead: html`<span class="lead">${icon('star')}</span>`})}
-        ${
-          seasonOver(state.data?.games || [], now)
-            ? ''
-            : listRow({
-                title: 'Saisonrückblick',
-                sub: 'Kommt nach dem letzten Spiel. Zwischenstand ansehen',
-                link: href.rueckblick(),
-                lead: html`<span class="lead">${icon('star')}</span>`
-              })
-        }
-        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
       </div></section>`;
 }
 

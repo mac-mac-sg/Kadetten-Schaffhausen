@@ -256,6 +256,16 @@ test('KI-Vorschau: der Text der KI wird unverändert übernommen (keine inhaltli
   assert.ok(calls.includes('kadetten'));
 });
 
+test('Ohne KI wird eine bestehende KI-Vorschau durch den sachlichen Text ersetzt', async () => {
+  const bucket = memBucket();
+  const headToHead = async () => ({games: [duel]});
+  await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter([]), now: NOW});
+  assert.equal(JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).generator, 'ki');
+  const r = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, now: new Date(NOW.getTime() + 3600000)});
+  assert.ok(r.written >= 1);
+  assert.equal(JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).generator, 'daten', 'KI-Text ist ersetzt');
+});
+
 test('KI-Vorschau: nur technische Regeln des Datendienstes gelten; sonst, bei Ausfall oder ohne KI bleibt der sachliche Text', async () => {
   const headToHead = async () => ({games: [duel]});
   const run = async texts => {

@@ -11,7 +11,6 @@ import {runRefresh} from '../server/refresh-run.mjs';
 import {kvRestStore} from './lib/kv-rest-store.mjs';
 import {syncProgrammes} from './lib/programmes-source.mjs';
 import {syncPreviews} from './lib/preview-sync.mjs';
-import {makeRewriter, makeReportWriter} from './lib/preview-rewrite.mjs';
 import {syncEhfArchive, syncQhlReports} from './lib/ehf-archive.mjs';
 import {getHeadToHead, getRecentGames} from '../server/live.mjs';
 import {refreshEhlResults} from './lib/ehl-results.mjs';
@@ -53,8 +52,8 @@ export async function main({
   programmeFetch = programmeHttp,
   previewDuels = getHeadToHead,
   previewRecent = getRecentGames,
-  rewrite = makeRewriter(env),
-  reportWriter = makeReportWriter(env),
+  rewrite = null, // KI-Texte für Vorschau und Rückblick sind abgeschaltet (zu allgemein); es entstehen nur die sachlichen Texte
+  reportWriter = null,
   ehfFetch = fetch
 } = {}) {
   const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;

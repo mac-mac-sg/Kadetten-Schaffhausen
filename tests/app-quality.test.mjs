@@ -77,8 +77,8 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; di
   };
   const out = dom(renderSpiel({...previewCtx, route: {id: 'next'}, ui: {backTarget: '#/saison'}}));
   const headings = [...out.querySelectorAll('h2')].map(h => h.textContent);
-  assert.ok(headings.indexOf('Ausgangslage') < headings.indexOf('Vorschau'));
-  assert.ok(headings.indexOf('Vorschau') >= 0 && headings.indexOf('Vorschau') < headings.indexOf('Mein Tipp'));
+  assert.ok(headings.indexOf('Ausgangslage') >= 0 && headings.indexOf('Ausgangslage') < headings.indexOf('Mein Tipp'));
+  assert.equal(headings.indexOf('Vorschau'), -1, 'kein Vorschautext mehr');
   const start = dom(renderJetzt(previewCtx));
   const startHeadings = [...start.querySelectorAll('h2')].map(h => h.textContent);
   assert.equal(startHeadings.indexOf('Vorschau'), -1, 'kein abgeschnittener Vorschautext auf der Startseite');
@@ -87,6 +87,27 @@ test('Vorschau zeigt QHL-Form und steht vor «Mein Tipp» auf der Spielseite; di
   assert.equal(form.querySelector('[role="img"]').getAttribute('aria-label'), 'Form: Sieg');
   assert.doesNotMatch(form.textContent, /neuestes zuerst/, 'keine erklärenden Sätze');
   assert.equal(out.querySelector('[data-route-back]').getAttribute('href'), '#/saison');
+});
+
+test('Vorschau- und Rückblick-Texte erscheinen nicht mehr, auch wenn der Datendienst sie liefert', () => {
+  for (const generator of ['ki', 'daten', undefined]) {
+    const out = dom(
+      renderSpiel({
+        ...ctx,
+        now: Date.parse('2026-11-11T14:30:00Z'),
+        load: key =>
+          key === 'preview:next' ? {status: 'ready', value: {generator, paragraphs: ['Text zur Vorschau.']}} : {status: 'error'},
+        route: {id: 'next'},
+        ui: {}
+      })
+    );
+    assert.equal(
+      [...out.querySelectorAll('h2')].some(h => h.textContent === 'Vorschau'),
+      false,
+      String(generator)
+    );
+    assert.doesNotMatch(out.body.textContent, /Text zur Vorschau/, String(generator));
+  }
 });
 
 test('Torhüter eröffnet mit Fangquote und Paraden, weist drei fehlende Berichte aus und priorisiert keine Tore', () => {
