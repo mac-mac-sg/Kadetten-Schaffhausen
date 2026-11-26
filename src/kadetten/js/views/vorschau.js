@@ -1,7 +1,7 @@
 // Bausteine der Spielvorschau: Aufmacher, «Worum geht es?» im Cup und Anreise zu Auswärtsspielen (Logik in js/vorschau.js).
 import {html, raw, escapeHtml} from '../text.js';
 import {icon} from '../icons.js';
-import {sectionHead, kpis} from './parts.js';
+import {sectionHead, kpis, venueInfo} from './parts.js';
 
 /** Aufmacher: Schlagzeile als Satz mit drei Fakten als schräge Marken. */
 export function leadBlock(story) {
@@ -42,10 +42,13 @@ const EU_OUTLINE =
   'M-70 264L-74 233L-67 180L-72 160L14 155L21 110L-19 70L17 65L37 48L53 27L73 19L87 -7L116 -17L134 -26L132 -49L148 -78L157 -60L161 -32L197 -26L249 -39L278 -48L284 -85L319 -99L359 -119L394 -128L394 119L379 131L366 144L357 178L340 196L313 201L301 206L301 246L296 272L284 267L278 243L261 207L260 182L249 170L226 153L209 133L197 122L192 116L177 122L179 139L192 151L202 175L220 180L249 207L234 224L227 240L217 246L219 219L216 211L197 199L180 184L157 162L145 143L128 146L110 160L90 155L72 158L71 172L46 192L31 223L27 252L9 269L-27 280L-38 269L-51 260ZM-29 42L51 22L54 -5L32 -27L14 -56L12 -85L-6 -104L-29 -102L-35 -68L-23 -42L-2 -37L-20 -14L-14 2L-26 14L0 20Z';
 const reduceMotion = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
-/** «Die Reise»: Strecke Schaffhausen – Spielort. Schweiz hell mit Umriss, Europa dunkel als Punktkarte. Linie und Punkt laufen in Schleife. */
-export function reiseBlock(route) {
-  if (!route) return '';
-  const {kind, view, from, to, path, name, km, hall} = route,
+/** «Die Reise»: Karte, Spielort (Halle mit Foto, Ort), Distanz und Knöpfe in einer Kachel.
+ * Schweiz hell mit Umriss, Europa dunkel als Punktkarte; Linie und Punkt laufen in Schleife.
+ * Knöpfe: Route und ÖV, wo die Anreise bekannt ist (travel), sonst «In Karten öffnen». */
+export function reiseBlock(route, {game, travel} = {}) {
+  const venue = venueInfo(game?.venue);
+  if (!route || !venue) return '';
+  const {kind, view, from, to, path, name, km} = route,
     still = reduceMotion(),
     label = `Karte: Reise von Schaffhausen nach ${name}, ${km} Kilometer Luftlinie`;
   const move = still
@@ -65,9 +68,18 @@ export function reiseBlock(route) {
     <text class="rz-name" x="${from.x - 14}" y="${from.y - 12}" text-anchor="end">Schaffhausen</text>
     <text class="rz-name" x="${to.x + (kind === 'ch' ? 15 : 0)}" y="${to.y + (kind === 'ch' ? 24 : 29)}" text-anchor="${kind === 'ch' ? 'start' : 'middle'}">${escapeHtml(name)}</text>
   </svg>`);
+  const actions = travel
+    ? html`<a class="btn pri" href="${travel.route}" target="_blank" rel="noopener noreferrer">${icon('ext')}Route planen</a>
+        <a class="btn" href="${travel.transit}" target="_blank" rel="noopener noreferrer">${icon('ext')}ÖV-Verbindung</a>`
+    : html`<a class="btn pri" href="${venue.url}" target="_blank" rel="noopener noreferrer">${icon('ext')}In Karten öffnen</a>`;
   return html`<section class="sec" aria-labelledby="g-reise">${sectionHead('Die Reise', '', '', 'g-reise')}
     <div class="card reise ${kind}">${svg}
-      <p class="rz-foot"><span class="rz-km num">${km}<small>km</small></span>
-      <span class="rz-t"><b>Luftlinie nach ${name}</b><span>${hall}</span></span></p>
+      <div class="rz-ort">${
+        venue.image
+          ? html`<img class="ort-img" src="${venue.image}" alt="" width="96" height="72" loading="lazy" decoding="async">`
+          : html`<span class="lead">${icon('pin')}</span>`
+      }<span class="rz-t"><b>${venue.name}</b>${venue.place ? html`<span>${venue.place}</span>` : ''}</span>
+        <span class="rz-km num">${km}<small>km</small><em>Luftlinie</em></span></div>
+      <div class="rz-act">${actions}</div>
     </div></section>`;
 }

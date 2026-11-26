@@ -138,6 +138,7 @@ function vorschau({game, data, load, api, now}) {
       ? API_ORIGIN + programme.value.pdfPath
       : null;
   const p = preview?.value;
+  const reise = routeFor(game) && venueInfo(game.venue) ? routeFor(game) : null;
   const ownLast = ownGames(data.games)
     .filter(g => hasScore(g) && kickoff(g) < kickoff(game))
     .reverse()
@@ -156,9 +157,7 @@ function vorschau({game, data, load, api, now}) {
   return html`
     ${leadBlock(lead)}
     ${isSwissCup(game) ? cupStakes() : ''}
-    ${reiseBlock(routeFor(game))}
-    ${spielort(game)}
-    ${anreiseBlock(travelInfo(game))}
+    ${reise ? reiseBlock(reise, {game, travel: travelInfo(game)}) : html`${spielort(game)}${anreiseBlock(travelInfo(game))}`}
     <section class="sec" aria-labelledby="g-lage">${sectionHead('Ausgangslage', '', '', 'g-lage')}
       <div class="card list">
         ${listRow({

@@ -450,7 +450,9 @@ test('Spielvorschau im Cup auswärts: Aufmacher, Weiter oder Aus, Anreise, Gewin
   assert.equal(await page.locator('.lead-h').textContent(), 'Wer gewinnt, steht in der nächsten Runde.');
   assert.ok((await page.locator('.lead-fact').allTextContents()).some(t => /^Heim: Kriens-Luzern$/.test(t.trim())));
   assert.deepEqual(await page.locator('section[aria-labelledby="g-stake"] .kz-t .v').allTextContents(), ['Weiter', 'Aus']);
-  const links = page.locator('section[aria-labelledby="g-anreise"] .anr a');
+  assert.equal(await page.locator('#g-ort, #g-anreise').count(), 0, 'Spielort und Anreise stehen in der Kachel «Die Reise»');
+  assert.match(await page.locator('.card.reise .rz-t').textContent(), /Pilatus Arena/);
+  const links = page.locator('.card.reise .rz-act a');
   assert.equal(await links.count(), 2);
   assert.match(await links.nth(0).getAttribute('href'), /travelmode=driving$/);
   assert.match(await links.nth(1).getAttribute('href'), /travelmode=transit$/);
@@ -461,7 +463,7 @@ test('Spielvorschau im Cup auswärts: Aufmacher, Weiter oder Aus, Anreise, Gewin
   // Heimspiel in der QHL: Aufmacher aus den Daten, keine Anreise, kein Cup-Einsatz
   const league = await open('/spiel/508403');
   await league.waitForSelector('.lead-h');
-  assert.equal(await league.locator('#g-anreise').count(), 0);
+  assert.equal(await league.locator('#g-anreise, #g-reise').count(), 0);
   assert.equal(await league.locator('#g-stake').count(), 0);
   await league.close();
 });
