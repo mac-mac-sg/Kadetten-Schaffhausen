@@ -385,9 +385,9 @@ Umsetzung: `parentHash`, `ancestors`, `switchesSibling` in `router.js`, Verlaufs
 
 ## Spielvorschau: «Die Reise» (26. November 2026)
 
-Bei noch nicht gespielten Auswärtsspielen zeigt die Vorschau unter dem Aufmacher die Strecke von Schaffhausen zum Spielort als Luftlinie. Konzept und Varianten: Design-Canvas «Reise zum Gegner».
+Bei noch nicht gespielten Auswärtsspielen zeigt die Vorschau unter dem Aufmacher die Strecke von Schaffhausen zum Spielort als Luftlinie. Die Kachel vereint Karte, Spielort (Hallenfoto, Name, Ort), Distanz und Knöpfe; die Blöcke «Spielort» und «Anreise» entfallen dann. Knöpfe: Route und ÖV, wo die Anreise bekannt ist (QHL und Cup in der Schweiz), sonst «In Karten öffnen». Heimspiele und unbekannte Orte zeigen weiter nur «Spielort» (und «Anreise»). Konzept und Varianten: Design-Canvas «Reise zum Gegner».
 
 - Schweizer Spielorte: helle Kachel mit Umriss der Schweiz. Alle anderen Orte (Europacup, Testspiele im Ausland): dunkle Punktkarte von Europa mit Bogen.
 - `src/kadetten/js/reise.js`: Hallenorte mit Koordinaten (fest im Code, kein Kartendienst), Luftlinie (Haversine), Strecke als Bogen. Unbekannter Ort, Heimspiel oder gespieltes Spiel: keine Kachel. Neuer Spielort = neue Zeile in `PLACES`.
 - `views/vorschau.js` (`reiseBlock`): Inline-SVG mit Linie und Punkt in Schleife. Bei «Bewegung reduzieren» steht die fertige Linie ohne Animation.
-- Die App zeigt keine Fahrzeit. Route und ÖV bleiben im Block «Anreise».
+- Die App zeigt keine Fahrzeit; die Karten-App rechnet sie.

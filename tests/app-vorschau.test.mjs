@@ -114,12 +114,19 @@ test('Reise: Luftlinie, Karte je nach Ort, nichts bei Heimspiel, Resultat oder u
   assert.equal(routeFor(game('X', OWN, 'QHL', {venue: ''})), null);
   assert.equal(distanceKm(HOME, HOME), 0);
   for (const r of [thun, euro]) assert.match(r.path, /^M[-\d. ]+Q[-\d. ]+ [-\d. ]+ [-\d. ]+$/);
-  const out = String(reiseBlock(thun));
-  assert.match(out, /Die Reise[\s\S]*129[\s\S]*Luftlinie nach Thun[\s\S]*Thun Lachen/);
+  const thunGame = game('Wacker Thun', OWN, 'QHL', {venue: 'Thun Lachen, Thun'});
+  const out = String(reiseBlock(thun, {game: thunGame, travel: travelInfo(thunGame)}));
+  assert.match(out, /Die Reise[\s\S]*Lachen[\s\S]*129[\s\S]*Route planen[\s\S]*ÖV-Verbindung/);
+  assert.doesNotMatch(out, /In Karten öffnen/, 'mit bekannter Anreise Route und ÖV statt Kartenlink');
   assert.match(out, /animateMotion/, 'Linie und Punkt bewegen sich');
-  assert.doesNotMatch(out, /style=|https?:\/\//, 'keine Stilattribute, keine externen Adressen');
-  assert.match(String(reiseBlock(euro)), /rz-dots[\s\S]*1393/);
+  assert.doesNotMatch(out, /style=/, 'keine Stilattribute');
+  assert.doesNotMatch(out.match(/<svg class="rz-map"[\s\S]*?<\/svg>/)[0], /https?:\/\//, 'Karte ohne externe Adressen');
+  const euroGame = game('CSM Bucuresti', OWN, 'EHL', {venue: 'Sala Polivalenta, București'});
+  const dark = String(reiseBlock(euro, {game: euroGame, travel: travelInfo(euroGame)}));
+  assert.match(dark, /rz-dots[\s\S]*Sala Polivalenta[\s\S]*1393[\s\S]*In Karten öffnen/);
+  assert.doesNotMatch(dark, /Route planen/, 'Europacup ohne Route und ÖV');
   assert.equal(reiseBlock(null), '');
+  assert.equal(reiseBlock(thun, {game: {}}), '');
 });
 
 test('Ansicht: Aufmacher mit Marken, Cup-Einsatz ohne Remis, Anreise mit sicheren Links', () => {

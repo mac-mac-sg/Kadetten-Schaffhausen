@@ -72,7 +72,6 @@ export function routeFor(game) {
     kind,
     view: {w: view.w, h: view.h},
     name,
-    hall: String(game.venue).split(',')[0].trim(),
     km: distanceKm(HOME, {lon, lat}),
     from,
     to,
