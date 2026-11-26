@@ -408,6 +408,6 @@ Umgesetzt: Quiz-Bilanz in «Ich» als drei Kennzahl-Kacheln, Sammelkarten als Ze
 
 Konzept: Design-Canvas «Start je Spielzustand». Die Titelseite kannte die vier Zustände schon (`jetztState`: Alltag, Spieltag, Live, Nach dem Spiel); neu ist, dass jeder Zustand nur einen Fokus zeigt.
 
-- Neuigkeiten erscheinen nur noch im Alltag, als eine Zeile mit der neuesten Meldung («Neues aus dem Verein», Link «Alle News») am Ende der Seite. Am Spieltag, live und nach dem Spiel fehlen sie. Die Bildgeschichte der Titelseite entfällt; weitere Meldungen stehen im Reiter «News».
-- Alltag: nächstes Spiel, Saison, Letztes Resultat, Quiz, neueste Meldung.
+- Neuigkeiten (grosse Bildgeschichte, «Kurz aus dem Verein») erscheinen nur im Alltag. Am Spieltag, live und nach dem Spiel fehlen sie.
+- Alltag: nächstes Spiel, Neuigkeiten, Saison, Letztes Resultat, Quiz.
 - Spieltag, Live und Nach dem Spiel sind sonst unverändert (Spielkarte, Tipp, Ausgangslage bzw. Live-Tabelle und Werfer bzw. Tabelle danach und nächstes Spiel).

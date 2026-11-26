@@ -132,7 +132,7 @@ for (const [name, moment] of Object.entries(MOMENTS)) {
 test('Jetzt zeigt je Zustand das Passende', () => {
   assert.match(
     render('#/', MOMENTS.alltag),
-    /band-home[\s\S]*Nächstes Spiel[\s\S]*Unsere Saison[\s\S]*Letztes Resultat[\s\S]*Quiz der Woche[\s\S]*Neues aus dem Verein/
+    /band-home[\s\S]*Nächstes Spiel[\s\S]*Neues aus dem Verein[\s\S]*Unsere Saison[\s\S]*Letztes Resultat[\s\S]*Quiz der Woche/
   );
   assert.match(render('#/', MOMENTS.spieltag), /noch 3:45 h[\s\S]*Push zum Anpfiff[\s\S]*Ausgangslage/);
   const live = render('#/', MOMENTS.live);
