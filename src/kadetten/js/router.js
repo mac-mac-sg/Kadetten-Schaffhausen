@@ -140,6 +140,83 @@ export const href = {
   artikel: id => '#/news/' + encodeURIComponent(id)
 };
 
+const norm = hash => (hash && hash !== '#' ? hash : '#/');
+export const sameHash = (a, b) => norm(a) === norm(b);
+const ROOT_VIEWS = ['jetzt', 'spielplan', 'tabellen', 'statistik', 'team', 'mein'];
+/** Hauptreiter der Navigationsleiste (Start, Spiele, Tabelle, Kader, Ich). */
+export const isRootHash = hash => ROOT_VIEWS.includes(parseRoute(norm(hash)).view);
+
+/**
+ * Übergeordnete Ansicht in der Menüstruktur, auf die «Zurück» immer führt (null: Start, dort verlässt «Zurück» die App).
+ * origin: Adresse, von der aus ein Spiel geöffnet wurde (Start, Spielplan, Spielerprofil …); sonst der Spielplan.
+ */
+export function parentHash(hash, origin = null) {
+  const r = parseRoute(norm(hash));
+  switch (r.view) {
+    case 'jetzt':
+      return null;
+    case 'spielplan':
+    case 'tabellen':
+    case 'statistik':
+    case 'team':
+    case 'mein':
+    case 'news':
+    case 'quiz':
+    case 'rueckblick':
+    case 'start':
+      return href.jetzt();
+    case 'artikel':
+      return href.news();
+    case 'spiel':
+      return r.tab === 'wahl' || r.tab === 'kurz' ? href.spiel(r.id) : origin || href.saison();
+    case 'spieler':
+    case 'vergleich':
+      return href.team();
+    case 'verein':
+      return r.tab ? href.verein() : href.team();
+    case 'ich':
+    case 'sammlung':
+    case 'neu':
+    case 'shop':
+      return href.ich();
+    case 'datenschutz':
+      return href.einstellungen();
+    case 'karte':
+      return href.sammlung();
+    case 'produkt':
+    case 'warenkorb':
+      return href.shop();
+    case 'kasse':
+      return r.step === 'uebersicht' ? href.kasse('adresse') : r.step === 'adresse' ? href.kasse() : href.warenkorb();
+    case 'wissen':
+      return r.id ? href.wissen(r.chapter) : href.ich();
+    default:
+      return href.jetzt();
+  }
+}
+
+/** Kette der übergeordneten Ansichten von oben (Start) bis zum direkten Elternteil, ohne die Ansicht selbst. */
+export function ancestors(hash, origin = null) {
+  const chain = [];
+  let up = parentHash(hash, origin);
+  while (up && !chain.some(h => sameHash(h, up)) && chain.length < 8) {
+    chain.unshift(up);
+    up = parentHash(up);
+  }
+  return chain;
+}
+
+/** Wechsel zwischen gleichrangigen Ansichten ersetzt den Verlaufseintrag: Hauptreiter untereinander und Reiter eines Spiels. */
+export function switchesSibling(from, to) {
+  const a = parseRoute(norm(from)),
+    b = parseRoute(norm(to));
+  if (a.view === 'jetzt') return false;
+  if (isRootHash(from) && isRootHash(to)) return true;
+  return (
+    a.view === 'spiel' && b.view === 'spiel' && a.id === b.id && !['wahl', 'kurz'].includes(a.tab) && !['wahl', 'kurz'].includes(b.tab)
+  );
+}
+
 /** Sitzungsnavigation: echte History-Einträge behalten Herkunft und Scrollposition.
  * Ein Direktlink hat keine Herkunft und fällt auf die normale Bereichsadresse zurück.
  */
@@ -164,13 +241,54 @@ export function createNavigation(session = String(Date.now()) + Math.random().to
       }
       const previous = current;
       const game = gameId(hash);
-      current = {id: session + ':' + ++sequence, hash, scroll: 0, restore: false, autoNext: parseRoute(hash).view === 'spielplan'};
+      current = {
+        id: session + ':' + ++sequence,
+        hash,
+        scroll: 0,
+        restore: false,
+        autoNext: parseRoute(hash).view === 'spielplan',
+        prev: previous?.id || null
+      };
       if (game && previous) current.origin = gameId(previous.hash) === game ? previous.origin : previous;
       entries.set(current.id, current);
       return current;
     },
     backTarget() {
       return current?.origin?.hash || null;
+    },
+    /** Wie viele Schritte zurück liegt eine Adresse im Verlauf dieses Zweigs? null, wenn sie dort nicht vorkommt. */
+    distanceTo(hash) {
+      let e = current,
+        k = 0;
+      while (e?.prev) {
+        e = entries.get(e.prev);
+        k++;
+        if (e && sameHash(e.hash, hash)) return k;
+      }
+      return null;
+    },
+    /** Eintrag ersetzt den bisherigen: er übernimmt dessen Vorgänger statt ihn selbst. */
+    replaceCurrent() {
+      if (current?.prev !== undefined) current.prev = entries.get(current.prev)?.prev ?? null;
+    },
+    /** Verlauf für einen Direktaufruf anlegen (Eltern, dann die Ansicht selbst): liefert die Einträge von oben nach unten. */
+    seed(hashes) {
+      const list = hashes.map((hash, depth) => ({
+        id: session + ':' + ++sequence,
+        hash,
+        scroll: 0,
+        restore: true,
+        autoNext: false,
+        depth,
+        prev: null
+      }));
+      list.forEach((entry, i) => {
+        entry.prev = list[i - 1]?.id || null;
+        entries.set(entry.id, entry);
+      });
+      const last = list.at(-1);
+      if (last && gameId(last.hash) && list.length > 1) last.origin = list.at(-2);
+      return list;
     },
     backDistance() {
       if (!current?.origin) return null;

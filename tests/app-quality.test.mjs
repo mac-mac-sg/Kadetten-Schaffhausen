@@ -152,3 +152,66 @@ test('«Ich»: Aktualitätswerte stehen eingeklappt unter dem Datenschutz, die K
   assert.match(late.querySelector('details#i-fresh').textContent, /Verzögert/);
   assert.equal(ich({data}).querySelector('details#i-fresh summary .s').textContent, 'Zeitpunkt der letzten Aktualisierung');
 });
+
+test('Zurück führt in die Menüstruktur: Elternansichten, Direktaufruf, gleichrangige Wechsel, Rückweg im Verlauf', async () => {
+  const {parentHash, ancestors, switchesSibling, isRootHash, createNavigation: create} = await import('../src/kadetten/js/router.js');
+  assert.equal(parentHash('#/'), null, 'vom Start verlässt Zurück die App');
+  for (const tab of ['#/saison', '#/statistik', '#/team', '#/ich', '#/news', '#/quiz']) assert.equal(parentHash(tab), '#/', tab);
+  assert.equal(parentHash('#/team/10'), '#/team');
+  assert.equal(parentHash('#/team/vergleich/10/7'), '#/team');
+  assert.equal(parentHash('#/news/bukarest'), '#/news');
+  assert.equal(parentHash('#/ich/einstellungen'), '#/ich');
+  assert.equal(parentHash('#/ich/datenschutz'), '#/ich/einstellungen');
+  assert.equal(parentHash('#/shop/33928'), '#/shop');
+  assert.equal(parentHash('#/kasse/uebersicht'), '#/kasse/adresse');
+  assert.equal(parentHash('#/kasse/adresse'), '#/kasse');
+  assert.equal(parentHash('#/kasse'), '#/warenkorb');
+  assert.equal(parentHash('#/sammlung/abc'), '#/sammlung');
+  assert.equal(parentHash('#/wissen'), '#/ich');
+  assert.equal(parentHash('#/wissen/regeln/7m'), '#/wissen');
+  assert.equal(parentHash('#/wissen/aufstellungen/abwehr-6-0'), '#/wissen/aufstellungen');
+  assert.equal(parentHash('#/verein/geschichte'), '#/verein');
+  assert.equal(parentHash('#/verein'), '#/team');
+  assert.equal(parentHash('#/spiel/1/bericht'), '#/saison', 'ohne Herkunft: Spielplan');
+  assert.equal(parentHash('#/spiel/1/bericht', '#/team/10'), '#/team/10', 'mit Herkunft dorthin');
+  assert.equal(parentHash('#/spiel/1/wahl'), '#/spiel/1');
+  assert.deepEqual(ancestors('#/spiel/1'), ['#/', '#/saison']);
+  assert.deepEqual(ancestors('#/ich/datenschutz'), ['#/', '#/ich', '#/ich/einstellungen']);
+  assert.deepEqual(ancestors('#/'), []);
+  assert.ok(isRootHash('#/team') && isRootHash('') && !isRootHash('#/team/10'));
+  assert.equal(switchesSibling('#/saison', '#/team'), true, 'Hauptreiter ersetzen sich');
+  assert.equal(switchesSibling('#/', '#/saison'), false, 'vom Start aus bleibt der Start darunter');
+  assert.equal(switchesSibling('#/spiel/1/bericht', '#/spiel/1/live'), true, 'Reiter eines Spiels');
+  assert.equal(switchesSibling('#/spiel/1/bericht', '#/spiel/2/bericht'), false);
+  assert.equal(switchesSibling('#/team', '#/team/10'), false);
+
+  // Der Verlauf kennt den Weg zurück: Ein Ziel weiter unten wird durch «Zurück» erreicht, nicht durch einen neuen Eintrag.
+  const nav = create('chain');
+  const visit = hash => {
+    const prev = nav.current;
+    const entry = nav.enter(hash, null, 0);
+    if (!entry.restore) nav.setDepth((prev?.depth ?? -1) + 1);
+  };
+  visit('#/');
+  visit('#/team');
+  visit('#/team/10');
+  assert.equal(nav.distanceTo('#/team'), 1);
+  assert.equal(nav.distanceTo('#/'), 2);
+  assert.equal(nav.distanceTo('#/saison'), null);
+  // Ersetzter Eintrag übernimmt den Vorgänger des ersetzten.
+  const before = nav.current;
+  nav.enter('#/team/vergleich/10/7', null, 0);
+  nav.setDepth(before.depth);
+  nav.replaceCurrent();
+  assert.equal(nav.distanceTo('#/team'), 1);
+  // Direktaufruf: Eltern liegen schon darunter.
+  const deep = create('deep');
+  const list = deep.seed(['#/', '#/saison', '#/spiel/9']);
+  assert.deepEqual(
+    list.map(e => e.depth),
+    [0, 1, 2]
+  );
+  deep.enter('#/spiel/9', list[2].id, 0);
+  assert.equal(deep.backTarget(), '#/saison');
+  assert.equal(deep.distanceTo('#/'), 2);
+});
