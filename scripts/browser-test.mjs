@@ -164,12 +164,15 @@ test('Zurück: von jedem Hauptreiter zum Start, aus Unteransichten zur übergeor
   await page.click('nav.seg a[href$="/rueckblick"]');
   await settled(page, '#/spiel/508363/rueckblick');
   await back(page, '#/saison');
-  // Spiel von der Titelseite geöffnet, dann Hauptreiter «Kader»: Zurück führt zum Start, nicht zurück ins Spiel.
-  await page.goto(origin + '/#/');
+  assert.deepEqual(page.errors, []);
+  await page.close();
+});
+
+test('Zurück: Spiel von der Titelseite, dann Hauptreiter «Kader» führt zum Start, nicht zurück ins Spiel', async () => {
+  const page = await open('/');
   await page.locator('.hero-link.cover').click({position: {x: 20, y: 20}});
   await page.waitForFunction(() => location.hash.startsWith('#/spiel/'));
-  await page.click('nav.nav a[href="#/team"]').catch(() => {});
-  await page.evaluate(() => (location.hash = '#/team'));
+  await page.click('nav.nav a[href="#/team"]');
   await settled(page, '#/team');
   await back(page, '#/');
   assert.deepEqual(page.errors, []);
