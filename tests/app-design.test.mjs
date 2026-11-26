@@ -908,6 +908,8 @@ test('Drei Kachelarten: Zeile, Kennzahl und Fokus mit festen Massen aus Tokens',
   assert.match(karten.textContent, /Sammelkarten/);
   assert.ok(karten.querySelector('.sub-bar i'), 'dünner Fortschrittsbalken');
   assert.equal(mein.querySelector('.prog'), null);
+  assert.equal(mein.querySelector('#m-dich'), null, '«Für dich» entfällt: Lieblingsspieler und Einstellungen stehen unter Einstellungen');
+  assert.ok(mein.querySelector('.band-acts a[href="#/ich/einstellungen"]'), 'Einstellungen bleiben über das Zahnrad erreichbar');
   // Startseite: Zeilen haben dieselbe Klasse und damit dieselbe Mindesthöhe
   const start = render('#/');
   for (const el of start.querySelectorAll('a.rowcard.tile, a.quizcard.tile, .card.list.tile')) assert.ok(el.classList.contains('tile'));

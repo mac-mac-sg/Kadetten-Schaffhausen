@@ -1,12 +1,11 @@
 // «Mein Bereich» mit Quiz-Bilanz und Sammelkarten, die Sammlung, die Kartenansicht und neue Karten.
 import {recapTeaser} from './rueckblick.js';
-import {seasonOver} from '../rueckblick.js';
 import {cartCount} from '../shop.js';
 import {shopTile} from './shop.js';
 import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
-import {LOGO, topBar, subBand, backLink, sectionHead, listRow, playerByNumber, notice, chips, gameRow} from './parts.js';
+import {LOGO, topBar, subBand, backLink, sectionHead, listRow, notice, chips, gameRow} from './parts.js';
 import {hasScore, ownGames, kickoff} from '../logic.js';
 import {tipPoints} from '../moments.js';
 import {withFinished} from '../match.js';
@@ -166,7 +165,6 @@ export function renderMein({state, now, ui = {}}) {
     open = pending(input),
     prog = progress(),
     quiz = quizBilanz(input.answers, now),
-    fav = playerByNumber(favourite()),
     latest = recent(3, input.games);
   const gained = open.reduce((n, r) => n + (r.fixed?.length || 0) + (r.pick || 0), 0);
   return html`${topBar('Mein Bereich', 'Spieltag, Quiz und Sammlung', html`<a class="icb shop-cart" href="${cartCount() ? href.warenkorb() : href.shop()}" aria-label="${cartCount() ? `Warenkorb, ${cartCount()} Artikel` : 'Fanshop'}">${icon('bag', 22)}${cartCount() ? html`<i class="num" aria-hidden="true">${cartCount()}</i>` : ''}</a><a class="icb" href="${href.einstellungen()}" aria-label="Einstellungen">${icon('settings', 22)}</a>`)}
@@ -200,21 +198,6 @@ export function renderMein({state, now, ui = {}}) {
           ['aufstellungen', 'Aufstellungen', 'Abwehr, Angriff und Positionen im Feldbild'],
           ['spielzuege', 'Spielzüge', 'Schritt für Schritt erklärt']
         ].map(([id, title, sub]) => listRow({title, sub, link: href.wissen(id), lead: html`<span class="lead">${icon('book')}</span>`}))}
-      </div></section>
-    <section class="sec" aria-labelledby="m-dich">${sectionHead('Für dich', '', '', 'm-dich')}
-      <div class="card list">
-        ${listRow({title: 'Lieblingsspieler', sub: fav ? fav.name : 'Im Spielerprofil mit dem Stern merken', link: fav ? href.spieler(fav.number) : href.team(), lead: html`<span class="lead">${icon('star')}</span>`})}
-        ${
-          seasonOver(state.data?.games || [], now)
-            ? ''
-            : listRow({
-                title: 'Saisonrückblick',
-                sub: 'Kommt nach dem letzten Spiel. Zwischenstand ansehen',
-                link: href.rueckblick(),
-                lead: html`<span class="lead">${icon('star')}</span>`
-              })
-        }
-        ${listRow({title: 'Einstellungen', sub: 'Mitteilungen, Darstellung, Kalender', link: href.einstellungen(), lead: html`<span class="lead">${icon('settings')}</span>`})}
       </div></section>`;
 }
 
