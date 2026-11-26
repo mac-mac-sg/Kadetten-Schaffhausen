@@ -893,3 +893,22 @@ test('Milchglas: nur an fünf Stellen, nur mit Unterstützung, mit deckendem Rü
     'Alltag, Spieltag, Live, Nachspiel'
   );
 });
+
+test('Drei Kachelarten: Zeile, Kennzahl und Fokus mit festen Massen aus Tokens', () => {
+  const tokens = read('src/kadetten/css/tokens.css'),
+    views = read('src/kadetten/css/views.css');
+  for (const t of ['--tile-h: 76px', '--kn-h: 96px', '--tile-pad: var(--s-4)']) assert.ok(tokens.includes(t), t);
+  assert.doesNotMatch(views, /min-height: 76px/, 'Zeilenhöhe nur über --tile-h');
+  assert.doesNotMatch(views, /\.prog-row|\.prog-leg|\.stats\.q3/, 'alte Sonderkacheln sind entfernt');
+  // Mein Bereich: Quiz als drei Kennzahl-Kacheln, Sammelkarten als Zeile mit Balken
+  const mein = render('#/ich');
+  assert.equal(mein.querySelectorAll('.kn-row > .card.kn').length, 3);
+  const karten = mein.querySelector('a.card.rowcard.tile[href="#/sammlung"]');
+  assert.ok(karten, 'Sammelkarten als Zeile');
+  assert.match(karten.textContent, /Sammelkarten/);
+  assert.ok(karten.querySelector('.sub-bar i'), 'dünner Fortschrittsbalken');
+  assert.equal(mein.querySelector('.prog'), null);
+  // Startseite: Zeilen haben dieselbe Klasse und damit dieselbe Mindesthöhe
+  const start = render('#/');
+  for (const el of start.querySelectorAll('a.rowcard.tile, a.quizcard.tile, .card.list.tile')) assert.ok(el.classList.contains('tile'));
+});

@@ -80,6 +80,8 @@
   --glass-photo-edge: #ffffff33;
 
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px;
+  /* Drei Kachelarten (Fokus, Zeile, Kennzahl): feste Masse, siehe docs/kadetten-app.md */
+  --tile-h: 76px; --kn-h: 96px; --tile-pad: var(--s-4);
   --r-card: 12px; --r-tile: 8px; --r-ctl: 0px; --r-hero: 12px;
   --tap: 44px;
   --nav-h: 84px;
