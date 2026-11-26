@@ -2,6 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {parseHTML} from 'linkedom';
 import {streak, duelRecord, leadStory, travelInfo} from '../src/kadetten/js/vorschau.js';
+import {routeFor, distanceKm, HOME} from '../src/kadetten/js/reise.js';
+import {reiseBlock} from '../src/kadetten/js/views/vorschau.js';
 import {leadBlock, cupStakes, anreiseBlock} from '../src/kadetten/js/views/vorschau.js';
 import {standings} from '../src/kadetten/js/logic.js';
 
@@ -98,6 +100,26 @@ test('Anreise nur bei Auswärtsspielen in der Schweiz, mit Karten-Links', () => 
   assert.equal(travelInfo({...away, league: 'EHL'}), null, 'Europacup');
   assert.equal(travelInfo({...away, score: [20, 25]}), null, 'schon gespielt');
   assert.equal(travelInfo({...away, venue: ''}), null);
+});
+
+test('Reise: Luftlinie, Karte je nach Ort, nichts bei Heimspiel, Resultat oder unbekanntem Ort', () => {
+  const thun = routeFor(game('Wacker Thun', OWN, 'QHL', {venue: 'Thun Lachen, Thun'}));
+  assert.deepEqual([thun.kind, thun.name, thun.km], ['ch', 'Thun', 129]);
+  const euro = routeFor(game('CSM Bucuresti', OWN, 'EHL', {venue: 'Sala Polivalenta, București'}));
+  assert.deepEqual([euro.kind, euro.name, euro.km], ['eu', 'Bukarest', 1393]);
+  assert.equal(routeFor(game('Chambery Savoie Mont Blanc HB', OWN, 'EHL', {venue: 'Le Phare, Chambéry'})).km, 314);
+  assert.equal(routeFor(game(OWN, 'X', 'QHL', {venue: 'BBC Arena, Schaffhausen'})), null, 'Heimspiel');
+  assert.equal(routeFor(game('Wacker Thun', OWN, 'QHL', {venue: 'Thun Lachen, Thun', score: [20, 25]})), null, 'schon gespielt');
+  assert.equal(routeFor(game('X', OWN, 'QHL', {venue: 'Halle, Nirgendwo'})), null, 'unbekannter Ort');
+  assert.equal(routeFor(game('X', OWN, 'QHL', {venue: ''})), null);
+  assert.equal(distanceKm(HOME, HOME), 0);
+  for (const r of [thun, euro]) assert.match(r.path, /^M[-\d. ]+Q[-\d. ]+ [-\d. ]+ [-\d. ]+$/);
+  const out = String(reiseBlock(thun));
+  assert.match(out, /Die Reise[\s\S]*129[\s\S]*Luftlinie nach Thun[\s\S]*Thun Lachen/);
+  assert.match(out, /animateMotion/, 'Linie und Punkt bewegen sich');
+  assert.doesNotMatch(out, /style=|https?:\/\//, 'keine Stilattribute, keine externen Adressen');
+  assert.match(String(reiseBlock(euro)), /rz-dots[\s\S]*1393/);
+  assert.equal(reiseBlock(null), '');
 });
 
 test('Ansicht: Aufmacher mit Marken, Cup-Einsatz ohne Remis, Anreise mit sicheren Links', () => {

@@ -382,3 +382,12 @@ Titelseite: Die einzeiligen weissen Kacheln (Unsere Saison, Letztes Resultat, Ta
 - Direktaufruf einer Unteransicht (Mitteilung, geteilter Link): die übergeordneten Ansichten werden unter der Ansicht in den Verlauf gelegt (`seedDeepLink` in `shell.js`); ein Neuladen legt sie nicht noch einmal an.
 
 Umsetzung: `parentHash`, `ancestors`, `switchesSibling` in `router.js`, Verlaufskette (`prev`, `distanceTo`) in `createNavigation`, Klick- und `hashchange`-Behandlung in `shell.js`. Geprüft in `tests/app-quality.test.mjs` und mit echtem Verlauf in `scripts/browser-test.mjs`.
+
+## Spielvorschau: «Die Reise» (26. November 2026)
+
+Bei noch nicht gespielten Auswärtsspielen zeigt die Vorschau unter dem Aufmacher die Strecke von Schaffhausen zum Spielort als Luftlinie. Konzept und Varianten: Design-Canvas «Reise zum Gegner».
+
+- Schweizer Spielorte: helle Kachel mit Umriss der Schweiz. Alle anderen Orte (Europacup, Testspiele im Ausland): dunkle Punktkarte von Europa mit Bogen.
+- `src/kadetten/js/reise.js`: Hallenorte mit Koordinaten (fest im Code, kein Kartendienst), Luftlinie (Haversine), Strecke als Bogen. Unbekannter Ort, Heimspiel oder gespieltes Spiel: keine Kachel. Neuer Spielort = neue Zeile in `PLACES`.
+- `views/vorschau.js` (`reiseBlock`): Inline-SVG mit Linie und Punkt in Schleife. Bei «Bewegung reduzieren» steht die fertige Linie ohne Animation.
+- Die App zeigt keine Fahrzeit. Route und ÖV bleiben im Block «Anreise».
