@@ -35,7 +35,8 @@ import {liveHero, resultHero, previewHero, tipFor} from './jetzt.js';
 import {preScore, gewinnCard, gewinnLive} from './gewinnscore.js';
 import {isScored, isSwissCup, isHalftime} from '../gewinnscore.js';
 import {leadStory, travelInfo} from '../vorschau.js';
-import {leadBlock, cupStakes, anreiseBlock} from './vorschau.js';
+import {routeFor} from '../reise.js';
+import {leadBlock, cupStakes, anreiseBlock, reiseBlock} from './vorschau.js';
 
 // Laufendes Spiel: «Live» (Gewinnchance, Fan-Wahl, Teilen, Ticker) und «Statistik» (alle Werte). Die frühere «Übersicht»
 // zeigte dieselben Werte wie die Statistik noch einmal und entfällt.
@@ -155,6 +156,7 @@ function vorschau({game, data, load, api, now}) {
   return html`
     ${leadBlock(lead)}
     ${isSwissCup(game) ? cupStakes() : ''}
+    ${reiseBlock(routeFor(game))}
     ${spielort(game)}
     ${anreiseBlock(travelInfo(game))}
     <section class="sec" aria-labelledby="g-lage">${sectionHead('Ausgangslage', '', '', 'g-lage')}

@@ -866,6 +866,34 @@ a.sk:active { transform: scale(.97); }
 .anr-b { display: flex; gap: var(--s-2); margin-bottom: var(--s-3); }
 .anr-b .btn { flex: 1; margin: 0; padding: 0 var(--s-2); }
 
+/* Reise zum Gegner: Schweiz hell mit Umriss, Europa dunkel als Punktkarte (Tafeln A und B im Design-Canvas). */
+.card.reise { padding: 0; overflow: hidden; }
+.rz-map { display: block; width: 100%; height: auto; }
+.card.reise.ch .rz-map { background: var(--c-surface-2); padding: var(--s-2) var(--s-1) 0; box-sizing: border-box; }
+.card.reise.eu { background: var(--c-tile); color: var(--c-on-tile); }
+.rz-land { fill: var(--c-white); stroke: var(--c-line-strong); stroke-width: 2; stroke-linejoin: round; }
+.rz-pt { fill: var(--c-on-ink); }
+.rz-grid { opacity: 0.28; }
+.rz-base { fill: none; stroke: var(--c-accent-40); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1 7; }
+.rz-line { fill: none; stroke: var(--c-accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 1; }
+.eu .rz-line { stroke: var(--c-tile-hot); }
+.rz-dot { fill: var(--c-accent); stroke: var(--c-ink); stroke-width: 2; }
+.eu .rz-dot { fill: var(--c-white); stroke: var(--c-accent); }
+.rz-home { fill: var(--c-accent); stroke: var(--c-ink); stroke-width: 2.5; }
+.rz-away { fill: var(--c-ink); stroke: var(--c-white); stroke-width: 2.5; }
+.eu .rz-home { stroke: var(--c-tile); }
+.eu .rz-away { fill: var(--c-white); stroke: var(--c-accent); }
+.rz-name { font: italic 600 var(--fs-title)/1 var(--f-display); fill: var(--c-ink); }
+.eu .rz-name { fill: var(--c-on-tile); }
+.rz-foot { margin: 0; padding: var(--s-3) var(--s-4) var(--s-4); display: flex; align-items: center; gap: var(--s-3); }
+.rz-km { font: italic 600 52px/0.9 var(--f-display); color: var(--c-accent-text); }
+.eu .rz-km { color: var(--c-tile-hot); }
+.rz-km small { font-size: var(--fs-h2); margin-left: 3px; }
+.rz-t { display: grid; gap: 2px; min-width: 0; }
+.rz-t b { font: 600 var(--fs-body)/1.25 var(--f-text); }
+.rz-t span { font: 400 var(--fs-small)/1.3 var(--f-text); color: var(--c-text-muted); }
+.eu .rz-t span { color: var(--c-tile-muted); }
+
 /* Spiel-Story, Sieg: Strahlen, Konfetti, Stempel, grössere Zahlen. */
 .rb-burst { position: absolute; z-index: -1; left: -30%; right: -30%; top: 12%; height: 80%; background: repeating-conic-gradient(from 0deg at 50% 46%, color-mix(in srgb, var(--c-white) 20%, transparent) 0 6deg, transparent 6deg 16deg); -webkit-mask-image: radial-gradient(circle at 50% 46%, #000 5%, transparent 68%); mask-image: radial-gradient(circle at 50% 46%, #000 5%, transparent 68%); animation: rb-spin 60s linear infinite; }
 .rb-confetti { position: absolute; z-index: -1; left: 50%; top: 36%; width: 10px; height: 10px; background: var(--c-ink); transform: skewX(var(--skew)); box-shadow: -150px 40px 0 -2px var(--c-white), -90px -30px 0 -1px var(--c-ink), 120px -60px 0 var(--c-white), 150px 30px 0 -2px var(--c-ink), 60px 110px 0 -3px var(--c-white), -170px 140px 0 -3px var(--c-ink), 170px 160px 0 -2px var(--c-white), -40px 190px 0 -3px var(--c-white); }
