@@ -1,4 +1,4 @@
-// Endstand der European-League-Spiele sichern und den KI-Matchbericht erzeugen (läuft in GitHub Actions, nach dem Schlusspfiff).
+// Endstand der European-League-Spiele sichern und den Matchbericht erzeugen (läuft in GitHub Actions, nach dem Schlusspfiff).
 // Quellen: Livescore-Feed (Spiel-ID, Endstand), Team- und Spielerwerte der EHF-Spielseite und die Ereignisse des Livetickers
 // (ticker.ehf.eu/v3, zu gross für den Worker). Ergebnis: kadetten/ehf/<Spiel-ID>.json im KV-Speicher, von /api/ehf-reports/<Spiel-ID> geliefert.
 // Ein Fehler lässt bestehende Einträge unberührt; ein Eintrag ohne Bericht wird im nächsten Lauf ergänzt.
@@ -14,7 +14,6 @@ import {
   goalFeed,
   clockText
 } from '../../server/ehf-ticker.mjs';
-import {reportMessages, toReport} from '../../server/report-ai.mjs';
 
 const TICKER_URL = 'https://ticker.ehf.eu/v3/TickerData';
 const UA = 'Mozilla/5.0 (compatible; kadetten-app-matchbericht)';
@@ -59,11 +58,11 @@ export const KNOWN_MATCHES = {
 };
 export const RECORD_VERSION = 3;
 
-// games: Spiele des Datenstands; write(messages) -> {ok, text} | {ok: false, error} oder null (ohne KI).
+// games: Spiele des Datenstands.
 // Betrachtet werden die Kadetten-Spiele der European League, die am Spieltag oder Folgetag laufen (Feed) oder schon ein Resultat haben
 // (gesicherte Einträge ergänzen, bekannte ältere Spiele nachladen). Vorhandene Berichte bleiben unverändert.
-export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = null, now = new Date()}) {
-  const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
+export async function syncEhfArchive(bucket, {games, fetchFn = fetch, now = new Date()}) {
+  const out = {checked: 0, written: 0, kept: 0, reports: 0, notes: []};
   const today = swissDate(now),
     yesterday = swissDate(new Date(now.getTime() - 86400000));
   const inWindow = g => [today, yesterday].includes(g.date);
@@ -77,11 +76,7 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
     try {
       const saved = await bucket.get(archiveKey(g.id));
       const old = saved ? await saved.json() : null;
-      // Ein sachlicher Rückfall wird bei laufender KI bis zu dreimal durch einen KI-Text ersetzt; sonst gilt der Eintrag als fertig.
-      const final =
-        (old?.shotStats || old?.shotStatsAttempts >= 3) &&
-        old?.report &&
-        (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3);
+      const final = (old?.shotStats || old?.shotStatsAttempts >= 3) && old?.report;
       if (old && old.v >= RECORD_VERSION && final) {
         out.kept++;
         continue;
@@ -108,13 +103,9 @@ export async function syncEhfArchive(bucket, {games, fetchFn = fetch, write = nu
       }
       const record = old?.v >= RECORD_VERSION && old?.ticker && old?.shotStats ? old : await buildRecord(g, match, fetchFn, old);
       let result = {};
-      if (!record.report || (record.report.generator !== 'ki' && write && record.ticker && (record.report.attempts || 1) < 3))
-        result = await addReport(record, write);
-      if (record.report?.generator === 'ki') delete record.ticker;
-      if (result.report) {
-        out.reports++;
-        if (result.report.generator === 'ki') out.ki++;
-      }
+      if (!record.report) result = await addReport(record);
+      delete record.ticker; // die Torfolge steht in `goals`
+      if (result.report) out.reports++;
       await bucket.put(archiveKey(g.id), JSON.stringify(record));
       out.written++;
       out.notes.push(
@@ -193,8 +184,8 @@ async function buildRecord(g, match, fetchFn, old = null) {
   return record;
 }
 
-// Ergänzt `record.report` (KI oder sachlicher Rückfall) aus den Ereignissen; ohne Ereignisse gibt es keinen Bericht.
-async function addReport(record, write, league = 'European League') {
+// Ergänzt `record.report` (sachlich, aus den Ereignissen); ohne Ereignisse gibt es keinen Bericht. Die Rohereignisse entfallen danach.
+async function addReport(record, league = 'European League') {
   if (!record.ticker) return {reason: record.tickerError || 'keine Ereignisse'};
   const facts = matchFacts({
     home: record.home,
@@ -205,30 +196,20 @@ async function addReport(record, write, league = 'European League') {
     league
   });
   const base = {...plainReport(facts), facts: factLines(facts)};
-  let report = {headline: base.headline, paragraphs: base.paragraphs, generator: 'daten'};
-  let note = null;
-  if (write) {
-    const res = await write(reportMessages(base));
-    if (res.ok) {
-      const parsed = toReport(res.text, base.headline);
-      if (parsed) report = {...parsed, generator: 'ki'};
-      else note = 'KI-Antwort nicht verwendbar';
-    } else note = res.error;
-  }
-  const attempts = (record.report?.attempts || 0) + 1;
-  record.report = {...report, generatedAt: new Date().toISOString(), attempts};
+  const report = {headline: base.headline, paragraphs: base.paragraphs, generator: 'daten'};
+  record.report = {...report, generatedAt: new Date().toISOString()};
   record.facts = base.facts;
-  // Die Rohereignisse bleiben nur, solange noch ein KI-Versuch möglich ist; die Torfolge steht in `goals`.
-  if (report.generator === 'ki' || !write || attempts >= 3) delete record.ticker;
-  return {report: record.report, reason: note};
+  // Die Torfolge steht in `goals`; die Rohereignisse werden nicht mehr gebraucht.
+  delete record.ticker;
+  return {report: record.report};
 }
 
-// --- QHL: KI-Matchbericht zu abgeschlossenen Spielen aus dem gesicherten SHV-Spielbericht ---------------------------------------
-// Alle abgeschlossenen QHL-Spiele der Kadetten ohne Bericht (neueste zuerst, höchstens `limit` KI-Aufrufe je Lauf). Eingabe ist der
+// --- QHL: sachlicher Matchbericht zu abgeschlossenen Spielen aus dem gesicherten SHV-Spielbericht ---------------------------------------
+// Alle abgeschlossenen QHL-Spiele der Kadetten ohne Bericht (neueste zuerst). Eingabe ist der
 // Spielbericht unter kadetten/reports/<SHV-ID>.json (archiveCompletedReports); Ergebnis unter kadetten/matchreports/<Spiel-ID>.json.
 export const qhlKey = (id, club = 'kadetten') => club + '/matchreports/' + id + '.json';
-export async function syncQhlReports(bucket, {games, write = null, limit = 3, club = 'kadetten'}) {
-  const out = {checked: 0, written: 0, kept: 0, reports: 0, ki: 0, notes: []};
+export async function syncQhlReports(bucket, {games, club = 'kadetten'}) {
+  const out = {checked: 0, written: 0, kept: 0, reports: 0, notes: []};
   const done = (games || [])
     .filter(
       g =>
@@ -238,17 +219,15 @@ export async function syncQhlReports(bucket, {games, write = null, limit = 3, cl
         /^[a-zA-Z0-9_-]{1,80}$/.test(String(g.id))
     )
     .sort((a, b) => b.date.localeCompare(a.date));
-  let used = 0;
   for (const g of done) {
     out.checked++;
     try {
       const saved = await bucket.get(qhlKey(g.id, club));
       const old = saved ? await saved.json() : null;
-      if (old?.report && (old.report.generator === 'ki' || !write || !old.ticker || (old.report.attempts || 1) >= 3)) {
+      if (old?.report) {
         out.kept++;
         continue;
       }
-      if (used >= limit) continue;
       let record = old?.ticker ? old : null;
       if (!record) {
         const gameId = reportId(g.id);
@@ -286,16 +265,12 @@ export async function syncQhlReports(bucket, {games, write = null, limit = 3, cl
           source: {label: 'SHV Spielbericht', url: report.source || null}
         };
       }
-      if (write) used++;
-      const result = await addReport(record, write, 'Quickline Handball League (QHL)');
+      const result = await addReport(record, 'Quickline Handball League (QHL)');
       if (!record.ticker) {
         delete record.players;
         delete record.teamStats;
       }
-      if (result.report) {
-        out.reports++;
-        if (result.report.generator === 'ki') out.ki++;
-      }
+      if (result.report) out.reports++;
       await bucket.put(qhlKey(g.id, club), JSON.stringify(record));
       out.written++;
       out.notes.push(

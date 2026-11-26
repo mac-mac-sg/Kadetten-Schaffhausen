@@ -101,6 +101,4 @@ jobs:
           [ "$post" = 405 ]
 
       - name: Vereinsdaten und Vorschauen initialisieren
-        env:
-          KI_VORSCHAU: ${{ vars.KI_VORSCHAU || 'an' }}
         run: node scripts/cloudflare-update.mjs --schreiben

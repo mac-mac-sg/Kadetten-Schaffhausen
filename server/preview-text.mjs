@@ -1,6 +1,6 @@
 import {fixtureKey} from './previews.mjs';
 
-// Match-Vorschau ohne KI: ein kurzer Text aus bestätigten Daten (Spielangaben, Tabelle, letztes Direktduell). Fehlende Angaben
+// Match-Vorschau: ein kurzer Text aus bestätigten Daten (Spielangaben, Tabelle, letztes Direktduell). Fehlende Angaben
 // entfallen; es wird nichts geschätzt oder erfunden. Reine Funktion, keine Netzwerk- oder Speicherzugriffe.
 const WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -79,7 +79,7 @@ export function buildPreview({club, game: g, table = null, duel = null, duels = 
       );
   }
   if (third.length) paragraphs.push(third.join(' '));
-  // Eindeutige Faktenliste für die KI (die Absätze oben sind der sachliche Text und der Rückfall).
+  // Eindeutige Faktenliste (jede Zeile ist für sich verständlich).
   const facts = [
     `Spiel: ${g.home} (Heimteam) empfängt ${g.away} (Gastteam), Wettbewerb ${g.league}.`,
     `Termin: ${when(g)}${g.venue ? '; Ort: ' + g.venue : ''}.`

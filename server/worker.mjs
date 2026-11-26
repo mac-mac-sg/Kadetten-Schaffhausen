@@ -71,7 +71,7 @@ async function reports(request, env, u) {
   }
 }
 
-// Gesicherter Endstand eines European-League-Spiels (Team- und Spielerwerte, Torfolge, KI-Matchbericht); schreibt nur der Actions-Lauf.
+// Gesicherter Endstand eines European-League-Spiels (Team- und Spielerwerte, Torfolge, Matchbericht); schreibt nur der Actions-Lauf.
 async function ehfReports(request, env, u) {
   if (request.method !== 'GET') return getRequired();
   const id = u.pathname.slice('/api/ehf-reports/'.length);
@@ -81,7 +81,7 @@ async function ehfReports(request, env, u) {
   return json({ok: true, report: await stored.json()});
 }
 
-// KI-Matchbericht zu einem abgeschlossenen QHL-Spiel (nur lesend; schreibt der Actions-Lauf).
+// Matchbericht zu einem abgeschlossenen QHL-Spiel (nur lesend; schreibt der Actions-Lauf).
 async function matchReports(request, env, u) {
   if (request.method !== 'GET') return getRequired();
   const id = u.pathname.slice('/api/match-reports/'.length);

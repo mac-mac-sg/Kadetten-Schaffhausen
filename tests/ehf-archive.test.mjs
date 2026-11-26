@@ -155,27 +155,19 @@ const mockFetch =
     }
     return new Response('{}', {status: 404});
   };
-const kiWriter = async messages => {
-  assert.match(messages[1].content, /Halbzeitstand 5:1/);
-  return {
-    ok: true,
-    text: 'Kadetten gewinnen klar\n\nUnsere Kadetten gewinnen gegen HC Izvidac mit 5:2 und führen zur Pause mit 5:1.\n\nNach dem frühen 0:1 folgten fünf Tore in Folge zum 5:1 für die Kadetten.\n\nMax Muster erzielte vier Tore, Leon Bergmann hielt drei von fünf Würfen.'
-  };
-};
-
-test('Endstand und KI-Matchbericht werden gesichert; Rohereignisse entfallen, Torfolge und 7 m bleiben', async () => {
+test('Endstand und sachlicher Matchbericht werden gesichert; Rohereignisse entfallen, Torfolge und 7 m bleiben', async () => {
   const bucket = memory(),
     calls = [];
-  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(calls), write: kiWriter});
+  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(calls)});
   assert.equal(out.written, 1);
-  assert.equal(out.ki, 1);
+  assert.equal(out.reports, 1);
   const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
   assert.equal(rec.matchId, '202711020901029');
   assert.deepEqual(rec.score, [5, 2]);
   assert.deepEqual(rec.half, [5, 1]);
-  assert.equal(rec.report.generator, 'ki');
-  assert.equal(rec.report.headline, 'Kadetten gewinnen klar');
-  assert.equal(rec.report.paragraphs.length, 3);
+  assert.equal(rec.report.generator, 'daten');
+  assert.match(rec.report.headline, /5:2/);
+  assert.ok(rec.report.paragraphs.length >= 2);
   assert.equal(rec.ticker, undefined);
   assert.equal(rec.goals.length, 7);
   assert.deepEqual(rec.goals[1], {t: '2:00', s: [1, 1], h: true, n: 'Max Muster', p: true});
@@ -185,38 +177,22 @@ test('Endstand und KI-Matchbericht werden gesichert; Rohereignisse entfallen, To
   // Der Worker liefert den Eintrag öffentlich, nur lesend.
   const res = await worker.fetch(new Request('https://app.test/api/ehf-reports/izvidac'), {BUCKET: bucket});
   assert.equal(res.status, 200);
-  assert.equal((await res.json()).report.report.headline, 'Kadetten gewinnen klar');
+  assert.match((await res.json()).report.report.headline, /5:2/);
   assert.equal((await worker.fetch(new Request('https://app.test/api/ehf-reports/nope'), {BUCKET: bucket})).status, 404);
   assert.equal(
     (await worker.fetch(new Request('https://app.test/api/ehf-reports/izvidac', {method: 'POST'}), {BUCKET: bucket})).status,
     405
   );
-  // Ein fertiger KI-Bericht wird nicht erneut erzeugt und es gibt keine Netzwerkzugriffe.
+  // Ein fertiger Bericht wird nicht erneut erzeugt und es gibt keine Netzwerkzugriffe.
   const again = [];
-  const second = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(again), write: kiWriter});
+  const second = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(again)});
   assert.equal(second.kept, 1);
   assert.equal(again.length, 0);
 });
 
-test('Fällt die KI aus, steht ein sachlicher Bericht; der nächste Lauf ersetzt ihn durch den KI-Text', async () => {
+test('Der sachliche Bericht gilt als fertig', async () => {
   const bucket = memory();
-  const first = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: async () => ({ok: false, error: 'HTTP 500'})});
-  assert.equal(first.reports, 1);
-  assert.equal(first.ki, 0);
-  const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
-  assert.equal(rec.report.generator, 'daten');
-  assert.ok(rec.ticker);
-  assert.match(rec.report.headline, /5:2/);
-  const second = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: kiWriter});
-  assert.equal(second.ki, 1);
-  const upgraded = JSON.parse(bucket.m.get(archiveKey('izvidac')));
-  assert.equal(upgraded.report.generator, 'ki');
-  assert.equal(upgraded.ticker, undefined);
-});
-
-test('Ohne KI-Zugang entsteht der sachliche Bericht und gilt als fertig', async () => {
-  const bucket = memory();
-  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: null});
+  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([])});
   assert.equal(out.reports, 1);
   const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
   assert.equal(rec.report.generator, 'daten');
@@ -230,8 +206,7 @@ test('Ereignisse, die nicht zum Endstand passen, ergeben keinen Bericht, aber St
     fetchFn: mockFetch([], {
       feedBody: feed(true, [6, 2]),
       statisticBody: {...statistic, homeStatistics: {...statistic.homeStatistics, totalGoals: 6}}
-    }),
-    write: kiWriter
+    })
   });
   const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
   assert.equal(rec.report, undefined);
@@ -243,11 +218,11 @@ test('Ereignisse, die nicht zum Endstand passen, ergeben keinen Bericht, aber St
 
 test('Ticker nicht erreichbar: Statistik wird gesichert, der Bericht folgt im nächsten Lauf', async () => {
   const bucket = memory();
-  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([], {tickerStatus: 503}), write: kiWriter});
+  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([], {tickerStatus: 503})});
   assert.match(JSON.parse(bucket.m.get(archiveKey('izvidac'))).tickerError, /503/);
-  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: kiWriter});
-  assert.equal(out.ki, 1);
-  assert.equal(JSON.parse(bucket.m.get(archiveKey('izvidac'))).report.generator, 'ki');
+  const out = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([])});
+  assert.equal(out.reports, 1);
+  assert.equal(JSON.parse(bucket.m.get(archiveKey('izvidac'))).report.generator, 'daten');
 });
 
 test('Nur am Spieltag und am Folgetag, nur für beendete Spiele der Kadetten in der European League', async () => {
@@ -258,12 +233,11 @@ test('Nur am Spieltag und am Folgetag, nur für beendete Spiele der Kadetten in 
       {...game, date: '2020-01-01'},
       {...game, league: 'QHL'}
     ],
-    fetchFn: mockFetch(calls),
-    write: kiWriter
+    fetchFn: mockFetch(calls)
   });
   assert.equal(none.checked, 0);
   assert.equal(calls.length, 0);
-  const live = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(calls, {feedBody: feed(false)}), write: kiWriter});
+  const live = await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch(calls, {feedBody: feed(false)})});
   assert.equal(live.written, 0);
   assert.match(live.notes[0], /nicht als beendet/);
   assert.equal(bucket.m.size, 0);
@@ -280,12 +254,12 @@ test('Ticker: ein abgebrochener Abruf wird wiederholt, die Fehlermeldung nennt d
     return mockFetch([])(url, init);
   };
   const ok = memory();
-  const out = await syncEhfArchive(ok, {games: [game], fetchFn: flaky(2), write: kiWriter});
-  assert.equal(out.ki, 1);
+  const out = await syncEhfArchive(ok, {games: [game], fetchFn: flaky(2)});
+  assert.equal(out.reports, 1);
   assert.equal(tickerCalls, 3);
   tickerCalls = 0;
   const bad = memory();
-  await syncEhfArchive(bad, {games: [game], fetchFn: flaky(9), write: kiWriter});
+  await syncEhfArchive(bad, {games: [game], fetchFn: flaky(9)});
   assert.equal(tickerCalls, 3);
   assert.match(JSON.parse(bad.m.get(archiveKey('izvidac'))).tickerError, /Versuch 3: fetch failed: ECONNRESET/);
 });
@@ -305,7 +279,7 @@ test('Berichte sind für die Pages-Oberfläche lesbar freigegeben (CORS), nur le
 
 test('Neuer Eintrag enthält Wurfdetails, Torhüter-Zonen, Zuschauer, Auszeiten und Zeitstrafen', async () => {
   const bucket = memory();
-  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: kiWriter});
+  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([])});
   const rec = JSON.parse(bucket.m.get(archiveKey('izvidac')));
   assert.equal(rec.v, RECORD_VERSION);
   assert.equal(rec.spectators, 1145);
@@ -317,9 +291,9 @@ test('Neuer Eintrag enthält Wurfdetails, Torhüter-Zonen, Zuschauer, Auszeiten 
   assert.deepEqual(rec.suspensions, [{side: 'away', sec: 330, name: 'Mihael Bebek'}]);
 });
 
-test('Version 2 erhält Wurfdetails ohne neuen KI-Bericht; Quellenfehler erhalten bestehende Daten', async () => {
+test('Version 2 erhält Wurfdetails ohne neuen Bericht; Quellenfehler erhalten bestehende Daten', async () => {
   const bucket = memory();
-  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([]), write: kiWriter});
+  await syncEhfArchive(bucket, {games: [game], fetchFn: mockFetch([])});
   const old = JSON.parse(bucket.m.get(archiveKey(game.id))),
     report = old.report;
   old.v = 2;
@@ -327,17 +301,14 @@ test('Version 2 erhält Wurfdetails ohne neuen KI-Bericht; Quellenfehler erhalte
   bucket.m.set(archiveKey(game.id), JSON.stringify(old));
   await syncEhfArchive(bucket, {
     games: [{...game, score: [5, 2]}],
-    fetchFn: mockFetch([]),
-    write: async () => {
-      throw Error('Kein neuer KI-Bericht');
-    }
+    fetchFn: mockFetch([])
   });
   const upgraded = JSON.parse(bucket.m.get(archiveKey(game.id)));
   assert.deepEqual(upgraded.report, report);
   assert.equal(upgraded.shotStats.home.shots, 6);
   upgraded.v = 2;
   bucket.m.set(archiveKey(game.id), JSON.stringify(upgraded));
-  await syncEhfArchive(bucket, {games: [{...game, score: [5, 2]}], fetchFn: mockFetch([], {tickerStatus: 503}), write: kiWriter});
+  await syncEhfArchive(bucket, {games: [{...game, score: [5, 2]}], fetchFn: mockFetch([], {tickerStatus: 503})});
   const retained = JSON.parse(bucket.m.get(archiveKey(game.id)));
   assert.deepEqual(retained.shotStats, upgraded.shotStats);
   assert.deepEqual(retained.goals, upgraded.goals);
@@ -371,10 +342,7 @@ test('Alter Eintrag (Version 1) wird ergänzt: Bericht bleibt, Spiel-ID aus dem 
   const calls = [];
   const out = await syncEhfArchive(bucket, {
     games: [{...game, score: [5, 2], date: '2020-01-01'}],
-    fetchFn: mockFetch(calls),
-    write: async () => {
-      throw Error('KI darf nicht aufgerufen werden');
-    }
+    fetchFn: mockFetch(calls)
   });
   assert.equal(out.written, 1);
   assert.equal(out.reports, 0);
@@ -385,7 +353,7 @@ test('Alter Eintrag (Version 1) wird ergänzt: Bericht bleibt, Spiel-ID aus dem 
   assert.equal(rec.spectators, 1145);
   assert.equal(rec.goals.length, 7);
   assert.equal(rec.ticker, undefined);
-  const again = await syncEhfArchive(bucket, {games: [{...game, score: [5, 2]}], fetchFn: mockFetch([]), write: kiWriter});
+  const again = await syncEhfArchive(bucket, {games: [{...game, score: [5, 2]}], fetchFn: mockFetch([])});
   assert.equal(again.kept, 1);
 });
 
@@ -393,16 +361,16 @@ test('Bekanntes älteres Spiel (Bukarest) wird ohne Feed nachgeladen, mit Berich
   const bucket = memory(),
     calls = [];
   const bukarest = {id: 'bukarest', league: 'EHL', home: 'Kadetten Schaffhausen', away: 'CSM Bucuresti', date: '2026-09-30', score: [5, 2]};
-  const out = await syncEhfArchive(bucket, {games: [bukarest], fetchFn: mockFetch(calls), write: kiWriter});
+  const out = await syncEhfArchive(bucket, {games: [bukarest], fetchFn: mockFetch(calls)});
   assert.equal(out.written, 1);
   assert.ok(calls.some(u => u.includes('matchId=202711020901026')));
   assert.ok(!calls.some(u => u.includes('GetLiveScoreMatches')));
   const rec = JSON.parse(bucket.m.get(archiveKey('bukarest')));
   assert.equal(rec.matchId, '202711020901026');
   assert.equal(rec.away, 'CSM Bucuresti');
-  assert.equal(rec.report.generator, 'ki');
+  assert.equal(rec.report.generator, 'daten');
   // Unbekanntes älteres Spiel ohne Eintrag: Hinweis, kein Abruf
-  const other = await syncEhfArchive(memory(), {games: [{...bukarest, id: 'sonstiges'}], fetchFn: mockFetch([]), write: kiWriter});
+  const other = await syncEhfArchive(memory(), {games: [{...bukarest, id: 'sonstiges'}], fetchFn: mockFetch([])});
   assert.equal(other.written, 0);
   assert.match(other.notes[0], /nicht mehr im Feed/);
 });

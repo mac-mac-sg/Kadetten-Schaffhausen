@@ -1,6 +1,6 @@
 // Auswertung der Daten des EHF-Livetickers (ticker.ehf.eu/v3, Antwort von «TickerData») für den Matchbericht der European League.
 // Reine Funktionen ohne Netzwerkzugriff: Torfolge, Auszeiten und Zeitstrafen aus den Ereignissen, daraus berechnete Fakten
-// (Halbzeitstand, grösste Führung, Serien, Flauten, Torschützen, Torhüter) und ein sachlicher Bericht ohne KI als Rückfall.
+// (Halbzeitstand, grösste Führung, Serien, Flauten, Torschützen, Torhüter) und ein sachlicher Bericht.
 // Ereigniscodes (aus dem Spiel Kadetten – HC Izvidac vom 6. Oktober 2026 abgeglichen mit der Teamstatistik der EHF):
 // SHOT = Wurf (Ergebnis GOAL, SAVE, POST, MISS, BLC; Zone PTY = Siebenmeter), TOUT = Auszeit, TMS = Zwei-Minuten-Strafe.
 // Die übrigen Codes (TE, TO, RFP, FRP, TBP) werden nicht verwendet.
@@ -293,7 +293,7 @@ const roleName = (f, side) => `${teamName(f, side)} (${side === 'home' ? 'Heimte
 const minuteText = sec => `${minuteOf(sec)}. Minute`;
 const tore = n => (n === 1 ? '1 Tor' : `${n} Tore`);
 
-// Eindeutige Faktenliste für die KI; jede Zeile ist für sich verständlich.
+// Eindeutige Faktenliste; jede Zeile ist für sich verständlich.
 export function factLines(f) {
   const lines = [];
   const [h, a] = f.final;
@@ -356,7 +356,7 @@ export function factLines(f) {
   return lines;
 }
 
-// Sachlicher Bericht ohne KI (Rückfall): zwei bis drei Absätze, nur aus den Fakten.
+// Sachlicher Bericht: zwei bis drei Absätze, nur aus den Fakten.
 export function plainReport(f) {
   const [h, a] = f.final;
   const winner = h === a ? null : teamName(f, h > a ? 'home' : 'away');
