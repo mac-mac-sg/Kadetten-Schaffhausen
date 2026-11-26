@@ -200,7 +200,7 @@ export function dateBlock(date) {
 }
 
 /** Spielzeile für Listen (Spielplan, letzte Spiele): Datumsblock, Gegner, Ort und Wettbewerb, Resultat mit Form. */
-export function gameRow(game, now, {showDate = true, cls = ''} = {}) {
+export function gameRow(game, now, {showDate = true, cls = '', crests = false} = {}) {
   const own = game.home === OWN_TEAM || game.away === OWN_TEAM;
   const opponent = game.home === OWN_TEAM ? game.away : game.away === OWN_TEAM ? game.home : null;
   const title = own ? shortTeam(opponent) : `${shortTeam(game.home)} – ${shortTeam(game.away)}`;
@@ -210,7 +210,7 @@ export function gameRow(game, now, {showDate = true, cls = ''} = {}) {
     .filter(Boolean)
     .join(' · ');
   const end = hasScore(game)
-    ? html`<span class="res num">${game.score[0]}:${game.score[1]}${own ? formBadge(outcome(game)) : ''}</span>`
+    ? html`<span class="res num">${crests ? crest(game.home, 'xxs') : ''}${game.score[0]}:${game.score[1]}${crests ? crest(game.away, 'xxs') : ''}${own ? formBadge(outcome(game)) : ''}</span>`
     : icon('go');
   return listRow({title, sub, end, lead: block || crest(opponent || game.home, 'xs'), link: game.id ? href.spiel(game.id) : '', cls});
 }

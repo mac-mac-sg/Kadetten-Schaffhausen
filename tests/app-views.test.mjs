@@ -250,6 +250,10 @@ test('Die Spieltags-Ausgangslage nutzt den Wettbewerb der Partie', () => {
 
 test('Startseite priorisiert das letzte Resultat vor dem Quiz und Spielplan bietet einen Sprung', () => {
   assert.match(render('#/', {now: Date.parse('2026-11-16T12:00:00Z')}), /Letztes Resultat[\s\S]*Quiz der Woche/);
+  const last = render('#/', {now: Date.parse('2026-11-16T12:00:00Z')})
+    .split('Letztes Resultat')[1]
+    .split('Quiz der Woche')[0];
+  assert.equal((last.match(/class="crest[^"]*xxs/g) || []).length, 2, 'beide Wappen klein beim letzten Resultat');
   const schedule = render('#/saison', MOMENTS.alltag);
   assert.match(schedule, /data-jump-next>Zum nächsten Spiel[\s\S]*data-next-game/);
   assert.doesNotMatch(render('#/saison', {now: Date.parse('2027-06-30T12:00:00Z')}), /data-jump-next/);
