@@ -326,7 +326,7 @@ export function renderJetzt({state, now, load, api, ui}) {
       last
         ? html`<section class="sec" aria-labelledby="j-last">
       ${sectionHead('Letztes Resultat', '', '', 'j-last')}<div class="card list tile">
-      ${gameRow(last, now)}</div>
+      ${gameRow(last, now, {crests: true})}</div>
       </section>`
         : ''
     }
