@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseTicker, shotStatistics, withSevenMeters, matchFacts, factLines, plainReport, goalFeed} from '../server/ehf-ticker.mjs';
-import {reportMessages, toReport, validReport} from '../server/report-ai.mjs';
 
 const KAD = 'uyEpUicNjwv8hCX9B7A3sg',
   IZV = '2zXEaNBPEzJP81Ffhy6t9g';
@@ -158,19 +157,6 @@ test('Fakten und sachlicher Bericht: Halbzeit, Führung, Serie, Auszeit, Torsch�
   const plain = plainReport(f);
   assert.match(plain.headline, /5:2/);
   assert.ok(plain.paragraphs.length >= 2);
-  assert.ok(validReport(plain));
   assert.equal(goalFeed(t)[3].t, '4:15');
   assert.equal(goalFeed(t)[3].p, true);
-});
-
-test('KI-Antwort zum Matchbericht: Titel und Absätze, mehr als vier Absätze werden zusammengelegt', () => {
-  const raw =
-    'Kadetten ziehen früh davon\n\nAbsatz eins mit genug Text für den Bericht des Spiels.\n\nAbsatz zwei mit genug Text für den Bericht des Spiels.\n\nAbsatz drei mit genug Text für den Bericht des Spiels.\n\nAbsatz vier mit genug Text für den Bericht des Spiels.\n\nAbsatz fünf mit genug Text für den Bericht des Spiels.';
-  const r = toReport(raw, 'Rückfall');
-  assert.equal(r.headline, 'Kadetten ziehen früh davon');
-  assert.equal(r.paragraphs.length, 4);
-  assert.equal(toReport('zu kurz', 'x'), null);
-  const messages = reportMessages({facts: ['Spiel: A gegen B']});
-  assert.match(messages[0].content, /KI-Matchbericht/);
-  assert.match(messages[1].content, /- Spiel: A gegen B/);
 });

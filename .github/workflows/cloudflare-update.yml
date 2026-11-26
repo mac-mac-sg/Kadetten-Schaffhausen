@@ -5,7 +5,6 @@ name: Cloudflare-Datenaktualisierung
 # schreiben      schreibt in den KV-Speicher
 # Zeitplan: kein GitHub-Zeitplan mehr. Der Cron-Trigger des Workers (server/scheduler.mjs) löst zu den Schweizer Zeiten
 # 06:20, 09:20, 12:20, 15:20, 18:20, 21:20 und 22:20 per workflow_dispatch aus (Modus «schreiben»).
-# Match-Vorschauen: KI von Cloudflare Workers AI mit Rückfall auf den sachlichen Text; abschaltbar mit der Repository-Variable KI_VORSCHAU = aus.
 # Schreibläufe speichern zusätzlich das Matchprogramm des nächsten Heimspiels (PDF von kadettensh.ch, Phase 2b).
 # Der frühere Import aus dem ChatGPT-Sites-Dienst wurde mit Phase 4 entfernt.
 on:
@@ -31,7 +30,6 @@ jobs:
       MODUS: ${{ inputs.modus || 'schreiben' }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      KI_VORSCHAU: ${{ vars.KI_VORSCHAU || 'an' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

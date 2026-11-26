@@ -1,6 +1,6 @@
 // Zeitplan der Datenaktualisierung auf Cloudflare (Cron-Trigger des Workers, docs/betrieb.md). Der Worker rechnet nicht selbst:
 // Zu den Terminen löst er den GitHub-Workflow «Cloudflare-Datenaktualisierung» im Modus «schreiben» aus, weil das Abrufen der
-// Quellen, die KI-Vorschauen und das Matchprogramm in GitHub Actions laufen (zu viel CPU für einen Worker).
+// Quellen, die Vorschauen und das Matchprogramm in GitHub Actions laufen (zu viel CPU für einen Worker).
 // Cloudflare rechnet in UTC. Der Cron-Ausdruck in cloudflare/api/wrangler.toml deckt Sommer- und Winterzeit ab; hier gilt nur die
 // Schweizer Uhrzeit.
 

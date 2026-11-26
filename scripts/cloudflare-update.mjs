@@ -52,8 +52,6 @@ export async function main({
   programmeFetch = programmeHttp,
   previewDuels = getHeadToHead,
   previewRecent = getRecentGames,
-  rewrite = null, // KI-Texte für Vorschau und Rückblick sind abgeschaltet (zu allgemein); es entstehen nur die sachlichen Texte
-  reportWriter = null,
   ehfFetch = fetch
 } = {}) {
   const {CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: accountId} = env;
@@ -95,35 +93,34 @@ export async function main({
     } catch (e) {
       write(`\nMatchprogramm: Fehler (${String(e.message).slice(0, 120)}); bisheriges Programm bleibt.`);
     }
-    // Match-Vorschauen ohne KI aus den bestätigten Daten (Weg B, docs/vorschauen.md). Fehler lassen alles Übrige unberührt.
+    // Match-Vorschauen aus den bestätigten Daten (Weg B, docs/vorschauen.md). Fehler lassen alles Übrige unberührt.
     try {
       const v = await syncPreviews(
         bucket,
         {snapshot: result.next, fcsgData: null, otmarData: null},
-        {headToHead: previewDuels, recentGames: previewRecent, rewrite}
+        {headToHead: previewDuels, recentGames: previewRecent}
       );
       write(
-        `\nVorschauen: ${v.written} geschrieben, ${v.unchanged} unverändert, ${v.kept} bestehende bleiben, ${v.skipped} ohne genug Daten${v.errors ? `, ${v.errors} Fehler` : ''}. KI: ${rewrite ? `${v.ki} Texte, ${v.fallback} Rückfälle auf den sachlichen Text` : 'aus'}.`
+        `\nVorschauen: ${v.written} geschrieben, ${v.unchanged} unverändert, ${v.kept} bestehende bleiben, ${v.skipped} ohne genug Daten${v.errors ? `, ${v.errors} Fehler` : ''}.`
       );
-      for (const r of v.rejected.slice(0, 4)) write(`- KI-Text für ${r.id} nicht verwendet: ${r.problems.join('; ').slice(0, 200)}`);
     } catch (e) {
       write(`\nVorschauen: Fehler (${String(e.message).slice(0, 120)}); bestehende bleiben.`);
     }
-    // Endstand und KI-Matchbericht der European League (nur am Spieltag und am Tag danach). Fehler lassen alles Übrige unberührt.
+    // Endstand und Matchbericht der European League (nur am Spieltag und am Tag danach). Fehler lassen alles Übrige unberührt.
     try {
-      const e = await syncEhfArchive(bucket, {games: result.next.games, fetchFn: ehfFetch, write: reportWriter});
+      const e = await syncEhfArchive(bucket, {games: result.next.games, fetchFn: ehfFetch});
       write(
-        `\nEuropean League (Endstand und Matchbericht): ${e.checked} Spiele geprüft, ${e.written} geschrieben, ${e.kept} fertig vorhanden, ${e.reports} Berichte (${e.ki} mit KI).`
+        `\nEuropean League (Endstand und Matchbericht): ${e.checked} Spiele geprüft, ${e.written} geschrieben, ${e.kept} fertig vorhanden, ${e.reports} Berichte.`
       );
       for (const note of e.notes) write(`- ${note}`);
     } catch (e) {
       write(`\nEuropean League: Fehler (${String(e.message).slice(0, 120)}); bestehende Einträge bleiben.`);
     }
-    // KI-Matchbericht zu abgeschlossenen QHL-Spielen (aus dem gesicherten SHV-Spielbericht).
+    // Matchbericht zu abgeschlossenen QHL-Spielen (aus dem gesicherten SHV-Spielbericht).
     try {
-      const q = await syncQhlReports(bucket, {games: result.next.games, write: reportWriter});
+      const q = await syncQhlReports(bucket, {games: result.next.games});
       write(
-        `\nQHL-Matchberichte: ${q.checked} abgeschlossene Spiele, ${q.written} geschrieben, ${q.kept} fertig vorhanden, ${q.reports} Berichte (${q.ki} mit KI).`
+        `\nQHL-Matchberichte: ${q.checked} abgeschlossene Spiele, ${q.written} geschrieben, ${q.kept} fertig vorhanden, ${q.reports} Berichte.`
       );
       for (const note of q.notes) write(`- ${note}`);
     } catch (e) {

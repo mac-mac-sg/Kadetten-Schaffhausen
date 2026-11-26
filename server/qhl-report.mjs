@@ -1,4 +1,4 @@
-// Aus einem gesicherten SHV-Spielbericht (kadetten/reports/<ID>.json, parseArchivedReport) die Eingaben für den KI-Matchbericht ableiten:
+// Aus einem gesicherten SHV-Spielbericht (kadetten/reports/<ID>.json, parseArchivedReport) die Eingaben für den Matchbericht ableiten:
 // Torfolge aus den Spielstandänderungen, Auszeiten (Aktion «bTO»), Spieler- und Teamwerte in der Form des EHF-Berichts (server/ehf-ticker.mjs).
 // Nur bestätigte Spielstandänderungen zählen; passt die Torzahl nicht zum Endstand, wird kein Bericht erzeugt.
 

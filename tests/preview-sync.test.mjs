@@ -196,135 +196,32 @@ test('Vorschauen schreiben: gültige bestehende Vorschau anderer Herkunft bleibt
   assert.equal(e.errors, 2);
 });
 
-const KI_KADETTEN = `Kadetten wollen gegen Stäfa nachlegen
-
-Am Samstag, 10. Oktober 2026, um 18:00 Uhr empfängt Kadetten Schaffhausen den Handball Stäfa in Schaffhausen BBC Arena A. Es ist ein Spiel der QHL.
-
-In der Tabelle stehen die Kadetten mit 13 Punkten aus 8 Spielen auf dem 2. Rang, Stäfa ist mit 0 Punkten aus 7 Spielen auf dem 3. Rang. Das Torverhältnis lautet 262:232 gegen 184:255.
-
-Das letzte Direktduell am 14.03.2026 gewannen die Kadetten mit 31:27.`;
-const KI_FCSG = `FC St.Gallen 1879 gegen FC Lausanne-Sport
-
-Die Mannschaft von Trainer Peter Zeidler empfängt am 11. Oktober 2026 um 16:30 Uhr den FC Lausanne-Sport im Berit Sitterstadion.
-
-Beide Teams kämpfen um den Klassenerhalt, St.Gallen liegt mit 13 Punkten aus 9 Spielen auf dem 5. Rang.`;
-function rewriter(log, {fail = false, texts = {}} = {}) {
-  return async baseline => {
-    log.push(baseline.club);
-    if (fail) return {ok: false, error: 'HTTP 500'};
-    return {ok: true, text: texts[baseline.club] ?? (baseline.club === 'kadetten' ? KI_KADETTEN : KI_FCSG)};
-  };
-}
 const fcsgTable = [...Array(4)]
   .map((_, i) => ({name: 'FC T' + i, played: 9, gf: 20, ga: 10, points: 30 - i}))
   .concat([{name: 'FC St. Gallen', played: 9, gf: 16, ga: 19, points: 13}]);
 const fcsg2 = {games: [fGame], table: [...fcsgTable, {name: 'FC Lausanne-Sport', played: 9, gf: 7, ga: 15, points: 6}]};
 
-test('KI-Vorschau: der Text der KI wird unverändert übernommen (keine inhaltliche Prüfung), derselbe Text wird wiederverwendet', async () => {
+test('Eine bestehende Vorschau mit KI-Kennzeichnung wird durch den sachlichen Text ersetzt', async () => {
   const bucket = memBucket();
-  const calls = [];
   const headToHead = async () => ({games: [duel]});
-  const first = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: NOW});
-  assert.deepEqual([first.written, first.ki, first.fallback], [2, 2, 0]);
-  const k = JSON.parse(bucket.map.get('previews/kadetten/staefa.json')),
-    f = JSON.parse(bucket.map.get('previews/fcsg/458.json'));
-  assert.deepEqual([k.generator, f.generator], ['ki', 'ki']);
-  assert.equal(k.facts, undefined, 'die Faktenliste wird nicht gespeichert');
-  assert.equal(k.headline, 'Kadetten wollen gegen Stäfa nachlegen');
-  assert.match(f.paragraphs.join(' '), /Trainer Peter Zeidler/, 'Text wie von der KI geliefert');
-  assert.match(k.baseHash, /^[a-f0-9]{64}$/);
-
-  // Später: gleiche Fakten, kein neuer Aufruf
-  calls.length = 0;
-  const again = await syncPreviews(
-    bucket,
-    {snapshot, fcsgData: fcsg2},
-    {headToHead, rewrite: rewriter(calls), now: new Date(NOW.getTime() + 3 * 3600000)}
+  await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, now: NOW});
+  const path = 'previews/kadetten/staefa.json';
+  const old = JSON.parse(bucket.map.get(path));
+  assert.equal(old.generator, 'daten');
+  bucket.map.set(
+    path,
+    JSON.stringify({
+      ...old,
+      generator: 'ki',
+      paragraphs: [
+        'Text einer KI, der genug Zeichen für die Prüfung hat und nicht mehr gebraucht wird.',
+        'Zweiter Absatz mit genug Zeichen für die technische Prüfung der Absätze.'
+      ]
+    })
   );
-  assert.deepEqual([calls.length, again.written, again.unchanged], [0, 0, 2]);
-
-  // 13 Stunden später: nur der Zeitstempel wird erneuert
-  const later = new Date(NOW.getTime() + 13 * 3600000);
-  await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: later});
-  assert.equal(calls.length, 0);
-  const k2 = JSON.parse(bucket.map.get('previews/kadetten/staefa.json'));
-  assert.deepEqual([k2.paragraphs, k2.generatedAt], [k.paragraphs, later.toISOString()]);
-
-  // Ändern sich die Fakten (Tabelle), wird neu formuliert
-  const changed = {...snapshot, tables: {QHL: [table[1], table[0], table[2]]}};
-  await syncPreviews(bucket, {snapshot: changed, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls), now: later});
-  assert.ok(calls.includes('kadetten'));
-});
-
-test('Ohne KI wird eine bestehende KI-Vorschau durch den sachlichen Text ersetzt', async () => {
-  const bucket = memBucket();
-  const headToHead = async () => ({games: [duel]});
-  await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter([]), now: NOW});
-  assert.equal(JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).generator, 'ki');
   const r = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, now: new Date(NOW.getTime() + 3600000)});
   assert.ok(r.written >= 1);
-  assert.equal(JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).generator, 'daten', 'KI-Text ist ersetzt');
-});
-
-test('KI-Vorschau: nur technische Regeln des Datendienstes gelten; sonst, bei Ausfall oder ohne KI bleibt der sachliche Text', async () => {
-  const headToHead = async () => ({games: [duel]});
-  const run = async texts => {
-    const bucket = memBucket();
-    const r = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter([], {texts}), now: NOW});
-    return {r, k: JSON.parse(bucket.map.get('previews/kadetten/staefa.json'))};
-  };
-  const four = KI_KADETTEN + '\n\nEin vierter Absatz mit genug Zeichen für die Regel.';
-  const merged = await run({kadetten: four});
-  assert.equal(merged.k.generator, 'ki');
-  assert.equal(merged.k.paragraphs.length, 3, 'überzählige Absätze werden dem dritten angehängt');
-  assert.match(merged.k.paragraphs[2], /vierter Absatz/);
-
-  const unparseable = await run({kadetten: 'nur ein Absatz ohne Titel'});
-  assert.equal(unparseable.k.generator, 'daten');
-  assert.match(unparseable.r.rejected[0].problems[0], /nicht in Titel und Absätze/);
-  const tags = await run({kadetten: KI_KADETTEN.replace('Es ist', '<b>Es</b> ist')});
-  assert.equal(tags.k.generator, 'daten', 'Sonderzeichen < und > bleiben ausgeschlossen');
-
-  const bucket = memBucket();
-  const calls = [];
-  const down = await syncPreviews(bucket, {snapshot, fcsgData: fcsg2}, {headToHead, rewrite: rewriter(calls, {fail: true}), now: NOW});
-  assert.deepEqual(calls, ['kadetten'], 'nach dem ersten Ausfall kein weiterer Aufruf');
-  assert.deepEqual([down.written, down.ki, down.fallback], [2, 0, 2]);
-  assert.equal(JSON.parse(bucket.map.get('previews/fcsg/458.json')).generator, 'daten');
-  assert.equal(JSON.parse(bucket.map.get('previews/fcsg/458.json')).facts, undefined);
-
-  const off = memBucket();
-  const o = await syncPreviews(off, {snapshot, fcsgData: fcsg2}, {headToHead, now: NOW});
-  assert.deepEqual([o.ki, o.fallback, o.written], [0, 0, 2]);
-
-  const legacy = {
-    club: 'kadetten',
-    id: 'staefa',
-    fixtureKey: fixtureKey(kGame),
-    headline: 'Von ChatGPT',
-    paragraphs: ['a'.repeat(40), 'b'.repeat(40)],
-    sources: [{label: 'Q', url: 'https://kadettensh.ch/'}],
-    generatedAt: new Date(NOW.getTime() - 3600000).toISOString()
-  };
-  const keep = memBucket({'previews/kadetten/staefa.json': legacy});
-  const calls2 = [];
-  const kept = await syncPreviews(keep, {snapshot, fcsgData: {games: []}}, {rewrite: rewriter(calls2), now: NOW});
-  assert.deepEqual([kept.kept, calls2.length, keep.writes.length], [1, 0, 0]);
-});
-
-test('KI-Vorschau: Antwort ohne Titelzeile wird mit dem bisherigen Titel gespeichert', async () => {
-  const bucket = memBucket();
-  const ohne =
-    'Kadetten Schaffhausen empfängt Handball Stäfa am Samstag, 10. Oktober 2026, um 18:00 Uhr in Schaffhausen BBC Arena A. Es ist ein Spiel der QHL. Kadetten Schaffhausen liegt mit 13 Punkten aus 8 Spielen auf dem 2. Rang. Handball Stäfa liegt mit 0 Punkten aus 7 Spielen auf dem 3. Rang.';
-  const r = await syncPreviews(
-    bucket,
-    {snapshot, fcsgData: {games: []}},
-    {headToHead: async () => ({games: [duel]}), rewrite: rewriter([], {texts: {kadetten: ohne}}), now: NOW}
-  );
-  const k = JSON.parse(bucket.map.get('previews/kadetten/staefa.json'));
-  assert.deepEqual([r.ki, r.fallback, k.generator], [1, 0, 'ki']);
-  assert.equal(k.headline, 'Kadetten Schaffhausen gegen Handball Stäfa');
-  assert.equal(k.paragraphs.length, 2);
+  assert.equal(JSON.parse(bucket.map.get(path)).generator, 'daten', 'KI-Text ist ersetzt');
 });
 
 test('Fakten: letzte Resultate des eigenen Teams aus dem Datenstand, des QHL-Gegners aus der SHV-Quelle, Direktduelle; Fehler und fehlende Quellen lassen Angaben weg', async () => {
@@ -476,12 +373,11 @@ test('Vorschau-Text mit letzten Resultaten und mehreren Direktduellen: Absatz dr
   assert.equal(broken.paragraphs.length, 2, 'ungültige Resultate werden ignoriert');
 });
 
-test('Schreiblauf: die KI und der sachliche Text erhalten die gesammelten Fakten (letzte Resultate, Direktduelle)', async () => {
+test('Schreiblauf: der sachliche Text enthält die gesammelten Fakten (letzte Resultate, Direktduelle)', async () => {
   const snap = {
     ...snapshot,
     games: [{id: 'c', date: '2026-09-15', home: 'Kadetten Schaffhausen', away: 'C', score: [31, 31], league: 'QHL'}, kGame]
   };
-  const seen = [];
   const bucket = memBucket();
   await syncPreviews(
     bucket,
@@ -489,21 +385,13 @@ test('Schreiblauf: die KI und der sachliche Text erhalten die gesammelten Fakten
     {
       headToHead: async () => ({games: [duel]}),
       recentGames: async team => ({games: [{id: 'z', date: '2026-10-01', home: team, away: 'Z', score: [22, 21]}]}),
-      rewrite: async baseline => {
-        seen.push(baseline.paragraphs.at(-1));
-        return {ok: false, error: 'HTTP 500'};
-      },
       now: NOW
     }
   );
-  assert.match(seen[0], /Das letzte Direktduell/);
-  assert.match(seen[0], /Zuletzt spielte Kadetten Schaffhausen: 15\.09\. Kadetten Schaffhausen – C 31:31\./);
-  assert.match(seen[0], /Zuletzt spielte Handball Stäfa: 01\.10\. Handball Stäfa – Z 22:21\./);
-  assert.equal(
-    JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).paragraphs.at(-1),
-    seen[0],
-    'Rückfalltext enthält dieselben Fakten'
-  );
+  const last = JSON.parse(bucket.map.get('previews/kadetten/staefa.json')).paragraphs.at(-1);
+  assert.match(last, /Das letzte Direktduell/);
+  assert.match(last, /Zuletzt spielte Kadetten Schaffhausen: 15\.09\. Kadetten Schaffhausen – C 31:31\./);
+  assert.match(last, /Zuletzt spielte Handball Stäfa: 01\.10\. Handball Stäfa – Z 22:21\./);
 });
 
 test('Oberfläche: «KI-Match-Vorschau» nur für KI-Texte und ältere Einsendungen, «Match-Vorschau» für Texte aus Daten', () => {
