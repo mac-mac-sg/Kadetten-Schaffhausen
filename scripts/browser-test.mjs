@@ -128,6 +128,70 @@ test('Navigation: Tab «Ich» und Wissen in Mein Bereich', async () => {
   await page.close();
 });
 
+// «Zurück» führt immer in die übergeordnete Menüstruktur, nicht durch die zuletzt besuchten Ansichten.
+const settled = (page, expected) =>
+  page.waitForFunction(h => location.hash === h || (h === '#/' && (location.hash === '' || location.hash === '#')), expected, {
+    timeout: 5000
+  });
+const back = async (page, expected) => {
+  await page.goBack();
+  await settled(page, expected);
+  await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => location.hash || '#/'), expected);
+};
+
+test('Zurück: von jedem Hauptreiter zum Start, aus Unteransichten zur übergeordneten Ansicht', async () => {
+  const page = await open('/');
+  // Hauptreiter untereinander ersetzen den Eintrag: ein Zurück genügt bis zum Start.
+  for (const tab of ['#/saison', '#/statistik', '#/team', '#/ich']) {
+    await page.click(`nav.nav a[href="${tab}"]`);
+    await settled(page, tab);
+  }
+  await back(page, '#/');
+  // Kader → Spielerprofil → Zurück-Link im Profil → Zurück: nicht wieder ins Profil, sondern zum Start.
+  await page.click('nav.nav a[href="#/team"]');
+  await settled(page, '#/team');
+  await page.locator('a[href^="#/team/"]').first().click();
+  await page.waitForFunction(() => /^#\/team\/\d+$/.test(location.hash));
+  await page.click('.band a.back');
+  await settled(page, '#/team');
+  await back(page, '#/');
+  // Spielplan → Spiel → Reiterwechsel → Hauptreiter «Kader»: Zurück führt zum Start, nicht zum Spiel.
+  await page.click('nav.nav a[href="#/saison"]');
+  await settled(page, '#/saison');
+  await page.goto(origin + '/#/spiel/508363/bericht');
+  await page.waitForSelector('nav.seg');
+  await page.click('nav.seg a[href$="/rueckblick"]');
+  await settled(page, '#/spiel/508363/rueckblick');
+  await back(page, '#/saison');
+  assert.deepEqual(page.errors, []);
+  await page.close();
+});
+
+test('Zurück: Spiel von der Titelseite, dann Hauptreiter «Kader» führt zum Start, nicht zurück ins Spiel', async () => {
+  const page = await open('/');
+  await page.locator('.hero-link.cover').click({position: {x: 20, y: 20}});
+  await page.waitForFunction(() => location.hash.startsWith('#/spiel/'));
+  await page.click('nav.nav a[href="#/team"]');
+  await settled(page, '#/team');
+  await back(page, '#/');
+  assert.deepEqual(page.errors, []);
+  await page.close();
+});
+
+test('Zurück: Direktaufruf einer Unteransicht (Mitteilung) führt über die Menüstruktur statt aus der App', async () => {
+  const page = await open('/spiel/508363/bericht');
+  await page.waitForSelector('nav.seg');
+  await back(page, '#/saison');
+  await back(page, '#/');
+  const einstellungen = await open('/ich/einstellungen');
+  await back(einstellungen, '#/ich');
+  await back(einstellungen, '#/');
+  assert.deepEqual(page.errors, []);
+  await page.close();
+  await einstellungen.close();
+});
+
 test('Darstellung und Filter-Chips', async () => {
   const page = await open('/ich/einstellungen');
   await page.click('[data-theme-choice="dark"]');

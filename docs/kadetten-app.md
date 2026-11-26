@@ -369,3 +369,16 @@ Startseite nach dem Spiel (25. November 2026): «Nächstes Spiel» ist eine klei
 Quiz der Woche auf der Titelseite (25. November 2026): Die Karte zeigt den Zustand sichtbar (Variante B im Design-Canvas «Quiz der Woche · Erfolg sichtbar»). Offen: «Drei Fragen …» mit «Noch nicht gespielt»; laufend: «Frage n von 3» mit einem Strich je beantworteter Frage; abgeschlossen: grosse Ergebniszahl «3/3» (orange; bei Fehlern grau), «Alles richtig» bzw. «n von 3 richtig» und ein orange Strich je richtige Antwort. Die Striche sind Zierde (`aria-hidden`), der Text sagt dasselbe. Eine Serie über mehrere Wochen gibt es noch nicht.
 
 Titelseite: Die einzeiligen weissen Kacheln (Unsere Saison, Letztes Resultat, Tabelle danach, Quiz der Woche) tragen die Klasse `tile` und sind mindestens 76 px hoch; geprüft von 320 bis 390 px Breite. Das Quiz zeigt dafür «Neues Quiz am Montag» ohne Datum, der Titel im offenen Zustand lautet «Drei neue Fragen». Die Spielkarten (Nächstes Spiel) und News-Karten sind bewusst grösser.
+
+## Navigation: «Zurück» führt in die Menüstruktur (26. November 2026)
+
+«Zurück» (Taste, Wischgeste, Zurück-Link in der App) führt immer zur übergeordneten Ansicht und nicht der Reihe nach durch die zuletzt besuchten:
+
+- Hauptreiter (Spiele, Tabelle, Kader, Ich) → **Start**; vom Start verlässt «Zurück» die App.
+- Unteransichten → ihre Liste: Spielerprofil und Vergleich → Kader; Artikel → News; Einstellungen, Sammlung, Shop, Wissen → Mein Bereich; Datenschutz → Einstellungen; Produkt und Warenkorb → Shop; Kasse → vorheriger Schritt; Verein-Unterseiten → Verein.
+- Ein Spiel führt dorthin zurück, von wo es geöffnet wurde (Start, Spielplan, Spielerprofil …), sonst zum Spielplan.
+- Wechsel zwischen den Hauptreitern und zwischen den Reitern eines Spiels ersetzen den Verlaufseintrag, es sammeln sich keine Schritte an.
+- Ein Link auf eine Ansicht, die im Verlauf weiter unten liegt (z. B. «Zurück»-Link, Reiter «Start»), geht dorthin zurück statt einen neuen Eintrag anzulegen. Landet «Zurück» auf einer anderen Ansicht als der übergeordneten, korrigiert die App das sofort.
+- Direktaufruf einer Unteransicht (Mitteilung, geteilter Link): die übergeordneten Ansichten werden unter der Ansicht in den Verlauf gelegt (`seedDeepLink` in `shell.js`); ein Neuladen legt sie nicht noch einmal an.
+
+Umsetzung: `parentHash`, `ancestors`, `switchesSibling` in `router.js`, Verlaufskette (`prev`, `distanceTo`) in `createNavigation`, Klick- und `hashchange`-Behandlung in `shell.js`. Geprüft in `tests/app-quality.test.mjs` und mit echtem Verlauf in `scripts/browser-test.mjs`.

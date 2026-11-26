@@ -4,7 +4,7 @@
 //   early:        [{selector, run(element, event) → true wenn behandelt}], vor den Aktionen
 //   focusAttrs:   Attribute, über die der Fokus beim Neuzeichnen wiedergefunden wird
 //   beforeRender(route), afterRender(route), beforeNavigate(), onEnter(route, entry)
-import {parseRoute, createNavigation, href, replacesHistory} from './router.js';
+import {parseRoute, createNavigation, href, replacesHistory, parentHash, ancestors, switchesSibling, sameHash} from './router.js';
 import {readTheme} from './theme.js';
 import {html} from './text.js';
 import {needsWelcome, markWelcome} from './personal.js';
@@ -21,6 +21,7 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
     scheduled = false,
     focusChips = false,
     replacing = false,
+    correcting = false,
     navigationPending = true;
   const celebrated = new Map();
   const focusAttrs = [...FOCUS_ATTRS, ...controllers.flatMap(c => c.focusAttrs || [])];
@@ -37,6 +38,7 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
     if (!entry.restore) {
       // Ein ersetzter Eintrag (Wechsel innerhalb eines Wissenskapitels) zählt nicht als neuer Schritt im Verlauf.
       navigation.setDepth((previous?.depth ?? -1) + (replacing ? 0 : 1));
+      if (replacing) navigation.replaceCurrent();
       history.replaceState({...history.state, kadettenEntry: entry.id}, '');
     }
     replacing = false;
@@ -154,6 +156,26 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
       }
       return;
     }
+    // «Zurück» und Wechsel führen die Menüstruktur entlang: Liegt das Ziel im Verlauf weiter unten, geht es dorthin zurück
+    // (statt einen weiteren Eintrag anzulegen); gleichrangige Ansichten ersetzen den Eintrag.
+    const link = event.target.closest('a[href^="#/"]');
+    if (link && plain && !link.target && !link.hasAttribute('data-route-back')) {
+      const target = link.getAttribute('href');
+      if (!sameHash(target, location.hash)) {
+        const steps = navigation.distanceTo(target);
+        if (steps) {
+          event.preventDefault();
+          history.go(-steps);
+          return;
+        }
+        if (switchesSibling(location.hash, target)) {
+          event.preventDefault();
+          replacing = true;
+          location.replace(target);
+          return;
+        }
+      }
+    }
     const back = event.target.closest('[data-route-back]');
     const distance = navigation.backDistance();
     if (back && distance > 0 && plain) {
@@ -185,9 +207,41 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
 
   addEventListener('hashchange', () => {
     hook('beforeNavigate');
+    const left = navigation.current;
     enterRoute();
+    // Zurück (Taste, Geste, Browser) führt immer zur übergeordneten Ansicht, nicht durch die zuletzt besuchten.
+    const here = navigation.current;
+    if (!correcting && left && here.restore && here.depth < left.depth) {
+      const want = parentHash(left.hash, left.origin?.hash);
+      if (want && !sameHash(want, here.hash)) {
+        const steps = navigation.distanceTo(want);
+        correcting = true;
+        if (steps) {
+          history.go(-steps);
+          return;
+        }
+        replacing = true;
+        location.replace(want);
+        return;
+      }
+    }
+    correcting = false;
     render();
   });
+
+  /**
+   * Direktaufruf einer Unteransicht (Mitteilung, geteilter Link): Die übergeordneten Ansichten werden darunter in den Verlauf gelegt,
+   * damit «Zurück» in die Menüstruktur führt statt die App zu schliessen. Ein Neuladen legt sie nicht noch einmal an.
+   */
+  function seedDeepLink() {
+    if (history.state?.kadettenSeeded || history.state?.kadettenEntry) return;
+    const hash = location.hash || '#/';
+    const chain = ancestors(hash);
+    if (!chain.length) return;
+    const list = navigation.seed([...chain, hash]);
+    history.replaceState({kadettenSeeded: 1, kadettenEntry: list[0].id}, '', chain[0]);
+    for (const entry of list.slice(1)) history.pushState({kadettenSeeded: 1, kadettenEntry: entry.id}, '', entry.hash);
+  }
 
   /** Erster Aufruf: Einführung beim ersten Start, Verlauf, erstes Zeichnen. */
   function start() {
@@ -197,6 +251,7 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
       history.replaceState(history.state, '', href.start());
     }
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    seedDeepLink();
     enterRoute();
     render();
   }
