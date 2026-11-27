@@ -415,7 +415,7 @@ Konzept: Design-Canvas «Start je Spielzustand». Die Titelseite kannte die vier
 
 ## Kader: Staff (27. November 2026)
 
-Unter den Spielern zeigt der Kader den Staff der 1. Mannschaft im selben Raster, mit eigenem Filter «Staff» (nur das Betreuerteam). Eine Position (Tor, Rückraum, Flügel, Kreis) blendet den Staff aus, «Alle» zeigt Spieler und danach den Staff.
+Der Kader gliedert sich in zwei Abschnitte mit Zwischentitel im Stil der übrigen Abschnittstitel: «Spieler» (nach Rückennummer) und «Staff» (Betreuerteam). Bei «Alle» trennt eine feine Linie über die ganze Breite die beiden Abschnitte. Die Chips lauten «Alle · Spieler · Staff»; die früheren Positionsfilter (Tor, Rückraum, Flügel, Kreis) sind entfallen, ein alter Wert fällt auf «Alle». Mit «Spieler» oder «Staff» entfällt die Linie.
 
 - Daten: `src/kadetten/data/staff.js` (Name, Rolle, Reihenfolge wie auf kadettensh.ch/1-mannschaft/: Trainer, Assistenztrainer, Torhütertrainer, zwei Betreuer, Physio, Präsident, Manager/Geschäftsführer). Fotos als eigene Kopien in `assets/staff/<id>.webp` (600 × 400, wie die Spielerfotos; nicht im Vorab-Cache).
 - Staff-Karten haben keine Rückennummer und kein Profil (nicht antippbar). Änderungen im Staff: `staff.js` und das Foto anpassen.
