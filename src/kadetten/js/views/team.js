@@ -3,6 +3,7 @@ import {html} from '../text.js';
 import {icon} from '../icons.js';
 import {href} from '../router.js';
 import {SQUAD} from '../../data/squad.js';
+import {STAFF, staffPhoto} from '../../data/staff.js';
 import {favourite} from '../personal.js';
 import {topBar, clubLink, chips, backBar, sectionHead, notice, loading, kpis, listRow, playerPhoto} from './parts.js';
 import {OWN_TEAM, ownGames, hasScore, kickoff, shortTeam, dayLabel} from '../logic.js';
@@ -29,21 +30,28 @@ function card(p, fav) {
 }
 
 const FILTERS = [['Alle', 'Alle', () => true], ...GROUPS.map(([label, test]) => [label, label, test])];
+/** Eigener Filter «Staff»: nur das Betreuerteam. Bei «Alle» folgt es nach den Spielern, bei einer Position fehlt es. */
+const STAFF_FILTER = 'Staff';
+
+function staffCard(m) {
+  const parts = m.name.split(' ');
+  return html`<div class="pc staff">
+    <span class="ph"><img src="${staffPhoto(m.id)}" alt="" loading="lazy" decoding="async" width="300" height="200"></span>
+    <span class="pb"><span class="nm"><small>${parts.slice(0, -1).join(' ')}</small>${parts.slice(-1)[0]}<small>${m.role}</small></span></span></div>`;
+}
 
 export function renderTeam({ui = {}} = {}) {
   const fav = favourite();
-  const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
-  const test = FILTERS.find(f => f[0] === current)[2];
-  const list = SQUAD.filter(test).sort((a, b) => a.number - b.number);
+  const current = FILTERS.some(f => f[0] === ui.pos) || ui.pos === STAFF_FILTER ? ui.pos : 'Alle';
+  const showPlayers = current !== STAFF_FILTER,
+    showStaff = current === 'Alle' || current === STAFF_FILTER;
+  const list = showPlayers ? SQUAD.filter(FILTERS.find(f => f[0] === current)[2]).sort((a, b) => a.number - b.number) : [];
   return html`${topBar('Kader', `Saison ${SEASON}`, clubLink)}
-    ${chips(
-      'pos',
-      FILTERS.map(([id, label]) => [id, label]),
-      current,
-      'Position'
-    )}
-    <section class="sec" aria-label="Spieler"><div class="pgrid">${list.map(p => card(p, fav))}</div></section>
-    <section class="sec"><p class="note">Kader ${SEASON}. Spielerfotos: kadettensh.ch.</p></section>`;
+    ${chips('pos', [...FILTERS.map(([id, label]) => [id, label]), [STAFF_FILTER, STAFF_FILTER]], current, 'Position')}
+    <section class="sec" aria-label="${showPlayers ? 'Spieler und Staff' : 'Staff'}"><div class="pgrid">${list.map(p => card(p, fav))}${
+      showStaff ? STAFF.map(staffCard) : ''
+    }</div></section>
+    <section class="sec"><p class="note">Kader ${SEASON}. Fotos: kadettensh.ch.</p></section>`;
 }
 
 /** Werte eines Spielers in den letzten QHL-Spielen aus den Spielberichten (fehlende Berichte zählen nicht). */

@@ -124,6 +124,7 @@ export async function buildApp({
         !f.startsWith('fonts/LICENSE') &&
         !f.includes('-512') &&
         !f.startsWith('assets/players/') &&
+        !f.startsWith('assets/staff/') &&
         !f.startsWith('assets/clubs/') &&
         !f.startsWith('assets/shop/') &&
         f !== 'assets/squad.webp' &&
