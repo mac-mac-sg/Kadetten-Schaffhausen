@@ -100,6 +100,14 @@ export async function fetchPlayerSeason() {
 // QHL-Saisonwerte aus den archivierten SHV-Spielberichten. Die Spielerliste der SHV-Schnittstelle zählt Cup-Spiele mit, die
 // Teamwerte nicht; deshalb werden die Werte hier Spiel für Spiel nur aus abgeschlossenen QHL-Spielen summiert.
 const ownTeam = r => r?.teams?.find(t => t.id === 41473);
+const otherTeam = r => r?.teams?.find(t => t.id !== 41473);
+
+/** Torhüter der Saison: gehaltene Würfe und aufs Tor gekommene Würfe, nur wenn jeder Bericht beide Werte liefert. */
+function keeperSeason(reports) {
+  const rows = reports.map(r => [ownTeam(r)?.saves, otherTeam(r)?.shots]);
+  if (!rows.length || !rows.every(([saves, faced]) => count(saves) && count(faced))) return null;
+  return {games: rows.length, saves: rows.reduce((n, [saves]) => n + saves, 0), faced: rows.reduce((n, [, faced]) => n + faced, 0)};
+}
 const count = v => Number.isInteger(v) && v >= 0;
 export function aggregatePlayerSeason(reports, teamGames) {
   if (
@@ -147,6 +155,7 @@ export function aggregatePlayerSeason(reports, teamGames) {
     teamId: 41473,
     teamGames,
     players,
+    ...(keeperSeason(reports) ? {keeper: keeperSeason(reports)} : {}),
     source: 'https://www.handball.ch/de/matchcenter/teams/41473',
     basis: 'Bestätigte QHL-Spielberichte'
   };
