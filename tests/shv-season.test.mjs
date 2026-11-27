@@ -161,3 +161,19 @@ test('Spielerwerte im Lauf: Berichte ersetzen eine fehlerhafte SHV-Spielerliste,
     globalThis.fetch = original;
   }
 });
+
+test('QHL-Saisonwerte: Torhüter-Summe nur, wenn jeder Bericht gehaltene und gegnerische Würfe liefert', async () => {
+  const {aggregatePlayerSeason} = await import('../server/shv.mjs');
+  const make = (gameId, saves, shots, faced) => ({
+    gameId,
+    score: [20, 20],
+    teams: [
+      {id: 41473, saves, shots, players: [{id: 341559, goals: 20}]},
+      {id: 9, shots: faced, saves: 5, players: []}
+    ]
+  });
+  const ok = aggregatePlayerSeason([make(1, 12, 30, 28), make(2, 10, 31, 25)], 2);
+  assert.deepEqual(ok.keeper, {games: 2, saves: 22, faced: 53});
+  const missing = aggregatePlayerSeason([make(1, 12, 30, 28), make(2, undefined, 31, 25)], 2);
+  assert.equal(missing.keeper, undefined, 'ein Bericht ohne Paraden: keine Summe statt einer falschen');
+});

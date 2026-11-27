@@ -94,7 +94,7 @@ export function createShell({app, ui, store, api, views, controllers, gestures})
     for (const el of app.querySelectorAll('[data-style]'))
       for (const decl of el.dataset.style.split(';')) {
         const [prop, value] = decl.split(':').map(x => x?.trim());
-        if (/^(width|flex)$/.test(prop || '') && /^[0-9.]+%?$/.test(value || '')) el.style.setProperty(prop, value);
+        if (/^(width|flex|--to|--p|--i)$/.test(prop || '') && /^[0-9.]+%?$/.test(value || '')) el.style.setProperty(prop, value);
       }
     const key = route.view + ':' + (route.id || '') + ':' + (route.tab || '');
     if (key !== lastView) {
