@@ -144,6 +144,34 @@ test('Jede Hauptseite hat ein Kopfband mit genau einer h1; Verein nur über den 
   assert.equal(render('#/team').querySelector('.band-t').textContent, 'Kader');
 });
 
+test('Kader: Staff folgt den Spielern, eigener Filter «Staff», bei einer Position nicht sichtbar', () => {
+  const chips = d => [...d.querySelectorAll('.chips .chip')].map(c => c.textContent.trim());
+  const all = render('#/team');
+  assert.deepEqual(chips(all), ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis', 'Staff']);
+  const cards = [...all.querySelectorAll('.pgrid .pc')];
+  const staff = cards.filter(c => c.classList.contains('staff'));
+  assert.equal(staff.length, 8);
+  assert.ok(cards.indexOf(staff[0]) > cards.findLastIndex(c => !c.classList.contains('staff')), 'Staff steht nach allen Spielern');
+  assert.match(staff[0].textContent, /Jonas\s*Wille\s*Trainer/);
+  assert.match(staff.at(-1).textContent, /David\s*Graubner\s*Manager\/Geschäftsführer/);
+  assert.ok(
+    staff.every(c => c.querySelector('img').getAttribute('src').startsWith('assets/staff/')),
+    'Fotos als eigene Kopien'
+  );
+  assert.ok(
+    staff.every(c => c.tagName !== 'A'),
+    'Staff ohne Profil, nicht anklickbar'
+  );
+  const only = render('#/team', {pos: 'Staff'});
+  assert.equal(only.querySelectorAll('a.pc').length, 0, 'Filter «Staff»: keine Spieler');
+  assert.equal(all.querySelectorAll('.pgrid').length, 1, 'Staff im selben Raster, nach den Spielern');
+  assert.equal(only.querySelectorAll('.pc.staff').length, 8);
+  assert.equal(only.querySelector('.chip.on').textContent.trim(), 'Staff');
+  const tor = render('#/team', {pos: 'Tor'});
+  assert.equal(tor.querySelectorAll('.pc.staff').length, 0, 'bei einer Position kein Staff');
+  assert.ok(tor.querySelectorAll('a.pc').length > 0);
+});
+
 test('Unterseiten: schmales Kopfband mit Zurück; Spielkarte der Spielseite liegt im Band', () => {
   const player = render('#/team/10');
   assert.ok(player.querySelector('header.band-slim a.back[href="#/team"]'));
@@ -206,7 +234,7 @@ test('Kader nach Skizze: Positions-Chips, ein Raster nach Nummern, Filter nach P
   const all = render('#/team');
   assert.deepEqual(
     [...all.querySelectorAll('.chips .chip')].map(c => c.textContent),
-    ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis']
+    ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis', 'Staff']
   );
   assert.equal(all.querySelector('.chip.on').textContent, 'Alle');
   assert.equal(all.querySelectorAll('.pgrid').length, 1, 'ein gemeinsames Raster statt Gruppen');
