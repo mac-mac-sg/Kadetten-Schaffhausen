@@ -104,6 +104,7 @@
 .years { padding-bottom: var(--s-4); color: var(--c-text-muted); line-height: 1.7; font-variant-numeric: tabular-nums; }
 
 /* Team: Porträt mit Schnitt, Rückennummer gross und kursiv */
+.sep { height: 1px; margin: var(--s-6) 0 0; border: 0; background: var(--c-line-strong); }
 .pgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); }
 .pc { display: block; overflow: hidden; border-radius: var(--r-card); background: var(--c-card); border: 1px solid var(--c-line); }
 .pc .ph { position: relative; display: block; aspect-ratio: 3 / 2; background: var(--c-black); overflow: hidden; clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }

@@ -144,34 +144,6 @@ test('Jede Hauptseite hat ein Kopfband mit genau einer h1; Verein nur über den 
   assert.equal(render('#/team').querySelector('.band-t').textContent, 'Kader');
 });
 
-test('Kader: Staff folgt den Spielern, eigener Filter «Staff», bei einer Position nicht sichtbar', () => {
-  const chips = d => [...d.querySelectorAll('.chips .chip')].map(c => c.textContent.trim());
-  const all = render('#/team');
-  assert.deepEqual(chips(all), ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis', 'Staff']);
-  const cards = [...all.querySelectorAll('.pgrid .pc')];
-  const staff = cards.filter(c => c.classList.contains('staff'));
-  assert.equal(staff.length, 8);
-  assert.ok(cards.indexOf(staff[0]) > cards.findLastIndex(c => !c.classList.contains('staff')), 'Staff steht nach allen Spielern');
-  assert.match(staff[0].textContent, /Jonas\s*Wille\s*Trainer/);
-  assert.match(staff.at(-1).textContent, /David\s*Graubner\s*Manager\/Geschäftsführer/);
-  assert.ok(
-    staff.every(c => c.querySelector('img').getAttribute('src').startsWith('assets/staff/')),
-    'Fotos als eigene Kopien'
-  );
-  assert.ok(
-    staff.every(c => c.tagName !== 'A'),
-    'Staff ohne Profil, nicht anklickbar'
-  );
-  const only = render('#/team', {pos: 'Staff'});
-  assert.equal(only.querySelectorAll('a.pc').length, 0, 'Filter «Staff»: keine Spieler');
-  assert.equal(all.querySelectorAll('.pgrid').length, 1, 'Staff im selben Raster, nach den Spielern');
-  assert.equal(only.querySelectorAll('.pc.staff').length, 8);
-  assert.equal(only.querySelector('.chip.on').textContent.trim(), 'Staff');
-  const tor = render('#/team', {pos: 'Tor'});
-  assert.equal(tor.querySelectorAll('.pc.staff').length, 0, 'bei einer Position kein Staff');
-  assert.ok(tor.querySelectorAll('a.pc').length > 0);
-});
-
 test('Unterseiten: schmales Kopfband mit Zurück; Spielkarte der Spielseite liegt im Band', () => {
   const player = render('#/team/10');
   assert.ok(player.querySelector('header.band-slim a.back[href="#/team"]'));
@@ -230,25 +202,50 @@ test('Schriften: Barlow Condensed kursiv wird mit der App ausgeliefert, nichts v
   assert.doesNotMatch(fonts + read('src/kadetten/css/components.css') + read('src/kadetten/css/views.css'), /https?:\/\//);
 });
 
-test('Kader nach Skizze: Positions-Chips, ein Raster nach Nummern, Filter nach Position', () => {
+test('Kader: Filter Alle, Spieler, Staff; Spieler nach Nummern, Zwischentitel und feine Linie vor dem Staff', () => {
   const all = render('#/team');
   assert.deepEqual(
     [...all.querySelectorAll('.chips .chip')].map(c => c.textContent),
-    ['Alle', 'Tor', 'Rückraum', 'Flügel', 'Kreis', 'Staff']
+    ['Alle', 'Spieler', 'Staff'],
+    'keine Positionsfilter mehr'
   );
   assert.equal(all.querySelector('.chip.on').textContent, 'Alle');
-  assert.equal(all.querySelectorAll('.pgrid').length, 1, 'ein gemeinsames Raster statt Gruppen');
-  const numbers = [...all.querySelectorAll('.pc .no')].map(n => Number(n.textContent));
+  assert.deepEqual(
+    [...all.querySelectorAll('.sec h2')].map(h => h.textContent),
+    ['Spieler', 'Staff']
+  );
+  assert.equal(all.querySelectorAll('.pgrid').length, 2, 'ein Raster für die Spieler, eines für den Staff');
+  assert.ok(all.querySelector('hr.sep'), 'feine Trennlinie zwischen Spielern und Staff');
+  const order = [...all.querySelectorAll('.sec h2, hr.sep')].map(n => n.tagName + (n.textContent || ''));
+  assert.deepEqual(order, ['H2Spieler', 'HR', 'H2Staff'], 'Titel, Linie, Titel in dieser Reihenfolge');
+  const numbers = [...all.querySelectorAll('a.pc .no')].map(n => Number(n.textContent));
   assert.deepEqual(
     numbers,
     [...numbers].sort((a, b) => a - b),
     'nach Rückennummer sortiert'
   );
-  const keepers = render('#/team', {pos: 'Tor'});
-  assert.equal(keepers.querySelector('.chip.on').textContent, 'Tor');
-  assert.ok(keepers.querySelectorAll('.pc').length > 0 && keepers.querySelectorAll('.pc').length < numbers.length);
-  for (const card of keepers.querySelectorAll('.pc')) assert.match(card.textContent, /Tor/);
-  assert.equal(render('#/team', {pos: 'unbekannt'}).querySelector('.chip.on').textContent, 'Alle');
+  const staff = [...all.querySelectorAll('.pc.staff')];
+  assert.equal(staff.length, 8);
+  assert.match(staff[0].textContent, /Jonas\s*Wille\s*Trainer/);
+  assert.match(staff.at(-1).textContent, /David\s*Graubner\s*Manager\/Geschäftsführer/);
+  assert.ok(
+    staff.every(c => c.querySelector('img').getAttribute('src').startsWith('assets/staff/')),
+    'Fotos als eigene Kopien'
+  );
+  assert.ok(
+    staff.every(c => c.tagName !== 'A'),
+    'Staff ohne Profil, nicht anklickbar'
+  );
+  const players = render('#/team', {pos: 'Spieler'});
+  assert.equal(players.querySelectorAll('.pc.staff').length, 0);
+  assert.equal(players.querySelector('hr.sep'), null, 'ohne Staff keine Trennlinie');
+  assert.equal(players.querySelectorAll('a.pc').length, numbers.length);
+  const only = render('#/team', {pos: 'Staff'});
+  assert.equal(only.querySelectorAll('a.pc').length, 0, 'Filter «Staff»: keine Spieler');
+  assert.equal(only.querySelectorAll('.pc.staff').length, 8);
+  assert.equal(only.querySelector('hr.sep'), null);
+  assert.equal(only.querySelector('.chip.on').textContent, 'Staff');
+  assert.equal(render('#/team', {pos: 'Tor'}).querySelector('.chip.on').textContent, 'Alle', 'alte Positionsfilter fallen auf «Alle»');
 });
 
 test('Verein nach Skizze: Titelzahlen, 1791-Karte, Hallenfoto und zwei Verweise; Details auf Unterseiten', () => {

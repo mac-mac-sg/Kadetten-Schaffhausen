@@ -12,12 +12,6 @@ import {loadReportFor, ruleButton} from './bericht.js';
 import {positionArticleId} from '../wissen/positionen.js';
 import {SEASON} from '../season.js';
 
-const GROUPS = [
-  ['Tor', p => p.position === 'Tor'],
-  ['Rückraum', p => /^Rückraum/.test(p.position)],
-  ['Flügel', p => /^Flügel/.test(p.position)],
-  ['Kreis', p => p.position === 'Kreis']
-];
 const POSITION = pos => pos.replace(/^Rückraum mitte$/i, 'Rückraum Mitte').replace(/^Rückraum links$/i, 'Rückraum links');
 
 function card(p, fav) {
@@ -29,9 +23,12 @@ function card(p, fav) {
     <span class="pb"><span class="no num" aria-hidden="true">${p.number}</span><span class="nm"><small>${parts.slice(0, -1).join(' ')}</small>${parts.slice(-1)[0]}<small><span class="sr">Nummer ${p.number}, </span>${POSITION(p.position)}</small></span></span></a>`;
 }
 
-const FILTERS = [['Alle', 'Alle', () => true], ...GROUPS.map(([label, test]) => [label, label, test])];
-/** Eigener Filter «Staff»: nur das Betreuerteam. Bei «Alle» folgt es nach den Spielern, bei einer Position fehlt es. */
-const STAFF_FILTER = 'Staff';
+/** Filter: «Alle» (Spieler, dann Staff), nur «Spieler» oder nur «Staff». */
+const FILTERS = [
+  ['Alle', 'Alle'],
+  ['Spieler', 'Spieler'],
+  ['Staff', 'Staff']
+];
 
 function staffCard(m) {
   const parts = m.name.split(' ');
@@ -42,15 +39,23 @@ function staffCard(m) {
 
 export function renderTeam({ui = {}} = {}) {
   const fav = favourite();
-  const current = FILTERS.some(f => f[0] === ui.pos) || ui.pos === STAFF_FILTER ? ui.pos : 'Alle';
-  const showPlayers = current !== STAFF_FILTER,
-    showStaff = current === 'Alle' || current === STAFF_FILTER;
-  const list = showPlayers ? SQUAD.filter(FILTERS.find(f => f[0] === current)[2]).sort((a, b) => a.number - b.number) : [];
+  const current = FILTERS.some(f => f[0] === ui.pos) ? ui.pos : 'Alle';
+  const showPlayers = current !== 'Staff',
+    showStaff = current !== 'Spieler';
+  const list = SQUAD.slice().sort((a, b) => a.number - b.number);
   return html`${topBar('Kader', `Saison ${SEASON}`, clubLink)}
-    ${chips('pos', [...FILTERS.map(([id, label]) => [id, label]), [STAFF_FILTER, STAFF_FILTER]], current, 'Position')}
-    <section class="sec" aria-label="${showPlayers ? 'Spieler und Staff' : 'Staff'}"><div class="pgrid">${list.map(p => card(p, fav))}${
-      showStaff ? STAFF.map(staffCard) : ''
-    }</div></section>
+    ${chips('pos', FILTERS, current, 'Anzeige')}
+    ${
+      showPlayers
+        ? html`<section class="sec" aria-labelledby="k-spieler">${sectionHead('Spieler', '', '', 'k-spieler')}<div class="pgrid">${list.map(p => card(p, fav))}</div></section>`
+        : ''
+    }
+    ${showPlayers && showStaff ? html`<hr class="sep">` : ''}
+    ${
+      showStaff
+        ? html`<section class="sec" aria-labelledby="k-staff">${sectionHead('Staff', '', '', 'k-staff')}<div class="pgrid">${STAFF.map(staffCard)}</div></section>`
+        : ''
+    }
     <section class="sec"><p class="note">Kader ${SEASON}. Fotos: kadettensh.ch.</p></section>`;
 }
 
